@@ -1,0 +1,4 @@
+
+Dockerfile:
+Find what ports to expose.
+Add tags or names to build
