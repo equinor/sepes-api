@@ -24,7 +24,14 @@ namespace restapi.Controllers
             return "value";
         }
 
-        // POST api/values
+/*         //GET test funtion, always with opposite of input value
+        [HttpGet("FlipBool")]
+        public FlipBool<bool> Get(bool blOrig)
+        {
+            return blInvert;
+        }
+*/
+         // POST api/values
         [HttpPost]
         public void Post([FromBody] string value)
         {
@@ -40,6 +47,32 @@ namespace restapi.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+        }
+    }
+
+    [Route("api/[controller]")]
+    [ApiController]
+    public class VController : ControllerBase
+                //What is before Controller decides path
+    {
+        // GET api/values
+        [HttpGet]
+        public ActionResult<IEnumerable<string>> Get()
+        {
+            return new string[] { "Yep", "its running" };
+        }
+
+        // GET api/v/5
+        [HttpGet("{id}")]
+        public ActionResult<string> Get(int id)
+        {
+            return "value: " + id;
+        }
+
+        [HttpGet("{a}/{b}")]
+        public ActionResult<string> Get(int a, int b)
+        {
+            return "value: " + (a + b);
         }
     }
 }

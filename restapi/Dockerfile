@@ -5,6 +5,9 @@ WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore
 
+# Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
+EXPOSE 5001
+
 # Copy everything else and build
 COPY . ./
 RUN dotnet publish -c Release -o out
