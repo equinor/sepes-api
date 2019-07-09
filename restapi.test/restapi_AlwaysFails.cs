@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Tests
+namespace Sepes.Tests
 {
     public class AlwaysFails
     {
