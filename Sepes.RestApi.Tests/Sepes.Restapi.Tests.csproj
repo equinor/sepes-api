@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\restapi\restapi.csproj" />
+    <ProjectReference Include="..\Sepes.Restapi\Sepes.Restapi.csproj" />
   </ItemGroup>
 
 </Project>
