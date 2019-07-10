@@ -1,8 +1,12 @@
+using Microsoft.AspNetCore.Mvc;
 using NUnit.Framework;
 using Sepes.restapi.ValuesController; //Add the controller to this test
+using System.Linq; //Adds some mathematics
+
 
 namespace Tests
 {
+
     public class SimpleUnitTest
     {
         [SetUp]
@@ -13,15 +17,13 @@ namespace Tests
         [Test]
         public void AddNumbers()
         {
-            var num1 = 2;
-            var num2 = 3;
-            var controller = new ValuesController(); //Make a controller object
-            var resultReal = num1 + num2;
-            var resultController = 5;            
+            int[] testProducts = {2,3};
+            var controller = new ValuesController(); //Make the controller object
+            ActionResult<int> result = controller.AddNumbers(testProducts[0], testProducts[1]); //Call funtion and pass in variables
+            int resultReal = testProducts.Sum();          
 
 
-
-            Assert.AreEqual(resultReal, resultController);
+            Assert.AreEqual(resultReal, result.Value);
 
         }
     }
