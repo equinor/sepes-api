@@ -26,27 +26,11 @@ class App extends React.Component {
     );
   }
 }
-/*
-function App() {
-  return (
-    <div className="App">
-      <div>
-        <button onClick={login}>Logg inn</button>
-        <button onClick={logout}>Logg ut</button>
-      </div>
-      <div>
-        <p id="tokenName"></p>
-        <p id="tokenId"></p>
-      </div>
-    </div>
-  );
-}
-*/
 
 var msalConfig = {
   auth: {
-    clientId: "",
-    authority: ""
+    clientId: "e90cbb61-896e-4ec7-aa37-23511700e1ed",
+    authority: "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
   },
   cache: {
     cacheLocation: "localStorage",
