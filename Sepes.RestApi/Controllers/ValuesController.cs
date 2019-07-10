@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Sepes.restapi.ValuesController
+namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]

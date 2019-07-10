@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "restapi", "restapi\restapi.csproj", "{CD846C63-916B-4933-A281-5793817DED09}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.RestApi", "Sepes.RestApi\Sepes.RestApi.csproj", "{CD846C63-916B-4933-A281-5793817DED09}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "restapi.test", "restapi.test\restapi.test.csproj", "{1CBDA700-4C9A-4932-9052-06311E6064D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.RestApi.Tests", "Sepes.RestApi.Tests\Sepes.RestApi.Tests.csproj", "{1CBDA700-4C9A-4932-9052-06311E6064D8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

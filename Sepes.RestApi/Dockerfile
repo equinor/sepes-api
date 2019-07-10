@@ -5,8 +5,7 @@ WORKDIR /app
 COPY *.csproj ./
 RUN dotnet restore
 
-# Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
-EXPOSE 5001
+
 
 # Copy everything else and build
 COPY . ./
@@ -17,3 +16,6 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:2.2
 WORKDIR /app
 COPY --from=build-env /app/out .
 ENTRYPOINT ["dotnet", "restapi.dll"]
+
+# Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
+EXPOSE 5001
