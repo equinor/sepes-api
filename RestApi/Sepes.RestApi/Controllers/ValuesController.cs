@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
 
 namespace Sepes.RestApi.Controller
 {
@@ -10,6 +12,8 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     public class ValuesController : ControllerBase
     {
+        //Currently no actual functionality. All bellow responses are from template and used for testing.
+
         // GET api/values
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
@@ -21,6 +25,8 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
+            TelemetryClient telclient = new TelemetryClient();
+            telclient.TrackTrace("This is a test of custom logs.", SeverityLevel.Information);
             return "value";
         }
 
