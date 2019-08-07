@@ -15,7 +15,6 @@ namespace Sepes.RestApi
 {
     public class Startup
     {
-        private string _logToken = null;
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -28,10 +27,11 @@ namespace Sepes.RestApi
         {
             //Adds the secret azure insight token. Make sure to set this if using logging via azure innsight
             //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
-            _logToken = Configuration["AzureLogToken:ServiceApiKey"];
             
             // The following line enables Application Insights telemetry collection.
-            services.AddApplicationInsightsTelemetry(_logToken);
+            //TODO add support for local logging. If this is left empty then no logs are made. Unknown if still affects performance.
+            //Add support for other means of registring the key
+            services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]); 
             
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
