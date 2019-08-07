@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@microsoft/applicationinsights-web": "^2.1.1",
+    "dotenv": "^8.0.0",
     "msal": "^1.0.2",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
