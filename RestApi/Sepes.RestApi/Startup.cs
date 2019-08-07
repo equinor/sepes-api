@@ -25,6 +25,14 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            //Adds the secret azure insight token. Make sure to set this if using logging via azure innsight
+            //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
+            
+            // The following line enables Application Insights telemetry collection.
+            //TODO add support for local logging. If this is left empty then no logs are made. Unknown if still affects performance.
+            //Add support for other means of registring the key
+            services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]); 
+            
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
