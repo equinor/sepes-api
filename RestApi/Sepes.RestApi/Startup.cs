@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,10 +36,27 @@ namespace Sepes.RestApi
             
             // The following line enables Application Insights telemetry collection.
             //TODO add support for local logging. If this is left empty then no logs are made. Unknown if still affects performance.
-            //Add support for other means of registring the key
+            //Secret key can be set up for with either secret key or in appsettings.json, secret key will overwrite json.
             services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]); 
-            
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
+            .AddJwtBearer(options =>  
+            {  
+            options.TokenValidationParameters = new TokenValidationParameters  
+                {  
+                ValidateIssuer = false,  //TODO set to true before final commit
+                ValidateAudience = false,  
+                ValidateLifetime = true,  
+                ValidateIssuerSigningKey = true,  
+                ValidIssuer = Configuration["Jwt:Issuer"],  
+                ValidAudience = Configuration["Jwt:Issuer"],  
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))  
+                };  
+            }); 
+    
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +73,7 @@ namespace Sepes.RestApi
             }
 
             app.UseHttpsRedirection();
+            app.UseAuthentication();
             app.UseMvc();
         }
     }
