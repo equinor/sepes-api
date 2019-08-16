@@ -68,8 +68,7 @@ class App extends React.Component {
       .then(loginResponse => {
       //login success
       this.setState({
-        tokenName: loginResponse.account.name,
-        tokenId: loginResponse.account.accountIdentifier
+        tokenName: loginResponse.account.name
       });
 
       this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
@@ -85,7 +84,7 @@ class App extends React.Component {
       });
     }).then(respnse => respnse.text())
       .then(jwt => {
-      console.log(jwt);
+      this.setState({tokenId: jwt});
       localStorage.setItem(JWT_NAME, jwt);
       this.appInsights.trackEvent({name: 'Login Sepes success'});
     }).catch(error => {
@@ -103,8 +102,8 @@ class App extends React.Component {
 
   testSepesAPI() {
     fetch(process.env.REACT_APP_SEPES_TEST_URL, {
-      method: "post",
-      headers: { Authorization: localStorage.getItem(JWT_NAME) }
+      method: "get",
+      headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
     }).then(data => {
         console.log(data);
       });
