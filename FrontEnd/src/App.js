@@ -78,9 +78,10 @@ class App extends React.Component {
       return loginResponse.idToken.rawIdToken;
     }).then(rawIdToken => {
       console.log(rawIdToken);
-      return fetch(process.env.REACT_APP_SEPES_LOGIN_URL+"h", {
+      return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
         method: "post",
-        headers: { "AzureToken": rawIdToken }
+        headers: { "Content-Type" : "application/json" },
+        body: JSON.stringify({"Usename":"Tester","idToken":"aoiuy12331","Expiration":"later"})
       });
     }).then(respnse => respnse.text())
       .then(jwt => {
