@@ -4,6 +4,7 @@ import './App.css';
 import * as Msal from 'msal';
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
+const JWT_NAME = "SepesJWT";
 
 class App extends React.Component {
   constructor(props) {
@@ -33,8 +34,9 @@ class App extends React.Component {
     return (
       <div className="App">
         <div>
-          <button className="btn" onClick={() => this.login()}>Logg inn</button>
+          <button className="btn" onClick={this.login}>Logg inn</button>
           <button className="btn" onClick={this.logout}>Logg ut</button>
+          <button className="btn" onClick={this.testSepesAPI}>Test backend API</button>
         </div>
         <div>
           <p id="tokenName">{this.state.tokenName}</p>
@@ -62,20 +64,32 @@ class App extends React.Component {
       scopes: ["user.read"]/*, "user.write"*/
     };
 
-    var self = this;
-
-    this.msalApp.loginPopup(loginRequest).then(function (loginResponse) {
+    this.msalApp.loginPopup(loginRequest)
+      .then(loginResponse => {
       //login success
-      self.setState({
+      this.setState({
         tokenName: loginResponse.account.name,
         tokenId: loginResponse.account.accountIdentifier
       });
 
-      self.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
-      self.appInsights.trackEvent({name: 'Login'});
-    }).catch(function (error) {
-      console.log(error);
-      self.appInsights.trackTrace({message: 'Login Error'});
+      this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
+      this.appInsights.trackEvent({name: 'Login Azure success'});
+      console.log(loginResponse);
+      return loginResponse.idToken.rawIdToken;
+    }).then(rawIdToken => {
+      console.log(rawIdToken);
+      return fetch(process.env.REACT_APP_SEPES_LOGIN_URL+"h", {
+        method: "post",
+        headers: { "AzureToken": rawIdToken }
+      });
+    }).then(respnse => respnse.text())
+      .then(jwt => {
+      console.log(jwt);
+      localStorage.setItem(JWT_NAME, jwt);
+      this.appInsights.trackEvent({name: 'Login Sepes success'});
+    }).catch(error => {
+      console.error(error);
+      this.appInsights.trackTrace({message: 'Login Error'});
     });
   }
 
@@ -83,6 +97,16 @@ class App extends React.Component {
     this.msalApp.logout();
     this.appInsights.clearAuthenticatedUserContext();
     this.appInsights.trackEvent({name: 'Logout'});
+    localStorage.removeItem(JWT_NAME);
+  }
+
+  testSepesAPI() {
+    fetch(process.env.REACT_APP_SEPES_TEST_URL, {
+      method: "post",
+      headers: { Authorization: localStorage.getItem(JWT_NAME) }
+    }).then(data => {
+        console.log(data);
+      });
   }
 }
 
