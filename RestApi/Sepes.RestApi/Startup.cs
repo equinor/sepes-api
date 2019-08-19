@@ -26,6 +26,7 @@ namespace Sepes.RestApi
             Configuration = configuration;
         }
 
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -53,6 +54,21 @@ namespace Sepes.RestApi
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))  
                 };  
             }); 
+
+                   services.AddCors(options =>
+        {
+            options.AddPolicy(MyAllowSpecificOrigins,
+            builder =>
+            {
+                /*
+                builder.WithOrigins("http://example.com",
+                                    "http://www.contoso.com");
+                */
+                //TODO should be replaced with above commented code. Update URLs with what is required for your use case
+                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
+
+            });
+        });
     
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -74,6 +90,7 @@ namespace Sepes.RestApi
 
             app.UseHttpsRedirection();
             app.UseAuthentication();
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseMvc();
         }
     }
