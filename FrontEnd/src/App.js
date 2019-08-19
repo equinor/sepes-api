@@ -12,6 +12,7 @@ class App extends React.Component {
     this.state = {
       tokenName: "",
       tokenId: "",
+      jwtTest: "Result from backend"
     }
     this.msalConfig = {
       auth: {
@@ -41,6 +42,7 @@ class App extends React.Component {
         <div>
           <p id="tokenName">{this.state.tokenName}</p>
           <p id="tokenId">{this.state.tokenId}</p>
+          <p>{this.state.jwtTest}</p>
         </div>
       </div>
     );
@@ -104,9 +106,16 @@ class App extends React.Component {
     fetch(process.env.REACT_APP_SEPES_TEST_URL, {
       method: "get",
       headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
-    }).then(data => {
-        console.log(data);
+    }).then(data => data.text())
+    .then(data => {
+      this.setState({
+        jwtTest: data
       });
+    }).catch(error => {
+      this.setState({
+        jwtTest: "Fail"
+      });
+    })
   }
 }
 
