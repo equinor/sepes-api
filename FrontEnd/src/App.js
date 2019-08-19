@@ -108,11 +108,20 @@ class App extends React.Component {
       headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
     }).then(data => data.text())
     .then(data => {
-      this.setState({
-        jwtTest: data
-      });
+      if(data.length === 0) {
+        this.setState({
+          jwtTest: "FAIL"
+        });
+      } else {
+        this.setState({
+          jwtTest: data
+        });
+      }
     }).catch(error => {
       console.log(error);
+      this.setState({
+        jwtTest: "FAIL"
+      });
     })
   }
 }
