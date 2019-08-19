@@ -112,9 +112,7 @@ class App extends React.Component {
         jwtTest: data
       });
     }).catch(error => {
-      this.setState({
-        jwtTest: "Fail"
-      });
+      console.log(error);
     })
   }
 }
