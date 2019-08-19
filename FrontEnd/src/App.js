@@ -102,7 +102,7 @@ class App extends React.Component {
     localStorage.removeItem(JWT_NAME);
   }
 
-  testSepesAPI() {
+  testSepesAPI = () => {
     fetch(process.env.REACT_APP_SEPES_TEST_URL, {
       method: "get",
       headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
