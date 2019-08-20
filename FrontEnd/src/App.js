@@ -76,13 +76,13 @@ class App extends React.Component {
       this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
       this.appInsights.trackEvent({name: 'Login Azure success'});
       console.log(loginResponse);
-      return loginResponse.idToken.rawIdToken;
-    }).then(rawIdToken => {
-      console.log(rawIdToken);
+      return loginResponse;
+    }).then(loginResponse => {
+      console.log(loginResponse.idToken.rawIdToken);
       return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
         method: "post",
-        headers: { "Content-Type" : "application/json" },
-        body: JSON.stringify({"Usename":"Tester","idToken":"aoiuy12331","Expiration":"later"})
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"Usename": loginResponse.account.name, "idToken": loginResponse.idToken.rawIdToken, "Expiration": "later"})
       });
     }).then(respnse => respnse.text())
       .then(jwt => {
