@@ -66,6 +66,7 @@ class App extends React.Component {
       scopes: ["user.read"]/*, "user.write"*/
     };
 
+    // First login to Azure
     this.msalApp.loginPopup(loginRequest)
       .then(loginResponse => {
       //login success
@@ -73,12 +74,12 @@ class App extends React.Component {
         tokenName: loginResponse.account.name
       });
 
+      // Track our login 
       this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
       this.appInsights.trackEvent({name: 'Login Azure success'});
-      console.log(loginResponse);
       return loginResponse;
     }).then(loginResponse => {
-      console.log(loginResponse.idToken.rawIdToken);
+      // Login to backend using token from Azure to get a JWT
       return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
         method: "post",
         headers: { "Content-Type": "application/json" },
@@ -86,6 +87,8 @@ class App extends React.Component {
       });
     }).then(respnse => respnse.text())
       .then(jwt => {
+      // Backend login success
+      // Store JWT from backend
       this.setState({tokenId: jwt});
       localStorage.setItem(JWT_NAME, jwt);
       this.appInsights.trackEvent({name: 'Login Sepes success'});
@@ -97,9 +100,9 @@ class App extends React.Component {
 
   logout = () => {
     this.msalApp.logout();
+    localStorage.removeItem(JWT_NAME);
     this.appInsights.clearAuthenticatedUserContext();
     this.appInsights.trackEvent({name: 'Logout'});
-    localStorage.removeItem(JWT_NAME);
   }
 
   testSepesAPI = () => {
