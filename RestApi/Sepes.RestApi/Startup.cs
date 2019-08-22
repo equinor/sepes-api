@@ -16,19 +16,24 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sepes.RestApi.Model;
 
 namespace Sepes.RestApi
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public IConfiguration Configuration {get; set;}
+        public Startup(IHostingEnvironment env)
         {
-            Configuration = configuration;
+            var confbuilder = new ConfigurationBuilder()
+            .SetBasePath(env.ContentRootPath)
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables();
+            Configuration = confbuilder.Build();
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-        public IConfiguration Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -38,14 +43,16 @@ namespace Sepes.RestApi
             // The following line enables Application Insights telemetry collection.
             //TODO add support for local logging. If this is left empty then no logs are made. Unknown if still affects performance.
             //Secret key can be set up for with either secret key or in appsettings.json, secret key will overwrite json.
-            services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]); 
+            services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]);
+            services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
+            services.AddOptions();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
             .AddJwtBearer(options =>  
             {  
             options.TokenValidationParameters = new TokenValidationParameters  
                 {  
-                ValidateIssuer = false,  //TODO set to true before final commit
+                ValidateIssuer = false,  //TODO set to true before MVP
                 ValidateAudience = false,  
                 ValidateLifetime = true,  
                 ValidateIssuerSigningKey = true,  
@@ -55,19 +62,19 @@ namespace Sepes.RestApi
                 };  
             }); 
 
-                   services.AddCors(options =>
-        {
-            options.AddPolicy(MyAllowSpecificOrigins,
-            builder =>
+            services.AddCors(options =>
             {
-                /*
-                builder.WithOrigins("http://example.com",
-                                    "http://www.contoso.com");
-                */
-                //TODO should be replaced with above commented code. Update URLs with what is required for your use case
-                builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    /*
+                    builder.WithOrigins("http://example.com",
+                                        "http://www.contoso.com");
+                    */
+                    //TODO should be replaced with above commented code. Update URLs with what is required for your use case
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
 
-            });
+                });
         });
     
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
