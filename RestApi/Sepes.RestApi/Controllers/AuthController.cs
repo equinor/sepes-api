@@ -23,21 +23,18 @@ namespace Sepes.RestApi.Controller
     public class AuthController : ControllerBase
     {
 
-        //DEBUG
+        //Make values from appsetting availible to this code
         private AppSettings _appSetting;
         public AuthController(IOptions<AppSettings> appsettings)
         {
             _appSetting = appsettings.Value;
         }
-        //END DEBUG
          //POST api/auth/token
         [AllowAnonymous]
         [HttpPost("token")]
         public IActionResult Token([FromBody] AzTokenClass AzToken) 
         {
-            IActionResult response = Unauthorized();
-            //Logic for testing if recieved data is a real token
-            //Logic for swapping Az AD token for Sepes token
+            IActionResult response = Unauthorized(); //Default response if bellow fails
             var IsAuthentic = AuthenticateToken(AzToken);
             
             if (IsAuthentic){
@@ -46,7 +43,7 @@ namespace Sepes.RestApi.Controller
                 response = Ok(SepesToken);
             }
             else{
-                //TODO look into error handling for identifiable conditions. Ex. if azure verification timed out.
+                //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
                 response = Unauthorized("Invalid Azure token.");
             }
 
@@ -61,12 +58,8 @@ namespace Sepes.RestApi.Controller
         [HttpPost("refreshtoken")]
         public IActionResult RefreshToken([FromBody] SepesTokenClass OldSepesTokenString) 
         {
-            IActionResult response = Unauthorized();
-            //TODO logic for verifying and then making new sepestoken.
-            //Authentication implied by [Authorize] but some content of old token may be transplanted to new token.
-            
+            IActionResult response = Unauthorized(); //Default response if bellow fails
             var SepesToken = GenerateJSONWebToken(null ,new JwtSecurityTokenHandler().ReadJwtToken(OldSepesTokenString.idToken));
-            //Either change GenerateJSONWebToken to support either AzToken or SepeToken. Or make new function for refresh
             response = Ok(SepesToken);
             return response;
         }
@@ -75,25 +68,26 @@ namespace Sepes.RestApi.Controller
         {
 
             if (OldSepesToken != null){
-                //Logic for bringing transplanted traits into next token
+                //Issue: 38 Logic for bringing transplanted traits into new token
             }
             else if (AZtoken != null){
-                //Logic for any transplanting traits from AzToken to sepestoken
+                //Issue: 38 Logic for any transplanting traits from AzToken to SepesToken
             }
             else {
                 //Throw exception as this code should never be reached
                 throw new ArgumentNullException("Both arguments can not be null");
             }
             var JwtKey = _appSetting.Key;
-            var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(JwtKey));  //Encoding.UTF8.GetBytes(configreader["Jwt:Key"])
+            var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(JwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256); 
 
+            //Issue: 38 check if we can add in proper issuer and audience now. or if that has to be done at a later date. Likely going to be part of integration.
             var token = new JwtSecurityToken(_appSetting.Issuer,  //Issuer
             _appSetting.Issuer,//Audience  
             null,  
-            //TODO add in the token user so that will be usable for logging.
+            //Issue: 38 suggested that a user is added to token for logging, also check how we can get user to be appended to actions performed in api
             notBefore: DateTime.Now,
-            expires: DateTime.Now.AddMinutes(120),  //TODO judge how long tokens should live
+            expires: DateTime.Now.AddMinutes(120),  
             signingCredentials: credentials);  
   
             return new JwtSecurityTokenHandler().WriteToken(token);
@@ -101,21 +95,21 @@ namespace Sepes.RestApi.Controller
         
         private bool AuthenticateToken(AzTokenClass AZtoken)
         {
-            //TODO Logic for authenticating the azure token.
-            return true; //Always returns true for testing purpose
+            //Issue: 38  Logic for authenticating the azure token.
+            return true;
         }
 
     }
 
     public class AzTokenClass{
-        //TODO add parameters to token
+        //Issue: 38  add parameters to token
         public string Username { get; set; }
         public string idToken { get; set; }
         public string Expiration { get; set; }
     }
 
        public class SepesTokenClass{
-        //Judge what parameters are needed for just refreshing. Username and such should be in token content body
+        //Issue: 38 Judge what parameters are needed for just refreshing. Username and such should be in token content body
         public string Username { get; set; }
         public string idToken { get; set; }
         public string Expiration { get; set; }
