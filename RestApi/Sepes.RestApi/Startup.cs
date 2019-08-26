@@ -41,7 +41,10 @@ namespace Sepes.RestApi
             //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
             
             // The following line enables Application Insights telemetry collection.
-            //TODO add support for local logging. If this is left empty then no logs are made. Unknown if still affects performance.
+            //If this is left empty then no logs are made. Unknown if still affects performance.
+
+            //Issue: 38 Check the all the logs thoroughly before you close out this issue. Test a the webapi functions and make sure none of them causes sensitive data to be logged. 
+
             //Secret key can be set up for with either secret key or in appsettings.json, secret key will overwrite json.
             services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]);
             services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
@@ -52,7 +55,7 @@ namespace Sepes.RestApi
             {  
             options.TokenValidationParameters = new TokenValidationParameters  
                 {  
-                ValidateIssuer = false,  //TODO set to true before MVP
+                ValidateIssuer = false,  //Issue: 39 set to true before MVP
                 ValidateAudience = false,  
                 ValidateLifetime = true,  
                 ValidateIssuerSigningKey = true,  
@@ -71,7 +74,7 @@ namespace Sepes.RestApi
                     builder.WithOrigins("http://example.com",
                                         "http://www.contoso.com");
                     */
-                    //TODO should be replaced with above commented code. Update URLs with what is required for your use case
+                    //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easely debug without changing code
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
 
                 });
