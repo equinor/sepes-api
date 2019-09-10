@@ -44,6 +44,36 @@ class App extends React.Component {
           <p id="tokenId">{this.state.tokenId}</p>
           <p>{this.state.jwtTest}</p>
         </div>
+        <div>
+          <h2>Create study</h2>
+          <div>
+            <input id="studyName" name="studyName" type="text" placeholder="Name of the study"></input>
+          </div>
+          <div>
+            <h3>Sponsor</h3>
+            <input list="spnsorlist"></input>
+            <datalist id="sponsorlist">
+              <option value="Extraterrestrial Overlord" />
+              <option value="Finance department" />
+              <option value="Equinor Businnes" />
+              <option value="Ole Martin" />
+            </datalist>
+          </div>
+          <div>
+            <h3>Suppliers</h3>
+            <input type="checkbox" name="supplier" value="TF awef aryg faryhg" />
+            <input type="checkbox" name="supplier" value="ethswethswth" />
+            <input type="checkbox" name="supplier" value="weywe5 ywteh wth wthw" />
+            <input type="checkbox" name="supplier" value="rwyj ukrtj rsthj rswyj" />
+          </div>
+          <div>
+            <h3>Dataset</h3>
+            <input type="checkbox" name="dataset" value="TF awef aryg faryhg" />
+            <input type="checkbox" name="dataset" value="ethswethswth" />
+            <input type="checkbox" name="dataset" value="weywe5 ywteh wth wthw" />
+            <input type="checkbox" name="dataset" value="rwyj ukrtj rsthj rswyj" />
+          </div>
+        </div>
       </div>
     );
   }
