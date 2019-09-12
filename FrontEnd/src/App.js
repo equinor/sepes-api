@@ -4,6 +4,11 @@ import './App.css';
 import * as Msal from 'msal';
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
+import sepes from './sepes.js';
+
+
+import SepesDataList from './components/SepesDataList'
+
 const JWT_NAME = "SepesJWT";
 
 class App extends React.Component {
@@ -12,11 +17,16 @@ class App extends React.Component {
     this.state = {
       tokenName: "",
       tokenId: "",
-      jwtTest: "Result from backend"
+      jwtTest: "Result from backend",
+      sepesData: {
+        suppliers: [],
+        sponsors: [],
+        dataset: []
+      }
     }
     this.msalConfig = {
       auth: {
-        clientId: "e90cbb61-896e-4ec7-aa37-23511700e1ed",
+        clientId: process.env.REACT_APP_AUTH_CLIENT_ID,
         authority: "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
       },
       cache: {
@@ -51,7 +61,7 @@ class App extends React.Component {
           </div>
           <div>
             <h3>Sponsor</h3>
-            <input list="spnsorlist"></input>
+            <input list="sponsorlist"></input>
             <datalist id="sponsorlist">
               <option value="Extraterrestrial Overlord" />
               <option value="Finance department" />
@@ -61,17 +71,12 @@ class App extends React.Component {
           </div>
           <div>
             <h3>Suppliers</h3>
-            <input type="checkbox" name="supplier" value="TF awef aryg faryhg" />
-            <input type="checkbox" name="supplier" value="ethswethswth" />
-            <input type="checkbox" name="supplier" value="weywe5 ywteh wth wthw" />
-            <input type="checkbox" name="supplier" value="rwyj ukrtj rsthj rswyj" />
+            <SepesDataList data={this.state.sepesData.suppliers} />
+            
           </div>
           <div>
             <h3>Dataset</h3>
-            <input type="checkbox" name="dataset" value="TF awef aryg faryhg" />
-            <input type="checkbox" name="dataset" value="ethswethswth" />
-            <input type="checkbox" name="dataset" value="weywe5 ywteh wth wthw" />
-            <input type="checkbox" name="dataset" value="rwyj ukrtj rsthj rswyj" />
+            <SepesDataList data={this.state.sepesData.dataset} />
           </div>
         </div>
       </div>
@@ -82,6 +87,14 @@ class App extends React.Component {
     if (this.msalApp.getAccount()) {
       this.showInfo();
     }
+
+    this.setState({
+      sepesData: {
+        suppliers: sepes.getSupplierList(),
+        sponsors: sepes.getSponsorList(),
+        dataset: sepes.getDatasetList()
+      }
+    });
   }
 
   showInfo = () => {
