@@ -8,12 +8,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
+using System.Data.SqlClient;
+using System.Net;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class StudyController : ControllerBase
     {
         //Create study
@@ -61,10 +63,31 @@ namespace Sepes.RestApi.Controller
         }
         //Get list of studies
         [HttpGet("list")]
-        public void Get([FromBody] string value)
+        public ActionResult<string> Get()
         {
             //Read from database and return list of current studies.
             //Might need to make custom class so we can get an array with multiple fields to each position
+            
+            string dataList = "";
+            /*string sql = "";
+            using (SqlConnection connection = new SqlConnection("builder.ConnectionString") ) {
+            connection.Open();
+
+            using (SqlCommand command = new SqlCommand(sql, connection))
+            {
+                using (SqlDataReader reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        //Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
+                    }
+                }
+            } 
+            }*/
+            dataList = "{\"suppliers\": ['Tom Andre', 'Bjørn Kristiansen', 'Ole Martin'], \"sponsors\": ['Ole Martin'], \"datasete\": ['Snøhvit', 'Troll', 'Sleipner']}";
+            
+            
+            return dataList;
         }
     }
 
