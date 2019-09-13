@@ -14,9 +14,14 @@ namespace Sepes.RestApi.Controller
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class MembersController : ControllerBase
+    public class UserController : ControllerBase
     {
-
+        // GET api/values
+        [HttpGet("list")]
+        public ActionResult<IEnumerable<string>> Get()
+        {
+            throw new NotImplementedException("User list not implemented yet.");
+        }
     }
 
 }
