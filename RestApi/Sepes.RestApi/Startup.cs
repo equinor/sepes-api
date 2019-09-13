@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -61,7 +62,8 @@ namespace Sepes.RestApi
                 ValidateIssuerSigningKey = true,  
                 ValidIssuer = Configuration["Jwt:Issuer"],  
                 ValidAudience = Configuration["Jwt:Issuer"],  
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))  
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                //SaveSigninToken = true  
                 };  
             }); 
 
