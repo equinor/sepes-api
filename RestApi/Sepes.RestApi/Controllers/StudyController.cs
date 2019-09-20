@@ -1,26 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
-using System.Data.SqlClient;
-using System.Net;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json.Linq;
+using Sepes.RestApi.Model;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("_myAllowSpecificOrigins")]
     //[Authorize]
     public class StudyController : ControllerBase
     {
+        public IConfiguration Configuration {get; set;}
+        private SepesDb sepesDb = new SepesDb();
+        
         //Create study
         [HttpPost("create")]
-        public void CreationVars([FromBody] string value)
+        public int CreationVars([FromBody] JObject value)
         {
             /*
             Unpack data from browser
@@ -29,10 +26,10 @@ namespace Sepes.RestApi.Controller
                 add study to database
             else
                 return=Invalidselection
-            end
-            
-             */
+            */
+            return sepesDb.createStudy(value);
         }
+        
         //Update study
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
@@ -61,34 +58,18 @@ namespace Sepes.RestApi.Controller
                 }
              */
         }
+
         //Get list of studies
         [HttpGet("list")]
         public ActionResult<string> Get()
         {
-            //Read from database and return list of current studies.
-            //Might need to make custom class so we can get an array with multiple fields to each position
-            
-            string dataList = "";
-            /*string sql = "";
-            using (SqlConnection connection = new SqlConnection("builder.ConnectionString") ) {
-            connection.Open();
-
-            using (SqlCommand command = new SqlCommand(sql, connection))
-            {
-                using (SqlDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        //Console.WriteLine("{0} {1}", reader.GetString(0), reader.GetString(1));
-                    }
-                }
-            } 
-            }*/
-            dataList = "{\"suppliers\": ['Tom Andre', 'Bjørn Kristiansen', 'Ole Martin'], \"sponsors\": ['Ole Martin'], \"datasete\": ['Snøhvit', 'Troll', 'Sleipner']}";
-            
-            
-            return dataList;
+            return sepesDb.getDatasetList();
         }
+    }
+
+
+    public class Study {
+        public string studyName { get; set; }
     }
 
 }
