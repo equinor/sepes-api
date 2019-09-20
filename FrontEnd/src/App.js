@@ -1,3 +1,4 @@
+//@ts-check/
 import React from 'react';
 import './App.css';
 
@@ -48,6 +49,7 @@ class App extends React.Component {
           <button className="btn" onClick={this.login}>Logg inn</button>
           <button className="btn" onClick={this.logout}>Logg ut</button>
           <button className="btn" onClick={this.testSepesAPI}>Test backend API</button>
+          <button className="btn" onClick={this.getSepesStudyData}>Get study data</button>
         </div>
         <div>
           <p id="tokenName">{this.state.tokenName}</p>
@@ -71,7 +73,6 @@ class App extends React.Component {
           </div>
           <div>
             <h3>Suppliers</h3>
-            <SepesDataList data={this.state.sepesData.suppliers} />
             
           </div>
           <div>
@@ -87,14 +88,14 @@ class App extends React.Component {
     if (this.msalApp.getAccount()) {
       this.showInfo();
     }
-
+    /*
     this.setState({
       sepesData: {
         suppliers: sepes.getSupplierList(),
         sponsors: sepes.getSponsorList(),
         dataset: sepes.getDatasetList()
       }
-    });
+    });*/
   }
 
   showInfo = () => {
@@ -121,21 +122,24 @@ class App extends React.Component {
       this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
       this.appInsights.trackEvent({name: 'Login Azure success'});
       return loginResponse;
-    }).then(loginResponse => {
+    })
+    .then(loginResponse => {
       // Login to backend using token from Azure to get a JWT
       return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
         method: "post",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({"Usename": loginResponse.account.name, "idToken": loginResponse.idToken.rawIdToken, "Expiration": "later"})
       });
-    }).then(respnse => respnse.text())
+    })
+    .then(respnse => respnse.text())
       .then(jwt => {
       // Backend login success
       // Store JWT from backend
       this.setState({tokenId: jwt});
       localStorage.setItem(JWT_NAME, jwt);
       this.appInsights.trackEvent({name: 'Login Sepes success'});
-    }).catch(error => {
+    })
+    .catch(error => {
       console.error(error);
       this.appInsights.trackTrace({message: 'Login Error'});
     });
@@ -170,6 +174,20 @@ class App extends React.Component {
       });
     })
   }
+
+  getSepesStudyData = () => {
+    // Get Sepes data
+    sepes.getData()
+      .then(data => {
+        console.log(data);
+        this.setState({
+        sepesData: {
+          dataset: data
+        }
+      });
+    });
+  }
+  
 }
 
 export default App;
