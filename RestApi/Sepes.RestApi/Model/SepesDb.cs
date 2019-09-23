@@ -27,61 +27,112 @@ public class SepesDb
         connection = new SqlConnection(builder.ConnectionString);
     }
 
-    public string getDatasetList()
+    public JObject getDatasetList()
     {
-        string data = "";
-        using (connection)
-        {
-            connection.Open();
-            StringBuilder sb = new StringBuilder();
-            sb.Append("SELECT * ");
-            sb.Append("FROM [dbo].[tblDataset] ");
-            sb.Append("FOR JSON AUTO ");
-            string sql = sb.ToString();
-
-            using (SqlCommand command = new SqlCommand(sql, connection))
+        JObject json = new JObject();
+        try {
+            using (connection)
             {
-                using (SqlDataReader reader = command.ExecuteReader())
+                connection.Open();
+                StringBuilder sb = new StringBuilder();
+                sb.Append("SELECT DatasetId, DatasetName ");
+                sb.Append("FROM [dbo].[tblDataset] ");
+                sb.Append("FOR JSON AUTO ");
+                string sqlDataset = sb.ToString();
+
+                string sqlUsers = "SELECT UserId, UserName, UserEmail, UserGroup FROM dbo.tblUser FOR JSON AUTO";
+
+                using (SqlCommand command = new SqlCommand(sqlDataset, connection))
                 {
-                    while (reader.Read())
+                    using (SqlDataReader reader = command.ExecuteReader())
                     {
-                        data = reader.GetString(0);
+                        while (reader.Read())
+                        {
+                            JToken tokenObject = JToken.Parse(reader.GetString(0));
+                            json.Add("dataset", tokenObject);
+                        }
+                    }
+                }
+
+                using (SqlCommand command = new SqlCommand(sqlUsers, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            JToken tokenObject = JToken.Parse(reader.GetString(0));
+                            json.Add("users", tokenObject);
+                        }
                     }
                 }
             }
-        }
-
-        return data;
-    }
-
-    public int createStudy(JObject study)
-    {
-        //JObject json = JObject.Parse(study);
-        int returnValue = 0;
-
-        try
-        {
-            connection.Open();
-            StringBuilder sb = new StringBuilder();
-            sb.Append("INSERT INTO [dbo].[tblStudy] (StudyName) ");
-            sb.Append("Values (@studyName) ");
-            string sql = sb.ToString();
-
-            SqlCommand command = new SqlCommand(sql, connection);
-            command.Parameters.AddWithValue("@studyName", study.GetValue("studyName").ToString());
-            returnValue = command.ExecuteNonQuery();
-        }
-        catch (System.Data.SqlClient.SqlException ex)
-        {
+        } catch(SqlException ex) {
             Console.WriteLine(ex.ToString());
         }
-        finally
-        {
+        
+        return json;
+    }
+
+    public int createStudy(Study study)
+    {
+        try {
+            connection.Open();
+
+            // insert study
+            string sqlStudy = "INSERT INTO [dbo].[tblStudy] (StudyName) VALUES (@studyName) SELECT CAST(scope_identity() AS int)";
+
+            SqlCommand command = new SqlCommand(sqlStudy, connection);
+            command.Parameters.AddWithValue("@studyName", study.studyName);
+            int studyId = (int)command.ExecuteScalar();
+
+            // insert user2study
+            StringBuilder user2StudyBuilder = new StringBuilder();
+            user2StudyBuilder.Append("INSERT INTO [dbo].[lnkUser2Study] (UserID, StudyID) VALUES ");
+            createInsertValues(studyId, study.userIds, user2StudyBuilder);
+            string sqlUser2Study = user2StudyBuilder.ToString();
+
+            command = new SqlCommand(sqlUser2Study, connection);
+            command.ExecuteNonQuery();
+
+            // insert study2dataset
+            StringBuilder study2datasetBuilder = new StringBuilder();
+            study2datasetBuilder.Append("INSERT INTO [dbo].[lnkStudy2Dataset] (DatasetID, StudyID) VALUES ");
+            createInsertValues(studyId, study.datasetIds, study2datasetBuilder);
+            string sqlStudy2dataset = study2datasetBuilder.ToString();
+
+            command = new SqlCommand(sqlStudy2dataset, connection);
+            command.ExecuteNonQuery();
+        }
+        catch (SqlException ex) {
+            Console.WriteLine(ex.ToString());
+            return 0;
+        }
+        finally {
             connection.Close();
         }
 
-        return returnValue;
+        return 1;
     }
+    
+    public int createStudy(JObject study)
+    {
+        return createStudy(study.ToObject<Study>());
+    }
+
+    private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
+    {
+        for (int i = 0; i < array.Length; i++)
+        {
+            strBuilder.Append("(" + array[i] + ", " + studyId + ")");
+            if (i != array.Length-1)
+            {
+                strBuilder.Append(", ");
+            }
+        }
+
+        Console.WriteLine(strBuilder.ToString());
+    }
+
 }
 
 }
