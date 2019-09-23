@@ -8,7 +8,9 @@ import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 import sepes from './sepes.js';
 
 
-import SepesDataList from './components/SepesDataList'
+import SepesDataList from './components/SepesDataList';
+import SepesUserList from './components/SepesUserList';
+
 
 const JWT_NAME = "SepesJWT";
 
@@ -40,6 +42,13 @@ class App extends React.Component {
       instrumentationKey: process.env.REACT_APP_INSTRUMENTATION_KEY
     } });
     this.appInsights.loadAppInsights();
+
+    this.newStudy = {
+      studyName: "",
+      supplierIds: [],
+      sponsorIds: [],
+      datasetIds: []
+    }
   }
 
   render() {
@@ -73,11 +82,14 @@ class App extends React.Component {
           </div>
           <div>
             <h3>Suppliers</h3>
-            
+            <SepesUserList data={this.state.sepesData.suppliers} />
           </div>
           <div>
             <h3>Dataset</h3>
             <SepesDataList data={this.state.sepesData.dataset} />
+          </div>
+          <div>
+          <button className="btn" onClick={this.createStudy}>Create study</button>
           </div>
         </div>
       </div>
@@ -182,9 +194,19 @@ class App extends React.Component {
         console.log(data);
         this.setState({
         sepesData: {
-          dataset: data
+          dataset: data.dataset,
+          suppliers: data.users,
+          sponsors: data.users,
         }
       });
+    });
+  }
+
+  createStudy = () => {
+    fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(this.newStudy)
     });
   }
   
