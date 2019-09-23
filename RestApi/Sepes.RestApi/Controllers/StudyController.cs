@@ -17,16 +17,8 @@ namespace Sepes.RestApi.Controller
         
         //Create study
         [HttpPost("create")]
-        public int CreationVars([FromBody] JObject value)
+        public int CreationVars([FromBody] Study value)
         {
-            /*
-            Unpack data from browser
-            Verify selections are member that exist
-            if this is true then
-                add study to database
-            else
-                return=Invalidselection
-            */
             return sepesDb.createStudy(value);
         }
         
@@ -61,15 +53,10 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet("list")]
-        public ActionResult<string> Get()
+        public JObject Get()
         {
             return sepesDb.getDatasetList();
         }
-    }
-
-
-    public class Study {
-        public string studyName { get; set; }
     }
 
 }
