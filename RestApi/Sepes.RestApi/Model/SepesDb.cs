@@ -125,7 +125,68 @@ namespace Sepes.RestApi.Model
         {
             return createStudy(study.ToObject<Study>());
         }
+        public int createPod(Pod pod)
+        {
+            try
+            {
+                connection.Open();
 
+                // insert study
+                string sqlStudy = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
+                //TODO add studyID
+                SqlCommand command = new SqlCommand(sqlStudy, connection);
+                command.Parameters.AddWithValue("@podName", pod.podName);
+                command.Parameters.AddWithValue("@studyID", pod.studyID);
+                //int podId = (int)command.ExecuteScalar(); Currently not used
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return 0;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return 1;
+        }
+
+        public int createPod(JObject pod)
+        {
+            return createPod(pod.ToObject<Pod>());
+        }
+        public int createUser(User user)
+        {
+            try
+            {
+                connection.Open();
+
+                // insert user
+                string sqlStudy = "INSERT INTO [dbo].[tblPod] (UserName, UserEmail, UserGroup) VALUES (@userName , @userEmail , @userGroup) SELECT CAST(scope_identity() AS int)";
+                SqlCommand command = new SqlCommand(sqlStudy, connection);
+                command.Parameters.AddWithValue("@userName", user.userName);
+                command.Parameters.AddWithValue("@userEmail", user.userEmail);
+                command.Parameters.AddWithValue("@userGroup", user.userGroup);
+                //int userID = (int)command.ExecuteScalar(); Currently not used
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return 0;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return 1;
+        }
+
+        public int createUser(JObject user)
+        {
+            return createUser(user.ToObject<User>());
+        }
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
             for (int i = 0; i < array.Length; i++)
