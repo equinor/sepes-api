@@ -1,29 +1,21 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Security.Claims;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Sepes.RestApi.Model;
+using Sepes.RestApi.Services;
 
 namespace Sepes.RestApi
 {
     public class Startup
     {
-        public IConfiguration Configuration {get; set;}
+        public IConfiguration Configuration { get; set; }
         public Startup(IHostingEnvironment env)
         {
             var confbuilder = new ConfigurationBuilder()
@@ -40,7 +32,7 @@ namespace Sepes.RestApi
         {
             //Adds the secret azure insight token. Make sure to set this if using logging via azure innsight
             //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
-            
+
             // The following line enables Application Insights telemetry collection.
             //If this is left empty then no logs are made. Unknown if still affects performance.
 
@@ -51,21 +43,21 @@ namespace Sepes.RestApi
             services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
             services.AddOptions();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
-            .AddJwtBearer(options =>  
-            {  
-            options.TokenValidationParameters = new TokenValidationParameters  
-                {  
-                ValidateIssuer = false,  //Issue: 39 set to true before MVP
-                ValidateAudience = false,  
-                ValidateLifetime = true,  
-                ValidateIssuerSigningKey = true,  
-                ValidIssuer = Configuration["Jwt:Issuer"],  
-                ValidAudience = Configuration["Jwt:Issuer"],  
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
-                //SaveSigninToken = true  
-                };  
-            }); 
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,  //Issue: 39 set to true before MVP
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                    //SaveSigninToken = true  
+                };
+            });
 
             services.AddCors(options =>
             {
@@ -77,11 +69,14 @@ namespace Sepes.RestApi
                                         "http://www.contoso.com");
                     */
                     //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easely debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod(); 
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
 
                 });
-        });
-    
+            });
+
+            //services.AddSingleton<ISepesDb, SepesDb>();
+            services.AddTransient<ISepesDb, SepesDb>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
 

@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Sepes.RestApi.Model;
+using Sepes.RestApi.Services;
 
 namespace Sepes.RestApi.Controller
 {
@@ -12,8 +12,11 @@ namespace Sepes.RestApi.Controller
     //[Authorize]
     public class StudyController : ControllerBase
     {
-        public IConfiguration Configuration {get; set;}
-        private SepesDb sepesDb = new SepesDb();
+        private ISepesDb sepesDb;
+
+        public StudyController(ISepesDb dbService) {
+            sepesDb = dbService;
+        }
         
         //Create study
         [HttpPost("create")]
