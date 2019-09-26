@@ -75,7 +75,7 @@ namespace Sepes.RestApi
             });
 
             //services.AddSingleton<ISepesDb, SepesDb>();
-            services.AddTransient<ISepesDb, Services.SepesDb>();
+            services.AddTransient<ISepesDb, SepesDb>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
