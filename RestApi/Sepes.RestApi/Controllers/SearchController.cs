@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Newtonsoft.Json.Linq;
-using Sepes.RestApi.Model;
+using Sepes.RestApi.Services;
 
 
 namespace Sepes.RestApi.Controller
