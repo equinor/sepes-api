@@ -77,6 +77,42 @@ namespace Sepes.RestApi.Model
             return json;
         }
 
+        public JObject getPodList(Pod input)
+        {
+            JObject json = new JObject();
+            try
+            {
+                using (connection)
+                {
+                    connection.Open();
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append("SELECT PodID, PodName, StudyID ");
+                    sb.Append("FROM [dbo].[tblPod] ");
+                    sb.Append("WHERE @studyID ");
+                    sb.Append("LIKE StudyID ");
+                    sb.Append("FOR JSON AUTO ");
+                    using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
+                    {
+                        command.Parameters.AddWithValue("@studyID", input.studyID);
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                JToken tokenObject = JToken.Parse(reader.GetString(0));
+                                json.Add("pod", tokenObject);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            connection.Close();
+            return json;
+        }
+
         public int createStudy(Study study)
         {
             try
