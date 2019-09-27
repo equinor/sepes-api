@@ -5,14 +5,14 @@ import './App.css';
 import * as Msal from 'msal';
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
-import sepes from './sepes.js';
+import Sepes from './sepes.js';
 
 
 import SepesDataList from './components/SepesDataList';
 import SepesUserList from './components/SepesUserList';
 
-
 const JWT_NAME = "SepesJWT";
+const sepes = new Sepes();
 
 class App extends React.Component {
   constructor(props) {
@@ -25,8 +25,10 @@ class App extends React.Component {
         suppliers: [],
         sponsors: [],
         dataset: []
-      }
+      },
+      studyName: "",
     }
+
     this.msalConfig = {
       auth: {
         clientId: process.env.REACT_APP_AUTH_CLIENT_ID,
@@ -43,12 +45,7 @@ class App extends React.Component {
     } });
     this.appInsights.loadAppInsights();
 
-    this.newStudy = {
-      studyName: "",
-      supplierIds: [],
-      sponsorIds: [],
-      datasetIds: []
-    }
+    
   }
 
   render() {
@@ -68,25 +65,20 @@ class App extends React.Component {
         <div>
           <h2>Create study</h2>
           <div>
-            <input id="studyName" name="studyName" type="text" placeholder="Name of the study"></input>
+            <input id="studyName" type="text" placeholder="Name of the study" 
+            onChange={(e) => this.setState({studyName: e.target.value})} value={this.state.studyName}></input>
           </div>
           <div>
             <h3>Sponsor</h3>
-            <input list="sponsorlist"></input>
-            <datalist id="sponsorlist">
-              <option value="Extraterrestrial Overlord" />
-              <option value="Finance department" />
-              <option value="Equinor Businnes" />
-              <option value="Ole Martin" />
-            </datalist>
+            <SepesUserList data={this.state.sepesData.sponsors} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
           </div>
           <div>
             <h3>Suppliers</h3>
-            <SepesUserList data={this.state.sepesData.suppliers} />
+            <SepesUserList data={this.state.sepesData.suppliers} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
           </div>
           <div>
             <h3>Dataset</h3>
-            <SepesDataList data={this.state.sepesData.dataset} />
+            <SepesDataList data={this.state.sepesData.dataset} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
           </div>
           <div>
           <button className="btn" onClick={this.createStudy}>Create study</button>
@@ -188,10 +180,8 @@ class App extends React.Component {
   }
 
   getSepesStudyData = () => {
-    // Get Sepes data
     sepes.getData()
       .then(data => {
-        console.log(data);
         this.setState({
         sepesData: {
           dataset: data.dataset,
@@ -203,11 +193,38 @@ class App extends React.Component {
   }
 
   createStudy = () => {
+    sepes.setStudyName(this.state.studyName);
+    sepes.createStudy();
+    /*
+    this.newStudy.studyName = this.state.studyName;
     fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
       method: "post",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": "Bearer " + localStorage.getItem(JWT_NAME),
+      },
       body: JSON.stringify(this.newStudy)
-    });
+    });*/
+  }
+
+  addItemToStudy = (id, listName) => {
+    switch(listName) {
+      case "datasetIds": this.newStudy.datasetIds.push(id); break;
+      case "userIds": this.newStudy.userIds.push(id); break;
+      default: break;
+    }
+  }
+
+  removeItemFromStudy = (id, listName) => {
+    switch(listName) {
+      case "datasetIds": remove(this.newStudy.datasetIds); break;
+      case "userIds": remove(this.newStudy.userIds); break;
+      default: break;
+    }
+    
+    function remove(array) {
+      array.splice(array.indexOf(id), 1);
+    }
   }
   
 }
