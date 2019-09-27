@@ -58,6 +58,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("refreshtoken")]
         public IActionResult RefreshToken([FromBody] SepesTokenClass OldSepesTokenString) 
         {
+            //Issue 38 this depending on if we have any traits we need to pass on or not this section of the controller may not need any logic at all.
             IActionResult response = Unauthorized(); //Default response if bellow fails
             var SepesToken = GenerateJSONWebToken(null ,new JwtSecurityTokenHandler().ReadJwtToken(OldSepesTokenString.idToken));
             response = Ok(SepesToken);

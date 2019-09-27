@@ -1,10 +1,18 @@
+//@ts-check/
 import React from 'react';
 import './App.css';
 
 import * as Msal from 'msal';
 import { ApplicationInsights } from '@microsoft/applicationinsights-web';
 
+import Sepes from './sepes.js';
+
+
+import SepesDataList from './components/SepesDataList';
+import SepesUserList from './components/SepesUserList';
+
 const JWT_NAME = "SepesJWT";
+const sepes = new Sepes();
 
 class App extends React.Component {
   constructor(props) {
@@ -12,11 +20,18 @@ class App extends React.Component {
     this.state = {
       tokenName: "",
       tokenId: "",
-      jwtTest: "Result from backend"
+      jwtTest: "Result from backend",
+      sepesData: {
+        suppliers: [],
+        sponsors: [],
+        dataset: []
+      },
+      studyName: "",
     }
+
     this.msalConfig = {
       auth: {
-        clientId: "e90cbb61-896e-4ec7-aa37-23511700e1ed",
+        clientId: process.env.REACT_APP_AUTH_CLIENT_ID,
         authority: "https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
       },
       cache: {
@@ -29,6 +44,8 @@ class App extends React.Component {
       instrumentationKey: process.env.REACT_APP_INSTRUMENTATION_KEY
     } });
     this.appInsights.loadAppInsights();
+
+    
   }
 
   render() {
@@ -38,11 +55,34 @@ class App extends React.Component {
           <button className="btn" onClick={this.login}>Logg inn</button>
           <button className="btn" onClick={this.logout}>Logg ut</button>
           <button className="btn" onClick={this.testSepesAPI}>Test backend API</button>
+          <button className="btn" onClick={this.getSepesStudyData}>Get study data</button>
         </div>
         <div>
           <p id="tokenName">{this.state.tokenName}</p>
           <p id="tokenId">{this.state.tokenId}</p>
           <p>{this.state.jwtTest}</p>
+        </div>
+        <div>
+          <h2>Create study</h2>
+          <div>
+            <input id="studyName" type="text" placeholder="Name of the study" 
+            onChange={(e) => this.setState({studyName: e.target.value})} value={this.state.studyName}></input>
+          </div>
+          <div>
+            <h3>Sponsor</h3>
+            <SepesUserList data={this.state.sepesData.sponsors} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
+          </div>
+          <div>
+            <h3>Suppliers</h3>
+            <SepesUserList data={this.state.sepesData.suppliers} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
+          </div>
+          <div>
+            <h3>Dataset</h3>
+            <SepesDataList data={this.state.sepesData.dataset} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy} />
+          </div>
+          <div>
+          <button className="btn" onClick={this.createStudy}>Create study</button>
+          </div>
         </div>
       </div>
     );
@@ -52,6 +92,14 @@ class App extends React.Component {
     if (this.msalApp.getAccount()) {
       this.showInfo();
     }
+    /*
+    this.setState({
+      sepesData: {
+        suppliers: sepes.getSupplierList(),
+        sponsors: sepes.getSponsorList(),
+        dataset: sepes.getDatasetList()
+      }
+    });*/
   }
 
   showInfo = () => {
@@ -78,21 +126,24 @@ class App extends React.Component {
       this.appInsights.setAuthenticatedUserContext(loginResponse.account.name);
       this.appInsights.trackEvent({name: 'Login Azure success'});
       return loginResponse;
-    }).then(loginResponse => {
+    })
+    .then(loginResponse => {
       // Login to backend using token from Azure to get a JWT
       return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
         method: "post",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({"Usename": loginResponse.account.name, "idToken": loginResponse.idToken.rawIdToken, "Expiration": "later"})
       });
-    }).then(respnse => respnse.text())
+    })
+    .then(respnse => respnse.text())
       .then(jwt => {
       // Backend login success
       // Store JWT from backend
       this.setState({tokenId: jwt});
       localStorage.setItem(JWT_NAME, jwt);
       this.appInsights.trackEvent({name: 'Login Sepes success'});
-    }).catch(error => {
+    })
+    .catch(error => {
       console.error(error);
       this.appInsights.trackTrace({message: 'Login Error'});
     });
@@ -127,6 +178,55 @@ class App extends React.Component {
       });
     })
   }
+
+  getSepesStudyData = () => {
+    sepes.getData()
+      .then(data => {
+        this.setState({
+        sepesData: {
+          dataset: data.dataset,
+          suppliers: data.users,
+          sponsors: data.users,
+        }
+      });
+    });
+  }
+
+  createStudy = () => {
+    sepes.setStudyName(this.state.studyName);
+    sepes.createStudy();
+    /*
+    this.newStudy.studyName = this.state.studyName;
+    fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+      method: "post",
+      headers: { 
+        "Content-Type": "application/json", 
+        "Authorization": "Bearer " + localStorage.getItem(JWT_NAME),
+      },
+      body: JSON.stringify(this.newStudy)
+    });*/
+  }
+
+  addItemToStudy = (id, listName) => {
+    switch(listName) {
+      case "datasetIds": this.newStudy.datasetIds.push(id); break;
+      case "userIds": this.newStudy.userIds.push(id); break;
+      default: break;
+    }
+  }
+
+  removeItemFromStudy = (id, listName) => {
+    switch(listName) {
+      case "datasetIds": remove(this.newStudy.datasetIds); break;
+      case "userIds": remove(this.newStudy.userIds); break;
+      default: break;
+    }
+    
+    function remove(array) {
+      array.splice(array.indexOf(id), 1);
+    }
+  }
+  
 }
 
 export default App;

@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class ValuesController : ControllerBase
     {
         //Currently no actual functionality. All bellow responses are from template and used for testing.
