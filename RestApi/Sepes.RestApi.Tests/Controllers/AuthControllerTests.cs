@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using NUnit.Framework;
+using Xunit;
 using Sepes.RestApi;
 using Sepes.RestApi.Controller;
 using System.Linq;
@@ -23,7 +23,7 @@ namespace Sepes.RestApi.Tests.Controller
     public class AuthControllerTests
     {
         private static string key = "erfagidfi9yhjeropgbhsrietjjksdjgtjklenfgophirgdhtjfxpiogjh";
-        [Test]
+        [Fact]
         public void GetToken()
         {
             var JwtPackage = new AzTokenClass();
@@ -37,17 +37,10 @@ namespace Sepes.RestApi.Tests.Controller
             Console.WriteLine("Result from controller is: {0}", tokencontent);
             Assert.NotNull(tokencontent);
 
-            if (JwtValid(tokencontent))
-            {
-                Assert.Pass();
-            }
-            else
-            {
-                Assert.Fail();
-            }
+            Assert.True(JwtValid(tokencontent));
 
         }
-        [Test]
+        [Fact]
         public void RefreshToken()
         {
             /*
