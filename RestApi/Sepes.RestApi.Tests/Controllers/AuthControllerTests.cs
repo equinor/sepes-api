@@ -19,7 +19,6 @@ using Microsoft.Extensions.Options;
 
 namespace Sepes.RestApi.Tests.Controller
 {
-
     public class AuthControllerTests
     {
         private static string key = "erfagidfi9yhjeropgbhsrietjjksdjgtjklenfgophirgdhtjfxpiogjh";
@@ -36,27 +35,22 @@ namespace Sepes.RestApi.Tests.Controller
             var tokencontent = token.Value.ToString();
             Console.WriteLine("Result from controller is: {0}", tokencontent);
             Assert.NotNull(tokencontent);
-
             Assert.True(JwtValid(tokencontent));
-
         }
         [Fact]
         public void RefreshToken()
         {
-            /*
-            var controller = new AuthController(); 
+            var JwtPackage = new AzTokenClass();
+            AppSettings settings = new AppSettings();
+            settings.Key = key;
+            settings.Issuer = "TestIssuer";
+            var option = Options.Create(settings);
+            var controller = new AuthController(option); 
             var TestSepesToken = new SepesTokenClass();
-            var result = controller.Token(TestSepesToken);
-            
-            new JwtSecurityTokenHandler().ReadJwtToken(OldSepesTokenString.idToken));
-            if JwtValid(result){
-                Assert.Pass();
-            }
-            else{
-                Assert.Fail();
-            }
-             */
-
+            var token = controller.Token(JwtPackage) as OkObjectResult;
+            TestSepesToken.idToken = token.Value.ToString(); //Tokencontent must be renamed in previous test and moved to class.
+            var result = controller.RefreshToken(TestSepesToken) as OkObjectResult;
+            Assert.True(JwtValid(result.Value.ToString()));
         }
 
         public bool JwtValid(string Token)//Check if token has valid formating.
