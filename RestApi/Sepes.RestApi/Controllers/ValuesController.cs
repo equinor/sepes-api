@@ -4,10 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 
 namespace Sepes.RestApi.Controller
 {
@@ -29,8 +26,6 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            TelemetryClient telclient = new TelemetryClient();
-            telclient.TrackTrace("This is a test of custom logs.", SeverityLevel.Information);
             return "value";
         }
 

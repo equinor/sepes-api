@@ -1,8 +1,9 @@
 using System;
 using System.Data.SqlClient;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
 
 namespace Sepes.RestApi.Services
@@ -185,7 +186,6 @@ namespace Sepes.RestApi.Services
             {
                 connection.Close();
             }
-
             return 1;
         }
 
