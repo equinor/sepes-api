@@ -13,6 +13,7 @@ using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Services;
+using Newtonsoft.Json.Linq;
 
 
 namespace Sepes.RestApi.Controller
