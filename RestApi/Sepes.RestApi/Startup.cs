@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
@@ -28,7 +29,6 @@ namespace Sepes.RestApi
             {
                 confbuilder.AddUserSecrets<Startup>();
             }
-
             Configuration = confbuilder.Build();
         }
 
@@ -80,7 +80,7 @@ namespace Sepes.RestApi
 
             //services.AddSingleton<ISepesDb, SepesDb>();
             services.AddTransient<ISepesDb, SepesDb>();
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
