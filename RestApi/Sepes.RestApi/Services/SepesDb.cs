@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Sepes.RestApi.Services
 {
