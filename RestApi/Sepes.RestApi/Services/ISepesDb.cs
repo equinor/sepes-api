@@ -9,8 +9,8 @@ namespace Sepes.RestApi.Services
     {
         string getDatasetList();
 
-        /*int createStudy(Study study);
-        JObject getPodList(Pod input);
+        int createStudy(Study study);
+        /*JObject getPodList(Pod input);
         int createPod(Pod pod);
         int createUser(User user);
         string searchDatasetList(JObject search);
