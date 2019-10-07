@@ -19,11 +19,11 @@ namespace Sepes.RestApi.Controller
         }
         
         //Create study
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public int CreationVars([FromBody] Study value)
         {
             return sepesDb.createStudy(value);
-        }
+        }*/
         
         //Update study
         [HttpPost("update")]
