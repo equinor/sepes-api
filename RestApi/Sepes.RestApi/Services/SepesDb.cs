@@ -31,9 +31,11 @@ namespace Sepes.RestApi.Services
             connection = new SqlConnection(builder.ConnectionString);
         }
 
-        public JObject getDatasetList()
+        public string getDatasetList()
         {
-            JObject json = new JObject();
+            //JObject json = new JObject();
+            string datasetstring = "";
+            string userstring = "";
             try
             {
                 using (connection)
@@ -53,8 +55,11 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
-                                json.Add("dataset", tokenObject); //Adds a top level header to the json
+                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
+                                //json.Add("dataset", tokenObject); //Adds a top level header to the json
+                                datasetstring = reader.GetString(0);
+                                datasetstring.Insert(1, "{\"dataset\":");
+                                datasetstring.Insert(datasetstring.Length - 2,"]");
                             }
                         }
                     }
@@ -65,8 +70,11 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
-                                json.Add("users", tokenObject);
+                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
+                                //json.Add("users", tokenObject);
+                                userstring = reader.GetString(0);
+                                userstring.Insert(1, "{\"dataset\":");
+                                userstring.Insert(userstring.Length - 2,"]");
                             }
                         }
                     }
@@ -76,8 +84,8 @@ namespace Sepes.RestApi.Services
             {
                 Console.WriteLine(ex.ToString());
             }
-
-            return json;
+            string response = datasetstring + "," + userstring;
+            return response;
         }
 
         /*public JObject getPodList(Pod input)

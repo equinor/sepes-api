@@ -56,7 +56,7 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet("list")]
-        public JObject Get()
+        public string Get()
         {
             return sepesDb.getDatasetList();
         }
