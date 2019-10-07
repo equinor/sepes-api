@@ -7,7 +7,7 @@ namespace Sepes.RestApi.Services
 {
     public interface ISepesDb
     {
-        JObject getDatasetList();
+        string getDatasetList();
 
         /*int createStudy(Study study);
         JObject getPodList(Pod input);
