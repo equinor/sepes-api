@@ -122,7 +122,7 @@ namespace Sepes.RestApi.Services
             }
             connection.Close();
             return json;
-        }
+        }*/
 
         public int createStudy(Study study)
         {
@@ -168,7 +168,7 @@ namespace Sepes.RestApi.Services
             return 1;
         }
 
-        public int createStudy(JObject study)
+        /*public int createStudy(JObject study)
         {
             return createStudy(study.ToObject<Study>());
         }
@@ -223,7 +223,7 @@ namespace Sepes.RestApi.Services
             }
 
             return 1;
-        }
+        }*/
 
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
@@ -239,7 +239,7 @@ namespace Sepes.RestApi.Services
             Console.WriteLine(strBuilder.ToString());
         }
 
-        //Search strings
+        /*//Search strings
         public string searchDatasetList(JObject search)
         {
             string data = "";
