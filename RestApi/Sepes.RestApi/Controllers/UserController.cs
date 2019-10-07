@@ -26,11 +26,11 @@ namespace Sepes.RestApi.Controller
         public IConfiguration Configuration { get; set; }
         private SepesDb sepesDb = new SepesDb();
 
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public int CreationVars([FromBody] User value)
         {
             return sepesDb.createUser(value);
-        }
+        }*/
 
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)

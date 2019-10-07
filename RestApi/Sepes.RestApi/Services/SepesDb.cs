@@ -5,7 +5,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
-using Newtonsoft.Json.Linq;
+//using Newtonsoft.Json.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -53,8 +53,8 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
-                                json.Add("dataset", tokenObject);
+                                JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
+                                json.Add("dataset", tokenObject); //Adds a top level header to the json
                             }
                         }
                     }
@@ -65,7 +65,7 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
+                                JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
                                 json.Add("users", tokenObject);
                             }
                         }
@@ -80,7 +80,7 @@ namespace Sepes.RestApi.Services
             return json;
         }
 
-        public JObject getPodList(Pod input)
+        /*public JObject getPodList(Pod input)
         {
             JObject json = new JObject();
             try
@@ -320,7 +320,7 @@ namespace Sepes.RestApi.Services
             }
 
             return data;
-        }
+        }*/
 
     }
 

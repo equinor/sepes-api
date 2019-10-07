@@ -25,7 +25,7 @@ namespace Sepes.RestApi.Controller
     {
         private SepesDb sepesDb = new SepesDb();
         // GET api/search/user
-        [HttpPost("user")]
+        /*[HttpPost("user")]
         public IActionResult SearchUser([FromBody] JObject searchstring) //TODO change return type
         {
             Response.ContentType = "application/json";
@@ -45,7 +45,7 @@ namespace Sepes.RestApi.Controller
             Response.ContentType = "application/json";
             var result = sepesDb.searchStudyList(searchstring);
             return Ok(result);
-        }
+        }*/
     }
 
 }
