@@ -1,26 +1,31 @@
 import React, {Component} from 'react'
 
 class SepesUserList extends Component {
-    addRemove = (e, id) => {
-        if (e.target.checked) {
-            this.props.addItem(id, "userIds");
-        }
-        else {
-            this.props.removeItem(id, "userIds");
-        }
+    state = {
+        email: "",
+    }
+
+    add = () => {
+        this.props.addItem(this.state.email);
+        this.setState({email: ""});
     }
 
     render() {
         return (
-        <div> {
-            this.props.data.map((item) => (
-                <div key={item.UserId}>
-                    <label>
-                        <input type="checkbox" name="users" value={ item.UserId } onChange={(e) => this.addRemove(e, item.UserId)} />
-                        { `${item.UserName} (${item.UserEmail})`}
-                    </label>
+        <div className="sidebar-block"> 
+            <div className="study-head">
+                { this.props.header }
+            </div>
+            <div className="email-list">
+            { this.props.data.map((item) => (
+                <div key={item}>
+                    { item }
                 </div>
-            )) }
+            )) }</div>
+            <div className="add-email">
+                <input type="text" placeholder="email address" value={this.state.email} onChange={(e) => this.setState({email: e.target.value})} />
+                <button onClick={this.add}>Add</button>
+            </div>
         </div>);
     }
 }
