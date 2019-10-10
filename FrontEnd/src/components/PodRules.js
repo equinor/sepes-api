@@ -10,10 +10,13 @@ export default class PodRules extends Component  {
     }
 
     add = () => {
-        this.props.addItem(this.state.port, this.state.ip);
-        this.setState({
-            port: "",
-        });
+        let port = this.state.port, ip = this.state.ip;
+        if (port !== "" && ip !== "") {
+            this.props.addItem(port, ip);
+            this.setState({
+                port: "",
+            });
+        }
     }
 
 
