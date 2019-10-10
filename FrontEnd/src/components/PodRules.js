@@ -36,7 +36,7 @@ export default class PodRules extends Component  {
                             <tr key={item.port+""+item.ip}>
                                 <td>{item.port}</td>
                                 <td>{item.ip}</td>
-                                <td>x</td>
+                                <td onClick={() => this.props.removeItem({port: item.port, ip: item.ip})}>x</td>
                             </tr>
                         )) }
                         </tbody>

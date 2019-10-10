@@ -3,7 +3,7 @@ import React, {Component} from 'react'
 import Sepes from '../sepes.js';
 import PodRules from './PodRules';
 import PodDataset from './PodDataset.js';
-const sepes = new Sepes();
+//const sepes = new Sepes();
 
 class PodPage extends Component {
     constructor(props) {
@@ -21,7 +21,7 @@ class PodPage extends Component {
             <header>
                 <span><b>
                     <span onClick={() => this.props.changePage("studies")}>Sepes</span> > 
-                    <span onClick={() => this.props.changePage("study")}>Study</span> > Pods > </b></span>
+                    <span onClick={() => this.props.changePage("study")}> Study</span> > Pod > </b></span>
                 <input type="text" placeholder="Pod name" id="new-study-input"/>
                 <button>Save</button>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
@@ -34,13 +34,13 @@ class PodPage extends Component {
                         </label>
                     </div>
                 </div>
-                <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={sepes.removeItemFromStudy}/>
-                <PodRules header="Outgoing rules" data={this.state.outgoing} addItem={this.addOutgoingRule} removeItem={sepes.removeItemFromStudy}/>
+                <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule}/>
+                <PodRules header="Outgoing rules" data={this.state.outgoing} addItem={this.addOutgoingRule} removeItem={this.removeOutgoingRule}/>
             </div>
             <div id="pod-dataset-list">
-                <PodDataset header="Goliat" />
-                <PodDataset header="Gullfaks" />
-                <PodDataset header="Sleipner" />
+                { this.props.state.selection.dataset.map((item) => (
+                    <PodDataset header={item} />
+                ))}
             </div>
         </div>);
     }
@@ -48,6 +48,28 @@ class PodPage extends Component {
     addIncomingRule = (port, ip) => {
         this.setState({
             incoming: [...this.state.incoming, {port, ip}]
+        });
+    }
+
+    removeIncomingRule = (rule) => {
+        let newArray = [...this.state.incoming];
+        let index = newArray.findIndex((item) => {
+            return item.port === rule.port && item.ip === rule.ip;
+        });
+        newArray.splice(index, 1);
+        this.setState({
+            incoming: newArray
+        });
+    }
+
+    removeOutgoingRule = (rule) => {
+        let newArray = [...this.state.outgoing];
+        let index = newArray.findIndex((item) => {
+            return item.port === rule.port && item.ip === rule.ip;
+        });
+        newArray.splice(index, 1);
+        this.setState({
+            outgoing: newArray
         });
     }
 
