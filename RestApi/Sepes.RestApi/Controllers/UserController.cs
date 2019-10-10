@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.ApplicationInsights;
@@ -26,11 +26,11 @@ namespace Sepes.RestApi.Controller
         public IConfiguration Configuration { get; set; }
         private SepesDb sepesDb = new SepesDb();
 
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public int CreationVars([FromBody] User value)
         {
             return sepesDb.createUser(value);
-        }
+        }*/
 
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)

@@ -1,17 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Services;
+using Newtonsoft.Json.Linq;
 
 
 namespace Sepes.RestApi.Controller
@@ -23,7 +25,7 @@ namespace Sepes.RestApi.Controller
     {
         private SepesDb sepesDb = new SepesDb();
         // GET api/search/user
-        [HttpPost("user")]
+        /*[HttpPost("user")]
         public IActionResult SearchUser([FromBody] JObject searchstring) //TODO change return type
         {
             Response.ContentType = "application/json";
@@ -43,7 +45,7 @@ namespace Sepes.RestApi.Controller
             Response.ContentType = "application/json";
             var result = sepesDb.searchStudyList(searchstring);
             return Ok(result);
-        }
+        }*/
     }
 
 }

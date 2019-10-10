@@ -7,6 +7,7 @@ using Sepes.RestApi.Controller;
 using System.Linq;
 using System.Text;
 using System;
+using System.Text.Json;
 using System.Net.Http;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -33,9 +34,7 @@ namespace Sepes.RestApi.Tests.Controller
             AuthController controller = new AuthController(option); //Later move to test fixture, as same object can be reused.
             var token = controller.Token(JwtPackage) as OkObjectResult;
             var tokencontent = token.Value.ToString();
-            Console.WriteLine("Result from controller is: {0}", tokencontent);
-            Assert.NotNull(tokencontent);
-            Assert.True(JwtValid(tokencontent));
+            var attempt = new JwtSecurityTokenHandler().ReadToken(tokencontent);
         }
         [Fact]
         public void RefreshToken()
@@ -50,34 +49,7 @@ namespace Sepes.RestApi.Tests.Controller
             var token = controller.Token(JwtPackage) as OkObjectResult;
             TestSepesToken.idToken = token.Value.ToString(); //Tokencontent must be renamed in previous test and moved to class.
             var result = controller.RefreshToken(TestSepesToken) as OkObjectResult;
-            Assert.True(JwtValid(result.Value.ToString()));
-        }
-
-        public bool JwtValid(string Token)//Check if token has valid formating.
-        {
-            bool result = true;
-            try 
-            {
-                var attempt = new JwtSecurityTokenHandler().ReadToken(Token);
-            }
-            catch(Exception)
-            {
-                result = false;
-            }
-            return result;
-        }
-
-        private static TokenValidationParameters GetValidationParameters()
-        {
-            return new TokenValidationParameters()
-            {
-                ValidateLifetime = true,
-                ValidateAudience = false,
-                ValidateIssuer = true,
-                ValidIssuer = "TestIssuer",
-                ValidAudience = "Sample",
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)) // The same key as the one that generate the token. TODO write dis!
-            };
+            var attempt = new JwtSecurityTokenHandler().ReadToken(result.Value.ToString());
         }
     }
 }
