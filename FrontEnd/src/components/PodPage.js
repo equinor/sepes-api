@@ -1,6 +1,6 @@
 import React, {Component} from 'react'
 
-import Sepes from '../sepes.js';
+//import Sepes from '../sepes.js';
 import PodRules from './PodRules';
 import PodDataset from './PodDataset.js';
 //const sepes = new Sepes();
@@ -46,17 +46,16 @@ class PodPage extends Component {
     }
 
     addIncomingRule = (port, ip) => {
-        this.setState({
-            incoming: [...this.state.incoming, {port, ip}]
-        });
+        if (this.findIndex(this.state.incoming, {port, ip}) === -1) {
+            this.setState({
+                incoming: [...this.state.incoming, {port, ip}]
+            });
+        }
     }
 
     removeIncomingRule = (rule) => {
         let newArray = [...this.state.incoming];
-        let index = newArray.findIndex((item) => {
-            return item.port === rule.port && item.ip === rule.ip;
-        });
-        newArray.splice(index, 1);
+        newArray.splice(this.findIndex(newArray, rule), 1);
         this.setState({
             incoming: newArray
         });
@@ -64,19 +63,22 @@ class PodPage extends Component {
 
     removeOutgoingRule = (rule) => {
         let newArray = [...this.state.outgoing];
-        let index = newArray.findIndex((item) => {
-            return item.port === rule.port && item.ip === rule.ip;
-        });
-        newArray.splice(index, 1);
+        newArray.splice(this.findIndex(newArray, rule), 1);
         this.setState({
             outgoing: newArray
         });
     }
 
     addOutgoingRule = (port, ip) => {
-        this.setState({
-            outgoing: [...this.state.outgoing, {port, ip}]
-        });
+        if (this.findIndex(this.state.incoming, {port, ip}) === -1) {
+            this.setState({
+                outgoing: [...this.state.outgoing, {port, ip}]
+            });
+        }
+    }
+
+    findIndex = (array, rule) => {
+        return array.findIndex((item) => (item.port === rule.port && item.ip === rule.ip));
     }
 }
 
