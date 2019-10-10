@@ -36,7 +36,7 @@ class CreateStudyPage extends Component {
     }
 
     newStudy = () => {
-        this.props.changePage("study");
+        this.props.changePage("study", {});
     }
 }
 

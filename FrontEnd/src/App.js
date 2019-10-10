@@ -29,7 +29,11 @@ class App extends React.Component {
         dataset: []
       },
       studyName: "",
-      page: "studies"
+      page: "studies",
+      selection: {
+        dataset: [],
+        pods: [],
+      },
     }
 
     this.msalConfig = {
@@ -52,7 +56,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        {this.state.page === "studies" ? <StudiesPage state={this.state} changePage={this.changePage} /> : null}
+        {this.state.page === "studies" ? <StudiesPage state={this.state} changePage={this.changePage} selection={this.state.selection} /> : null}
         {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} /> : null}
         {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} /> : null}
       </div>
@@ -170,9 +174,9 @@ class App extends React.Component {
     sepes.createStudy();
   }
 
-  changePage = (page) => {
+  changePage = (page, selection) => {
     this.setState({
-      page
+      page, selection
     });
   }
   
