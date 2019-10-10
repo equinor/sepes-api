@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.ApplicationInsights;
@@ -25,11 +26,11 @@ namespace Sepes.RestApi.Controller
         public IConfiguration Configuration { get; set; }
         private SepesDb sepesDb = new SepesDb();
 
-        [HttpPost("create")]
+        /*[HttpPost("create")]
         public int CreationVars([FromBody] Pod value)
         {
             return sepesDb.createPod(value); //Needs normal variables plus the studyID it belongs to.
-        }
+        }*/
 
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
@@ -37,11 +38,11 @@ namespace Sepes.RestApi.Controller
             throw new NotImplementedException();
         }
 
-        [HttpGet("list")]
+        /*[HttpGet("list")]
         public JObject Get([FromBody] Pod input)
         {
             return sepesDb.getPodList(input); //needs the study id to find pods from
-        }
+        }*/
         //TODO view function
     }
 

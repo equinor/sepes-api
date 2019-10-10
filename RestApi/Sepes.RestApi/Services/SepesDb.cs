@@ -1,9 +1,11 @@
 using System;
 using System.Data.SqlClient;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json.Linq;
+using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
+//using Newtonsoft.Json.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -29,9 +31,11 @@ namespace Sepes.RestApi.Services
             connection = new SqlConnection(builder.ConnectionString);
         }
 
-        public JObject getDatasetList()
+        public string getDatasetList()
         {
-            JObject json = new JObject();
+            //JObject json = new JObject();
+            string datasetstring = "";
+            string userstring = "";
             try
             {
                 using (connection)
@@ -51,8 +55,11 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
-                                json.Add("dataset", tokenObject);
+                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
+                                //json.Add("dataset", tokenObject); //Adds a top level header to the json
+                                datasetstring = reader.GetString(0);
+                                datasetstring.Insert(1, "{\"dataset\":");
+                                datasetstring.Insert(datasetstring.Length - 2,"]");
                             }
                         }
                     }
@@ -63,8 +70,11 @@ namespace Sepes.RestApi.Services
                         {
                             while (reader.Read())
                             {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
-                                json.Add("users", tokenObject);
+                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
+                                //json.Add("users", tokenObject);
+                                userstring = reader.GetString(0);
+                                userstring.Insert(1, "{\"dataset\":");
+                                userstring.Insert(userstring.Length - 2,"]");
                             }
                         }
                     }
@@ -74,11 +84,11 @@ namespace Sepes.RestApi.Services
             {
                 Console.WriteLine(ex.ToString());
             }
-
-            return json;
+            string response = datasetstring + "," + userstring;
+            return response;
         }
 
-        public JObject getPodList(Pod input)
+        /*public JObject getPodList(Pod input)
         {
             JObject json = new JObject();
             try
@@ -112,7 +122,7 @@ namespace Sepes.RestApi.Services
             }
             connection.Close();
             return json;
-        }
+        }*/
 
         public int createStudy(Study study)
         {
@@ -158,7 +168,7 @@ namespace Sepes.RestApi.Services
             return 1;
         }
 
-        public int createStudy(JObject study)
+        /*public int createStudy(JObject study)
         {
             return createStudy(study.ToObject<Study>());
         }
@@ -185,7 +195,6 @@ namespace Sepes.RestApi.Services
             {
                 connection.Close();
             }
-
             return 1;
         }
 
@@ -214,7 +223,7 @@ namespace Sepes.RestApi.Services
             }
 
             return 1;
-        }
+        }*/
 
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
@@ -230,7 +239,7 @@ namespace Sepes.RestApi.Services
             Console.WriteLine(strBuilder.ToString());
         }
 
-        //Search strings
+        /*//Search strings
         public string searchDatasetList(JObject search)
         {
             string data = "";
@@ -319,7 +328,7 @@ namespace Sepes.RestApi.Services
             }
 
             return data;
-        }
+        }*/
 
     }
 
