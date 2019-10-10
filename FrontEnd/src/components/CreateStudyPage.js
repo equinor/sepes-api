@@ -13,6 +13,7 @@ class CreateStudyPage extends Component {
             pods: [],
             sponsors: [],
             suppliers: [],
+            dataset: [],
         }
     }
     render() {
@@ -29,7 +30,7 @@ class CreateStudyPage extends Component {
             <div className="sidebar">
                 <SepesUserList header="Sponsors" data={this.state.sponsors} addItem={this.addSponsors} />
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} />
-                <SepesDataList header="Dataset" data={sepes.getDatasetList()} addItem={sepes.addItemToStudy} removeItem={sepes.removeItemFromStudy}/>
+                <SepesDataList header="Dataset" data={sepes.getDatasetList()} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
             <SepesPodList data={this.state.pods} newPod={this.newPod} />
         </div>);
@@ -47,8 +48,22 @@ class CreateStudyPage extends Component {
         });
     }
 
+    addDataset = (dataset) => {
+        this.setState({
+            dataset: [...this.state.dataset, dataset]
+        });
+    }
+
+    removeDataset = (dataset) => {
+        let newArray = [...this.state.dataset];
+        newArray.splice(newArray.indexOf(dataset), 1)
+        this.setState({
+            dataset: newArray
+        });
+    }
+
     newPod = () => {
-        this.props.changePage("pod");
+        this.props.changePage("pod", {dataset: this.state.dataset});
     }
 }
 
