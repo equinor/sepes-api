@@ -21,7 +21,7 @@ class CreateStudyPage extends Component {
         <div>
             <header>
                 <span><b>
-                    <span onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
+                    <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input"/>
                 <button>Save</button>

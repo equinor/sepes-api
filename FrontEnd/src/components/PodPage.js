@@ -20,8 +20,9 @@ class PodPage extends Component {
         <div>
             <header>
                 <span><b>
-                    <span onClick={() => this.props.changePage("studies")}>Sepes</span> > 
-                    <span onClick={() => this.props.changePage("study")}> Study</span> > Pod > </b></span>
+                    <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > <span 
+                        className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
+                    <link />
                 <input type="text" placeholder="Pod name" id="new-study-input"/>
                 <button>Save</button>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>

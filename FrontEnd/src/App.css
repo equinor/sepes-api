@@ -24,6 +24,12 @@ html, body {
 .loggedInUser {
   float: right;
 }
+
+.link:hover {
+  cursor: pointer;
+  text-decoration-line: underline;
+  color: #085db1;
+}
 /*
 
 
