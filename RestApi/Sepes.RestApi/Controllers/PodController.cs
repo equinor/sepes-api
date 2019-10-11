@@ -19,7 +19,7 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [EnableCors("_myAllowSpecificOrigins")]
     public class PodController : ControllerBase
     {
@@ -44,6 +44,14 @@ namespace Sepes.RestApi.Controller
             return sepesDb.getPodList(input); //needs the study id to find pods from
         }*/
         //TODO view function
+
+        [HttpPost("create")]
+        public void createPod([FromBody] string input)
+        {
+            //1. Create pod in azure
+            //2. Get info from azure to verify creation?
+            //3. Commit info to database
+        }
     }
 
 }
