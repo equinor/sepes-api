@@ -7,10 +7,9 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace Sepes.RestApi.Services
 {
-    public interface IAzureServices
+    public interface IAzureService
     {
-        IResourceGroup CreateResourceGroup(int podID, string podName, string podTag, IAzure azure);
-        public void TerminateResourceGroup(string resourceGroupName, IAzure azure);
-
+        IResourceGroup CreateResourceGroup(int podID, string podName, string podTag);
+        void TerminateResourceGroup(string resourceGroupName);
     }
 }
