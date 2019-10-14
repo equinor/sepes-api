@@ -13,15 +13,9 @@ namespace Sepes.RestApi.Services
     public class SepesDb : ISepesDb
     {
         private SqlConnection connection;
-        private IConfiguration Configuration { get; set; }
 
-        public SepesDb()
+        public SepesDb(IConfiguration Configuration)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets<SepesDb>()
-                .Build();
-
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = Configuration["Sepes:sql:server"];
             builder.UserID = Configuration["Sepes:sql:user"];
