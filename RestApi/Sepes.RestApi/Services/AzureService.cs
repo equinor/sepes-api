@@ -9,12 +9,19 @@ namespace Sepes.RestApi.Services
 {
     // Wraps call to azure. This service will most likely need to be split up into smaller servies.
     // This is (and future children) is the only code that is alloed to create and destoy azure resources.
-    public class AzureService : IAzureServices
+    public class AzureService : IAzureService
     {
-        // note do not want to include the AzureSdk just now so this will be more of a general list.
+        IAzure _azure;
+        public AzureService(IAzure azure) {
+            _azure = azure;
+        }
+
+        public string getSubscription() {
+            return _azure.GetCurrentSubscription().DisplayName;
+        }
 
         // CreateResourceGroup(...);
-        public IResourceGroup CreateResourceGroup(int podID, string podName, string podTag, IAzure azure)//Change to long form so function prompt is more descriptive
+        public IResourceGroup CreateResourceGroup(int podID, string podName, string podTag)//Change to long form so function prompt is more descriptive
         {
             //throw new NotImplementedException();
             //return will likely be in form of Pod model
@@ -22,7 +29,7 @@ namespace Sepes.RestApi.Services
             //Create ResourceGroup
             Console.WriteLine("Creating a resource group with name: " + podName);
 
-            var resourceGroup = azure.ResourceGroups
+            var resourceGroup = _azure.ResourceGroups
                     .Define(podName)
                     .WithRegion(Region.EuropeNorth)
                     .WithTag("Group", podTag) //Group is whatever we name the key as later.
@@ -34,10 +41,10 @@ namespace Sepes.RestApi.Services
 
         }
         // TerminateResourceGroup(...);
-        public void TerminateResourceGroup(string resourceGroupName, IAzure azure)
+        public void TerminateResourceGroup(string resourceGroupName)
         {
             //Wrap in try...catch? Or was that done in controller?
-            azure.ResourceGroups.DeleteByName(resourceGroupName); //Delete might not be what we want.
+            _azure.ResourceGroups.DeleteByName(resourceGroupName); //Delete might not be what we want.
         }
 
         // Add gives a user contributor to a resource group and network join on a network
