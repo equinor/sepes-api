@@ -1,42 +1,33 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting; //Adds IsDevelopment
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
+using Sepes.RestApi.Model;
 
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using System.Linq;
 
 namespace Sepes.RestApi
 {
     public class Startup
     {
         public IConfiguration Configuration { get; set; }
-        public Startup(IWebHostEnvironment env)
+        public Startup(IHostingEnvironment env)
         {
             var confbuilder = new ConfigurationBuilder()
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
             .AddEnvironmentVariables();
-
-            if (env.IsDevelopment())
-            {
-                confbuilder.AddUserSecrets<Startup>();
-            }
             Configuration = confbuilder.Build();
         }
 
@@ -57,34 +48,33 @@ namespace Sepes.RestApi
             services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
             services.AddOptions();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
-                .AddJwtBearer(options => {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = false,  //Issue: 39 set to true before MVP
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["Jwt:Issuer"],
-                        ValidAudience = Configuration["Jwt:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
-                        //SaveSigninToken = true  
-                    };
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,  //Issue: 39 set to true before MVP
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                    //SaveSigninToken = true  
+                };
             });
 
             services.AddCors(options => {
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder => {
-                    /*
-                    builder.WithOrigins("http://example.com",
+                    /* builder.WithOrigins("http://example.com",
                                         "http://www.contoso.com");
                     */
                     //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easely debug without changing code
-
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-
                 });
             });
+
 
             services.AddSingleton<ISepesDb>(new SepesDb(Configuration));
 
@@ -115,7 +105,7 @@ namespace Sepes.RestApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -127,9 +117,9 @@ namespace Sepes.RestApi
                 app.UseHsts();
             }
 
-            app.UseCors(MyAllowSpecificOrigins);
             app.UseHttpsRedirection();
             app.UseAuthentication();
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseMvc();
         }
     }
