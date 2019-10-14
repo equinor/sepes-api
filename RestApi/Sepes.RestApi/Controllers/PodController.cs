@@ -24,8 +24,8 @@ namespace Sepes.RestApi.Controller
     public class PodController : ControllerBase
     {
         public IConfiguration Configuration { get; set; }
-        private ISepesDb sepesDb = new SepesDb();
-        private IAzPod  azPod   = new AzPod();
+        private ISepesDb sepesDb;
+        //private IAzPod  azPod   = new AzPod();
 
         /*[HttpPost("create")]
         public int CreationVars([FromBody] Pod value)
@@ -50,7 +50,7 @@ namespace Sepes.RestApi.Controller
         public void createPod([FromBody] Pod input) //Create/implement pod model.
         {
             //1. Create pod resource group in azure
-            azPod.CreatePodResourceGroup(input.podID, input.podName, input.podTag, azure);
+            //azPod.CreatePodResourceGroup(input.podID, input.podName, input.podTag, azure);
             //2. Get info from azure to verify creation?
             //3. Commit info to database
         }
