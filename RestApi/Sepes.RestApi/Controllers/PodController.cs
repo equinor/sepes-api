@@ -26,7 +26,6 @@ namespace Sepes.RestApi.Controller
         public IConfiguration Configuration { get; set; }
 
         private ISepesDb _sepesDb;
-        //private IAzPod  azPod   = new AzPod();
         private IAzureService _azPod;
 
         public PodController(ISepesDb sepesDb, IAzureService azPod) {
