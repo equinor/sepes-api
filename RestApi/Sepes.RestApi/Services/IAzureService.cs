@@ -9,7 +9,7 @@ namespace Sepes.RestApi.Services
 {
     public interface IAzureService
     {
-        IResourceGroup CreateResourceGroup(int podID, string podName, string podTag);
+        IResourceGroup CreateResourceGroup(int studyID, string podName, string podTag);
         void TerminateResourceGroup(string resourceGroupName);
     }
 }

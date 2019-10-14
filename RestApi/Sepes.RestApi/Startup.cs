@@ -52,7 +52,7 @@ namespace Sepes.RestApi
 
             //Issue: 38 Check the all the logs thoroughly before you close out this issue. Test a the webapi functions and make sure none of them causes sensitive data to be logged. 
 
-            //Secret key can be set up for with either secret key or in appsettings.json, secret key will overwrite json.
+            //Secret key can be set up for with either dotnet secret key or in environment values, secret key will overwrite ENV.
             services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]);
             services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
             services.AddOptions();
