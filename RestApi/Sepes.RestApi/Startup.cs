@@ -13,6 +13,13 @@ using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 
+using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using System.Linq;
+
 namespace Sepes.RestApi
 {
     public class Startup
@@ -79,8 +86,31 @@ namespace Sepes.RestApi
                 });
             });
 
-            //services.AddSingleton<ISepesDb, SepesDb>();
-            services.AddTransient<ISepesDb, SepesDb>();
+            services.AddSingleton<ISepesDb>(new SepesDb(Configuration));
+
+            /////////////////////
+            //// Azure setup
+            string tenant = Configuration["Azure:TenantId"];
+            string client = Configuration["Azure:ClientId"];
+            string secret = Configuration["Azure:ClientSecret"];
+            string subscription = Configuration["Azure:Subscription"];
+            string resGroupName = Configuration["Azure:CommonResourceGroupNamePrefix"]+Configuration["Azure:CommonResourceGroupName"];
+
+            var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
+            var authenticated = Azure.Authenticate(creds);
+            IAzure azure = authenticated.WithSubscription(subscription);
+            
+            if (!azure.ResourceGroups.Contain(resGroupName)) {
+                azure.ResourceGroups
+                    .Define(resGroupName)
+                    .WithRegion(Region.EuropeNorth)
+                    .Create();
+            }
+
+            services.AddSingleton<IAzure>(azure)
+                .AddScoped<IAzureService, AzureService>();
+
+
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
