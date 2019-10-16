@@ -15,6 +15,7 @@ using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 
 namespace Sepes.RestApi
 {
@@ -26,8 +27,13 @@ namespace Sepes.RestApi
             var confbuilder = new ConfigurationBuilder()
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables();
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
+            
+            if (env.IsDevelopment())
+            {
+                confbuilder.AddUserSecrets<Startup>();
+            }
+
             Configuration = confbuilder.Build();
         }
 
@@ -83,9 +89,10 @@ namespace Sepes.RestApi
             string tenant = Configuration["Azure:TenantId"];
             string client = Configuration["Azure:ClientId"];
             string secret = Configuration["Azure:ClientSecret"];
-            string subscription = Configuration["Azure:Subscription"];
+            string subscription = Configuration["Azure:SubscriptionId"];
             string resGroupName = Configuration["Azure:CommonResourceGroupNamePrefix"]+Configuration["Azure:CommonResourceGroupName"];
 
+ 
             var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
             var authenticated = Azure.Authenticate(creds);
             IAzure azure = authenticated.WithSubscription(subscription);
@@ -97,8 +104,16 @@ namespace Sepes.RestApi
                     .Create();
             }
 
-            services.AddSingleton<IAzure>(azure)
-                .AddScoped<IAzureService, AzureService>();
+            //var group = azure.ResourceGroups.GetByName(resGroupName);
+            //azure.Networks.Define("SepesShitNetwork2").WithRegion(Region.EuropeNorth).WithExistingResourceGroup(resGroupName).WithAddressSpace("10.1.5.0/24").Create();
+            //var user = azure.AccessManagement.ActiveDirectoryUsers.GetById("c28b28c4-4a76-4426-b0f0-1418fa8201b5").Name;
+            //authenticated.RoleAssignments.Define(Guid.NewGuid().ToString()).ForObjectId("c28b28c4-4a76-4426-b0f0-1418fa8201b5").WithBuiltInRole(BuiltInRole.Owner).WithResourceGroupScope(group).Create();
+            int podId = 1280;
+            var addressSpace = $"10.{1 + podId / 256}.{podId % 256}.0/24";
+
+            Console.WriteLine("Address space: "+addressSpace);
+
+            services.AddSingleton<IAzure>(azure).AddScoped<IAzureService, AzureService>();
 
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
