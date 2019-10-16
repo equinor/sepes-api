@@ -12,6 +12,6 @@ namespace Sepes.RestApi.Services
     {
         Task<string> CreateResourceGroup(Pod pod);
         Task TerminateResourceGroup(string resourceGroupName);
-        Task<string> CreateNetwork(string vNetName);
+        Task<string> CreateNetwork(Pod pod);
     }
 }

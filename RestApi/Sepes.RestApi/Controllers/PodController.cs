@@ -56,7 +56,9 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> createPod([FromBody] Pod input)
         {
             //Check for tags needed, if not found make them
-            await _azPod.CreateNetwork("Tom" + input.podName);
+            //await _azPod.CreateNetwork("Tom" + input.podName);
+            await _azPod.CreateNetwork(input);
+
             //1. Create pod resource group in azure
             return Ok();
             //_azPod.CreateResourceGroup(input.studyID, input.podName, input.podTag);
