@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Services
             string tenant = configuration["Azure:TenantId"];
             string client = configuration["Azure:ClientId"];
             string secret = configuration["Azure:ClientSecret"];
-            string subscription = configuration["Azure:Subscription"];
+            string subscription = configuration["Azure:SubscriptionId"];
             _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
 
             var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
@@ -77,11 +77,20 @@ namespace Sepes.RestApi.Services
         // RemoveUser(...)
 
         // CreateNetwork(...)
-        public async Task<string> CreateNetwork(string vNetName)
+        public async Task<string> CreateNetwork(Pod pod)
         {
-            var network = await _azure.Networks.Define(vNetName).WithRegion(Region.EuropeNorth).WithExistingResourceGroup(_commonResourceGroup).CreateAsync();
+            //var network = await _azure.Networks.Define(vNetName).WithRegion(Region.EuropeNorth).WithExistingResourceGroup(_commonResourceGroup).CreateAsync();
+            var network = await _azure.Networks.Define($"{pod.studyID}-{pod.podName.Replace(" ", "-")}Network")
+                .WithRegion(Region.EuropeNorth)
+                .WithExistingResourceGroup(_commonResourceGroup)
+                //.WithAddressSpace($"10.{1 + podId / 256}.{podId % 256}.0/24")
+                .CreateAsync();
+            
+            Console.WriteLine(" CreateNetwork " + $"{pod.studyID}-{pod.podName}Network");
+
             return network.Id;
         }
+
         // RemoveNetwork(...)
         public Task RemoveNetwork(string vNetName, string _commonResourceGroup)
         {
