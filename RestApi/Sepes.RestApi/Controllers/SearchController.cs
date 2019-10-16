@@ -23,7 +23,7 @@ namespace Sepes.RestApi.Controller
     //[Authorize]
     public class SearchController : ControllerBase
     {
-        private SepesDb sepesDb;
+        //private SepesDb sepesDb;
         // GET api/search/user
         /*[HttpPost("user")]
         public IActionResult SearchUser([FromBody] JObject searchstring) //TODO change return type
