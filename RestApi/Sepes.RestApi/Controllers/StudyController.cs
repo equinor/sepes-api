@@ -56,9 +56,15 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet("list")]
-        public string Get()
+        public string GetStudies()
         {
-            return sepesDb.getDatasetList();
+            return sepesDb.getStudies(false);
+        }
+
+        [HttpGet("archived")]
+        public string GetArchivedStudies()
+        {
+            return sepesDb.getStudies(true);
         }
     }
 

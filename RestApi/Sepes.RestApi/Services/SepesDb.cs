@@ -122,6 +122,7 @@ namespace Sepes.RestApi.Services
 
         public int createStudy(Study study)
         {
+            int studyId = -1;
             try
             {
                 connection.Open();
@@ -131,8 +132,9 @@ namespace Sepes.RestApi.Services
 
                 SqlCommand command = new SqlCommand(sqlStudy, connection);
                 command.Parameters.AddWithValue("@studyName", study.studyName);
-                int studyId = (int)command.ExecuteScalar();
+                studyId = (int)command.ExecuteScalar();
                 Console.WriteLine("### SepesDB: StudyID " + studyId);
+
                 // insert user2study
                 StringBuilder user2StudyBuilder = new StringBuilder();
                 user2StudyBuilder.Append("INSERT INTO [dbo].[lnkUser2Study] (UserID, StudyID) VALUES ");
@@ -154,14 +156,14 @@ namespace Sepes.RestApi.Services
             catch (SqlException ex)
             {
                 Console.WriteLine(ex.ToString());
-                return 0;
+                return -1;
             }
             finally
             {
                 connection.Close();
             }
 
-            return 1;
+            return studyId;
         }
 
         /*public int createStudy(JObject study)
@@ -327,6 +329,71 @@ namespace Sepes.RestApi.Services
 
             return data;
         }*/
+
+
+        public int updateStudy(Study study)
+        {
+            try
+            {
+                connection.Open();
+
+                // insert study
+                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{study.archived}' WHERE StudyID = {study.studyId}";
+
+                SqlCommand command = new SqlCommand(sqlStudy, connection);
+                //command.Parameters.AddWithValue("@archived", study.archived);
+                int studyNum = (int)command.ExecuteScalar();
+
+                Console.WriteLine($"### SepesDB: Updated Study {studyNum} with archived = {study.archived}");
+            }
+            catch (SqlException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return 0;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return 1;
+        }
+
+        public string getStudies(bool archived)
+        {
+            string response = "";
+            try
+            {
+                connection.Open();
+                StringBuilder sb = new StringBuilder();
+                sb.Append("SELECT StudyId, StudyName ");
+                sb.Append("FROM [dbo].[tblStudy] ");
+                sb.Append($"WHERE Archived {(archived ? "= 'True'" : "= 'False' OR Archived IS NULL")} ");
+                sb.Append("FOR JSON AUTO ");
+                string sqlStudies = sb.ToString();
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            response = reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            catch (SqlException ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally 
+            {
+                connection.Close();
+            }
+
+            return response;
+        }
 
     }
 

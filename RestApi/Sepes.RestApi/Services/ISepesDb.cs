@@ -12,6 +12,7 @@ namespace Sepes.RestApi.Services
         string getDatasetList();
 
         int createStudy(Study study);
+        string getStudies(bool archived);
         Task<int> createPod(Pod pod);
         /*JObject getPodList(Pod input);
         int createPod(Pod pod);
