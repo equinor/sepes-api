@@ -5,6 +5,8 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
+using System.Threading.Tasks;
+
 //using Newtonsoft.Json.Linq;
 
 namespace Sepes.RestApi.Services
@@ -165,34 +167,36 @@ namespace Sepes.RestApi.Services
         /*public int createStudy(JObject study)
         {
             return createStudy(study.ToObject<Study>());
-        }
-        public int createPod(Pod pod)
+        }*/
+        public Task<int> createPod(Pod pod)
         {
+            int podID = 0;
             try
             {
                 connection.Open();
 
-                // insert study
-                string sqlStudy = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
-                //TODO add studyID
-                SqlCommand command = new SqlCommand(sqlStudy, connection);
+                
+                string sqlPod = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
+                
+                SqlCommand command = new SqlCommand(sqlPod, connection);
                 command.Parameters.AddWithValue("@podName", pod.podName);
                 command.Parameters.AddWithValue("@studyID", pod.studyID);
-                //int podId = (int)command.ExecuteScalar(); Currently not used
+                podID = (int)command.ExecuteScalar();
+
             }
             catch (SqlException ex)
             {
                 Console.WriteLine(ex.ToString());
-                return 0;
+                return Task.FromResult(-1);
             }
             finally
             {
                 connection.Close();
             }
-            return 1;
+            return Task.FromResult(podID);
         }
 
-        public int createUser(User user)
+        /*public int createUser(User user)
         {
             try
             {
