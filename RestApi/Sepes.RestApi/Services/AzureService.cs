@@ -79,14 +79,11 @@ namespace Sepes.RestApi.Services
         // CreateNetwork(...)
         public async Task<string> CreateNetwork(Pod pod)
         {
-            //var network = await _azure.Networks.Define(vNetName).WithRegion(Region.EuropeNorth).WithExistingResourceGroup(_commonResourceGroup).CreateAsync();
             var network = await _azure.Networks.Define($"{pod.studyID}-{pod.podName.Replace(" ", "-")}Network")
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
-                //.WithAddressSpace($"10.{1 + podId / 256}.{podId % 256}.0/24")
+                .WithAddressSpace($"10.{1 + pod.podID / 256}.{pod.podID % 256}.0/24")
                 .CreateAsync();
-            
-            Console.WriteLine(" CreateNetwork " + $"{pod.studyID}-{pod.podName}Network");
 
             return network.Id;
         }

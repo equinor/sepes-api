@@ -53,11 +53,17 @@ namespace Sepes.RestApi.Controller
         //TODO view function
 
         [HttpPost("create")]
-        public async Task<IActionResult> createPod([FromBody] Pod input)
+        public async Task<IActionResult> createPod([FromBody] Pod pod)
         {
             //Check for tags needed, if not found make them
-            //await _azPod.CreateNetwork("Tom" + input.podName);
-            await _azPod.CreateNetwork(input);
+            pod.podID =  await _sepesDb.createPod(pod);
+            if (!(pod.podID == -1)){
+                await _azPod.CreateNetwork(pod);
+            }
+            else{
+                return StatusCode(500, "Unable to create pod in database");
+            }
+            
 
             //1. Create pod resource group in azure
             return Ok();

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
 using System.Text.Json;
 using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
+
 
 namespace Sepes.RestApi.Services
 {
@@ -10,6 +12,7 @@ namespace Sepes.RestApi.Services
         string getDatasetList();
 
         int createStudy(Study study);
+        Task<int> createPod(Pod pod);
         /*JObject getPodList(Pod input);
         int createPod(Pod pod);
         int createUser(User user);
