@@ -53,12 +53,12 @@ namespace Sepes.RestApi.Controller
         //TODO view function
 
         [HttpPost("create")]
-        public void createPod([FromBody] Pod input)
+        public async Task<IActionResult> createPod([FromBody] Pod input)
         {
             //Check for tags needed, if not found make them
-            _azPod.CreateNetwork("Tomtestnetwork");
+            await _azPod.CreateNetwork("Tom" + input.podName);
             //1. Create pod resource group in azure
-
+            return Ok();
             //_azPod.CreateResourceGroup(input.studyID, input.podName, input.podTag);
 
             //2. Get info from azure to verify creation?
