@@ -1,9 +1,16 @@
+using Microsoft.Azure.Management.Network;
+using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Configuration;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
+using Sepes.RestApi.Model;
 
 namespace Sepes.RestApi.Services
 {
@@ -12,37 +19,56 @@ namespace Sepes.RestApi.Services
     public class AzureService : IAzureService
     {
         IAzure _azure;
-        public AzureService(IAzure azure) {
-            _azure = azure;
-        }
+        private readonly string _commonResourceGroup;
+        public AzureService(IConfiguration configuration) {
+            /////////////////////
+            //// Azure setup
+            string tenant = configuration["Azure:TenantId"];
+            string client = configuration["Azure:ClientId"];
+            string secret = configuration["Azure:ClientSecret"];
+            string subscription = configuration["Azure:Subscription"];
+            string _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
 
+            var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
+            var authenticated = Azure.Authenticate(creds);
+            _azure = authenticated.WithSubscription(subscription);
+            
+            if (!_azure.ResourceGroups.Contain(_commonResourceGroup)) {
+                _azure.ResourceGroups
+                    .Define(_commonResourceGroup)
+                    .WithRegion(Region.EuropeNorth)
+                    .Create();
+            }
+
+            //CreateNetwork("TomTestNetwork").Wait();
+        }
         public string getSubscription() {
             return _azure.GetCurrentSubscription().DisplayName;
         }
 
         // CreateResourceGroup(...);
-        public IResourceGroup CreateResourceGroup(int studyID, string podName, string podTag)//Change to long form so function prompt is more descriptive
+        public async Task<string> CreateResourceGroup(Pod pod)//Change to long form so function prompt is more descriptive
         {
             //if(!hasresourcegroup()){
             //Create ResourceGroup
-            Console.WriteLine("Creating a resource group with name: " + podName);
+            Console.WriteLine("Creating a resource group with name: " + pod.podName);
 
-            var resourceGroup = _azure.ResourceGroups
-                    .Define(podName)
+            var resourceGroup = await _azure.ResourceGroups
+                    .Define(pod.studyID + '-' + pod.podName)
                     .WithRegion(Region.EuropeNorth)
-                    .WithTag("Group", podTag) //Group is whatever we name the key as later.
-                    .Create();
+                    .WithTag("Group", pod.podTag) //Group is whatever we name the key as later.
+                    .CreateAsync();
 
-            Console.WriteLine("Created a resource group with name: " + podName);
-            return resourceGroup;
+            Console.WriteLine("Created a resource group with name: " + pod.podName);
+            return resourceGroup.Id;//return resource id from iresource object
             //}
 
         }
         // TerminateResourceGroup(...);
-        public void TerminateResourceGroup(string resourceGroupName)
+        public Task TerminateResourceGroup(string resourceGroupName)
         {
             //Wrap in try...catch? Or was that done in controller?
-            _azure.ResourceGroups.DeleteByName(resourceGroupName); //Delete might not be what we want.
+            return _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName); //Delete might not be what we want.
             //Might instead want to get list of all users then remove them?
         }
 
@@ -51,44 +77,16 @@ namespace Sepes.RestApi.Services
         // RemoveUser(...)
 
         // CreateNetwork(...)
-        /*public async void CreateNetwork(string networkName, string sepesCommonNetwork, IAzure azure)
+        public async Task<string> CreateNetwork(string vNetName)
         {
-            using (NetworkManagementClient client = new NetworkManagementClient(credentials))
-            {
-                // Define VNet
-                VirtualNetworkInner vnet = new VirtualNetworkInner()
-                {
-                    Location = "North EU",
-                    AddressSpace = new AddressSpace()
-                    {
-                        AddressPrefixes = new List<string>() { "0.0.0.0/16" }
-                    },
-
-                    DhcpOptions = new DhcpOptions()
-                    {
-                        DnsServers = new List<string>() { "1.1.1.1", "1.1.2.4" }
-                    },
-
-                    Subnets = new List<Subnet>()
-        {
-            new Subnet()
-            {
-                Name = subnet1Name,
-                AddressPrefix = "1.0.1.0/24",
-            },
-            new Subnet()
-            {
-                Name = subnet2Name,
-               AddressPrefix = "1.0.2.0/24",
-            }
+            var network = await _azure.Networks.Define(vNetName).WithRegion(Region.EuropeNorth).WithExistingResourceGroup(_commonResourceGroup).CreateAsync();
+            return network.Id;
         }
-                };
-
-                await client.VirtualNetworks.CreateOrUpdateAsync(resourceGroupName, vNetName, vnet);
-            }
-
-        }*/
         // RemoveNetwork(...)
+        public Task RemoveNetwork(string vNetName, string sepesCommonNetwork)
+        {
+            return _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
+        }
 
         // CreateNsg(...)
         // ApplyNsg(...)
