@@ -4,12 +4,14 @@ using System.Text.Json;
 using Newtonsoft.Json.Linq;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Services
 {
     public interface IAzureService
     {
-        IResourceGroup CreateResourceGroup(int studyID, string podName, string podTag);
-        void TerminateResourceGroup(string resourceGroupName);
+        Task<string> CreateResourceGroup(Pod pod);
+        Task TerminateResourceGroup(string resourceGroupName);
+        Task<string> CreateNetwork(string vNetName);
     }
 }

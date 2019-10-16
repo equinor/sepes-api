@@ -22,17 +22,14 @@ namespace Sepes.RestApi
     public class Startup
     {
         public IConfiguration Configuration { get; set; }
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var confbuilder = new ConfigurationBuilder()
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-            
-            if (env.IsDevelopment())
-            {
-                confbuilder.AddUserSecrets<Startup>();
-            }
+            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Startup>();
 
             Configuration = confbuilder.Build();
         }
@@ -83,46 +80,15 @@ namespace Sepes.RestApi
 
 
             services.AddSingleton<ISepesDb>(new SepesDb(Configuration));
-
-            /////////////////////
-            //// Azure setup
-            string tenant = Configuration["Azure:TenantId"];
-            string client = Configuration["Azure:ClientId"];
-            string secret = Configuration["Azure:ClientSecret"];
-            string subscription = Configuration["Azure:SubscriptionId"];
-            string resGroupName = Configuration["Azure:CommonResourceGroupNamePrefix"]+Configuration["Azure:CommonResourceGroupName"];
-
- 
-            var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
-            var authenticated = Azure.Authenticate(creds);
-            IAzure azure = authenticated.WithSubscription(subscription);
-            
-            if (!azure.ResourceGroups.Contain(resGroupName)) {
-                azure.ResourceGroups
-                    .Define(resGroupName)
-                    .WithRegion(Region.EuropeNorth)
-                    .Create();
-            }
-
-            //var group = azure.ResourceGroups.GetByName(resGroupName);
-            //azure.Networks.Define("SepesShitNetwork2").WithRegion(Region.EuropeNorth).WithExistingResourceGroup(resGroupName).WithAddressSpace("10.1.5.0/24").Create();
-            //var user = azure.AccessManagement.ActiveDirectoryUsers.GetById("c28b28c4-4a76-4426-b0f0-1418fa8201b5").Name;
-            //authenticated.RoleAssignments.Define(Guid.NewGuid().ToString()).ForObjectId("c28b28c4-4a76-4426-b0f0-1418fa8201b5").WithBuiltInRole(BuiltInRole.Owner).WithResourceGroupScope(group).Create();
-            int podId = 1280;
-            var addressSpace = $"10.{1 + podId / 256}.{podId % 256}.0/24";
-
-            Console.WriteLine("Address space: "+addressSpace);
-
-            services.AddSingleton<IAzure>(azure).AddScoped<IAzureService, AzureService>();
-
+            services.AddSingleton<IAzureService>(new AzureService(Configuration));
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName == "Development")
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -137,5 +103,6 @@ namespace Sepes.RestApi
             app.UseCors(MyAllowSpecificOrigins);
             app.UseMvc();
         }
+
     }
 }
