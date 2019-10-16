@@ -24,7 +24,7 @@ namespace Sepes.RestApi.Controller
     public class UserController : ControllerBase
     {
         public IConfiguration Configuration { get; set; }
-        private SepesDb sepesDb;
+        //private SepesDb sepesDb;
 
         /*[HttpPost("create")]
         public int CreationVars([FromBody] User value)
