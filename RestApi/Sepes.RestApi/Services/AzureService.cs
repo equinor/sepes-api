@@ -19,7 +19,7 @@ namespace Sepes.RestApi.Services
     public class AzureService : IAzureService
     {
         IAzure _azure;
-        private readonly string _commonResourceGroup;
+        private string _commonResourceGroup;
         public AzureService(IConfiguration configuration) {
             /////////////////////
             //// Azure setup
@@ -27,7 +27,7 @@ namespace Sepes.RestApi.Services
             string client = configuration["Azure:ClientId"];
             string secret = configuration["Azure:ClientSecret"];
             string subscription = configuration["Azure:Subscription"];
-            string _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
+            _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
 
             var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
             var authenticated = Azure.Authenticate(creds);
@@ -65,10 +65,10 @@ namespace Sepes.RestApi.Services
 
         }
         // TerminateResourceGroup(...);
-        public Task TerminateResourceGroup(string resourceGroupName)
+        public Task TerminateResourceGroup(string _commonResourceGroup)
         {
             //Wrap in try...catch? Or was that done in controller?
-            return _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName); //Delete might not be what we want.
+            return _azure.ResourceGroups.DeleteByNameAsync(_commonResourceGroup); //Delete might not be what we want.
             //Might instead want to get list of all users then remove them?
         }
 
@@ -83,7 +83,7 @@ namespace Sepes.RestApi.Services
             return network.Id;
         }
         // RemoveNetwork(...)
-        public Task RemoveNetwork(string vNetName, string sepesCommonNetwork)
+        public Task RemoveNetwork(string vNetName, string _commonResourceGroup)
         {
             return _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
         }
