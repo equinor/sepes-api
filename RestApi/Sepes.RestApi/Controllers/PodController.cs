@@ -48,10 +48,9 @@ namespace Sepes.RestApi.Controller
         //TODO view function
 
         [HttpPost("create")]
-        public async Task<ActionResult<Pod>> createPod([FromBody] PodInput input)
+        public async Task<Pod> createPod([FromBody] PodInput input)
         {
-            var pod = await _pod.CreateNewPod(input.podName, input.studyID);
-            return Ok(pod);
+            return await _pod.CreateNewPod(input.podName, input.studyID);
         }
     }
 

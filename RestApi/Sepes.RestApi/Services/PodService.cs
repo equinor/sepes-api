@@ -8,11 +8,6 @@ namespace Sepes.RestApi.Services
     // It do not own the Pod state and need to talk to StudyService to keep its up to date.
     public interface IPodService
     {
-        // This is the big one. This function will do it all.
-        // 1. Validate changes.
-        // 2. Make the changes to azure.
-        // 3. Update the study model.
-        // Returns a list of issues. No issues mean that the changes was made successfully.
         Task<Pod> CreateNewPod(string name, int userID);
     }
 
@@ -31,7 +26,7 @@ namespace Sepes.RestApi.Services
         {
             var pod = await _database.createPod(name, studyID);
 
-            await _azure.CreateNetwork(pod.name, pod.addressSpace);
+            await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
             return pod;
         }
     }
