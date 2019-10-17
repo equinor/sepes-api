@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Services
 
         int createStudy(Study study);
         string getStudies(bool archived);
-        Task<int> createPod(Pod pod);
+        Task<Pod> createPod(string name, int studyId);
         /*JObject getPodList(Pod input);
         int createPod(Pod pod);
         int createUser(User user);

@@ -23,14 +23,9 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     public class PodController : ControllerBase
     {
-        public IConfiguration Configuration { get; set; }
-
-        private ISepesDb _sepesDb;
-        private IAzureService _azPod;
-
-        public PodController(ISepesDb sepesDb, IAzureService azPod) {
-            _sepesDb = sepesDb;
-            _azPod = azPod;
+        private readonly IPodService _pod;
+        public PodController(IPodService podService) {
+            _pod = podService;
         }
 
         /*[HttpPost("create")]
@@ -53,24 +48,10 @@ namespace Sepes.RestApi.Controller
         //TODO view function
 
         [HttpPost("create")]
-        public async Task<IActionResult> createPod([FromBody] Pod pod)
+        public async Task<ActionResult<Pod>> createPod([FromBody] PodInput input)
         {
-            //Check for tags needed, if not found make them
-            pod.podID =  await _sepesDb.createPod(pod);
-            if (!(pod.podID == -1)){
-                await _azPod.CreateNetwork(pod);
-            }
-            else{
-                return StatusCode(500, "Unable to create pod in database");
-            }
-            
-
-            //1. Create pod resource group in azure
-            return Ok();
-            //_azPod.CreateResourceGroup(input.studyID, input.podName, input.podTag);
-
-            //2. Get info from azure to verify creation?
-            //3. Commit info to database
+            var pod = await _pod.CreateNewPod(input.podName, input.studyID);
+            return Ok(pod);
         }
     }
 
