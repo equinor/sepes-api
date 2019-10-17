@@ -3,11 +3,8 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
-
-//using Newtonsoft.Json.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -83,43 +80,6 @@ namespace Sepes.RestApi.Services
             string response = datasetstring + "," + userstring;
             return response;
         }
-
-        /*public JObject getPodList(Pod input)
-        {
-            JObject json = new JObject();
-            try
-            {
-                using (connection)
-                {
-                    connection.Open();
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("SELECT PodID, PodName, StudyID ");
-                    sb.Append("FROM [dbo].[tblPod] ");
-                    sb.Append("WHERE @studyID ");
-                    sb.Append("LIKE StudyID ");
-                    sb.Append("FOR JSON AUTO ");
-                    using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
-                    {
-                        command.Parameters.AddWithValue("@studyID", input.studyID);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
-                                json.Add("pod", tokenObject);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            connection.Close();
-            return json;
-        }*/
-
         public int createStudy(Study study)
         {
             int studyId = -1;
@@ -165,11 +125,6 @@ namespace Sepes.RestApi.Services
 
             return studyId;
         }
-
-        /*public int createStudy(JObject study)
-        {
-            return createStudy(study.ToObject<Study>());
-        }*/
         public async Task<Pod> createPod(string name, int studyId)
         {
             await connection.OpenAsync();
@@ -188,34 +143,6 @@ namespace Sepes.RestApi.Services
                 await connection.CloseAsync();
             }
         }
-
-        /*public int createUser(User user)
-        {
-            try
-            {
-                connection.Open();
-
-                // insert user
-                string sqlStudy = "INSERT INTO [dbo].[tblPod] (UserName, UserEmail, UserGroup) VALUES (@userName , @userEmail , @userGroup) SELECT CAST(scope_identity() AS int)";
-                SqlCommand command = new SqlCommand(sqlStudy, connection);
-                command.Parameters.AddWithValue("@userName", user.userName);
-                command.Parameters.AddWithValue("@userEmail", user.userEmail);
-                command.Parameters.AddWithValue("@userGroup", user.userGroup);
-                //int userID = (int)command.ExecuteScalar(); Currently not used
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return 0;
-            }
-            finally
-            {
-                connection.Close();
-            }
-
-            return 1;
-        }*/
-
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
             for (int i = 0; i < array.Length; i++)
@@ -229,99 +156,6 @@ namespace Sepes.RestApi.Services
 
             Console.WriteLine(strBuilder.ToString());
         }
-
-        /*//Search strings
-        public string searchDatasetList(JObject search)
-        {
-            string data = "";
-            using (connection)
-            {
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblDataset] ");
-                sb.Append("WHERE DatasetName");
-                sb.Append("LIKE @datasetName");
-                sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@datasetName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            data = reader.GetString(0);
-                        }
-                    }
-                }
-            }
-
-            return data;
-        }
-        public string searchUserList(JObject search)
-        {
-            string data = "";
-            using (connection)
-            {
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblUser] ");
-                sb.Append("WHERE (");
-                sb.Append("[UserEmail] LIKE @userName OR ");
-                sb.Append("[UserName] LIKE @userName) ");
-                sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@userName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            data = reader.GetString(0);
-                        }
-                    }
-                }
-            }
-
-            return data;
-        }
-
-        public string searchStudyList(JObject search)
-        {
-            string data = "";
-            using (connection)
-            {
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblUser] ");
-                sb.Append("WHERE StudyName");
-                sb.Append("LIKE @studyName");
-                sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@studyName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            data = reader.GetString(0);
-                        }
-                    }
-                }
-            }
-
-            return data;
-        }*/
-
-
         public int updateStudy(Study study)
         {
             try
