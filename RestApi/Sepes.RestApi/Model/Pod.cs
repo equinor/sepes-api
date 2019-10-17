@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Model
             this.studyId = studyId;
         }
 
-        public string networkName => $"{studyId}-{name.Replace(" ", "-")}Network";
+        public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
         public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
     }
 }
