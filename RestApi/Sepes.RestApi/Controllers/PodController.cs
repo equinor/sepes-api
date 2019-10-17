@@ -19,12 +19,14 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     [EnableCors("_myAllowSpecificOrigins")]
     public class PodController : ControllerBase
     {
-        public IConfiguration Configuration { get; set; }
-        private SepesDb sepesDb = new SepesDb();
+        private readonly IPodService _pod;
+        public PodController(IPodService podService) {
+            _pod = podService;
+        }
 
         /*[HttpPost("create")]
         public int CreationVars([FromBody] Pod value)
@@ -44,6 +46,12 @@ namespace Sepes.RestApi.Controller
             return sepesDb.getPodList(input); //needs the study id to find pods from
         }*/
         //TODO view function
+
+        [HttpPost("create")]
+        public async Task<Pod> createPod([FromBody] PodInput input)
+        {
+            return await _pod.CreateNewPod(input.podName, input.studyID);
+        }
     }
 
 }
