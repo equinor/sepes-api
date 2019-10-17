@@ -3,9 +3,8 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
-//using Newtonsoft.Json.Linq;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Services
 {
@@ -13,15 +12,9 @@ namespace Sepes.RestApi.Services
     public class SepesDb : ISepesDb
     {
         private SqlConnection connection;
-        private IConfiguration Configuration { get; set; }
 
-        public SepesDb()
+        public SepesDb(IConfiguration Configuration)
         {
-            Configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .AddUserSecrets<SepesDb>()
-                .Build();
-
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = Configuration["Sepes:sql:server"];
             builder.UserID = Configuration["Sepes:sql:user"];
@@ -87,45 +80,9 @@ namespace Sepes.RestApi.Services
             string response = datasetstring + "," + userstring;
             return response;
         }
-
-        /*public JObject getPodList(Pod input)
-        {
-            JObject json = new JObject();
-            try
-            {
-                using (connection)
-                {
-                    connection.Open();
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("SELECT PodID, PodName, StudyID ");
-                    sb.Append("FROM [dbo].[tblPod] ");
-                    sb.Append("WHERE @studyID ");
-                    sb.Append("LIKE StudyID ");
-                    sb.Append("FOR JSON AUTO ");
-                    using (SqlCommand command = new SqlCommand(sb.ToString(), connection))
-                    {
-                        command.Parameters.AddWithValue("@studyID", input.studyID);
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                JToken tokenObject = JToken.Parse(reader.GetString(0));
-                                json.Add("pod", tokenObject);
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            connection.Close();
-            return json;
-        }*/
-
         public int createStudy(Study study)
         {
+            int studyId = -1;
             try
             {
                 connection.Open();
@@ -135,8 +92,9 @@ namespace Sepes.RestApi.Services
 
                 SqlCommand command = new SqlCommand(sqlStudy, connection);
                 command.Parameters.AddWithValue("@studyName", study.studyName);
-                int studyId = (int)command.ExecuteScalar();
+                studyId = (int)command.ExecuteScalar();
                 Console.WriteLine("### SepesDB: StudyID " + studyId);
+
                 // insert user2study
                 StringBuilder user2StudyBuilder = new StringBuilder();
                 user2StudyBuilder.Append("INSERT INTO [dbo].[lnkUser2Study] (UserID, StudyID) VALUES ");
@@ -158,73 +116,33 @@ namespace Sepes.RestApi.Services
             catch (SqlException ex)
             {
                 Console.WriteLine(ex.ToString());
-                return 0;
+                return -1;
             }
             finally
             {
                 connection.Close();
             }
 
-            return 1;
+            return studyId;
         }
-
-        /*public int createStudy(JObject study)
+        public async Task<Pod> createPod(string name, int studyId)
         {
-            return createStudy(study.ToObject<Study>());
-        }
-        public int createPod(Pod pod)
-        {
+            await connection.OpenAsync();
             try
             {
-                connection.Open();
-
-                // insert study
-                string sqlStudy = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
-                //TODO add studyID
-                SqlCommand command = new SqlCommand(sqlStudy, connection);
-                command.Parameters.AddWithValue("@podName", pod.podName);
-                command.Parameters.AddWithValue("@studyID", pod.studyID);
-                //int podId = (int)command.ExecuteScalar(); Currently not used
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return 0;
+                string sqlPod = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
+                
+                SqlCommand command = new SqlCommand(sqlPod, connection);
+                command.Parameters.AddWithValue("@podName", name);
+                command.Parameters.AddWithValue("@studyID", studyId);
+                var id = Convert.ToUInt16(await command.ExecuteScalarAsync());
+                return new Pod(id, name, studyId);
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
-            return 1;
         }
-
-        public int createUser(User user)
-        {
-            try
-            {
-                connection.Open();
-
-                // insert user
-                string sqlStudy = "INSERT INTO [dbo].[tblPod] (UserName, UserEmail, UserGroup) VALUES (@userName , @userEmail , @userGroup) SELECT CAST(scope_identity() AS int)";
-                SqlCommand command = new SqlCommand(sqlStudy, connection);
-                command.Parameters.AddWithValue("@userName", user.userName);
-                command.Parameters.AddWithValue("@userEmail", user.userEmail);
-                command.Parameters.AddWithValue("@userGroup", user.userGroup);
-                //int userID = (int)command.ExecuteScalar(); Currently not used
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return 0;
-            }
-            finally
-            {
-                connection.Close();
-            }
-
-            return 1;
-        }*/
-
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
             for (int i = 0; i < array.Length; i++)
@@ -238,97 +156,69 @@ namespace Sepes.RestApi.Services
 
             Console.WriteLine(strBuilder.ToString());
         }
-
-        /*//Search strings
-        public string searchDatasetList(JObject search)
+        public int updateStudy(Study study)
         {
-            string data = "";
-            using (connection)
+            try
             {
                 connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblDataset] ");
-                sb.Append("WHERE DatasetName");
-                sb.Append("LIKE @datasetName");
-                sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@datasetName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            data = reader.GetString(0);
-                        }
-                    }
-                }
-            }
 
-            return data;
-        }
-        public string searchUserList(JObject search)
-        {
-            string data = "";
-            using (connection)
+                // insert study
+                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{study.archived}' WHERE StudyID = {study.studyId}";
+
+                SqlCommand command = new SqlCommand(sqlStudy, connection);
+                //command.Parameters.AddWithValue("@archived", study.archived);
+                int studyNum = (int)command.ExecuteScalar();
+
+                Console.WriteLine($"### SepesDB: Updated Study {studyNum} with archived = {study.archived}");
+            }
+            catch (SqlException ex)
             {
-                connection.Open();
-                StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblUser] ");
-                sb.Append("WHERE (");
-                sb.Append("[UserEmail] LIKE @userName OR ");
-                sb.Append("[UserName] LIKE @userName) ");
-                sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@userName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
-                {
-                    using (SqlDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            data = reader.GetString(0);
-                        }
-                    }
-                }
+                Console.WriteLine(ex.ToString());
+                return 0;
+            }
+            finally
+            {
+                connection.Close();
             }
 
-            return data;
+            return 1;
         }
 
-        public string searchStudyList(JObject search)
+        public string getStudies(bool archived)
         {
-            string data = "";
-            using (connection)
+            string response = "";
+            try
             {
                 connection.Open();
                 StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT * ");
-                sb.Append("FROM [dbo].[tblUser] ");
-                sb.Append("WHERE StudyName");
-                sb.Append("LIKE @studyName");
+                sb.Append("SELECT StudyId, StudyName ");
+                sb.Append("FROM [dbo].[tblStudy] ");
+                sb.Append($"WHERE Archived {(archived ? "= 'True'" : "= 'False' OR Archived IS NULL")} ");
                 sb.Append("FOR JSON AUTO ");
-                string sql = sb.ToString();
-                SqlCommand command = new SqlCommand(sql, connection);
-                command.Parameters.AddWithValue("@studyName", "%" + search.GetValue("searchstring").ToString() + "%");
-                using (command)
+                string sqlStudies = sb.ToString();
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
                 {
                     using (SqlDataReader reader = command.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            data = reader.GetString(0);
+                            response = reader.GetString(0);
                         }
                     }
                 }
             }
+            catch (SqlException ex) 
+            {
+                Console.WriteLine(ex.ToString());
+            }
+            finally 
+            {
+                connection.Close();
+            }
 
-            return data;
-        }*/
+            return response;
+        }
 
     }
 

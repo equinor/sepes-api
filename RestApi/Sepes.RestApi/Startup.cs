@@ -1,17 +1,21 @@
 ﻿using System;
-using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting; //Adds IsDevelopment
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
+using Sepes.RestApi.Model;
+
+using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 
 namespace Sepes.RestApi
 {
@@ -24,12 +28,9 @@ namespace Sepes.RestApi
             .SetBasePath(env.ContentRootPath)
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables();
+            .AddEnvironmentVariables()
+            .AddUserSecrets<Startup>();
 
-            if (env.IsDevelopment())
-            {
-                confbuilder.AddUserSecrets<Startup>();
-            }
             Configuration = confbuilder.Build();
         }
 
@@ -45,49 +46,49 @@ namespace Sepes.RestApi
 
             //Issue: 38 Check the all the logs thoroughly before you close out this issue. Test a the webapi functions and make sure none of them causes sensitive data to be logged. 
 
-            //Secret key can be set up for with either secret key or in appsettings.json, secret key will overwrite json.
+            //Secret key can be set up for with either dotnet secret key or in environment values, secret key will overwrite ENV.
             services.AddApplicationInsightsTelemetry(Configuration["AzureLogToken:ServiceApiKey"]);
             services.Configure<AppSettings>(Configuration.GetSection("Jwt"));
             services.AddOptions();
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)  
-                .AddJwtBearer(options => {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = false,  //Issue: 39 set to true before MVP
-                        ValidateAudience = false,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = Configuration["Jwt:Issuer"],
-                        ValidAudience = Configuration["Jwt:Issuer"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
-                        //SaveSigninToken = true  
-                    };
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,  //Issue: 39 set to true before MVP
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Issuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+                    //SaveSigninToken = true  
+                };
             });
 
             services.AddCors(options => {
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder => {
-                    /*
-                    builder.WithOrigins("http://example.com",
+                    /* builder.WithOrigins("http://example.com",
                                         "http://www.contoso.com");
                     */
                     //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easely debug without changing code
-
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-
                 });
             });
+ 
+            services.AddSingleton<ISepesDb, SepesDb>();
+            services.AddSingleton<IAzureService>(new AzureService(Configuration));
+            services.AddSingleton<IPodService, PodService>();
 
-            //services.AddSingleton<ISepesDb, SepesDb>();
-            services.AddTransient<ISepesDb, SepesDb>();
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName == "Development")
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -97,10 +98,11 @@ namespace Sepes.RestApi
                 app.UseHsts();
             }
 
-            app.UseCors(MyAllowSpecificOrigins);
             app.UseHttpsRedirection();
             app.UseAuthentication();
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseMvc();
         }
+
     }
 }
