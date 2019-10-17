@@ -1,12 +1,7 @@
-using Microsoft.Azure.Management.Network;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System;
-using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
@@ -18,8 +13,8 @@ namespace Sepes.RestApi.Services
     // This is (and future children) is the only code that is alloed to create and destoy azure resources.
     public class AzureService : IAzureService
     {
-        IAzure _azure;
-        private string _commonResourceGroup;
+        private readonly IAzure _azure;
+        private readonly string _commonResourceGroup;
         public AzureService(IConfiguration configuration) {
             /////////////////////
             //// Azure setup
@@ -39,15 +34,13 @@ namespace Sepes.RestApi.Services
                     .WithRegion(Region.EuropeNorth)
                     .Create();
             }
-
-            //CreateNetwork("TomTestNetwork").Wait();
         }
         public string getSubscription() {
             return _azure.GetCurrentSubscription().DisplayName;
         }
 
         // CreateResourceGroup(...);
-        public async Task<string> CreateResourceGroup(Pod pod)//Change to long form so function prompt is more descriptive
+        public async Task<string> CreateResourceGroup(PodInput pod)//Change to long form so function prompt is more descriptive
         {
             //if(!hasresourcegroup()){
             //Create ResourceGroup
@@ -65,10 +58,10 @@ namespace Sepes.RestApi.Services
 
         }
         // TerminateResourceGroup(...);
-        public Task TerminateResourceGroup(string _commonResourceGroup)
+        public Task TerminateResourceGroup(string commonResourceGroup)
         {
             //Wrap in try...catch? Or was that done in controller?
-            return _azure.ResourceGroups.DeleteByNameAsync(_commonResourceGroup); //Delete might not be what we want.
+            return _azure.ResourceGroups.DeleteByNameAsync(commonResourceGroup); //Delete might not be what we want.
             //Might instead want to get list of all users then remove them?
         }
 
@@ -77,21 +70,22 @@ namespace Sepes.RestApi.Services
         // RemoveUser(...)
 
         // CreateNetwork(...)
-        public async Task<string> CreateNetwork(Pod pod)
-        {
-            var network = await _azure.Networks.Define($"{pod.studyID}-{pod.podName.Replace(" ", "-")}Network")
+
+        public async Task<string> CreateNetwork(string networkName, string addressSpace) {
+            var network = await _azure.Networks.Define(networkName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
-                .WithAddressSpace($"10.{1 + pod.podID / 256}.{pod.podID % 256}.0/24")
+                .WithAddressSpace(addressSpace)
                 .CreateAsync();
 
             return network.Id;
         }
 
         // RemoveNetwork(...)
-        public Task RemoveNetwork(string vNetName, string _commonResourceGroup)
+        public async Task RemoveNetwork(string vNetName)
         {
-            return _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
+            await _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
+            return;
         }
 
         // CreateNsg(...)

@@ -170,32 +170,23 @@ namespace Sepes.RestApi.Services
         {
             return createStudy(study.ToObject<Study>());
         }*/
-        public Task<int> createPod(Pod pod)
+        public async Task<Pod> createPod(string name, int studyId)
         {
-            int podID = 0;
+            await connection.OpenAsync();
             try
             {
-                connection.Open();
-
-                
                 string sqlPod = "INSERT INTO [dbo].[tblPod] (StudyID, PodName) VALUES (@studyID , @podName) SELECT CAST(scope_identity() AS int)";
                 
                 SqlCommand command = new SqlCommand(sqlPod, connection);
-                command.Parameters.AddWithValue("@podName", pod.podName);
-                command.Parameters.AddWithValue("@studyID", pod.studyID);
-                podID = (int)command.ExecuteScalar();
-
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return Task.FromResult(-1);
+                command.Parameters.AddWithValue("@podName", name);
+                command.Parameters.AddWithValue("@studyID", studyId);
+                var id = Convert.ToUInt16(await command.ExecuteScalarAsync());
+                return new Pod(id, name, studyId);
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
-            return Task.FromResult(podID);
         }
 
         /*public int createUser(User user)

@@ -78,8 +78,9 @@ namespace Sepes.RestApi
                 });
             });
  
-            services.AddTransient<ISepesDb, SepesDb>();
+            services.AddSingleton<ISepesDb, SepesDb>();
             services.AddSingleton<IAzureService>(new AzureService(Configuration));
+            services.AddSingleton<IPodService, PodService>();
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
