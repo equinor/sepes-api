@@ -36,23 +36,11 @@ namespace Sepes.RestApi.Controller
         [HttpPost("token")]
         public IActionResult Token([FromBody] AzTokenClass AzToken) 
         {
-            IActionResult response = Unauthorized(); //Default response if bellow fails
-            var IsAuthentic = AuthenticateToken(AzToken);
-            
-            if (IsAuthentic){
+            IActionResult response = Unauthorized(); //Default response if bellow fail
                 var SepesToken = GenerateJSONWebToken(AzToken, null);
                 //response = Ok(new { Token = SepesToken}); //Alternative method to return wrapped in token. In case we need more attributes later.
                 response = Ok(SepesToken);
-            }
-            else{
                 //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
-                response = Unauthorized("Invalid Azure token.");
-            }
-
-
-            
-            //Check if creation of token is automatically logged, if not add custom logging that reports what userid got what token.
-            
             return response;
         }
         //Takes old token, and generates a new token.
@@ -95,13 +83,6 @@ namespace Sepes.RestApi.Controller
   
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-        
-        private bool AuthenticateToken(AzTokenClass AZtoken)
-        {
-            //Issue: 38  Logic for authenticating the azure token.
-            return true;
-        }
-
     }
 
     public class AzTokenClass{

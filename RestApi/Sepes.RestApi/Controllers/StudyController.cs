@@ -1,15 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
-using Newtonsoft.Json.Linq;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
+using System;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    //[Authorize]
+    [Authorize]
     public class StudyController : ControllerBase
     {
         private ISepesDb sepesDb;
@@ -29,29 +30,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
         {
-            /*  
-                Check if user is authorized to modify the study
-                Compare updated values with old values of study with same ID
-                Authorized = Athorize(UpdateVars); //Ask OPA if user authorized
-                if Authorized then{
-                    if StudyIDfound then{//Can likely be removed as that would be part of authorisation check
-                        compare records
-                        if RecordChangeValid then{
-                            update record;
-                            return= succes;
-                        }
-                        else{
-                            return =Invalid change
-                        }
-                    }
-                    else{
-                        return= Record not found
-                    }
-                }
-                else{
-                    return=unauthorized;
-                }
-             */
+            throw new NotImplementedException();
         }
 
         //Get list of studies
