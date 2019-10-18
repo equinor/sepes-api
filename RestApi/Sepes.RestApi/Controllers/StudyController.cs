@@ -4,6 +4,7 @@ using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 using System;
 using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
@@ -13,19 +14,20 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyController : ControllerBase
     {
-        private ISepesDb sepesDb;
+        private ISepesDb _sepesDb;
 
-        public StudyController(ISepesDb dbService) {
-            sepesDb = dbService;
+        public StudyController(ISepesDb dbService)
+        {
+            _sepesDb = dbService;
         }
-        
+
         //Create study
         [HttpPost("create")]
-        public int CreationVars([FromBody] Study value)
+        public async Task<int> CreationVars([FromBody] Study value)
         {
-            return sepesDb.createStudy(value);
+            return await _sepesDb.createStudy(value.studyName, value.userIds, value.datasetIds);
         }
-        
+
         //Update study
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
@@ -35,15 +37,15 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet("list")]
-        public string GetStudies()
+        public async Task<string> GetStudies()
         {
-            return sepesDb.getStudies(false);
+            return await _sepesDb.getStudies(false);
         }
 
         [HttpGet("archived")]
-        public string GetArchivedStudies()
+        public async Task<string> GetArchivedStudies()
         {
-            return sepesDb.getStudies(true);
+            return await _sepesDb.getStudies(true);
         }
     }
 
