@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Sepes.RestApi.Services
 {
@@ -24,108 +25,53 @@ namespace Sepes.RestApi.Services
             connection = new SqlConnection(builder.ConnectionString);
         }
 
-        public string getDatasetList()
+        public Task<string> getDatasetList()
         {
-            //JObject json = new JObject();
-            string datasetstring = "";
-            string userstring = "";
-            try
-            {
-                using (connection)
-                {
-                    connection.Open();
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append("SELECT DatasetId, DatasetName ");
-                    sb.Append("FROM [dbo].[tblDataset] ");
-                    sb.Append("FOR JSON AUTO ");
-                    string sqlDataset = sb.ToString();
-
-                    string sqlUsers = "SELECT UserId, UserName, UserEmail, UserGroup FROM dbo.tblUser FOR JSON AUTO";
-
-                    using (SqlCommand command = new SqlCommand(sqlDataset, connection))
-                    {
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
-                                //json.Add("dataset", tokenObject); //Adds a top level header to the json
-                                datasetstring = reader.GetString(0);
-                                datasetstring.Insert(1, "{\"dataset\":");
-                                datasetstring.Insert(datasetstring.Length - 2,"]");
-                            }
-                        }
-                    }
-
-                    using (SqlCommand command = new SqlCommand(sqlUsers, connection))
-                    {
-                        using (SqlDataReader reader = command.ExecuteReader())
-                        {
-                            while (reader.Read())
-                            {
-                                //JToken tokenObject = JToken.Parse(reader.GetString(0)); //Parse is serialising into json
-                                //json.Add("users", tokenObject);
-                                userstring = reader.GetString(0);
-                                userstring.Insert(1, "{\"dataset\":");
-                                userstring.Insert(userstring.Length - 2,"]");
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-            }
-            string response = datasetstring + "," + userstring;
-            return response;
+            throw new NotImplementedException();
         }
-        public int createStudy(Study study)
+        public async Task<int> createStudy(string studyName, int[] userIds, int[] datasetIds)
         {
             int studyId = -1;
+            await connection.OpenAsync();
             try
             {
-                connection.Open();
+                List<Task> tasks = new List<Task>();
 
                 // insert study
                 string sqlStudy = "INSERT INTO [dbo].[tblStudy] (StudyName) VALUES (@studyName) SELECT CAST(scope_identity() AS int)";
 
                 SqlCommand command = new SqlCommand(sqlStudy, connection);
-                command.Parameters.AddWithValue("@studyName", study.studyName);
-                studyId = (int)command.ExecuteScalar();
+                command.Parameters.AddWithValue("@studyName", studyName);
+                studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
                 Console.WriteLine("### SepesDB: StudyID " + studyId);
 
                 // insert user2study
                 StringBuilder user2StudyBuilder = new StringBuilder();
                 user2StudyBuilder.Append("INSERT INTO [dbo].[lnkUser2Study] (UserID, StudyID) VALUES ");
-                createInsertValues(studyId, study.userIds, user2StudyBuilder);
+                createInsertValues(studyId, userIds, user2StudyBuilder);
                 string sqlUser2Study = user2StudyBuilder.ToString();
 
                 command = new SqlCommand(sqlUser2Study, connection);
-                command.ExecuteNonQuery();
+                tasks.Add(command.ExecuteNonQueryAsync());
 
                 // insert study2dataset
                 StringBuilder study2datasetBuilder = new StringBuilder();
                 study2datasetBuilder.Append("INSERT INTO [dbo].[lnkStudy2Dataset] (DatasetID, StudyID) VALUES ");
-                createInsertValues(studyId, study.datasetIds, study2datasetBuilder);
+                createInsertValues(studyId, datasetIds, study2datasetBuilder);
                 string sqlStudy2dataset = study2datasetBuilder.ToString();
 
                 command = new SqlCommand(sqlStudy2dataset, connection);
-                command.ExecuteNonQuery();
-            }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return -1;
+                tasks.Add(command.ExecuteNonQueryAsync());
+                Task.WaitAll(tasks.ToArray()); //Might work, might not work
             }
             finally
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
 
             return studyId;
         }
-        public async Task<Pod> createPod(string name, int studyId)
+        public async Task<Pod> createPod(string name, int studyId) ////This i the one to steal from
         {
             await connection.OpenAsync();
             try
@@ -156,11 +102,11 @@ namespace Sepes.RestApi.Services
 
             Console.WriteLine(strBuilder.ToString());
         }
-        public int updateStudy(Study study)
+        /*public Task<int> updateStudy(Study study)
         {
+            connection.OpenAsync();
             try
             {
-                connection.Open();
 
                 // insert study
                 string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{study.archived}' WHERE StudyID = {study.studyId}";
@@ -171,25 +117,20 @@ namespace Sepes.RestApi.Services
 
                 Console.WriteLine($"### SepesDB: Updated Study {studyNum} with archived = {study.archived}");
             }
-            catch (SqlException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return 0;
-            }
             finally
             {
-                connection.Close();
+                connection.CloseAsync();
             }
 
             return 1;
-        }
+        }*/
 
-        public string getStudies(bool archived)
+        public async Task<string> getStudies(bool archived)
         {
             string response = "";
+            await connection.OpenAsync();
             try
             {
-                connection.Open();
                 StringBuilder sb = new StringBuilder();
                 sb.Append("SELECT StudyId, StudyName ");
                 sb.Append("FROM [dbo].[tblStudy] ");
@@ -199,7 +140,7 @@ namespace Sepes.RestApi.Services
 
                 using (SqlCommand command = new SqlCommand(sqlStudies, connection))
                 {
-                    using (SqlDataReader reader = command.ExecuteReader())
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
                     {
                         while (reader.Read())
                         {
@@ -208,13 +149,9 @@ namespace Sepes.RestApi.Services
                     }
                 }
             }
-            catch (SqlException ex) 
-            {
-                Console.WriteLine(ex.ToString());
-            }
             finally 
             {
-                connection.Close();
+                await connection.CloseAsync();
             }
 
             return response;
