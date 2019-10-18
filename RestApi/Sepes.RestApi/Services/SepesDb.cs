@@ -35,7 +35,7 @@ namespace Sepes.RestApi.Services
             await connection.OpenAsync();
             try
             {
-                List<Task> tasks = new List<Task>();
+                //List<Task> tasks = new List<Task>();
 
                 // insert study
                 string sqlStudy = "INSERT INTO [dbo].[tblStudy] (StudyName) VALUES (@studyName) SELECT CAST(scope_identity() AS int)";
@@ -52,7 +52,7 @@ namespace Sepes.RestApi.Services
                 string sqlUser2Study = user2StudyBuilder.ToString();
 
                 command = new SqlCommand(sqlUser2Study, connection);
-                tasks.Add(command.ExecuteNonQueryAsync());
+                await command.ExecuteNonQueryAsync();
 
                 // insert study2dataset
                 StringBuilder study2datasetBuilder = new StringBuilder();
@@ -61,8 +61,8 @@ namespace Sepes.RestApi.Services
                 string sqlStudy2dataset = study2datasetBuilder.ToString();
 
                 command = new SqlCommand(sqlStudy2dataset, connection);
-                tasks.Add(command.ExecuteNonQueryAsync());
-                Task.WaitAll(tasks.ToArray()); //Might work, might not work
+                await command.ExecuteNonQueryAsync();
+                //Task.WaitAll(tasks.ToArray()); //Might work, might not work
             }
             finally
             {
