@@ -1,11 +1,8 @@
 using System;
 using System.Data.SqlClient;
 using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Sepes.RestApi.Services
 {
@@ -14,15 +11,9 @@ namespace Sepes.RestApi.Services
     {
         private SqlConnection connection;
 
-        public SepesDb(IConfiguration Configuration)
+        public SepesDb(DatabaseConfig config)
         {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = Configuration["Sepes:sql:server"];
-            builder.UserID = Configuration["Sepes:sql:user"];
-            builder.Password = Configuration["Sepes:sql:password"];
-            builder.InitialCatalog = Configuration["Sepes:sql:database"];
-
-            connection = new SqlConnection(builder.ConnectionString);
+            connection = new SqlConnection(config.connectionString);
         }
 
         public Task<string> getDatasetList()

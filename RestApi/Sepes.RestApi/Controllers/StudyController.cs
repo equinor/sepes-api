@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Controller
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize]
+    //[Authorize]
     public class StudyController : ControllerBase
     {
         private ISepesDb _sepesDb;
