@@ -16,7 +16,7 @@ namespace Sepes.RestApi.Services
             _appSetting = appsettings.Value;
         }
 
-        public string GenerateJSONWebToken(string AZtoken, string OldSepesToken)
+        public Task<string> GenerateJSONWebToken(string AZtoken, string OldSepesToken)
         {
 
             if (OldSepesToken != null)
@@ -45,7 +45,7 @@ namespace Sepes.RestApi.Services
             expires: DateTime.Now.AddMinutes(120),
             signingCredentials: credentials);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return Task.FromResult(new JwtSecurityTokenHandler().WriteToken(token));
         }
     }
 }
