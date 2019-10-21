@@ -9,10 +9,10 @@ namespace Sepes.RestApi.Services
 {
     public interface ISepesDb
     {
-        string getDatasetList();
+        //Task<string> getDatasetList();
 
-        int createStudy(Study study);
-        string getStudies(bool archived);
+        Task<int> createStudy(string studyName, int[] userIds, int[] datasetIds);
+        Task<string> getStudies(bool archived);
         Task<Pod> createPod(string name, int studyId);
     }
 }
