@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text;
-using System.Security.Claims;
+﻿using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,12 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Services;
 using Sepes.RestApi.Model;
-
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 
 namespace Sepes.RestApi
 {
@@ -36,6 +28,8 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var config = new ConfigService(Configuration, SepesConfiguration);
+
             //Adds the secret azure insight token. Make sure to set this if using logging via azure innsight
             //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
 
@@ -73,12 +67,12 @@ namespace Sepes.RestApi
                     /* builder.WithOrigins("http://example.com",
                                         "http://www.contoso.com");
                     */
-                    //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easely debug without changing code
+                    //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easily debug without changing code
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
 
-            services.AddSingleton<ISepesDb, SepesDb>();
+            services.AddSingleton<ISepesDb>(new SepesDb(config.databaseConfig));
             services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IAzureService>(new AzureService(Configuration));
             services.AddSingleton<IPodService, PodService>();
