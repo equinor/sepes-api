@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 using Microsoft.Extensions.Options;
+using Sepes.RestApi.Services;
 
 namespace Sepes.RestApi.Tests.Controller
 {
@@ -27,12 +28,14 @@ namespace Sepes.RestApi.Tests.Controller
         public void GetToken()
         {
             var JwtPackage = new AzTokenClass();
-            AppSettings settings = new AppSettings();
-            settings.Key = key;
-            settings.Issuer = "TestIssuer";
-            var option = Options.Create(settings);
-            AuthController controller = new AuthController(option); //Later move to test fixture, as same object can be reused.
-            var token = controller.Token(JwtPackage) as OkObjectResult;
+            JwtPackage.idToken = "r52sefsdf";
+            AppSettings _settings = new AppSettings();
+            _settings.Key = key;
+            _settings.Issuer = "TestIssuer";
+            var _option = Options.Create(_settings);
+            IAuthService _authService = new AuthService(_option);
+            AuthController controller = new AuthController(_authService); //Later move to test fixture, as same object can be reused.
+            var token = controller.Token(JwtPackage);
             var tokencontent = token.Value.ToString();
             var attempt = new JwtSecurityTokenHandler().ReadToken(tokencontent);
         }
@@ -40,15 +43,17 @@ namespace Sepes.RestApi.Tests.Controller
         public void RefreshToken()
         {
             var JwtPackage = new AzTokenClass();
-            AppSettings settings = new AppSettings();
-            settings.Key = key;
-            settings.Issuer = "TestIssuer";
-            var option = Options.Create(settings);
-            var controller = new AuthController(option); 
+            JwtPackage.idToken = "dsfgdsfs";
+            AppSettings _settings = new AppSettings();
+            _settings.Key = key;
+            _settings.Issuer = "TestIssuer";
+            var _option = Options.Create(_settings);
+            IAuthService _authService = new AuthService(_option);
+            var controller = new AuthController(_authService); 
             var TestSepesToken = new SepesTokenClass();
-            var token = controller.Token(JwtPackage) as OkObjectResult;
+            var token = controller.Token(JwtPackage);
             TestSepesToken.idToken = token.Value.ToString(); //Tokencontent must be renamed in previous test and moved to class.
-            var result = controller.RefreshToken(TestSepesToken) as OkObjectResult;
+            var result = controller.RefreshToken(TestSepesToken);
             var attempt = new JwtSecurityTokenHandler().ReadToken(result.Value.ToString());
         }
     }
