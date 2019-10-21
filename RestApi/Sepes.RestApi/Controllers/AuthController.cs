@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
@@ -13,7 +14,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     public class AuthController : ControllerBase
     {
-        public IAuthService _auth;
+        public readonly IAuthService _auth;
         public AuthController(IAuthService authService)
         {
             _auth = authService;
@@ -22,21 +23,21 @@ namespace Sepes.RestApi.Controller
         //POST api/auth/token
         [AllowAnonymous]
         [HttpPost("token")]
-        public ActionResult<string> Token([FromBody] AzTokenClass AzToken)
+        public async Task<string> Token([FromBody] AzTokenClass AzToken)
         {
             ActionResult response = Unauthorized(); //Default response if bellow fail
-            var SepesToken = _auth.GenerateJSONWebToken(AzToken.idToken, null);
+            var SepesToken = await _auth.GenerateJSONWebToken(AzToken.idToken, null);
             //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
             return SepesToken;
         }
         //Takes old token, and generates a new token.
         [Authorize]
         [HttpPost("refreshtoken")]
-        public ActionResult<string> RefreshToken([FromBody] SepesTokenClass OldSepesTokenString)
+        public async Task<string> RefreshToken([FromBody] SepesTokenClass OldSepesTokenString)
         {
             //Issue 38 this depending on if we have any traits we need to pass on or not this section of the controller may not need any logic at all.
             ActionResult response = Unauthorized(); //Default response if bellow fails
-            var SepesToken = _auth.GenerateJSONWebToken(null, OldSepesTokenString.idToken);
+            var SepesToken = await _auth.GenerateJSONWebToken(null, OldSepesTokenString.idToken);
             return SepesToken;
         }
     }

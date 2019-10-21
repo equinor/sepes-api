@@ -1,20 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Xunit;
-using Sepes.RestApi;
 using Sepes.RestApi.Controller;
-using System.Linq;
-using System.Text;
-using System;
-using System.Text.Json;
-using System.Net.Http;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 using Microsoft.Extensions.Options;
 using Sepes.RestApi.Services;
@@ -36,7 +22,7 @@ namespace Sepes.RestApi.Tests.Controller
             IAuthService _authService = new AuthService(_option);
             AuthController controller = new AuthController(_authService); //Later move to test fixture, as same object can be reused.
             var token = controller.Token(JwtPackage);
-            var tokencontent = token.Value.ToString();
+            var tokencontent = token.Result.ToString();
             var attempt = new JwtSecurityTokenHandler().ReadToken(tokencontent);
         }
         [Fact]
@@ -52,9 +38,9 @@ namespace Sepes.RestApi.Tests.Controller
             var controller = new AuthController(_authService); 
             var TestSepesToken = new SepesTokenClass();
             var token = controller.Token(JwtPackage);
-            TestSepesToken.idToken = token.Value.ToString(); //Tokencontent must be renamed in previous test and moved to class.
+            TestSepesToken.idToken = token.Result.ToString(); //Tokencontent must be renamed in previous test and moved to class.
             var result = controller.RefreshToken(TestSepesToken);
-            var attempt = new JwtSecurityTokenHandler().ReadToken(result.Value.ToString());
+            var attempt = new JwtSecurityTokenHandler().ReadToken(result.Result.ToString());
         }
     }
 }
