@@ -65,9 +65,11 @@ namespace Sepes.RestApi
                 };
             });
 
-            services.AddCors(options => {
+            services.AddCors(options =>
+            {
                 options.AddPolicy(MyAllowSpecificOrigins,
-                builder => {
+                builder =>
+                {
                     /* builder.WithOrigins("http://example.com",
                                         "http://www.contoso.com");
                     */
@@ -75,8 +77,9 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
- 
+
             services.AddSingleton<ISepesDb, SepesDb>();
+            services.AddSingleton<IAuthService, AuthService>();
             services.AddSingleton<IAzureService>(new AzureService(Configuration));
             services.AddSingleton<IPodService, PodService>();
 

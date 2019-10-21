@@ -24,13 +24,12 @@ namespace Sepes.RestApi.Controller
     public class UserController : ControllerBase
     {
         public IConfiguration Configuration { get; set; }
-        //private SepesDb sepesDb;
 
-        /*[HttpPost("create")]
+        [HttpPost("create")]
         public int CreationVars([FromBody] User value)
         {
-            return sepesDb.createUser(value);
-        }*/
+            throw new NotImplementedException();
+        }
 
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
@@ -41,10 +40,8 @@ namespace Sepes.RestApi.Controller
         [HttpGet("list")]
         public JObject Get()
         {
-            throw new NotImplementedException("Function not yet implemented, use search api instead");
-            //return sepesDb.getUserList(); //May not be implemented or might be a limited search
+            throw new NotImplementedException();
         }
-        //TODO view action
     }
 
 }
