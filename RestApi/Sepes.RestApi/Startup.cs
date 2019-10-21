@@ -21,17 +21,15 @@ namespace Sepes.RestApi
 {
     public class Startup
     {
-        public IConfiguration Configuration { get; set; }
-        public Startup(IWebHostEnvironment env)
+        private IWebHostEnvironment _env;
+        public IConfiguration Configuration { get;}
+        public IConfiguration SepesConfiguration { get;}
+        public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
-            var confbuilder = new ConfigurationBuilder()
-            .SetBasePath(env.ContentRootPath)
-            .AddJsonFile("appsettings.json", optional: false)
-            .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-            .AddEnvironmentVariables()
-            .AddUserSecrets<Startup>();
+            _env = env;
+            Configuration = configuration;
 
-            Configuration = confbuilder.Build();
+            SepesConfiguration = new ConfigurationBuilder().AddEnvironmentVariables("SEPES_").Build();
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -103,6 +101,5 @@ namespace Sepes.RestApi
             app.UseCors(MyAllowSpecificOrigins);
             app.UseMvc();
         }
-
     }
 }
