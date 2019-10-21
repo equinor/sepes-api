@@ -22,24 +22,22 @@ namespace Sepes.RestApi.Controller
         //POST api/auth/token
         [AllowAnonymous]
         [HttpPost("token")]
-        public IActionResult Token([FromBody] AzTokenClass AzToken)
+        public ActionResult<string> Token([FromBody] AzTokenClass AzToken)
         {
-            IActionResult response = Unauthorized(); //Default response if bellow fail
+            ActionResult response = Unauthorized(); //Default response if bellow fail
             var SepesToken = _auth.GenerateJSONWebToken(AzToken.idToken, null);
-            response = Ok(SepesToken);
             //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
-            return response;
+            return SepesToken;
         }
         //Takes old token, and generates a new token.
         [Authorize]
         [HttpPost("refreshtoken")]
-        public IActionResult RefreshToken([FromBody] SepesTokenClass OldSepesTokenString)
+        public ActionResult<string> RefreshToken([FromBody] SepesTokenClass OldSepesTokenString)
         {
             //Issue 38 this depending on if we have any traits we need to pass on or not this section of the controller may not need any logic at all.
-            IActionResult response = Unauthorized(); //Default response if bellow fails
+            ActionResult response = Unauthorized(); //Default response if bellow fails
             var SepesToken = _auth.GenerateJSONWebToken(null, OldSepesTokenString.idToken);
-            response = Ok(SepesToken);
-            return response;
+            return SepesToken;
         }
     }
 }
