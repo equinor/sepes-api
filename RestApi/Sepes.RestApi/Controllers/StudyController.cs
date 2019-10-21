@@ -23,9 +23,9 @@ namespace Sepes.RestApi.Controller
 
         //Create study
         [HttpPost("create")]
-        public async Task<ActionResult<int>> CreationVars([FromBody] Study value)
+        public async Task<int> CreationVars([FromBody] Study value)
         {
-            return Ok(await _sepesDb.createStudy(value.studyName, value.userIds, value.datasetIds));
+            return await _sepesDb.createStudy(value.studyName, value.userIds, value.datasetIds);
         }
 
         //Update study
