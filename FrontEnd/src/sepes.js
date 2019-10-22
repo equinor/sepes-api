@@ -2,7 +2,8 @@ export default class Sepes {
     newStudy = {
         studyName: "New study",
         userIds: [],
-        datasetIds: []
+        datasetIds: [],
+        archived: false,
     };
 
     getSupplierList = () => [{UserId: 1, UserName: "Ricardo Frame", UserEmail: "ricardo@sepes.com"}, 
@@ -48,13 +49,25 @@ export default class Sepes {
         });
       }
     
-      addItemToStudy = (id, listName) => {
+    addItemToStudy = (id, listName) => {
         this.newStudy[listName].push(id);
         console.log(this.newStudy[listName]);
-      }
+    }
     
-      removeItemFromStudy = (id, listName) => {
+    removeItemFromStudy = (id, listName) => {
         this.newStudy[listName].splice(this.newStudy[listName].indexOf(id), 1);
         console.log(this.newStudy[listName]);
-      }
+    }
+
+
+    updateStudy(studyId, archived) {
+      fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+        method: "post",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
+        },
+        body: JSON.stringify({studyId, archived})
+      });
+    }
 }

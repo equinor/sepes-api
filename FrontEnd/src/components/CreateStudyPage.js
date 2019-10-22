@@ -15,6 +15,7 @@ class CreateStudyPage extends Component {
             suppliers: [],
             dataset: [],
             archived: false,
+            studyId: null,
         }
     }
     render() {
@@ -30,7 +31,7 @@ class CreateStudyPage extends Component {
             </header>
             <div className="sidebar">
                 <div style={{padding: "20px"}}>
-                    <label><input type="checkbox" checked={this.state.archived} onChange={() => this.setState({archived: !this.state.archived})} />
+                    <label><input type="checkbox" checked={this.state.archived} onChange={this.updateAchived} />
                         Archive study
                     </label>
                 </div>
@@ -88,6 +89,12 @@ class CreateStudyPage extends Component {
 
     newPod = () => {
         this.props.changePage("pod", {dataset: this.state.dataset});
+    }
+
+
+    updateAchived = () => {
+        this.setState({archived: !this.state.archived})
+        sepes.updateStudy(this.state.studyId, this.state.archived);
     }
 }
 
