@@ -63,7 +63,7 @@ namespace Sepes.RestApi.Services
 
             return studyId;
         }
-        public async Task<Pod> createPod(string name, int studyId) ////This i the one to steal from
+        public async Task<Pod> createPod(string name, int studyId) ////This is the one to steal from
         {
             await connection.OpenAsync();
             try
