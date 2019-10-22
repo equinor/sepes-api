@@ -14,6 +14,7 @@ namespace Sepes.RestApi.Model
         }
 
         public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
+        public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
         public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
     }
 }

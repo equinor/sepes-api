@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Services
         {
             
             var pod = await _database.createPod(name, studyID);
-            var resourceGroupName = await _azure.CreateResourceGroup(pod.networkName);
+            var resourceGroupName = await _azure.CreateResourceGroup(pod.resourceGroupName);
             await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
             return pod;
         }
