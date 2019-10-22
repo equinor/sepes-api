@@ -106,7 +106,7 @@ class App extends React.Component {
     })
     .then(loginResponse => {
       // Login to backend using token from Azure to get a JWT
-      return fetch(process.env.REACT_APP_SEPES_LOGIN_URL, {
+      return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/auth/token", {
         method: "post",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({"Usename": loginResponse.account.name, "idToken": loginResponse.idToken.rawIdToken, "Expiration": "later"})
@@ -134,7 +134,7 @@ class App extends React.Component {
   }
 
   testSepesAPI = () => {
-    fetch(process.env.REACT_APP_SEPES_TEST_URL, {
+    fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/values", {
       method: "get",
       headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
     }).then(data => data.text())
