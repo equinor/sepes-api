@@ -16,7 +16,7 @@ namespace Sepes.RestApi.Services
             _appSetting = appsettings.Value;
         }
 
-        public Task<string> GenerateJSONWebToken(string token)
+        public Task<string> GenerateJSONWebToken()
         {
             var JwtKey = _appSetting.Key;
             var securityKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(JwtKey));
