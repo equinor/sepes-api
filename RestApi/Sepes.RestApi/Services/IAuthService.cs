@@ -4,6 +4,6 @@ namespace Sepes.RestApi.Services
 {
     public interface IAuthService
     {
-        Task<string> GenerateJSONWebToken(string token);
+        Task<string> GenerateJSONWebToken();
     }
 }

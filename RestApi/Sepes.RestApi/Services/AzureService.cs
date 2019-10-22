@@ -15,46 +15,42 @@ namespace Sepes.RestApi.Services
     {
         private readonly IAzure _azure;
         private readonly string _commonResourceGroup;
-        public AzureService(IConfiguration configuration) {
+        public AzureService(IConfiguration configuration)
+        {
             /////////////////////
             //// Azure setup
             string tenant = configuration["Azure:TenantId"];
             string client = configuration["Azure:ClientId"];
             string secret = configuration["Azure:ClientSecret"];
             string subscription = configuration["Azure:SubscriptionId"];
-            _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
+            _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"] + configuration["Azure:CommonResourceGroupName"];
 
             var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
             var authenticated = Azure.Authenticate(creds);
             _azure = authenticated.WithSubscription(subscription);
-            
-            if (!_azure.ResourceGroups.Contain(_commonResourceGroup)) {
+
+            if (!_azure.ResourceGroups.Contain(_commonResourceGroup))
+            {
                 _azure.ResourceGroups
                     .Define(_commonResourceGroup)
                     .WithRegion(Region.EuropeNorth)
                     .Create();
             }
         }
-        public string getSubscription() {
+        public string getSubscription()
+        {
             return _azure.GetCurrentSubscription().DisplayName;
         }
 
         // CreateResourceGroup(...);
-        public async Task<string> CreateResourceGroup(PodInput pod)//Change to long form so function prompt is more descriptive
+        public async Task<string> CreateResourceGroup(string networkName)
         {
-            //if(!hasresourcegroup()){
             //Create ResourceGroup
-            Console.WriteLine("Creating a resource group with name: " + pod.podName);
-
             var resourceGroup = await _azure.ResourceGroups
-                    .Define(pod.studyID + '-' + pod.podName)
+                    .Define(networkName)
                     .WithRegion(Region.EuropeNorth)
-                    .WithTag("Group", pod.podTag) //Group is whatever we name the key as later.
                     .CreateAsync();
-
-            Console.WriteLine("Created a resource group with name: " + pod.podName);
-            return resourceGroup.Id;//return resource id from iresource object
-            //}
+            return resourceGroup.Id;//return resource id from iresource objects
 
         }
         // TerminateResourceGroup(...);
@@ -71,7 +67,8 @@ namespace Sepes.RestApi.Services
 
         // CreateNetwork(...)
 
-        public async Task<string> CreateNetwork(string networkName, string addressSpace) {
+        public async Task<string> CreateNetwork(string networkName, string addressSpace)
+        {
             var network = await _azure.Networks.Define(networkName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
