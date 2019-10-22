@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Controller
         public async Task<string> Token([FromBody] AzTokenClass AzToken)
         {
             ActionResult response = Unauthorized(); //Default response if bellow fail
-            var SepesToken = await _auth.GenerateJSONWebToken(AzToken.idToken);
+            var SepesToken = await _auth.GenerateJSONWebToken();
             //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
             return SepesToken;
         }
@@ -37,7 +37,7 @@ namespace Sepes.RestApi.Controller
         {
             //Issue 38 this depending on if we have any traits we need to pass on or not this section of the controller may not need any logic at all.
             ActionResult response = Unauthorized(); //Default response if bellow fails
-            var SepesToken = await _auth.GenerateJSONWebToken(OldSepesTokenString.idToken);
+            var SepesToken = await _auth.GenerateJSONWebToken();
             return SepesToken;
         }
     }
