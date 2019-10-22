@@ -14,6 +14,7 @@ class CreateStudyPage extends Component {
             sponsors: [],
             suppliers: [],
             dataset: [],
+            archived: false,
         }
     }
     render() {
@@ -28,6 +29,11 @@ class CreateStudyPage extends Component {
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar">
+                <div style={{padding: "20px"}}>
+                    <label><input type="checkbox" checked={this.state.archived} onChange={() => this.setState({archived: !this.state.archived})} />
+                        Archive study
+                    </label>
+                </div>
                 <SepesUserList header="Sponsors" data={this.state.sponsors} addItem={this.addSponsors} />
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} />
                 <SepesDataList header="Dataset" data={sepes.getDatasetList()} addItem={this.addDataset} removeItem={this.removeDataset}/>
