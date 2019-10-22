@@ -8,8 +8,10 @@ class CreateStudyPage extends Component {
         super(props);
         this.state = {
             studies: [],
+            archivedStudies: [],
         }
     }
+    
     render() {
         return (
         <div>
@@ -18,18 +20,32 @@ class CreateStudyPage extends Component {
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div style={{padding: 50}}>
-                <div className="study" onClick={this.newStudy}>
-                    <p>Equinor test study</p>
-                    <p>Pods: 2</p>
-                    <p>Datasets: 5</p>
+                <div style={{display: "table"}}>
+                    <div className="study" onClick={this.newStudy}>
+                        <p>New Study</p>
+                    </div>
+                    <div className="study" onClick={this.newStudy}>
+                        <p>Equinor test study</p>
+                        <p>Pods: 2</p>
+                        <p>Datasets: 5</p>
+                    </div>
+                    <div className="study" onClick={this.newStudy}>
+                        <p>Brilliant study</p>
+                        <p>Pods: 1</p>
+                        <p>Datasets: 1</p>
+                    </div>
                 </div>
-                <div className="study" onClick={this.newStudy}>
-                    <p>Brilliant study</p>
-                    <p>Pods: 1</p>
-                    <p>Datasets: 1</p>
+                <div>
+                    <button onClick={this.showArchived}>Show archived studies</button>
                 </div>
-                <div className="study" onClick={this.newStudy}>
-                    <p>New Study</p>
+                <div style={{paddingTop: 20}}>
+                    { this.state.archivedStudies.map((item) => (
+                        <div className="study" onClick={this.newStudy}>
+                            <p>{item}</p>
+                            <p>Pods: 2</p>
+                            <p>Datasets: 5</p>
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>);
@@ -37,6 +53,10 @@ class CreateStudyPage extends Component {
 
     newStudy = () => {
         this.props.changePage("study", {});
+    }
+
+    showArchived = () => {
+        this.setState({archivedStudies: ["Old study", "Good old days", "Remember when things just worked?", "Nostalgia"]})
     }
 }
 
