@@ -34,8 +34,8 @@ class CreateStudyPage extends Component {
                         Archive study
                     </label>
                 </div>
-                <SepesUserList header="Sponsors" data={this.state.sponsors} addItem={this.addSponsors} />
-                <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} />
+                <SepesUserList header="Sponsors" data={this.state.sponsors} addItem={this.addSponsors} removeUser={this.removeSponsor} />
+                <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} removeUser={this.removeSupplier} />
                 <SepesDataList header="Dataset" data={sepes.getDatasetList()} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
             <SepesPodList data={this.state.pods} newPod={this.newPod} />
@@ -51,6 +51,24 @@ class CreateStudyPage extends Component {
     addSuppliers = (user) => {
         this.setState({
             suppliers: [...this.state.suppliers, user]
+        });
+    }
+
+    removeSponsor = (user) => {
+        let index = this.state.sponsors.indexOf(user);
+        let newArray = [...this.state.sponsors];
+        newArray.splice(index, 1);
+        this.setState({
+            sponsors: newArray
+        });
+    }
+
+    removeSupplier = (user) => {
+        let index = this.state.suppliers.indexOf(user);
+        let newArray = [...this.state.suppliers];
+        newArray.splice(index, 1);
+        this.setState({
+            suppliers: newArray
         });
     }
 
