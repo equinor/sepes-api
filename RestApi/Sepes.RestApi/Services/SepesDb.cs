@@ -3,10 +3,11 @@ using System.Data.SqlClient;
 using System.Text;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi.Services
 {
-
+    [ExcludeFromCodeCoverage]
     public class SepesDb : ISepesDb
     {
         private SqlConnection connection;
