@@ -33,21 +33,14 @@ namespace Sepes.RestApi.Services
         }
 
         // CreateResourceGroup(...);
-        public async Task<string> CreateResourceGroup(PodInput pod)//Change to long form so function prompt is more descriptive
+        public async Task<string> CreateResourceGroup(string networkName)
         {
-            //if(!hasresourcegroup()){
             //Create ResourceGroup
-            Console.WriteLine("Creating a resource group with name: " + pod.podName);
-
             var resourceGroup = await _azure.ResourceGroups
-                    .Define(pod.studyID + '-' + pod.podName)
+                    .Define(networkName)
                     .WithRegion(Region.EuropeNorth)
-                    .WithTag("Group", pod.podTag) //Group is whatever we name the key as later.
                     .CreateAsync();
-
-            Console.WriteLine("Created a resource group with name: " + pod.podName);
-            return resourceGroup.Id;//return resource id from iresource object
-            //}
+            return resourceGroup.Id;//return resource id from iresource objects
 
         }
         // TerminateResourceGroup(...);

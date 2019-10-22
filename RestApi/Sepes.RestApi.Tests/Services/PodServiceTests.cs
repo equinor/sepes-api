@@ -24,6 +24,7 @@ namespace Sepes.RestApi.Tests.Services
             //Then
             Assert.Equal(testPod, pod);
             azureMock.Verify(azure => azure.CreateNetwork("42-test-Network", "10.1.1.0/24"), Times.Once);
+            azureMock.Verify(azure => azure.CreateResourceGroup("42-test-ResourceGroup"), Times.Once);
             azureMock.VerifyNoOtherCalls();
         }
     }
