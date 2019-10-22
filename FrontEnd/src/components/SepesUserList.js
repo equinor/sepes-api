@@ -10,6 +10,18 @@ class SepesUserList extends Component {
         this.setState({email: ""});
     }
 
+    style = {
+        width: 15, 
+        height: 15,
+        borderRadius: 10, 
+        background: "rgb(121, 111, 111)", 
+        float: "right", 
+        margin: 4,
+        position: "absolute",
+        right: 0,
+        top: 0
+    }
+
     render() {
         return (
         <div className="sidebar-block"> 
@@ -18,8 +30,9 @@ class SepesUserList extends Component {
             </div>
             <div className="email-list">
             { this.props.data.map((item) => (
-                <div key={item}>
+                <div key={item} style={{position: "relative"}}>
                     { item }
+                    <div style={this.style} onClick={() => this.props.removeUser(item)}></div>
                 </div>
             )) }</div>
             <div className="add-email">
