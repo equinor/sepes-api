@@ -1,41 +1,34 @@
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Sepes.RestApi.Model;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi.Services
 {
     // Wraps call to azure. This service will most likely need to be split up into smaller servies.
     // This is (and future children) is the only code that is alloed to create and destoy azure resources.
+    [ExcludeFromCodeCoverage]
     public class AzureService : IAzureService
     {
         private readonly IAzure _azure;
         private readonly string _commonResourceGroup;
-        public AzureService(IConfiguration configuration) {
-            /////////////////////
-            //// Azure setup
-            string tenant = configuration["Azure:TenantId"];
-            string client = configuration["Azure:ClientId"];
-            string secret = configuration["Azure:ClientSecret"];
-            string subscription = configuration["Azure:SubscriptionId"];
-            _commonResourceGroup = configuration["Azure:CommonResourceGroupNamePrefix"]+configuration["Azure:CommonResourceGroupName"];
+        public AzureService(AzureConfig config)
+        {
+            _commonResourceGroup = config.commonGroup;
+            _azure = Azure.Authenticate(config.credentials).WithDefaultSubscription();
 
-            var creds = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud);
-            var authenticated = Azure.Authenticate(creds);
-            _azure = authenticated.WithSubscription(subscription);
-            
-            if (!_azure.ResourceGroups.Contain(_commonResourceGroup)) {
+            if (!_azure.ResourceGroups.Contain(_commonResourceGroup))
+            {
                 _azure.ResourceGroups
                     .Define(_commonResourceGroup)
                     .WithRegion(Region.EuropeNorth)
                     .Create();
             }
         }
-        public string getSubscription() {
+        public string getSubscription()
+        {
             return _azure.GetCurrentSubscription().DisplayName;
         }
 
@@ -71,7 +64,8 @@ namespace Sepes.RestApi.Services
 
         // CreateNetwork(...)
 
-        public async Task<string> CreateNetwork(string networkName, string addressSpace) {
+        public async Task<string> CreateNetwork(string networkName, string addressSpace)
+        {
             var network = await _azure.Networks.Define(networkName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
