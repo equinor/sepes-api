@@ -1,64 +1,51 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
-using Newtonsoft.Json.Linq;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
+using System;
+using Microsoft.AspNetCore.Authorization;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    //[Authorize]
+    [Authorize]
     public class StudyController : ControllerBase
     {
-        private ISepesDb sepesDb;
+        private ISepesDb _sepesDb;
 
-        public StudyController(ISepesDb dbService) {
-            sepesDb = dbService;
+        public StudyController(ISepesDb dbService)
+        {
+            _sepesDb = dbService;
         }
-        
+
         //Create study
         [HttpPost("create")]
-        public int CreationVars([FromBody] Study value)
+        public async Task<int> CreationVars([FromBody] Study value)
         {
-            return sepesDb.createStudy(value);
+            return await _sepesDb.createStudy(value.studyName, value.userIds, value.datasetIds);
         }
-        
+
         //Update study
         [HttpPost("update")]
         public void UpdateVars([FromBody] string value)
         {
-            /*  
-                Check if user is authorized to modify the study
-                Compare updated values with old values of study with same ID
-                Authorized = Athorize(UpdateVars); //Ask OPA if user authorized
-                if Authorized then{
-                    if StudyIDfound then{//Can likely be removed as that would be part of authorisation check
-                        compare records
-                        if RecordChangeValid then{
-                            update record;
-                            return= succes;
-                        }
-                        else{
-                            return =Invalid change
-                        }
-                    }
-                    else{
-                        return= Record not found
-                    }
-                }
-                else{
-                    return=unauthorized;
-                }
-             */
+            throw new NotImplementedException();
         }
 
         //Get list of studies
         [HttpGet("list")]
-        public JObject Get()
+        public async Task<string> GetStudies()
         {
-            return sepesDb.getDatasetList();
+            return await _sepesDb.getStudies(false);
+        }
+
+        [HttpGet("archived")]
+        public async Task<string> GetArchivedStudies()
+        {
+            return await _sepesDb.getStudies(true);
         }
     }
 

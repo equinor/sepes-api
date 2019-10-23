@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.ApplicationInsights;
@@ -24,12 +24,11 @@ namespace Sepes.RestApi.Controller
     public class UserController : ControllerBase
     {
         public IConfiguration Configuration { get; set; }
-        private SepesDb sepesDb = new SepesDb();
 
         [HttpPost("create")]
         public int CreationVars([FromBody] User value)
         {
-            return sepesDb.createUser(value);
+            throw new NotImplementedException();
         }
 
         [HttpPost("update")]
@@ -41,10 +40,8 @@ namespace Sepes.RestApi.Controller
         [HttpGet("list")]
         public JObject Get()
         {
-            throw new NotImplementedException("Function not yet implemented, use search api instead");
-            //return sepesDb.getUserList(); //May not be implemented or might be a limited search
+            throw new NotImplementedException();
         }
-        //TODO view action
     }
 
 }
