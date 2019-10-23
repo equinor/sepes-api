@@ -25,7 +25,7 @@ export default function SepesDataList(props) {
             </div>{
         props.data.map((item) => (
             <div key={item.DatasetId}><label>
-                <input type="checkbox" name="dataset" value={ item.DatasetId } onChange={(e) => demoAddRemove(e, item.DatasetName)}/>
+                <input type="checkbox" name="dataset" value={ item.DatasetId } onChange={(e) => demoAddRemove(e, item)}/>
                 { item.DatasetName }
                 </label>
             </div>
