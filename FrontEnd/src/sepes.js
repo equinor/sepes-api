@@ -30,8 +30,24 @@ export default class Sepes {
                             {PodId: 1, PodName: "Goliat Data Refinement"},
                             {PodId: 2, PodName: "Snakeoil"},]
 
-    getData = async () => {
-        return await fetch("https://localhost:5001/api/study/list").then(data => data.json());
+    getData = () => {
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/dataset");
+    }
+
+    getStudies(archived) {
+        if (archived) {
+            return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/archived");
+        }
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/list");
+  }
+
+    initStudy = () => {
+      this.newStudy = {
+          studyName: "New study",
+          userIds: [],
+          datasetIds: [],
+          archived: false,
+      };
     }
 
     setStudyName = (name) => {
@@ -39,7 +55,8 @@ export default class Sepes {
     }
 
     createStudy = () => {
-        fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+        console.log("Create study: "+this.newStudy.studyName+" - "+this.newStudy.datasetIds.length+" dataset")
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
           method: "post",
           headers: { 
             "Content-Type": "application/json", 
@@ -61,13 +78,22 @@ export default class Sepes {
 
 
     updateStudy(studyId, archived) {
-      fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+      fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/update", {
         method: "post",
         headers: { 
           "Content-Type": "application/json", 
           "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
         },
         body: JSON.stringify({studyId, archived})
+      });
+    }
+
+    getSepesToken(azureAccountName, azureRawIdToken) {
+      console.log("getSepesToken()");
+      return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/auth/token", {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"Usename": azureAccountName, "idToken": azureRawIdToken, "Expiration": "later"})
       });
     }
 }
