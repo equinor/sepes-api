@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
-    //[Authorize]
+    [Authorize]
     public class ValuesController : ControllerBase
     {
         //Currently no actual functionality. All bellow responses are from template and used for testing.
+
 
         // GET api/values
         [HttpGet]
@@ -29,8 +23,6 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            TelemetryClient telclient = new TelemetryClient();
-            telclient.TrackTrace("This is a test of custom logs.", SeverityLevel.Information);
             return "value";
         }
 
