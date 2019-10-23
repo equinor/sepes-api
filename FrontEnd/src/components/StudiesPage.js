@@ -1,7 +1,7 @@
 import React, {Component} from 'react'
 
-//import Sepes from '../sepes.js';
-//const sepes = new Sepes();
+import Sepes from '../sepes.js';
+const sepes = new Sepes();
 
 class CreateStudyPage extends Component {
     constructor(props) {
@@ -24,24 +24,19 @@ class CreateStudyPage extends Component {
                     <div className="study" onClick={this.newStudy}>
                         <p>New Study</p>
                     </div>
-                    <div className="study" onClick={this.newStudy}>
-                        <p>Equinor test study</p>
-                        <p>Pods: 2</p>
-                        <p>Datasets: 5</p>
-                    </div>
-                    <div className="study" onClick={this.newStudy}>
-                        <p>Brilliant study</p>
-                        <p>Pods: 1</p>
-                        <p>Datasets: 1</p>
-                    </div>
+                    { this.state.studies.map((item) => (
+                        <div className="study" onClick={this.newStudy}>
+                            <p>{item.StudyName}</p>
+                        </div>
+                    ))}
                 </div>
                 <div>
                     <button onClick={this.showArchived}>Show archived studies</button>
                 </div>
-                <div style={{paddingTop: 20}}>
+                <div style={{paddingTop: 30, display: "table"}}>
                     { this.state.archivedStudies.map((item) => (
                         <div className="study" onClick={this.newStudy}>
-                            <p>{item}</p>
+                            <p>{item.StudyName}</p>
                             <p>Pods: 2</p>
                             <p>Datasets: 5</p>
                         </div>
@@ -51,12 +46,28 @@ class CreateStudyPage extends Component {
         </div>);
     }
 
+    componentDidMount() {
+        sepes.getStudies(false).then(response => response.json())
+            .then(json => {
+                console.log("fetch studies");
+                console.log(json);
+                this.setState({studies: json});
+            });
+    }
+
     newStudy = () => {
         this.props.changePage("study", {});
     }
 
     showArchived = () => {
-        this.setState({archivedStudies: ["Old study", "Good old days", "Remember when things just worked?", "Nostalgia"]})
+        //this.setState({archivedStudies: ["Old study", "Good old days", "Remember when things just worked?", "Nostalgia"]})
+        sepes.getStudies(true)
+            .then(response => response.json())
+            .then(json => {
+                console.log("fetch archived studies");
+                console.log(json);
+                this.setState({archivedStudies: json});
+            });
     }
 }
 
