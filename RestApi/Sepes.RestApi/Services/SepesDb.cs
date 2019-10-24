@@ -102,6 +102,7 @@ namespace Sepes.RestApi.Services
 
             return studyId;
         }
+
         public async Task<Pod> createPod(string name, int studyId) ////This is the one to steal from
         {
             await connection.OpenAsync();
@@ -120,6 +121,7 @@ namespace Sepes.RestApi.Services
                 await connection.CloseAsync();
             }
         }
+
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
             for (int i = 0; i < array.Length; i++)
@@ -162,7 +164,7 @@ namespace Sepes.RestApi.Services
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT StudyId, StudyName ");
+                sb.Append("SELECT StudyId, StudyName, Archived ");
                 sb.Append("FROM [dbo].[tblStudy] ");
                 sb.Append($"WHERE Archived {(archived ? "= 'True'" : "= 'False' OR Archived IS NULL")} ");
                 sb.Append("FOR JSON AUTO ");
@@ -187,6 +189,39 @@ namespace Sepes.RestApi.Services
             return response;
         }
 
+        public async Task<string> getPods(int studyId)
+        {
+            string response = "";
+            await connection.OpenAsync();
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("SELECT StudyID, PodID, PodName ");
+                sb.Append("FROM [dbo].[tblPod] ");
+                sb.Append($"WHERE StudyID = {studyId} ");
+                sb.Append("FOR JSON AUTO ");
+                string sqlStudies = sb.ToString();
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
+                {
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            response = reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            finally 
+            {
+                await connection.CloseAsync();
+            }
+
+            Console.WriteLine("### getPods " + studyId);
+            Console.WriteLine(response);
+            return response;
+        }
     }
 
 }

@@ -19,13 +19,13 @@ class CreateStudyPage extends Component {
                 <span><b>Sepes</b></span>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
-            <div style={{padding: 50}}>
+            <div style={{padding: 50, paddingRight: 0}}>
                 <div style={{display: "table"}}>
                     <div className="study" onClick={this.newStudy}>
                         <p>New Study</p>
                     </div>
                     { this.state.studies.map((item) => (
-                        <div className="study" onClick={this.newStudy}>
+                        <div className="study" onClick={() => this.openStudy(item)}>
                             <p>{item.StudyName}</p>
                         </div>
                     ))}
@@ -35,7 +35,7 @@ class CreateStudyPage extends Component {
                 </div>
                 <div style={{paddingTop: 30, display: "table"}}>
                     { this.state.archivedStudies.map((item) => (
-                        <div className="study" onClick={this.newStudy}>
+                        <div className="study" onClick={() => this.openStudy(item)}>
                             <p>{item.StudyName}</p>
                             <p>Pods: 2</p>
                             <p>Datasets: 5</p>
@@ -56,6 +56,12 @@ class CreateStudyPage extends Component {
     }
 
     newStudy = () => {
+        this.props.setStudy({StudyID: null, StudyName: ""});
+        this.props.changePage("study", {});
+    }
+
+    openStudy = (study) => {
+        this.props.setStudy(study);
         this.props.changePage("study", {});
     }
 
