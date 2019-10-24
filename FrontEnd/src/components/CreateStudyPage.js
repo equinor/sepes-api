@@ -16,8 +16,11 @@ class CreateStudyPage extends Component {
             dataset: [],
             archived: false,
             studyId: null,
+            studyName: "",
+            data: [],
         }
     }
+
     render() {
         return (
         <div>
@@ -25,8 +28,8 @@ class CreateStudyPage extends Component {
                 <span><b>
                     <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
                 </span>
-                <input type="text" placeholder="Study name" id="new-study-input"/>
-                <button>Save</button>
+                <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
+                { this.state.studyId === null ? <button onClick={this.saveStudy}>Save</button> : null }
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar">
@@ -37,10 +40,21 @@ class CreateStudyPage extends Component {
                 </div>
                 <SepesUserList header="Sponsors" data={this.state.sponsors} addItem={this.addSponsors} removeUser={this.removeSponsor} />
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} removeUser={this.removeSupplier} />
-                <SepesDataList header="Dataset" data={sepes.getDatasetList()} addItem={this.addDataset} removeItem={this.removeDataset}/>
+                <SepesDataList header="Dataset" data={this.state.data} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
             <SepesPodList data={this.state.pods} newPod={this.newPod} />
         </div>);
+    }
+
+    componentDidMount() {
+        sepes.initStudy();
+        sepes.getData().then(response => response.json())
+            .then(json => {
+                console.log("fetch dataset");
+                console.log(json);
+                this.setState({data: json});
+            });
+        
     }
 
     addSponsors = (user) => {
@@ -75,8 +89,11 @@ class CreateStudyPage extends Component {
 
     addDataset = (dataset) => {
         this.setState({
-            dataset: [...this.state.dataset, dataset]
+            dataset: [...this.state.dataset, dataset.DatasetName]
         });
+
+        // update this
+        sepes.addItemToStudy(dataset.DatasetId, "datasetIds");
     }
 
     removeDataset = (dataset) => {
@@ -85,6 +102,9 @@ class CreateStudyPage extends Component {
         this.setState({
             dataset: newArray
         });
+
+        // update this
+        sepes.removeItemFromStudy(dataset.DatasetId, "datasetIds");
     }
 
     newPod = () => {
@@ -93,8 +113,22 @@ class CreateStudyPage extends Component {
 
 
     updateAchived = () => {
-        this.setState({archived: !this.state.archived})
-        sepes.updateStudy(this.state.studyId, this.state.archived);
+        if (this.state.studyId !== null) {
+            let archive = !this.state.archived;
+            this.setState({archived: archive});
+            sepes.updateStudy(this.state.studyId, archive);
+        }
+    }
+
+    saveStudy = () => {
+        sepes.setStudyName(this.state.studyName);
+        sepes.createStudy()
+            .then(returnValue => returnValue.text())
+            .then(id => {
+                if (parseInt(id) !== -1) {
+                    this.setState({studyId: parseInt(id)});
+                }
+            });
     }
 }
 
