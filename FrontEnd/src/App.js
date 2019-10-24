@@ -28,11 +28,15 @@ class App extends React.Component {
         sponsors: [],
         dataset: []
       },
-      studyName: "",
-      page: "studies",
+      //studyName: "",
+      page: "none",
       selection: {
         dataset: [],
         pods: [],
+      },
+      selectedStudy: {
+        StudyId: null,
+        StudyName: "",
       },
     }
 
@@ -56,7 +60,7 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        {this.state.page === "studies" ? <StudiesPage state={this.state} changePage={this.changePage} selection={this.state.selection} /> : null}
+        {this.state.page === "studies" ? <StudiesPage state={this.state} changePage={this.changePage} selection={this.state.selection} setStudy={this.setSelectedStudy} /> : null}
         {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} /> : null}
         {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} /> : null}
       </div>
@@ -74,8 +78,8 @@ class App extends React.Component {
         .then(jwt => {
           // Backend login success
           // Store JWT from backend
-          this.setState({tokenId: jwt});
           localStorage.setItem(JWT_NAME, jwt);
+          this.setState({tokenId: jwt, page: "studies"});
           this.appInsights.trackEvent({name: 'Login Sepes success'});
         });
     }
@@ -126,8 +130,8 @@ class App extends React.Component {
       .then(jwt => {
       // Backend login success
       // Store JWT from backend
-      this.setState({tokenId: jwt});
       localStorage.setItem(JWT_NAME, jwt);
+      this.setState({tokenId: jwt, page: "studies"});
       this.appInsights.trackEvent({name: 'Login Sepes success'});
     })
     .catch(error => {
@@ -180,8 +184,14 @@ class App extends React.Component {
   }
 
   createStudy = () => {
-    sepes.setStudyName(this.state.studyName);
-    sepes.createStudy();
+    /*sepes.setStudyName(this.state.studyName);
+    sepes.createStudy();*/
+  }
+
+  setSelectedStudy = (study) => {
+    this.setState({
+      selectedStudy: study
+    });
   }
 
   changePage = (page, selection) => {
