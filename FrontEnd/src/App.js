@@ -67,6 +67,20 @@ class App extends React.Component {
   componentDidMount() {
     if (this.msalApp.getAccount()) {
       this.showInfo();
+      let account = this.msalApp.getAccount();
+
+      sepes.getSepesToken(account.userName, account.accountIdentifier)
+        .then(respnse => respnse.text())
+        .then(jwt => {
+          // Backend login success
+          // Store JWT from backend
+          this.setState({tokenId: jwt});
+          localStorage.setItem(JWT_NAME, jwt);
+          this.appInsights.trackEvent({name: 'Login Sepes success'});
+        });
+    }
+    else {
+      this.login();
     }
     
     this.setState({
@@ -106,11 +120,7 @@ class App extends React.Component {
     })
     .then(loginResponse => {
       // Login to backend using token from Azure to get a JWT
-      return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/auth/token", {
-        method: "post",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({"Usename": loginResponse.account.name, "idToken": loginResponse.idToken.rawIdToken, "Expiration": "later"})
-      });
+      return sepes.getSepesToken(loginResponse.account.name, loginResponse.idToken.rawIdToken);
     })
     .then(respnse => respnse.text())
       .then(jwt => {
