@@ -30,9 +30,9 @@ namespace Sepes.RestApi.Controller
 
         //Update study
         [HttpPost("update")]
-        public void UpdateVars([FromBody] string value)
+        public async Task<int> UpdateVars([FromBody] Study study)
         {
-            throw new NotImplementedException();
+            return await _sepesDb.updateStudy(study);
         }
 
         //Get list of studies
@@ -46,6 +46,12 @@ namespace Sepes.RestApi.Controller
         public async Task<string> GetArchivedStudies()
         {
             return await _sepesDb.getStudies(true);
+        }
+
+        [HttpGet("dataset")]
+        public async Task<string> GetDataset()
+        {
+            return await _sepesDb.getDatasetList();
         }
     }
 
