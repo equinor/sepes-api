@@ -1,9 +1,10 @@
 import React, {Component} from 'react'
 
-//import Sepes from '../sepes.js';
 import PodRules from './PodRules';
 import PodDataset from './PodDataset.js';
-//const sepes = new Sepes();
+
+import Sepes from '../sepes.js';
+const sepes = new Sepes();
 
 class PodPage extends Component {
     constructor(props) {
@@ -13,6 +14,12 @@ class PodPage extends Component {
             incoming: [],
             outgoing: [],
             dataset: [],
+            podName: "",
+            podId: null,
+
+            networkName: "",
+            resourceGroupName: "",
+            addressSpace: "",
         }
     }
     render() {
@@ -23,8 +30,8 @@ class PodPage extends Component {
                     <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > <span 
                         className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
                     <link />
-                <input type="text" placeholder="Pod name" id="new-study-input"/>
-                <button>Save</button>
+                <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e)=> this.setState({podName: e.target.value})} />
+                { this.state.podId === null ? <button onClick={this.createPod}>Save</button> : null }
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar podsidebar">
@@ -37,6 +44,12 @@ class PodPage extends Component {
                 </div>
                 <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule}/>
                 <PodRules header="Outgoing rules" data={this.state.outgoing} addItem={this.addOutgoingRule} removeItem={this.removeOutgoingRule}/>
+                { this.state.networkName !== "" ? 
+                <div style={{padding: 5}}>
+                    <p>Network name: { this.state.networkName }</p>
+                    <p>Resource group: { this.state.resourceGroupName }</p>
+                    <p>Address space: { this.state.addressSpace }</p>
+                </div> : null } 
             </div>
             <div id="pod-dataset-list">
                 { this.props.state.selection.dataset.map((item) => (
@@ -80,6 +93,22 @@ class PodPage extends Component {
 
     findIndex = (array, rule) => {
         return array.findIndex((item) => (item.port === rule.port && item.ip === rule.ip));
+    }
+
+    createPod = () => {
+        console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
+        
+        sepes.createPod(this.props.state.selectedStudy.StudyId, this.state.podName)
+            .then(returnValue => returnValue.json())
+            .then(json => {
+                this.setState({
+                    podId: parseInt(json.id),
+                    networkName: json.networkName,
+                    resourceGroupName: json.resourceGroupName,
+                    addressSpace: json.addressSpace
+                });
+                console.log(json)
+            });
     }
 }
 

@@ -15,6 +15,7 @@ namespace Sepes.RestApi.Services
         Task<int> updateStudy(Study study);
         Task<string> getStudies(bool archived);
         Task<Pod> createPod(string name, int studyId);
+        Task<string> getPods(int studyId);
         Task<string> getDatasetList();
     }
 }
