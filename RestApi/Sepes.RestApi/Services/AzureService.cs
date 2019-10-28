@@ -86,8 +86,40 @@ namespace Sepes.RestApi.Services
         }
 
         // CreateNsg(...)
+        public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.NetworkSecurityGroups
+                .Define(securityGroupName)
+                .WithRegion(Region.EuropeNorth)
+                .WithExistingResourceGroup(resourceGroupName)
+                /*.WithTag()*/
+                .CreateAsync();
+            //Example of how rule may be added. Hopefully has better methodes
+            /*await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName)
+                .Update()
+                .DefineRule("testrule")
+                .AllowInbound()
+                .FromAnyAddress()
+                .FromAnyPort()
+                .ToAnyAddress()
+                .ToAnyPort()
+                .WithAnyProtocol()
+                .Attach()
+                .ApplyAsync();*/
+        }
         // ApplyNsg(...)
+        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName)
+        {
+            //Add the security group to a network/resourcegroup.
+            throw new NotImplementedException();
+        }
         // RemoveNsg(...)
+        public async Task RemoveSecurityGroup(string networkSecurityGroupId)
+        {
+            //Remove the security group from a network/resourcegroup.
+            throw new NotImplementedException();
+        }
 
         // ApplyDataset(...)
         // Don't need a remove dataset as that happes when resource group gets terminated.
