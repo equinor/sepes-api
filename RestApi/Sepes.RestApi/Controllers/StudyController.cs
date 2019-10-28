@@ -32,7 +32,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("update")]
         public async Task<int> UpdateVars([FromBody] Study study)
         {
-            return await _sepesDb.updateStudy(study);
+            return await _sepesDb.updateStudy(study.studyId, study.archived);
         }
 
         //Get list of studies
