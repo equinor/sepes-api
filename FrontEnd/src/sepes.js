@@ -2,8 +2,9 @@ export default class Sepes {
     newStudy = {
         studyName: "New study",
         userIds: [],
-        datasetIds: []
-    }
+        datasetIds: [],
+        archived: false,
+    };
 
     getSupplierList = () => [{UserId: 1, UserName: "Ricardo Frame", UserEmail: "ricardo@sepes.com"}, 
                             {UserId: 2, UserName: "Gudrun Draugstad", UserEmail: "gudrun@sepes.com"}, 
@@ -11,7 +12,7 @@ export default class Sepes {
                             {UserId: 4, UserName: "Ivy Sadler", UserEmail: "ivy@sepes.com"}, 
                             {UserId: 5, UserName: "Lilly-May Hill", UserEmail: "lilly@sepes.com"}, 
                             {UserId: 6, UserName: "Gordon Macfarlane", UserEmail: "gordon@sepes.com"}, 
-                            {UserId: 7, UserName: "Batman", UserEmail: "batman@batman.bat"},]
+                            {UserId: 7, UserName: "Batman", UserEmail: "batman@batman.bat"},];
 
     getSponsorList = () => this.getSupplierList();
 
@@ -25,9 +26,28 @@ export default class Sepes {
                             {DatasetId: 8 , DatasetName: "Gullfaks"}, 
                             {DatasetId: 9 , DatasetName: "Goliat"}, 
                             {DatasetId: 10 , DatasetName: "Kvitebjørn"}];
+    GetDummyPodList = () => [{PodId: 0, PodName: "Testpod"},
+                            {PodId: 1, PodName: "Goliat Data Refinement"},
+                            {PodId: 2, PodName: "Snakeoil"},]
 
-    getData = async () => {
-        return await fetch("https://localhost:5001/api/study/list").then(data => data.json());
+    getData = () => {
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/dataset");
+    }
+
+    getStudies(archived) {
+        if (archived) {
+            return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/archived");
+        }
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/list");
+    }
+
+    initStudy = () => {
+      this.newStudy = {
+          studyName: "New study",
+          userIds: [],
+          datasetIds: [],
+          archived: false,
+      };
     }
 
     setStudyName = (name) => {
@@ -35,7 +55,8 @@ export default class Sepes {
     }
 
     createStudy = () => {
-        fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/create", {
+        console.log("Create study: "+this.newStudy.studyName+" - "+this.newStudy.datasetIds.length+" dataset");
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/pod/create", {
           method: "post",
           headers: { 
             "Content-Type": "application/json", 
@@ -43,25 +64,52 @@ export default class Sepes {
           },
           body: JSON.stringify(this.newStudy)
         });
-      }
+    }
+
+    createPod = (studyID, podName) => {
+        console.log(`Create pod: ${podName} - with study id ${studyID}`);
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/pod/create", {
+          method: "post",
+          headers: { 
+            "Content-Type": "application/json", 
+            "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
+          },
+          body: JSON.stringify({studyID, podName})
+        });
+    }
+
+    getPods = (studyId) => {
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/pod/list/"+studyId);
+    }
     
-      addItemToStudy = (id, listName) => {
-        switch(listName) {
-          case "datasetIds": this.newStudy.datasetIds.push(id); break;
-          case "userIds": this.newStudy.userIds.push(id); break;
-          default: break;
-        }
-      }
+    addItemToStudy = (id, listName) => {
+        this.newStudy[listName].push(id);
+        console.log(this.newStudy[listName]);
+    }
     
-      removeItemFromStudy = (id, listName) => {
-        switch(listName) {
-          case "datasetIds": remove(this.newStudy.datasetIds); break;
-          case "userIds": remove(this.newStudy.userIds); break;
-          default: break;
-        }
-        
-        function remove(array) {
-          array.splice(array.indexOf(id), 1);
-        }
-      }
+    removeItemFromStudy = (id, listName) => {
+        this.newStudy[listName].splice(this.newStudy[listName].indexOf(id), 1);
+        console.log(this.newStudy[listName]);
+    }
+
+
+    updateStudy(studyId, archived) {
+      fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/update", {
+        method: "post",
+        headers: { 
+          "Content-Type": "application/json", 
+          "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
+        },
+        body: JSON.stringify({studyId, archived})
+      });
+    }
+
+    getSepesToken(azureAccountName, azureRawIdToken) {
+      console.log("getSepesToken()");
+      return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/auth/token", {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({"Usename": azureAccountName, "idToken": azureRawIdToken, "Expiration": "later"})
+      });
+    }
 }
