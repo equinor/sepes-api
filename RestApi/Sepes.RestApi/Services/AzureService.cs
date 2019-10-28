@@ -109,16 +109,16 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();*/
         }
         // ApplyNsg(...)
-        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName)
+        public async Task ApplySecurityGroup( string securityGroupName, string subnetName, string networkId)
         {
-            //Add the security group to a network/resourcegroup.
-            throw new NotImplementedException();
+            //Add the security group to a subnet.
+            await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
         }
         // RemoveNsg(...)
-        public async Task RemoveSecurityGroup(string networkSecurityGroupId)
+        public async Task RemoveSecurityGroup(string securityGroupName, string subnetName, string networkId)
         {
-            //Remove the security group from a network/resourcegroup.
-            throw new NotImplementedException();
+            //Remove the security group from a subnet.
+            await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
 
         // ApplyDataset(...)
