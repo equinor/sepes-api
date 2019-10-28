@@ -11,11 +11,6 @@ using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Services;
 using Sepes.RestApi.Model;
 
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 
 namespace Sepes.RestApi
 {
@@ -101,10 +96,15 @@ namespace Sepes.RestApi
                 app.UseHsts();
             }
 
+            app.UseRouting();
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseCors(MyAllowSpecificOrigins);
-            app.UseMvc();
+            app.UseAuthorization();
+            //app.UseMvc();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllers();
+            });
         }
 
     }
