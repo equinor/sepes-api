@@ -120,6 +120,54 @@ namespace Sepes.RestApi.Services
             //Remove the security group from a subnet.
             await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
+        public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string internalAddress, int internalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
+                .AllowInbound()
+                .FromAddress(internalAddress)
+                .FromPort(internalPort)
+                .ToAnyAddress()
+                .ToAnyPort()
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+        public async Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string externalAddress, int externalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)
+                .AllowInbound()
+                .FromAnyAddress()
+                .FromAnyPort()
+                .ToAddress(externalAddress)
+                .ToPort(externalPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+        public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string internalAddress, int internalPort, string externalAdress, int externalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)
+                .AllowInbound()
+                .FromAddress(internalAddress)
+                .FromPort(internalPort)
+                .ToAddress(externalAdress)
+                .ToPort(externalPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
 
         // ApplyDataset(...)
         // Don't need a remove dataset as that happes when resource group gets terminated.
