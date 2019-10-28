@@ -136,19 +136,19 @@ namespace Sepes.RestApi.Services
             Console.WriteLine(strBuilder.ToString());
         }
 
-        public async Task<int> updateStudy(Study study)
+        public async Task<int> updateStudy(int studyId, bool archived)
         {
             await connection.OpenAsync();
             try
             {
-                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{study.archived}' WHERE StudyID = {study.studyId}";
+                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{archived}' WHERE StudyID = {studyId}";
                 SqlCommand command = new SqlCommand(sqlStudy, connection);
-                Console.WriteLine($"### SepesDB: Updating Study {study.studyId} with archived = {study.archived}");
+                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived}");
                 return command.ExecuteNonQuery();
             }
             catch
             {
-                Console.WriteLine($"### SepesDB: Updating Study {study.studyId} with archived = {study.archived} failed");
+                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived} failed");
                 return 0;
             }
             finally
