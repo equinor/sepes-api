@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Cors;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 using System;
-using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sepes.RestApi.Controller
 {

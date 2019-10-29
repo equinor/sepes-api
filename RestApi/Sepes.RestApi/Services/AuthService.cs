@@ -1,8 +1,6 @@
-
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 
@@ -10,10 +8,10 @@ namespace Sepes.RestApi.Services
 {
     public class AuthService : IAuthService
     {
-        private AppSettings _appSetting;
-        public AuthService(IOptions<AppSettings> appsettings)
+        private AuthConfig _appSetting;
+        public AuthService(AuthConfig appsettings)
         {
-            _appSetting = appsettings.Value;
+            _appSetting = appsettings;
         }
 
         public Task<string> GenerateJSONWebToken()
