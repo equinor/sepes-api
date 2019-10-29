@@ -94,19 +94,6 @@ namespace Sepes.RestApi.Services
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
-            //Example of how rule may be added. Hopefully has better methodes
-            /*await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName)
-                .Update()
-                .DefineRule("testrule")
-                .AllowInbound()
-                .FromAnyAddress()
-                .FromAnyPort()
-                .ToAnyAddress()
-                .ToAnyPort()
-                .WithAnyProtocol()
-                .Attach()
-                .ApplyAsync();*/
         }
         // ApplyNsg(...)
         public async Task ApplySecurityGroup( string securityGroupName, string subnetName, string networkId)

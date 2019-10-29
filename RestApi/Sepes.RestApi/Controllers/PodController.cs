@@ -15,7 +15,8 @@ namespace Sepes.RestApi.Controller
     public class PodController : ControllerBase
     {
         private readonly IPodService _pod;
-        public PodController(IPodService podService) {
+        public PodController(IPodService podService)
+        {
             _pod = podService;
         }
 
@@ -29,6 +30,25 @@ namespace Sepes.RestApi.Controller
         public async Task<Pod> createPod([FromBody] PodInput input)
         {
             return await _pod.CreateNewPod(input.podName, input.studyID);
+        }
+
+        [HttpPost("subnet/add")]
+        public async Task addNsg([FromBody] string securityGroupName, string subnetName, string networkId)
+        {
+            await _pod.addNsg(securityGroupName, subnetName, networkId);
+        }
+
+        [HttpPost("subnet/remove")]
+        public async Task removeNsg([FromBody] string securityGroupName, string subnetName, string networkId)
+        {
+
+            await _pod.removeNsg(securityGroupName, subnetName, networkId);
+        }
+
+        [HttpPost("subnet/switch")]
+        public async Task switchNsg([FromBody] string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId)
+        {
+            await _pod.switchNsg(securityGroupNameOld, securityGroupNameNew, subnetName, networkId);
         }
     }
 
