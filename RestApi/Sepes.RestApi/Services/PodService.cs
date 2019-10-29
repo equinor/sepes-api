@@ -13,6 +13,7 @@ namespace Sepes.RestApi.Services
         Task addNsg(string securityGroupName, string subnetName, string networkId);
         Task switchNsg(string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId);
         Task removeNsg(string securityGroupName, string subnetName, string networkId);
+        Task<UInt16> deleteUnused();
     }
 
     public class PodService : IPodService
@@ -48,6 +49,11 @@ namespace Sepes.RestApi.Services
         {
             await _azure.ApplySecurityGroup(securityGroupNameNew, subnetName, networkId);
             await _azure.RemoveSecurityGroup(securityGroupNameOld, subnetName, networkId);
+        }
+        public async Task<UInt16> deleteUnused()
+        {
+            throw new NotImplementedException();
+            //needs to check for any policies that are not currently in use by any pods/belong to deleted pods.
         }
     }
 }

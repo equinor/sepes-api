@@ -32,23 +32,28 @@ namespace Sepes.RestApi.Controller
             return await _pod.CreateNewPod(input.podName, input.studyID);
         }
 
-        [HttpPost("subnet/add")]
+        [HttpPost("nsg/add")]
         public async Task addNsg([FromBody] string securityGroupName, string subnetName, string networkId)
         {
             await _pod.addNsg(securityGroupName, subnetName, networkId);
         }
 
-        [HttpPost("subnet/remove")]
+        [HttpPost("nsg/remove")]
         public async Task removeNsg([FromBody] string securityGroupName, string subnetName, string networkId)
         {
 
             await _pod.removeNsg(securityGroupName, subnetName, networkId);
         }
 
-        [HttpPost("subnet/switch")]
+        [HttpPost("nsg/switch")]
         public async Task switchNsg([FromBody] string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId)
         {
             await _pod.switchNsg(securityGroupNameOld, securityGroupNameNew, subnetName, networkId);
+        }
+        [HttpDelete("nsg/purgeunused")]
+        public async Task<UInt16> deleteUnused()
+        {
+            return await _pod.deleteUnused();
         }
     }
 

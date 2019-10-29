@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net;
 
 namespace Sepes.RestApi.Model
 {
@@ -20,15 +21,14 @@ namespace Sepes.RestApi.Model
         public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
         public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
 
-
         // if true ignore port rules and just allow all incoming and outgoing traffick.
         public readonly bool allowAll;
         // The ushort is the port. And the uint is the IPv4 address. We will limit us to IPv4 for the beta.
         // This is the list of ports from the outside that is allowed to talk to the servers inside the pod.
         // But only from certant ip addresses.
-        public readonly ImmutableDictionary<ushort, ImmutableList<uint>> inGoing;
+        public readonly ImmutableDictionary<ushort, ImmutableList<IPAddress>> inGoing;
         // Same as InComming but now its what ports and ip addresses on the internet servers in a pod can talk to.
-        public readonly ImmutableDictionary<ushort, ImmutableList<uint>> outGoing;
+        public readonly ImmutableDictionary<ushort, ImmutableList<IPAddress>> outGoing;
         // The users that have access to changes the azure resources for this pod.
         // Will most likely com from the study list of users.
         public readonly ImmutableList<User> users;
