@@ -1,7 +1,7 @@
 namespace Sepes.RestApi.Model
 {
 
-public class AppSettings
+public class AuthConfig
 {
     public string Key {get; set;}
     public string Issuer {get; set;}
