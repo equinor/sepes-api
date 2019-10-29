@@ -17,6 +17,7 @@ class CreateStudyPage extends Component {
             archived: false,
             studyId: null,
             studyName: "",
+
             data: [],
         }
     }
@@ -55,7 +56,6 @@ class CreateStudyPage extends Component {
             archived: typeof(study.Archived) === "undefined" || study.Archived === false ? false : true
         });
 
-        sepes.initStudy();
         sepes.getData().then(response => response.json())
             .then(json => {
                 console.log("fetch dataset");
@@ -112,9 +112,6 @@ class CreateStudyPage extends Component {
         this.setState({
             dataset: [...this.state.dataset, dataset.DatasetName]
         });
-
-        // update this
-        sepes.addItemToStudy(dataset.DatasetId, "datasetIds");
     }
 
     removeDataset = (dataset) => {
@@ -123,15 +120,17 @@ class CreateStudyPage extends Component {
         this.setState({
             dataset: newArray
         });
-
-        // update this
-        sepes.removeItemFromStudy(dataset.DatasetId, "datasetIds");
     }
 
     newPod = () => {
         this.props.changePage("pod", {dataset: this.state.dataset});
     }
 
+    setPods = (pods) => {
+        if (pods !== null && typeof(pods) !== "undefined") {
+            this.setState({pods});
+        }
+    }
 
     updateAchived = () => {
         if (this.state.studyId !== null) {
@@ -142,14 +141,22 @@ class CreateStudyPage extends Component {
     }
 
     saveStudy = () => {
-        sepes.setStudyName(this.state.studyName);
-        sepes.createStudy()
+        let state = this.state;
+        let study = {
+            studyName: state.studyName,
+            userIds: state.sponsors.concat(state.suppliers),
+            datasetIds: state.dataset,
+            archived: false,
+        }
+        
+        sepes.createStudy(study)
             .then(returnValue => returnValue.text())
             .then(id => {
                 if (parseInt(id) !== -1) {
                     this.setState({studyId: parseInt(id)});
                 }
-            });
+            }
+        );
     }
 }
 

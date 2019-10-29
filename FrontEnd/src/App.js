@@ -86,13 +86,6 @@ class App extends React.Component {
     else {
       this.login();
     }
-    
-    this.setState({
-      sepesData: {
-        suppliers: sepes.getSupplierList(),
-        dataset: sepes.getDatasetList()
-      }
-    });
   }
 
   showInfo = () => {
@@ -168,24 +161,6 @@ class App extends React.Component {
         jwtTest: "FAIL"
       });
     })
-  }
-
-  getSepesStudyData = () => {
-    sepes.getData()
-      .then(data => {
-        this.setState({
-        sepesData: {
-          dataset: data.dataset,
-          suppliers: data.users,
-          sponsors: data.users,
-        }
-      });
-    });
-  }
-
-  createStudy = () => {
-    /*sepes.setStudyName(this.state.studyName);
-    sepes.createStudy();*/
   }
 
   setSelectedStudy = (study) => {
