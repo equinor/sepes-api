@@ -20,6 +20,8 @@ class PodPage extends Component {
             networkName: "",
             resourceGroupName: "",
             addressSpace: "",
+
+            saveBtnDisabled: false
         }
     }
     render() {
@@ -31,7 +33,7 @@ class PodPage extends Component {
                         className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
                     <link />
                 <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e)=> this.setState({podName: e.target.value})} />
-                { this.state.podId === null ? <button onClick={this.createPod}>Save</button> : null }
+                { this.state.podId === null ? <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button> : null }
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar podsidebar">
@@ -96,6 +98,8 @@ class PodPage extends Component {
     }
 
     createPod = () => {
+        this.setState({saveBtnDisabled: true});
+        
         console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
         
         sepes.createPod(this.props.state.selectedStudy.StudyId, this.state.podName)
@@ -108,6 +112,9 @@ class PodPage extends Component {
                     addressSpace: json.addressSpace
                 });
                 console.log(json)
+            })
+            .catch(() => {
+                this.setState({saveBtnDisabled: false});
             });
     }
 }
