@@ -12,9 +12,9 @@ namespace Sepes.RestApi.Services
     {
         private SqlConnection connection;
 
-        public SepesDb(DatabaseConfig config)
+        public SepesDb(string connectionString)
         {
-            connection = new SqlConnection(config.connectionString);
+            connection = new SqlConnection(connectionString);
         }
 
         public Task<string> getDatasetList()

@@ -15,7 +15,7 @@ namespace Sepes.RestApi.Tests.Controller
         {
             var JwtPackage = new AzTokenClass();
             JwtPackage.idToken = "r52sefsdf";
-            AppSettings _settings = new AppSettings();
+            AuthConfig _settings = new AuthConfig();
             _settings.Key = key;
             _settings.Issuer = "TestIssuer";
             IAuthService _authService = new AuthService(_settings);
@@ -29,7 +29,7 @@ namespace Sepes.RestApi.Tests.Controller
         {
             var JwtPackage = new AzTokenClass();
             JwtPackage.idToken = "dsfgdsfs";
-            AppSettings _settings = new AppSettings();
+            AuthConfig _settings = new AuthConfig();
             _settings.Key = key;
             _settings.Issuer = "TestIssuer";
             IAuthService _authService = new AuthService(_settings);

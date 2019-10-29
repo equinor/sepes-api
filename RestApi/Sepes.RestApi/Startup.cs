@@ -54,7 +54,7 @@ namespace Sepes.RestApi
                 });
             });
 
-            services.AddSingleton<ISepesDb>(new SepesDb(_config.databaseConfig));
+            services.AddSingleton<ISepesDb>(new SepesDb(_config.connectionString));
             services.AddSingleton<IAuthService>(new AuthService(_config.authConfig));
             services.AddSingleton<IAzureService>(new AzureService(_config.azureConfig));
             services.AddSingleton<IPodService, PodService>();

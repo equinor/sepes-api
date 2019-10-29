@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Tests.Services
         public void DatabaseString()
         {
             var config = GetConfigService();
-            Assert.Equal("Server=db.example.com,1433;Initial Catalog=testdb;Persist Security Info=False;User ID=user;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", config.databaseConfig.connectionString);
+            Assert.Equal("Server=db.example.com,1433;Initial Catalog=testdb;Persist Security Info=False;User ID=user;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", config.connectionString);
         }
 
         [Fact]
