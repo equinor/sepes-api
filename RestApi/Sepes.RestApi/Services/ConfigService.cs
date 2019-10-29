@@ -7,24 +7,24 @@ namespace Sepes.RestApi.Services
 {
     public interface IConfigService
     {
-        DatabaseConfig databaseConfig { get; }
+        string connectionString { get; }
         AzureConfig azureConfig { get; }
         string instrumentationKey { get; }
         TokenValidationParameters tokenValidation { get; }
-        AppSettings authConfig { get; }
+        AuthConfig authConfig { get; }
     }
 
     public class ConfigService : IConfigService
     {
-        public DatabaseConfig databaseConfig { get; }
+        public string connectionString { get; }
         public AzureConfig azureConfig { get; }
         public string instrumentationKey { get; }
         public TokenValidationParameters tokenValidation { get; }
-        public AppSettings authConfig { get; }
+        public AuthConfig authConfig { get; }
 
         public ConfigService(IConfiguration asp, IConfiguration sepes)
         {
-            databaseConfig = new DatabaseConfig(sepes["MSSQL_CONNECTION_STRING"]);
+            connectionString = sepes["MSSQL_CONNECTION_STRING"];
             azureConfig = new AzureConfig(
                 sepes["TENANT_ID"],
                 sepes["CLIENT_ID"],
@@ -46,7 +46,7 @@ namespace Sepes.RestApi.Services
                 //SaveSigninToken = true  
             };
 
-            authConfig = new AppSettings
+            authConfig = new AuthConfig
             {
                 Key = asp["Jwt:Key"],
                 Issuer = asp["Jwt:Issuer"],

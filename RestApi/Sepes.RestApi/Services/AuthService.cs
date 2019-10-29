@@ -8,8 +8,8 @@ namespace Sepes.RestApi.Services
 {
     public class AuthService : IAuthService
     {
-        private AppSettings _appSetting;
-        public AuthService(AppSettings appsettings)
+        private AuthConfig _appSetting;
+        public AuthService(AuthConfig appsettings)
         {
             _appSetting = appsettings;
         }
