@@ -19,6 +19,7 @@ class CreateStudyPage extends Component {
             studyName: "",
 
             data: [],
+            saveBtnDisabled: false,
         }
     }
 
@@ -30,7 +31,7 @@ class CreateStudyPage extends Component {
                     <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
-                { this.state.studyId === null ? <button onClick={this.saveStudy}>Save</button> : null }
+                { this.state.studyId === null ? <button disabled={this.state.saveBtnDisabled} onClick={this.saveStudy}>Save</button> : null }
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar">
@@ -141,6 +142,8 @@ class CreateStudyPage extends Component {
     }
 
     saveStudy = () => {
+        this.setState({saveBtnDisabled: true});
+        
         let state = this.state;
         let study = {
             studyName: state.studyName,
