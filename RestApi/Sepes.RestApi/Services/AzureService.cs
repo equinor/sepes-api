@@ -95,6 +95,10 @@ namespace Sepes.RestApi.Services
                 /*.WithTag()*/
                 .CreateAsync();
         }
+        public async Task DeleteSecurityGroup(string securityGroupName)
+        {
+            await _azure.NetworkSecurityGroups.DeleteByIdAsync(securityGroupName);
+        }
         // ApplyNsg(...)
         public async Task ApplySecurityGroup( string securityGroupName, string subnetName, string networkId)
         {
@@ -107,14 +111,14 @@ namespace Sepes.RestApi.Services
             //Remove the security group from a subnet.
             await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
-        public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string internalAddress, int internalPort)
+        public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
                 .Update()
                 .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
                 .AllowInbound()
-                .FromAddress(internalAddress)
+                .FromAddresses(internalAddresses)
                 .FromPort(internalPort)
                 .ToAnyAddress()
                 .ToAnyPort()
@@ -123,7 +127,7 @@ namespace Sepes.RestApi.Services
                 .Attach()
                 .ApplyAsync();
         }
-        public async Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string externalAddress, int externalPort)
+        public async Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
@@ -132,23 +136,23 @@ namespace Sepes.RestApi.Services
                 .AllowInbound()
                 .FromAnyAddress()
                 .FromAnyPort()
-                .ToAddress(externalAddress)
+                .ToAddresses(externalAddresses)
                 .ToPort(externalPort)
                 .WithAnyProtocol()
                 .WithPriority(priority)
                 .Attach()
                 .ApplyAsync();
         }
-        public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string internalAddress, int internalPort, string externalAdress, int externalPort)
+        public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort, string[] externalAddresses, int externalPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
                 .Update()
                 .DefineRule(ruleName)
                 .AllowInbound()
-                .FromAddress(internalAddress)
+                .FromAddresses(internalAddresses)
                 .FromPort(internalPort)
-                .ToAddress(externalAdress)
+                .ToAddresses(externalAddresses)
                 .ToPort(externalPort)
                 .WithAnyProtocol()
                 .WithPriority(priority)
