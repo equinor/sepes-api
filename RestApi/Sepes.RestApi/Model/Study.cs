@@ -7,7 +7,7 @@ namespace Sepes.RestApi.Model
         public int studyId { get; set; }
         public int[] userIds { get; set; }
         public int[] datasetIds { get; set; }
-        public readonly bool archived;
+        public bool archived { get; set; }
     }
 
 }
