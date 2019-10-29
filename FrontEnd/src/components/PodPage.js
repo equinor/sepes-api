@@ -112,6 +112,9 @@ class PodPage extends Component {
                     addressSpace: json.addressSpace
                 });
                 console.log(json)
+            })
+            .catch(() => {
+                this.setState({saveBtnDisabled: false});
             });
     }
 }

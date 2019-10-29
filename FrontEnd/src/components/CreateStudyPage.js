@@ -143,7 +143,7 @@ class CreateStudyPage extends Component {
 
     saveStudy = () => {
         this.setState({saveBtnDisabled: true});
-        
+
         let state = this.state;
         let study = {
             studyName: state.studyName,
@@ -158,8 +158,10 @@ class CreateStudyPage extends Component {
                 if (parseInt(id) !== -1) {
                     this.setState({studyId: parseInt(id)});
                 }
-            }
-        );
+            })
+            .catch(() => {
+                this.setState({saveBtnDisabled: false});
+            });
     }
 }
 
