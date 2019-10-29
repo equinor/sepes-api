@@ -1,16 +1,14 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
+    [EnableCors("_myAllowSpecificOrigins")]
     [ApiController]
     public class AuthController : ControllerBase
     {

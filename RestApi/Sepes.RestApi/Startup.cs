@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sepes.RestApi.Services;
 using System.Diagnostics.CodeAnalysis;
 
+
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
@@ -75,10 +76,15 @@ namespace Sepes.RestApi
                 app.UseHsts();
             }
 
+            app.UseRouting();
+            app.UseCors(MyAllowSpecificOrigins);
             app.UseHttpsRedirection();
             app.UseAuthentication();
-            app.UseCors(MyAllowSpecificOrigins);
-            app.UseMvc();
+            app.UseAuthorization();
+            //app.UseMvc();
+            app.UseEndpoints(endpoints => {
+                endpoints.MapControllers();
+            });
         }
     }
 }
