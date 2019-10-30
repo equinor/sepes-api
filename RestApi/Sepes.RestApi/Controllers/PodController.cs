@@ -48,20 +48,20 @@ namespace Sepes.RestApi.Controller
         [HttpPost("nsg/apply")]
         public async Task applyNsg([FromBody] NsgModel data)
         {
-            await _pod.applyNsg(data.securityGroupName, data.subnetName, data.networkId);
+            await _pod.applyNsg(data.securityGroupName, data.subnetName, data.networkName);
         }
 
         [HttpPost("nsg/remove")]
         public async Task removeNsg([FromBody] NsgModel data)
         {
 
-            await _pod.removeNsg(data.subnetName, data.networkId);
+            await _pod.removeNsg(data.resourceGroupName, data.subnetName, data.networkName);
         }
 
         [HttpPost("nsg/switch")]
         public async Task switchNsg([FromBody] NsgModel data)
         {
-            await _pod.switchNsg(data.securityGroupNameOld, data.securityGroupName, data.subnetName, data.networkId);
+            await _pod.switchNsg(data.resourceGroupName, data.securityGroupNameOld, data.securityGroupName, data.subnetName, data.networkName);
         }
         [HttpDelete("nsg/purgeunused")]
         public async Task<UInt16> deleteUnused()

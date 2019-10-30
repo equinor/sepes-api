@@ -22,7 +22,7 @@ namespace Sepes.RestApi.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task deleteNsg(string securityGroupName)
+        public Task deleteNsg(string securityGroupName, string resourceGroupName)
         {
             throw new NotImplementedException();
         }
@@ -32,12 +32,12 @@ namespace Sepes.RestApi.Tests.Mocks
             throw new System.NotImplementedException();
         }
 
-        public Task removeNsg(string subnetName, string networkId)
+        public Task removeNsg(string resourceGroupName, string subnetName, string networkName)
         {
             throw new NotImplementedException();
         }
 
-        public Task switchNsg(string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId)
+        public Task switchNsg(string resourceGroupName, string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkName)
         {
             throw new NotImplementedException();
         }

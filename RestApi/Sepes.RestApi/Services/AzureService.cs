@@ -100,16 +100,16 @@ namespace Sepes.RestApi.Services
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
         // ApplyNsg(...)
-        public async Task ApplySecurityGroup( string securityGroupName, string subnetName, string networkId)
+        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
         }
         // RemoveNsg(...)
-        public async Task RemoveSecurityGroup(string subnetName, string networkId)
+        public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
         {
             //Remove the security group from a subnet.
-            await _azure.Networks.GetById(networkId).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
         public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort)
         {
