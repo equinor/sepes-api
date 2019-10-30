@@ -7,7 +7,7 @@ namespace Sepes.RestApi.Tests.Mocks
 {
     internal class PodMock : IPodService
     {
-        public Task applyNsg(string securityGroupName, string subnetName, string networkId)
+        public Task applyNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             throw new NotImplementedException();
         }
@@ -37,7 +37,7 @@ namespace Sepes.RestApi.Tests.Mocks
             throw new NotImplementedException();
         }
 
-        public Task switchNsg(string resourceGroupName, string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkName)
+        public Task switchNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             throw new NotImplementedException();
         }
