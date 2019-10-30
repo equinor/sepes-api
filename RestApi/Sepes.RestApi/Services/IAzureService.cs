@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Services
         Task CreateSecurityGroup(string securityGroupName, string resourceGroupName);
         Task DeleteSecurityGroup(string securityGroupName);
         Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkId);
-        Task RemoveSecurityGroup(string securityGroupName, string subnetName, string networkId);
+        Task RemoveSecurityGroup(string subnetName, string networkId);
         Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);
         Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort);
         Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort, string[] externalAddresses, int externalPort);

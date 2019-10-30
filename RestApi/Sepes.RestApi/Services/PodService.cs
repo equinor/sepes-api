@@ -10,10 +10,12 @@ namespace Sepes.RestApi.Services
     public interface IPodService
     {
         Task<Pod> CreateNewPod(string name, int userID);
-        Task addNsg(string securityGroupName, string subnetName, string networkId);
+        Task applyNsg(string securityGroupName, string subnetName, string networkId);
         Task switchNsg(string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId);
-        Task removeNsg(string securityGroupName, string subnetName, string networkId);
+        Task removeNsg(string subnetName, string networkId);
         Task<UInt16> deleteUnused();
+        Task deleteNsg(string securityGroupName);
+        Task createNsg(string securityGroupName, string resourceGroupName);
     }
 
     public class PodService : IPodService
@@ -35,20 +37,27 @@ namespace Sepes.RestApi.Services
             await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
             return pod;
         }
-        public async Task addNsg(string securityGroupName, string subnetName, string networkId)
+        public async Task createNsg(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.CreateSecurityGroup(securityGroupName, resourceGroupName);
+        }
+        public async Task deleteNsg(string securityGroupName){
+            await _azure.DeleteSecurityGroup(securityGroupName);
+        }
+        public async Task applyNsg(string securityGroupName, string subnetName, string networkId)
         {
             //throw new NotImplementedException();
             await _azure.ApplySecurityGroup(securityGroupName, subnetName, networkId);
 
         }
-        public async Task removeNsg(string securityGroupName, string subnetName, string networkId)
+        public async Task removeNsg(string subnetName, string networkId)
         {
-            await _azure.RemoveSecurityGroup(securityGroupName, subnetName, networkId);
+            await _azure.RemoveSecurityGroup(subnetName, networkId);
         }
         public async Task switchNsg(string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId)
         {
+            await _azure.RemoveSecurityGroup(subnetName, networkId); //Might have a time where its open. Check for way to specify which NSG to remove
             await _azure.ApplySecurityGroup(securityGroupNameNew, subnetName, networkId);
-            await _azure.RemoveSecurityGroup(securityGroupNameOld, subnetName, networkId);
         }
         public async Task<UInt16> deleteUnused()
         {
