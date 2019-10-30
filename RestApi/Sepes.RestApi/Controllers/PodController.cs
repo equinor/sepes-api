@@ -40,7 +40,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("nsg/delete")]
         public async Task deleteNsg([FromBody] NsgModel data)
         {
-            await _pod.deleteNsg(data.securityGroupName);
+            await _pod.deleteNsg(data.securityGroupName, data.resourceGroupName);
         }
 
 

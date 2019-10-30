@@ -9,7 +9,7 @@ namespace Sepes.RestApi.Services
         Task TerminateResourceGroup(string resourceGroupName);
         Task<string> CreateNetwork(string networkName, string addressSpace);
         Task CreateSecurityGroup(string securityGroupName, string resourceGroupName);
-        Task DeleteSecurityGroup(string securityGroupName);
+        Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName);
         Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkId);
         Task RemoveSecurityGroup(string subnetName, string networkId);
         Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);

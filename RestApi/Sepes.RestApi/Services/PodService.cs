@@ -14,7 +14,7 @@ namespace Sepes.RestApi.Services
         Task switchNsg(string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId);
         Task removeNsg(string subnetName, string networkId);
         Task<UInt16> deleteUnused();
-        Task deleteNsg(string securityGroupName);
+        Task deleteNsg(string securityGroupName, string resourceGroupName); //TODO flip over for convenience
         Task createNsg(string securityGroupName, string resourceGroupName);
     }
 
@@ -41,8 +41,8 @@ namespace Sepes.RestApi.Services
         {
             await _azure.CreateSecurityGroup(securityGroupName, resourceGroupName);
         }
-        public async Task deleteNsg(string securityGroupName){
-            await _azure.DeleteSecurityGroup(securityGroupName);
+        public async Task deleteNsg(string securityGroupName, string resourceGroupName){
+            await _azure.DeleteSecurityGroup(securityGroupName, resourceGroupName);
         }
         public async Task applyNsg(string securityGroupName, string subnetName, string networkId)
         {
