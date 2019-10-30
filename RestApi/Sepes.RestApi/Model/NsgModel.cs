@@ -4,7 +4,7 @@ namespace Sepes.RestApi.Model
     public class NsgModel
     {
         public string securityGroupName { get; set; }
-        public string securityGroupNameOld {get; set;}
+        //public string securityGroupNameOld {get; set;} Sadly not usable as of now.
         public string resourceGroupName { get; set; }
         public string subnetName { get; set; }
         public string networkName { get; set; }
