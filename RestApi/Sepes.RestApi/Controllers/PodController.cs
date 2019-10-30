@@ -48,7 +48,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("nsg/apply")]
         public async Task applyNsg([FromBody] NsgModel data)
         {
-            await _pod.applyNsg(data.securityGroupName, data.subnetName, data.networkName);
+            await _pod.applyNsg(data.resourceGroupName, data.securityGroupName, data.subnetName, data.networkName);
         }
 
         [HttpPost("nsg/remove")]
