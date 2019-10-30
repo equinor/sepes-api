@@ -7,7 +7,7 @@ namespace Sepes.RestApi.Tests.Mocks
 {
     internal class PodMock : IPodService
     {
-        public Task addNsg(string securityGroupName, string subnetName, string networkId)
+        public Task applyNsg(string securityGroupName, string subnetName, string networkId)
         {
             throw new NotImplementedException();
         }
@@ -17,12 +17,22 @@ namespace Sepes.RestApi.Tests.Mocks
             return Task.FromResult(new Pod(42, name, userId));
         }
 
+        public Task createNsg(string securityGroupName, string resourceGroupName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task deleteNsg(string securityGroupName)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<UInt16> deleteUnused()
         {
             throw new System.NotImplementedException();
         }
 
-        public Task removeNsg(string securityGroupName, string subnetName, string networkId)
+        public Task removeNsg(string subnetName, string networkId)
         {
             throw new NotImplementedException();
         }

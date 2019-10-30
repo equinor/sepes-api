@@ -32,23 +32,36 @@ namespace Sepes.RestApi.Controller
             return await _pod.CreateNewPod(input.podName, input.studyID);
         }
 
-        [HttpPost("nsg/add")]
-        public async Task addNsg([FromBody] string securityGroupName, string subnetName, string networkId)
+        [HttpPost("nsg/create")]
+        public async Task createNsg([FromBody] NsgModel data)
         {
-            await _pod.addNsg(securityGroupName, subnetName, networkId);
+            await _pod.createNsg(data.securityGroupName, data.resourceGroupName);
+        }
+        [HttpPost("nsg/delete")]
+        public async Task deleteNsg([FromBody] NsgModel data)
+        {
+            await _pod.deleteNsg(data.securityGroupName);
+        }
+
+
+
+        [HttpPost("nsg/apply")]
+        public async Task applyNsg([FromBody] NsgModel data)
+        {
+            await _pod.applyNsg(data.securityGroupName, data.subnetName, data.networkId);
         }
 
         [HttpPost("nsg/remove")]
-        public async Task removeNsg([FromBody] string securityGroupName, string subnetName, string networkId)
+        public async Task removeNsg([FromBody] NsgModel data)
         {
 
-            await _pod.removeNsg(securityGroupName, subnetName, networkId);
+            await _pod.removeNsg(data.subnetName, data.networkId);
         }
 
         [HttpPost("nsg/switch")]
-        public async Task switchNsg([FromBody] string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkId)
+        public async Task switchNsg([FromBody] NsgModel data)
         {
-            await _pod.switchNsg(securityGroupNameOld, securityGroupNameNew, subnetName, networkId);
+            await _pod.switchNsg(data.securityGroupNameOld, data.securityGroupName, data.subnetName, data.networkId);
         }
         [HttpDelete("nsg/purgeunused")]
         public async Task<UInt16> deleteUnused()
