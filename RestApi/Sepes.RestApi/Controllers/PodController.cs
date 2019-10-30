@@ -61,7 +61,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("nsg/switch")]
         public async Task switchNsg([FromBody] NsgModel data)
         {
-            await _pod.switchNsg(data.resourceGroupName, data.securityGroupNameOld, data.securityGroupName, data.subnetName, data.networkName);
+            await _pod.switchNsg(data.resourceGroupName, data.securityGroupName, data.subnetName, data.networkName);
         }
         [HttpDelete("nsg/purgeunused")]
         public async Task<UInt16> deleteUnused()

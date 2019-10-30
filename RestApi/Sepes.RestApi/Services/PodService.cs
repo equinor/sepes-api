@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Services
     {
         Task<Pod> CreateNewPod(string name, int userID);
         Task applyNsg(string securityGroupName, string subnetName, string networkId);
-        Task switchNsg(string resourceGroupName, string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkName);
+        Task switchNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
         Task removeNsg(string resourceGroupName, string subnetName, string networkName);
         Task<UInt16> deleteUnused();
         Task deleteNsg(string securityGroupName, string resourceGroupName);
@@ -44,20 +44,20 @@ namespace Sepes.RestApi.Services
         public async Task deleteNsg(string securityGroupName, string resourceGroupName){
             await _azure.DeleteSecurityGroup(securityGroupName, resourceGroupName);
         }
-        public async Task applyNsg(string securityGroupName, string subnetName, string networkName)
+        public async Task applyNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //throw new NotImplementedException();
-            await _azure.ApplySecurityGroup(securityGroupName, subnetName, networkName);
+            await _azure.ApplySecurityGroup(resourceGroupName ,securityGroupName, subnetName, networkName);
 
         }
         public async Task removeNsg(string resourceGroupName, string subnetName, string networkName)
         {
             await _azure.RemoveSecurityGroup(resourceGroupName, subnetName, networkName);
         }
-        public async Task switchNsg(string resourceGroupName, string securityGroupNameOld, string securityGroupNameNew, string subnetName, string networkName)
+        public async Task switchNsg(string resourceGroupName, string securityGroupNameNew, string subnetName, string networkName)
         {
             await _azure.RemoveSecurityGroup(resourceGroupName, subnetName, networkName); //Might have a time where its open. Check for way to specify which NSG to remove
-            await _azure.ApplySecurityGroup(securityGroupNameNew, subnetName, networkName);
+            await _azure.ApplySecurityGroup(resourceGroupName, securityGroupNameNew, subnetName, networkName);
         }
         public async Task<UInt16> deleteUnused()
         {
