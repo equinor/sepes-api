@@ -95,9 +95,9 @@ namespace Sepes.RestApi.Services
                 /*.WithTag()*/
                 .CreateAsync();
         }
-        public async Task DeleteSecurityGroup(string securityGroupName)
+        public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
         {
-            await _azure.NetworkSecurityGroups.DeleteByIdAsync(securityGroupName);
+            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
         // ApplyNsg(...)
         public async Task ApplySecurityGroup( string securityGroupName, string subnetName, string networkId)
