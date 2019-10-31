@@ -39,7 +39,7 @@ class PodPage extends Component {
             <div className="sidebar podsidebar">
                 <div>
                     <div style={{padding: "20px"}}>
-                        <label><input type="checkbox" onChange="" />
+                        <label><input type="checkbox" onChange={()=>console.log("Toggle internet")} />
                             Open internet for this pod
                         </label>
                     </div>
