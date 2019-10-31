@@ -18,7 +18,9 @@ namespace Sepes.RestApi.Model
         }
 
         public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
+        public string subnetName => $"{studyId}-{name.Replace(" ", "-")}-SubNet";
         public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
+        public string networkSecurityGroupName => $"{studyId}-{name.Replace(" ", "-")}-NetworkSecurityGroup";
         public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
 
         // if true ignore port rules and just allow all incoming and outgoing traffick.
