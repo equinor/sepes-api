@@ -10,11 +10,6 @@ namespace Sepes.RestApi.Services
     public interface IPodService
     {
         Task<Pod> CreateNewPod(string name, int userID);
-        Task applyNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
-        Task removeNsg(string resourceGroupName, string subnetName, string networkName);
-        Task<UInt16> deleteUnused();
-        Task deleteNsg(string securityGroupName, string resourceGroupName);
-        Task createNsg(string securityGroupName, string resourceGroupName);
     }
 
     public class PodService : IPodService
