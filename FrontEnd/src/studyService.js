@@ -43,13 +43,15 @@ export function removeUser(user, array = []) {
     return newArray
 }
 
+// takes dataset {DatasetId: number, DatasetName: string} and returns an array of dataset names 
 export function addDataset(dataset, array = []) {
     return [...array, dataset.DatasetName]
 }
 
-export function removeDataset(dataset, array = []) {
+// takes datasetName as string and returns a new array
+export function removeDataset(datasetName, array = []) {
     let newArray = [...array]
-    newArray.splice(newArray.indexOf(dataset), 1)
+    newArray.splice(newArray.indexOf(datasetName), 1)
 
     return newArray
 }
