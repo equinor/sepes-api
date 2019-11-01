@@ -55,8 +55,6 @@ export function removeDataset(dataset, array = []) {
 }
 
 
-
-
 function validateUser(user) {
     if (typeof user === "string") {
         return true
@@ -64,4 +62,25 @@ function validateUser(user) {
     else {
         return true
     }
+}
+
+
+export function addRule(port, ip, array) {
+    if (findRuleIndex(array, port, ip) === -1) {
+        return [...array, {port, ip}]
+    }
+
+    return array
+}
+
+export function removeRule(port, ip, array) {
+    let newArray = [...array];
+    newArray.splice(findRuleIndex(newArray, port, ip), 1);
+
+    return newArray
+}
+
+
+function findRuleIndex(array, port, ip) {
+    return array.findIndex((item) => (item.port === port && item.ip === ip))
 }
