@@ -5,16 +5,6 @@ import { act } from "react-dom/test-utils";
 
 import PodPage from '../components/PodPage'
 
-test('PodPage findIndex', () => {
-  var page = new PodPage()
-  var rule = {port: 80, ip: "1.1.1.1"}
-  var array = [{port: 80, ip: "1.1.1.2"}, {port: 8080, ip: "1.1.1.1"}, rule,]
-
-  var result = page.findIndex(array, rule)
-
-  expect(result).toBe(2)
-})
-
 
 var div = null
 
@@ -30,6 +20,7 @@ afterEach(() => {
   div.remove();
   div = null;
 });
+
 
 it("PodPage addIncomingRule", () => {
   var state = {
