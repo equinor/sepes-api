@@ -48,11 +48,6 @@ namespace Sepes.RestApi.Services
         {
             await _azure.RemoveSecurityGroup(resourceGroupName, subnetName, networkName);
         }
-        public async Task<UInt16> deleteUnused()
-        {
-            throw new NotImplementedException();
-            //needs to check for any policies that are not currently in use by any pods/belong to deleted pods.
-        }
         public async Task<string> GetPods(int studyID)
         {
             return await _database.getPods(studyID);
