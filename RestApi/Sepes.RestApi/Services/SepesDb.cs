@@ -1,33 +1,51 @@
 using System;
 using System.Data.SqlClient;
 using System.Text;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi.Services
 {
-
+    [ExcludeFromCodeCoverage]
     public class SepesDb : ISepesDb
     {
         private SqlConnection connection;
 
-        public SepesDb(IConfiguration Configuration)
+        public SepesDb(string connectionString)
         {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = Configuration["Sepes:sql:server"];
-            builder.UserID = Configuration["Sepes:sql:user"];
-            builder.Password = Configuration["Sepes:sql:password"];
-            builder.InitialCatalog = Configuration["Sepes:sql:database"];
-
-            connection = new SqlConnection(builder.ConnectionString);
+            connection = new SqlConnection(connectionString);
         }
 
-        public Task<string> getDatasetList()
+        public async Task<string> getDatasetList()
         {
-            throw new NotImplementedException();
+            string response = "";
+            await connection.OpenAsync();
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("SELECT DatasetId, DatasetName ");
+                sb.Append("FROM [dbo].[tblDataset] ");
+                sb.Append("FOR JSON AUTO ");
+                string sqlStudies = sb.ToString();
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
+                {
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            response = reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            finally 
+            {
+                await connection.CloseAsync();
+            }
+
+            return response;
         }
         public async Task<int> createStudy(string studyName, int[] userIds, int[] datasetIds)
         {
@@ -45,6 +63,7 @@ namespace Sepes.RestApi.Services
                 studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
                 Console.WriteLine("### SepesDB: StudyID " + studyId);
 
+                /* 
                 // insert user2study
                 StringBuilder user2StudyBuilder = new StringBuilder();
                 user2StudyBuilder.Append("INSERT INTO [dbo].[lnkUser2Study] (UserID, StudyID) VALUES ");
@@ -52,16 +71,20 @@ namespace Sepes.RestApi.Services
                 string sqlUser2Study = user2StudyBuilder.ToString();
 
                 command = new SqlCommand(sqlUser2Study, connection);
-                await command.ExecuteNonQueryAsync();
+                await command.ExecuteNonQueryAsync();*/
 
-                // insert study2dataset
-                StringBuilder study2datasetBuilder = new StringBuilder();
-                study2datasetBuilder.Append("INSERT INTO [dbo].[lnkStudy2Dataset] (DatasetID, StudyID) VALUES ");
-                createInsertValues(studyId, datasetIds, study2datasetBuilder);
-                string sqlStudy2dataset = study2datasetBuilder.ToString();
+                if (datasetIds.Length > 0)
+                {
+                    // insert study2dataset
+                    StringBuilder study2datasetBuilder = new StringBuilder();
+                    study2datasetBuilder.Append("INSERT INTO [dbo].[lnkStudy2Dataset] (DatasetID, StudyID) VALUES ");
+                    createInsertValues(studyId, datasetIds, study2datasetBuilder);
+                    string sqlStudy2dataset = study2datasetBuilder.ToString();
 
-                command = new SqlCommand(sqlStudy2dataset, connection);
-                await command.ExecuteNonQueryAsync();
+                    command = new SqlCommand(sqlStudy2dataset, connection);
+                    await command.ExecuteNonQueryAsync();
+                }
+                
                 //Task.WaitAll(tasks.ToArray()); //Might work, might not work
             }
             finally
@@ -71,6 +94,7 @@ namespace Sepes.RestApi.Services
 
             return studyId;
         }
+
         public async Task<Pod> createPod(string name, int studyId) ////This is the one to steal from
         {
             await connection.OpenAsync();
@@ -89,6 +113,7 @@ namespace Sepes.RestApi.Services
                 await connection.CloseAsync();
             }
         }
+
         private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
         {
             for (int i = 0; i < array.Length; i++)
@@ -102,28 +127,27 @@ namespace Sepes.RestApi.Services
 
             Console.WriteLine(strBuilder.ToString());
         }
-        /*public Task<int> updateStudy(Study study)
+
+        public async Task<int> updateStudy(int studyId, bool archived)
         {
-            connection.OpenAsync();
+            await connection.OpenAsync();
             try
             {
-
-                // insert study
-                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{study.archived}' WHERE StudyID = {study.studyId}";
-
+                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{archived}' WHERE StudyID = {studyId}";
                 SqlCommand command = new SqlCommand(sqlStudy, connection);
-                //command.Parameters.AddWithValue("@archived", study.archived);
-                int studyNum = (int)command.ExecuteScalar();
-
-                Console.WriteLine($"### SepesDB: Updated Study {studyNum} with archived = {study.archived}");
+                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived}");
+                return command.ExecuteNonQuery();
+            }
+            catch
+            {
+                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived} failed");
+                return 0;
             }
             finally
             {
-                connection.CloseAsync();
+                await connection.CloseAsync();
             }
-
-            return 1;
-        }*/
+        }
 
         public async Task<string> getStudies(bool archived)
         {
@@ -132,7 +156,7 @@ namespace Sepes.RestApi.Services
             try
             {
                 StringBuilder sb = new StringBuilder();
-                sb.Append("SELECT StudyId, StudyName ");
+                sb.Append("SELECT StudyId, StudyName, Archived ");
                 sb.Append("FROM [dbo].[tblStudy] ");
                 sb.Append($"WHERE Archived {(archived ? "= 'True'" : "= 'False' OR Archived IS NULL")} ");
                 sb.Append("FOR JSON AUTO ");
@@ -157,6 +181,39 @@ namespace Sepes.RestApi.Services
             return response;
         }
 
+        public async Task<string> getPods(int studyId)
+        {
+            string response = "";
+            await connection.OpenAsync();
+            try
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("SELECT StudyID, PodID, PodName ");
+                sb.Append("FROM [dbo].[tblPod] ");
+                sb.Append($"WHERE StudyID = {studyId} ");
+                sb.Append("FOR JSON AUTO ");
+                string sqlStudies = sb.ToString();
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
+                {
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            response = reader.GetString(0);
+                        }
+                    }
+                }
+            }
+            finally 
+            {
+                await connection.CloseAsync();
+            }
+
+            Console.WriteLine("### getPods " + studyId);
+            Console.WriteLine(response);
+            return response;
+        }
     }
 
 }

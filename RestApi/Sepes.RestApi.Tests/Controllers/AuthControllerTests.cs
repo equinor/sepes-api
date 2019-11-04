@@ -15,11 +15,10 @@ namespace Sepes.RestApi.Tests.Controller
         {
             var JwtPackage = new AzTokenClass();
             JwtPackage.idToken = "r52sefsdf";
-            AppSettings _settings = new AppSettings();
+            AuthConfig _settings = new AuthConfig();
             _settings.Key = key;
             _settings.Issuer = "TestIssuer";
-            var _option = Options.Create(_settings);
-            IAuthService _authService = new AuthService(_option);
+            IAuthService _authService = new AuthService(_settings);
             AuthController controller = new AuthController(_authService); //Later move to test fixture, as same object can be reused.
             var token = controller.Token(JwtPackage);
             var tokencontent = token.Result.ToString();
@@ -30,12 +29,11 @@ namespace Sepes.RestApi.Tests.Controller
         {
             var JwtPackage = new AzTokenClass();
             JwtPackage.idToken = "dsfgdsfs";
-            AppSettings _settings = new AppSettings();
+            AuthConfig _settings = new AuthConfig();
             _settings.Key = key;
             _settings.Issuer = "TestIssuer";
-            var _option = Options.Create(_settings);
-            IAuthService _authService = new AuthService(_option);
-            var controller = new AuthController(_authService); 
+            IAuthService _authService = new AuthService(_settings);
+            var controller = new AuthController(_authService);
             var TestSepesToken = new SepesTokenClass();
             var token = controller.Token(JwtPackage);
             TestSepesToken.idToken = token.Result.ToString(); //Tokencontent must be renamed in previous test and moved to class.
