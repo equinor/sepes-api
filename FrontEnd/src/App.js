@@ -127,8 +127,7 @@ class App extends React.Component {
       this.setState({tokenId: jwt, page: "studies"});
       this.appInsights.trackEvent({name: 'Login Sepes success'});
     })
-    .catch(error => {
-      console.error(error);
+    .catch(() => {
       this.appInsights.trackTrace({message: 'Login Error'});
     });
   }
