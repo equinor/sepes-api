@@ -1,4 +1,5 @@
 
+using System;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 
@@ -30,7 +31,28 @@ namespace Sepes.RestApi.Services
             await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
             return pod;
         }
+        public async Task createNsg(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.CreateSecurityGroup(securityGroupName, resourceGroupName);
+        }
+        public async Task deleteNsg(string securityGroupName, string resourceGroupName){
+            await _azure.DeleteSecurityGroup(securityGroupName, resourceGroupName);
+        }
+        public async Task applyNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        {
+            //throw new NotImplementedException();
+            await _azure.ApplySecurityGroup(resourceGroupName ,securityGroupName, subnetName, networkName);
 
+        }
+        public async Task removeNsg(string resourceGroupName, string subnetName, string networkName)
+        {
+            await _azure.RemoveSecurityGroup(resourceGroupName, subnetName, networkName);
+        }
+        public async Task<UInt16> deleteUnused()
+        {
+            throw new NotImplementedException();
+            //needs to check for any policies that are not currently in use by any pods/belong to deleted pods.
+        }
         public async Task<string> GetPods(int studyID)
         {
             return await _database.getPods(studyID);
