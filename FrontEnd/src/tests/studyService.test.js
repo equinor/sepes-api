@@ -1,6 +1,42 @@
 import * as StudyService from "../studyService"
 
 
+it("should set current study with one argument", () => {
+    let study = {
+        studyId: 1,
+        studyName: "study",
+        users: [1, 2],
+        dataset: [1, 2, 3],
+        pods: [{podId: 1, podNmae: "pod"}],
+        archived: false
+    }
+
+    StudyService.setCurrentStudy(study)
+    let result = StudyService.getCurrentStudy()
+
+    expect(result).toEqual(study)
+
+    StudyService.setCurrentStudy(null)
+})
+
+it("should set current study with multiple arguments", () => {
+    let study = {
+        studyId: 1,
+        studyName: "study",
+        users: [1, 2],
+        dataset: [1, 2, 3],
+        pods: [{podId: 1, podNmae: "pod"}],
+        archived: false
+    }
+
+    StudyService.setCurrentStudyVars(study.studyId, study.studyName, study.users, study.dataset, study.pods, study.archived)
+    let result = StudyService.getCurrentStudy()
+
+    expect(result).toEqual(study)
+
+    StudyService.setCurrentStudy(null)
+})
+
 it("should add unique rule to list", () => {
     let array = [{port: 1, ip: "1.1.1.1"}, {port: 2, ip: "1.1.1.1"}]
     let rule = {port: 3, ip: "1.1.1.1"}
