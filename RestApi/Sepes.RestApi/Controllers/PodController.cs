@@ -15,7 +15,8 @@ namespace Sepes.RestApi.Controller
     public class PodController : ControllerBase
     {
         private readonly IPodService _pod;
-        public PodController(IPodService podService) {
+        public PodController(IPodService podService)
+        {
             _pod = podService;
         }
 

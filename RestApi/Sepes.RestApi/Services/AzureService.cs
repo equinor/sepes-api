@@ -76,8 +76,79 @@ namespace Sepes.RestApi.Services
         }
 
         // CreateNsg(...)
+        public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.NetworkSecurityGroups
+                .Define(securityGroupName)
+                .WithRegion(Region.EuropeNorth)
+                .WithExistingResourceGroup(resourceGroupName)
+                /*.WithTag()*/
+                .CreateAsync();
+        }
+        public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
+        }
         // ApplyNsg(...)
+        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        {
+            //Add the security group to a subnet.
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
+        }
         // RemoveNsg(...)
+        public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
+        {
+            //Remove the security group from a subnet.
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
+        }
+        public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
+                .AllowInbound()
+                .FromAddresses(internalAddresses)
+                .FromPort(internalPort)
+                .ToAnyAddress()
+                .ToAnyPort()
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+        public async Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)
+                .AllowInbound()
+                .FromAnyAddress()
+                .FromAnyPort()
+                .ToAddresses(externalAddresses)
+                .ToPort(externalPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+        public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort, string[] externalAddresses, int externalPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)
+                .AllowInbound()
+                .FromAddresses(internalAddresses)
+                .FromPort(internalPort)
+                .ToAddresses(externalAddresses)
+                .ToPort(externalPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
 
         // ApplyDataset(...)
         // Don't need a remove dataset as that happes when resource group gets terminated.
