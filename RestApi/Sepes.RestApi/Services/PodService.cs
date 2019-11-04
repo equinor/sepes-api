@@ -10,6 +10,7 @@ namespace Sepes.RestApi.Services
     public interface IPodService
     {
         Task<Pod> CreateNewPod(string name, int userID);
+        Task<string> GetPods(int studyID);
     }
 
     public class PodService : IPodService
@@ -25,7 +26,6 @@ namespace Sepes.RestApi.Services
 
         public async Task<Pod> CreateNewPod(string name, int studyID)
         {
-
             var pod = await _database.createPod(name, studyID);
             var resourceGroupName = await _azure.CreateResourceGroup(pod.resourceGroupName);
             await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
@@ -52,6 +52,10 @@ namespace Sepes.RestApi.Services
         {
             throw new NotImplementedException();
             //needs to check for any policies that are not currently in use by any pods/belong to deleted pods.
+        }
+        public async Task<string> GetPods(int studyID)
+        {
+            return await _database.getPods(studyID);
         }
     }
 }
