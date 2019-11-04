@@ -20,12 +20,6 @@ namespace Sepes.RestApi.Controller
             _pod = podService;
         }
 
-        [HttpPost("update")]
-        public void UpdateVars([FromBody] string value)
-        {
-            throw new NotImplementedException();
-        }
-
         [HttpPost("create")]
         public async Task<Pod> createPod([FromBody] PodInput input)
         {
