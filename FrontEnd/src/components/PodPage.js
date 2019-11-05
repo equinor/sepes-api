@@ -3,6 +3,8 @@ import React, {Component} from 'react'
 import PodRules from './PodRules';
 import PodDataset from './PodDataset.js';
 
+import * as StudyService from "../studyService"
+
 import Sepes from '../sepes.js';
 const sepes = new Sepes();
 
@@ -39,7 +41,7 @@ class PodPage extends Component {
             <div className="sidebar podsidebar">
                 <div>
                     <div style={{padding: "20px"}}>
-                        <label><input type="checkbox" onChange="" />
+                        <label><input type="checkbox" onChange={()=>console.log("Toggle internet")} />
                             Open internet for this pod
                         </label>
                     </div>
@@ -62,39 +64,27 @@ class PodPage extends Component {
     }
 
     addIncomingRule = (port, ip) => {
-        if (this.findIndex(this.state.incoming, {port, ip}) === -1) {
-            this.setState({
-                incoming: [...this.state.incoming, {port, ip}]
-            });
-        }
+        this.setState({
+            incoming: StudyService.addRule(port, ip, this.state.incoming)
+        });
     }
 
     removeIncomingRule = (rule) => {
-        let newArray = [...this.state.incoming];
-        newArray.splice(this.findIndex(newArray, rule), 1);
         this.setState({
-            incoming: newArray
+            incoming: StudyService.removeRule(rule.port, rule.ip, this.state.incoming)
+        });
+    }
+    
+    addOutgoingRule = (port, ip) => {
+        this.setState({
+            outgoing: StudyService.addRule(port, ip, this.state.outgoing)
         });
     }
 
     removeOutgoingRule = (rule) => {
-        let newArray = [...this.state.outgoing];
-        newArray.splice(this.findIndex(newArray, rule), 1);
         this.setState({
-            outgoing: newArray
+            outgoing: StudyService.removeRule(rule.port, rule.ip, this.state.outgoing)
         });
-    }
-
-    addOutgoingRule = (port, ip) => {
-        if (this.findIndex(this.state.incoming, {port, ip}) === -1) {
-            this.setState({
-                outgoing: [...this.state.outgoing, {port, ip}]
-            });
-        }
-    }
-
-    findIndex = (array, rule) => {
-        return array.findIndex((item) => (item.port === rule.port && item.ip === rule.ip));
     }
 
     createPod = () => {
