@@ -84,7 +84,10 @@ class App extends React.Component {
         });
     }
     else {
-      this.login();
+      if (typeof this.props.noLogin === "undefined") {
+        this.login();
+      }
+      
     }
   }
 
