@@ -14,9 +14,6 @@ beforeEach(() => {
 
 
 it('renders without crashing', () => {
-  act(() => {
-    ReactDOM.render(<App />, div);
-  })
-  
+  ReactDOM.render(<App noLogin={true} />, div);
   ReactDOM.unmountComponentAtNode(div);
 });  
