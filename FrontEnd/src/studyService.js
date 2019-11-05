@@ -27,7 +27,7 @@ export function setCurrentStudyVars(studyId = currentStudy.studyId,
     currentStudy = {studyId, studyName, users, dataset, pods, archived}
 }
 
-export function addUser(user, array = []) {
+export function addUser(user, array) {
     if (validateUser(user)) {
         return [...array, user]
     }
@@ -35,7 +35,7 @@ export function addUser(user, array = []) {
     return array
 }
 
-export function removeUser(user, array = []) {
+export function removeUser(user, array) {
     let index = array.indexOf(user)
     let newArray = [...array]
     newArray.splice(index, 1)
@@ -44,12 +44,12 @@ export function removeUser(user, array = []) {
 }
 
 // takes dataset {DatasetId: number, DatasetName: string} and returns an array of dataset names 
-export function addDataset(dataset, array = []) {
+export function addDataset(dataset, array) {
     return [...array, dataset.DatasetName]
 }
 
 // takes datasetName as string and returns a new array
-export function removeDataset(datasetName, array = []) {
+export function removeDataset(datasetName, array) {
     let newArray = [...array]
     newArray.splice(newArray.indexOf(datasetName), 1)
 
@@ -61,9 +61,7 @@ function validateUser(user) {
     if (typeof user === "string") {
         return true
     }
-    else {
-        return true
-    }
+    return false
 }
 
 
