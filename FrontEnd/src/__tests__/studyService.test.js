@@ -1,6 +1,11 @@
 import * as StudyService from "../studyService"
 
 
+function resetStudy() {
+    StudyService.setCurrentStudyVars(null, "", [], [], [], false)
+}
+
+
 it("should set current study with one argument", () => {
     let study = {
         studyId: 1,
@@ -16,7 +21,7 @@ it("should set current study with one argument", () => {
 
     expect(result).toEqual(study)
 
-    StudyService.setCurrentStudy(null)
+    resetStudy()
 })
 
 it("should set current study with multiple arguments", () => {
@@ -34,7 +39,17 @@ it("should set current study with multiple arguments", () => {
 
     expect(result).toEqual(study)
 
-    StudyService.setCurrentStudy(null)
+    resetStudy()
+})
+
+it("should set default values for current study", () => {
+    let study = StudyService.getCurrentStudy()
+    StudyService.setCurrentStudyVars(undefined, undefined, undefined, undefined, undefined, undefined)
+    let result = StudyService.getCurrentStudy()
+
+    expect(result).toEqual(study)
+
+    resetStudy()
 })
 
 it("should add unique rule to list", () => {
@@ -74,7 +89,14 @@ it("should add valid user to list", () => {
     expect(result).toEqual(["user1", "user2", "user3"])
 })
 
-it("should add valid user to list", () => {
+it("should not add invalid user to list", () => {
+    let list = ["user1", "user2"]
+    let result = StudyService.addUser({user: 1}, list)
+
+    expect(result).toEqual(list)
+})
+
+it("should remove user from list", () => {
     let list = ["user1", "user2"]
     let result = StudyService.removeUser("user2", list)
 
