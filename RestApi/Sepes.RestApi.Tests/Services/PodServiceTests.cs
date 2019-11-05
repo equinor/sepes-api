@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Threading.Tasks;
 using Moq;
 using Sepes.RestApi.Model;
@@ -28,12 +29,27 @@ namespace Sepes.RestApi.Tests.Services
             azureMock.VerifyNoOtherCalls();
         }
         [Fact]
+        public async Task GetPods()
+        {
+            //Given
+            var testPod = new Pod(1, "test", 42);
+            var databaseMock = new Mock<ISepesDb>();
+            databaseMock.Setup(db => db.getPods(42)).ReturnsAsync(JsonSerializer.Serialize(new Pod(42, "name", 42)));
+            var azureMock = new Mock<IAzureService>();
+            var service = new PodService(databaseMock.Object, azureMock.Object);
+
+            //When
+            var pod = await service.GetPods(42);
+
+            //Then
+            Assert.Equal(JsonSerializer.Serialize(new Pod(42, "name", 42)), pod);
+        }
+        [Fact]
         public async Task CreateNsg()
         {
             //Given
             var testPod = new Pod(1, "test", 42);
             var databaseMock = new Mock<ISepesDb>();
-            databaseMock.Setup(db => db.createPod("test", 42)).ReturnsAsync(testPod);
             var azureMock = new Mock<IAzureService>();
             var service = new PodService(databaseMock.Object, azureMock.Object);
             
@@ -51,7 +67,6 @@ namespace Sepes.RestApi.Tests.Services
             //Given
             var testPod = new Pod(1, "test", 42);
             var databaseMock = new Mock<ISepesDb>();
-            databaseMock.Setup(db => db.createPod("test", 42)).ReturnsAsync(testPod);
             var azureMock = new Mock<IAzureService>();
             var service = new PodService(databaseMock.Object, azureMock.Object);
             
@@ -69,7 +84,6 @@ namespace Sepes.RestApi.Tests.Services
             //Given
             var testPod = new Pod(1, "test", 42);
             var databaseMock = new Mock<ISepesDb>();
-            databaseMock.Setup(db => db.createPod("test", 42)).ReturnsAsync(testPod);
             var azureMock = new Mock<IAzureService>();
             var service = new PodService(databaseMock.Object, azureMock.Object);
             
@@ -87,7 +101,6 @@ namespace Sepes.RestApi.Tests.Services
             //Given
             var testPod = new Pod(1, "test", 42);
             var databaseMock = new Mock<ISepesDb>();
-            databaseMock.Setup(db => db.createPod("test", 42)).ReturnsAsync(testPod);
             var azureMock = new Mock<IAzureService>();
             var service = new PodService(databaseMock.Object, azureMock.Object);
             
