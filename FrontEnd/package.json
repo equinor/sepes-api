@@ -13,7 +13,7 @@
     "start": "set PORT=8080 && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test:coverege": "react-scripts test --coverage",
+    "test:coverege": "react-scripts test --coverage --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -36,9 +36,12 @@
       "**/*.{js,jsx}",
       "!**/node_modules/**",
       "!**/coverage/**",
+      "!**/components/**",
       "!**/serviceWorker.js",
       "!**/index.js",
-      "!**/App.js"
+      "!**/App.js",
+      "!**/sepes.js",
+      "!**/dummydata.js"
     ]
   }
 }
