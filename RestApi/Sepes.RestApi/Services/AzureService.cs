@@ -4,6 +4,10 @@ using System;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.Network.Fluent;
+using System.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -93,7 +97,7 @@ namespace Sepes.RestApi.Services
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
+            var net = await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
         }
         // RemoveNsg(...)
         public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
@@ -152,5 +156,40 @@ namespace Sepes.RestApi.Services
 
         // ApplyDataset(...)
         // Don't need a remove dataset as that happes when resource group gets terminated.
+
+
+        //// Pod user/role management
+        public async Task<IRoleAssignment> AddUserToResourceGroup(string userId, string resourceGroupName) 
+        {
+            var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
+            
+            return await _azure.AccessManagement.RoleAssignments
+                .Define(Guid.NewGuid().ToString())
+                .ForObjectId(userId)
+                .WithBuiltInRole(BuiltInRole.Contributor)
+                .WithResourceScope(resourceGroup)
+                .CreateAsync();
+        }
+
+        public async Task<IRoleAssignment> AddUserToNetwork(string userId, string joinNetworkRoleId, string networkId) 
+        {
+            var network = await _azure.Networks.GetByIdAsync(networkId);
+            
+            return await _azure.AccessManagement.RoleAssignments
+                .Define(Guid.NewGuid().ToString())
+                .ForObjectId(userId)
+                .WithRoleDefinition(joinNetworkRoleId)
+                .WithResourceScope(network)
+                .CreateAsync();
+        }
+
+        public async Task RemoveUserFromResource(string userId, string resScope) 
+        {
+            var roles = await _azure.AccessManagement.ActiveDirectoryUsers
+                .GetById(userId).Manager.RoleAssignments.ListByScopeAsync(resScope);
+
+            string roleId = roles.First().Id;
+            await _azure.AccessManagement.RoleAssignments.DeleteByIdAsync(roleId);
+        }
     }
 }
