@@ -159,36 +159,50 @@ namespace Sepes.RestApi.Services
 
 
         //// Pod user/role management
-        public async Task<IRoleAssignment> AddUserToResourceGroup(string userId, string resourceGroupName) 
+        public async Task<string> AddUserToResourceGroup(string userId, string resourceGroupName) 
         {
             var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
             
-            return await _azure.AccessManagement.RoleAssignments
+            return _azure.AccessManagement.RoleAssignments
                 .Define(Guid.NewGuid().ToString())
                 .ForObjectId(userId)
                 .WithBuiltInRole(BuiltInRole.Contributor)
                 .WithResourceScope(resourceGroup)
-                .CreateAsync();
+                .CreateAsync().Result.Id;
         }
 
-        public async Task<IRoleAssignment> AddUserToNetwork(string userId, string joinNetworkRoleId, string networkId) 
+        public async Task<string> AddUserToNetwork(string userId, string joinNetworkRoleId, string networkId) 
         {
             var network = await _azure.Networks.GetByIdAsync(networkId);
             
-            return await _azure.AccessManagement.RoleAssignments
+            return _azure.AccessManagement.RoleAssignments
                 .Define(Guid.NewGuid().ToString())
                 .ForObjectId(userId)
                 .WithRoleDefinition(joinNetworkRoleId)
                 .WithResourceScope(network)
-                .CreateAsync();
+                .CreateAsync().Result.Id;
         }
 
-        public async Task RemoveUserFromResource(string userId, string resScope) 
+        public async Task RemoveUserFromResourceGroup(string userId, string resGroupName) 
+        {
+            var scope = _azure.ResourceGroups.GetByNameAsync(resGroupName).Result.Id;
+
+            await RemoveUserFromResource(userId, scope);
+        }
+
+        public async Task RemoveUserFromNetwork(string userId, string networkName, string resGroupName) 
+        {
+            var scope = _azure.Networks.GetByResourceGroupAsync(resGroupName, networkName).Result.Id;
+
+            await RemoveUserFromResource(userId, scope);
+        }
+
+        private async Task RemoveUserFromResource(string userId, string scope)
         {
             var roles = await _azure.AccessManagement.ActiveDirectoryUsers
-                .GetById(userId).Manager.RoleAssignments.ListByScopeAsync(resScope);
-
+                .GetById(userId).Manager.RoleAssignments.ListByScopeAsync(scope);
             string roleId = roles.First().Id;
+
             await _azure.AccessManagement.RoleAssignments.DeleteByIdAsync(roleId);
         }
     }

@@ -18,6 +18,7 @@ namespace Sepes.RestApi.Services
 
         Task<IRoleAssignment> AddUserToResourceGroup(string userId, string resourceGroupName);
         Task<IRoleAssignment> AddUserToNetwork(string userId, string joinNetworkRoleId, string networkId);
-        Task RemoveUserFromResource(string userId, string resScope);
+        Task RemoveUserFromNetwork(string userId, string networkName, string resGroupName);
+        Task RemoveUserFromResourceGroup(string userId, string resGroupName);
     }
 }
