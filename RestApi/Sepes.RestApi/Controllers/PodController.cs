@@ -23,7 +23,7 @@ namespace Sepes.RestApi.Controller
         [HttpPost("create")]
         public async Task<Pod> createPod([FromBody] PodInput input)
         {
-            return await _pod.CreateNewPod(input.name, input.studyId);
+            return await _pod.CreateNewPod(input.podName, input.studyId);
         }
 
         [HttpGet("list/{studyId}")]

@@ -3,15 +3,15 @@ namespace Sepes.RestApi.Model
 
     public class PodInput
     {
-        public int id { get; set; }
-        public string name { get; set; }
+        public int podID { get; set; }
+        public string podName { get; set; }
         public int studyId { get; set; }
         public string tag { get; set; }
 
 
-        public PodInput(string name, int studyId)
+        public PodInput(string podName, int studyId)
         {
-            this.name =name;
+            this.podName =podName;
             this.studyId =studyId;
         }
     }
