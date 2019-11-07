@@ -8,7 +8,13 @@ namespace Sepes.RestApi.Tests.Model
         [Fact]
         public void Constructor()
         {
-            var study = new Study("Teststudy", 42, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 }, false);
+            var study = new Study(){
+                studyName = "Teststudy",
+                studyId = 42,
+                userIds = new int[] { 2, 5, 1 },
+                datasetIds = new int[] { 2, 4, 5 },
+                archived = false
+            };
 
 
             Assert.Equal("Teststudy", study.studyName);
@@ -20,7 +26,13 @@ namespace Sepes.RestApi.Tests.Model
         [Fact]
         public void ConstructorInput()
         {
-            var study = new StudyInput("Teststudy", 42, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 });
+            var study = new StudyInput()
+            {
+                studyName = "Teststudy",
+                studyId = 42,
+                userIds = new int[] { 2, 5, 1 },
+                datasetIds = new int[] { 2, 4, 5 }
+            };//"Teststudy", 42, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 }
 
 
             Assert.Equal("Teststudy", study.studyName);
