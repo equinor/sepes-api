@@ -17,7 +17,12 @@ namespace Sepes.RestApi.Tests.Controller
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object);
             databaseMock.Setup(db => db.createStudy("TestStudy", new int[] { 2, 3 }, new int[] { 2, 42 })).ReturnsAsync(42);
-            var result = await controller.CreationVars(new Study("TestStudy", 0, new int[] { 2, 3 }, new int[] { 2, 42 }, false)); //Will need updating once studyinput has been made
+            var result = await controller.CreationVars(new Study()
+            {
+                studyName = "TestStudy",
+                userIds = new int[] { 2, 3 },
+                datasetIds = new int[] { 2, 42 }
+            });
 
 
             Assert.Equal(42, result);
@@ -28,7 +33,11 @@ namespace Sepes.RestApi.Tests.Controller
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object);
             databaseMock.Setup(db => db.updateStudy(42, false)).ReturnsAsync(1);
-            var result = await controller.UpdateVars(new Study("TestStudy", 42, new int[] { 2, 3 }, new int[] { 2, 42 }, false));
+            var result = await controller.UpdateVars(new Study()
+            {
+                studyId = 42,
+                archived = false
+            });
 
             Assert.Equal(1, result);
         }

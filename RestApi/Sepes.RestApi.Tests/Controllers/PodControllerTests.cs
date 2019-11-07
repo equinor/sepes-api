@@ -17,7 +17,11 @@ namespace Sepes.RestApi.Tests.Controller
             var controller = new PodController(podService);
 
             //When
-            var pod = await controller.createPod(new PodInput("TestPod",3));
+            var pod = await controller.createPod(new PodInput()
+            {
+                podName = "TestPod",
+                studyId = 3
+            });
 
             //Then
             Assert.Equal("TestPod", pod.name);

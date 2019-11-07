@@ -7,13 +7,6 @@ namespace Sepes.RestApi.Model
         public string podName { get; set; }
         public int studyId { get; set; }
         public string tag { get; set; }
-
-
-        public PodInput(string podName, int studyId)
-        {
-            this.podName =podName;
-            this.studyId =studyId;
-        }
     }
 
 }
