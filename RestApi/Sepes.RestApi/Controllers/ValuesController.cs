@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Sepes.RestApi.Controller
 {
+    [ExcludeFromCodeCoverage]
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
