@@ -178,7 +178,7 @@ namespace Sepes.RestApi.Services
         {
             var network = await _azure.Networks.GetByResourceGroupAsync(_commonResourceGroup, networkName);
             string joinNetworkRoleId = _azure.AccessManagement.RoleDefinitions
-                .GetByScopeAndRoleNameAsync(_commonResourceGroup, _joinNetworkRoleName).Result.Id;
+                .GetByScopeAndRoleNameAsync(network.Id, _joinNetworkRoleName).Result.Id;
             
             return _azure.AccessManagement.RoleAssignments
                 .Define(Guid.NewGuid().ToString())
