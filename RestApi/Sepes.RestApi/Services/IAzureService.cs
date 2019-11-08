@@ -1,4 +1,3 @@
-using Sepes.RestApi.Model;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Services
@@ -12,5 +11,7 @@ namespace Sepes.RestApi.Services
         Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName);
         Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
         Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName);
+        Task<string> AddUserToResourceGroup(string userId, string resourceGroupName);
+        Task<string> AddUserToNetwork(string userId, string networkName);
     }
 }

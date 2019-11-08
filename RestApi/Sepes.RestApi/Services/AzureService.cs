@@ -4,6 +4,10 @@ using System;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.Network.Fluent;
+using System.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -14,10 +18,13 @@ namespace Sepes.RestApi.Services
     {
         private readonly IAzure _azure;
         private readonly string _commonResourceGroup;
+        private readonly string _joinNetworkRoleName;
+
         public AzureService(AzureConfig config)
         {
             _commonResourceGroup = config.commonGroup;
             _azure = Azure.Authenticate(config.credentials).WithDefaultSubscription();
+            _joinNetworkRoleName = "ExampleJoinNetwork";
 
             if (!_azure.ResourceGroups.Contain(_commonResourceGroup))
             {
@@ -152,5 +159,34 @@ namespace Sepes.RestApi.Services
 
         // ApplyDataset(...)
         // Don't need a remove dataset as that happes when resource group gets terminated.
+
+
+        //// Pod user/role management
+        public async Task<string> AddUserToResourceGroup(string userId, string resourceGroupName) 
+        {
+            var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
+            
+            return _azure.AccessManagement.RoleAssignments
+                .Define(Guid.NewGuid().ToString())
+                .ForObjectId(userId)
+                .WithBuiltInRole(BuiltInRole.Contributor)
+                .WithResourceScope(resourceGroup)
+                .CreateAsync().Result.Id;
+        }
+
+        public async Task<string> AddUserToNetwork(string userId, string networkName) 
+        {
+            var network = await _azure.Networks.GetByResourceGroupAsync(_commonResourceGroup, networkName);
+            string joinNetworkRoleId = _azure.AccessManagement.RoleDefinitions
+                .GetByScopeAndRoleNameAsync(network.Id, _joinNetworkRoleName).Result.Id;
+            
+            return _azure.AccessManagement.RoleAssignments
+                .Define(Guid.NewGuid().ToString())
+                .ForObjectId(userId)
+                .WithRoleDefinition(joinNetworkRoleId)
+                .WithResourceScope(network)
+                .CreateAsync().Result.Id;
+        }
+
     }
 }
