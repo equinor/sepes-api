@@ -1,7 +1,3 @@
-using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Sepes.RestApi.Model;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Services
