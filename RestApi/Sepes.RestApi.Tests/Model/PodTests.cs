@@ -13,6 +13,19 @@ namespace Sepes.RestApi.Tests.Model
             Assert.Equal("test", pod.name);
             Assert.Equal(123, pod.studyId);
         }
+        [Fact]
+        public void ConstructorInput(){
+            var pod = new PodInput(){
+                podID = 42,
+                podName = "Testpod",
+                studyId = 24,
+                tag = "Azure:Tags"
+            };
+            Assert.Equal(42, pod.podID);
+            Assert.Equal("Testpod", pod.podName);
+            Assert.Equal(24, pod.studyId);
+            Assert.Equal("Azure:Tags", pod.tag);
+        }
 
         [Theory]
         [InlineData("test", "0-test-Network")]

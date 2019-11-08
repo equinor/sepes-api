@@ -9,5 +9,4 @@ namespace Sepes.RestApi.Model
         public int[] datasetIds { get; set; }
         public bool archived { get; set; }
     }
-
 }
