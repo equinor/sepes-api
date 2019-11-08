@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authentication;
-//using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json.Linq;
 using Sepes.RestApi.Model;
-using Sepes.RestApi.Services;
-
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi.Controller
 {
+    [ExcludeFromCodeCoverage]//Only until this controller gets a function
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
