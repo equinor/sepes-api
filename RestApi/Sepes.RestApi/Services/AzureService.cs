@@ -183,27 +183,5 @@ namespace Sepes.RestApi.Services
                 .CreateAsync().Result.Id;
         }
 
-        public async Task RemoveUserFromResourceGroup(string userId, string resGroupName) 
-        {
-            var scope = _azure.ResourceGroups.GetByNameAsync(resGroupName).Result.Id;
-
-            await RemoveUserFromResource(userId, scope);
-        }
-
-        public async Task RemoveUserFromNetwork(string userId, string networkName, string resGroupName) 
-        {
-            var scope = _azure.Networks.GetByResourceGroupAsync(resGroupName, networkName).Result.Id;
-
-            await RemoveUserFromResource(userId, scope);
-        }
-
-        private async Task RemoveUserFromResource(string userId, string scope)
-        {
-            var roles = await _azure.AccessManagement.ActiveDirectoryUsers
-                .GetById(userId).Manager.RoleAssignments.ListByScopeAsync(scope);
-            string roleId = roles.First().Id;
-
-            await _azure.AccessManagement.RoleAssignments.DeleteByIdAsync(roleId);
-        }
     }
 }
