@@ -3,8 +3,11 @@ import SepesUserList from './SepesUserList'
 import SepesDataList from './SepesDataList'
 import SepesPodList from './SepesPodList'
 
+import * as StudyService from "../studyService"
+
 import Sepes from '../sepes.js';
 const sepes = new Sepes();
+
 
 class CreateStudyPage extends Component {
     constructor(props) {
@@ -50,7 +53,8 @@ class CreateStudyPage extends Component {
 
     componentDidMount() {
         let study = this.props.state.selectedStudy;
-        console.log(study.StudyName)
+        //let study = StudyService.getCurrentStudy();
+
         this.setState({
             studyName: study.StudyName,
             studyId: typeof(study.StudyId) === "undefined" || study.StudyId === null ? null : study.StudyId,
@@ -81,45 +85,37 @@ class CreateStudyPage extends Component {
 
     addSponsors = (user) => {
         this.setState({
-            sponsors: [...this.state.sponsors, user]
+            sponsors: StudyService.addUser(user, this.state.sponsors)
         });
     }
 
     addSuppliers = (user) => {
         this.setState({
-            suppliers: [...this.state.suppliers, user]
+            suppliers: StudyService.addUser(user, this.state.suppliers)
         });
     }
 
     removeSponsor = (user) => {
-        let index = this.state.sponsors.indexOf(user);
-        let newArray = [...this.state.sponsors];
-        newArray.splice(index, 1);
         this.setState({
-            sponsors: newArray
+            sponsors: StudyService.removeUser(user, this.state.sponsors)
         });
     }
 
     removeSupplier = (user) => {
-        let index = this.state.suppliers.indexOf(user);
-        let newArray = [...this.state.suppliers];
-        newArray.splice(index, 1);
         this.setState({
-            suppliers: newArray
+            suppliers: StudyService.removeUser(user, this.state.suppliers)
         });
     }
 
     addDataset = (dataset) => {
         this.setState({
-            dataset: [...this.state.dataset, dataset.DatasetName]
+            dataset: StudyService.addDataset(dataset)
         });
     }
 
     removeDataset = (dataset) => {
-        let newArray = [...this.state.dataset];
-        newArray.splice(newArray.indexOf(dataset), 1)
         this.setState({
-            dataset: newArray
+            dataset: StudyService.removeDataset(dataset)
         });
     }
 
@@ -128,9 +124,9 @@ class CreateStudyPage extends Component {
     }
 
     setPods = (pods) => {
-        if (pods !== null && typeof(pods) !== "undefined") {
+        //if (pods !== null && typeof(pods) !== "undefined") {
             this.setState({pods});
-        }
+        //}
     }
 
     updateAchived = () => {

@@ -14,14 +14,15 @@ namespace Sepes.RestApi
     public class Startup
     {
         private IWebHostEnvironment _env;
-        private readonly ConfigService _config;
+        private readonly IConfigService _config;
         public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             _env = env;
-            _config = new ConfigService(
-                configuration,
-                new ConfigurationBuilder().AddEnvironmentVariables("SEPES_").Build()
-            );
+            if (_env.EnvironmentName == "Development")
+            {
+                ConfigService.LoadDevEnv();
+            }
+                _config = ConfigService.CreateConfig(configuration);
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -82,7 +83,8 @@ namespace Sepes.RestApi
             app.UseAuthentication();
             app.UseAuthorization();
             //app.UseMvc();
-            app.UseEndpoints(endpoints => {
+            app.UseEndpoints(endpoints =>
+            {
                 endpoints.MapControllers();
             });
         }
