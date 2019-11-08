@@ -174,10 +174,11 @@ namespace Sepes.RestApi.Services
                 .CreateAsync().Result.Id;
         }
 
-        public async Task<string> AddUserToNetwork(string userId, string networkId) 
+        public async Task<string> AddUserToNetwork(string userId, string networkName) 
         {
-            var network = await _azure.Networks.GetByIdAsync(networkId);
-            string joinNetworkRoleId = _azure.AccessManagement.RoleDefinitions.GetByScopeAndRoleNameAsync(networkId, _joinNetworkRoleName).Result.Id;
+            var network = await _azure.Networks.GetByResourceGroupAsync(_commonResourceGroup, networkName);
+            string joinNetworkRoleId = _azure.AccessManagement.RoleDefinitions
+                .GetByScopeAndRoleNameAsync(_commonResourceGroup, _joinNetworkRoleName).Result.Id;
             
             return _azure.AccessManagement.RoleAssignments
                 .Define(Guid.NewGuid().ToString())
