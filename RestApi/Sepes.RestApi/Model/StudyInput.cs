@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.RestApi.Model
 {
@@ -7,13 +8,20 @@ namespace Sepes.RestApi.Model
     {
         public string studyName { get; set; }
         public int studyId { get; set; }
-        public List<Pod> pods { get; set; }
-        public List<string> owners { get; set; }
-        public List<string> users { get; set; }
+        public HashSet<PodInput> pods { get; set; }
+        public HashSet<string> sponsors { get; set; }
+        public HashSet<string> suppliers { get; set; }
+        public bool archived { get; set; }
 
         // old model
         public int[] userIds { get; set; }
         public int[] datasetIds { get; set; }
+
+
+        public Study ToStudy()
+        {
+            return new Study(studyName, studyId, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), archived, userIds, datasetIds);
+        }
     }
 
 }
