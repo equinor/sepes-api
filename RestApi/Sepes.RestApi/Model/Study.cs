@@ -32,5 +32,13 @@ namespace Sepes.RestApi.Model
             this.datasetIds = datasetIds;
         }
 
+        public StudyInput ToStudyInput()
+        {
+            return new StudyInput(){
+                studyId = studyId,
+                studyName = studyName,
+                archived = archived
+            };
+        }
     }
 }
