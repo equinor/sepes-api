@@ -18,7 +18,7 @@ namespace Sepes.RestApi.Model
         public int[] datasetIds { get; set; }
 
 
-        public Study ToStudy()
+        public Study ToStudy() // will be fully implemented later
         {
             return new Study(studyName, studyId, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), archived, userIds, datasetIds);
         }
