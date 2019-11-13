@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
@@ -14,7 +15,7 @@ namespace Sepes.RestApi.Tests.Mocks
         }
         public Task<Pod> CreateNewPod(string name, int userId)
         {
-            return Task.FromResult(new Pod(42, name, userId));
+            return Task.FromResult(new Pod(42, name, userId, false, new List<Rule>(), new List<Rule>(), new List<User>(), new List<DataSet>(), new List<DataSet>()));
         }
         public Task createNsg(string securityGroupName, string resourceGroupName)
         {
@@ -42,7 +43,7 @@ namespace Sepes.RestApi.Tests.Mocks
         }
         public Task<string> GetPods(int studyID)
         {
-            return Task.FromResult(JsonSerializer.Serialize(new Pod(42, "name", studyID)));
+            return Task.FromResult(JsonSerializer.Serialize(new Pod(42, "name", studyID, false, new List<Rule>(), new List<Rule>(), new List<User>(), new List<DataSet>(), new List<DataSet>())));
         }
     }
 }
