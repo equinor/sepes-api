@@ -31,6 +31,19 @@ namespace Sepes.RestApi.Model
             this.loaded = loaded.ToImmutableList();
         }
 
+        public Pod(ushort id, string name, int studyId)
+        {
+            this.id = id;
+            this.name = name;
+            this.studyId = studyId;
+            this.allowAll = false;
+            this.incoming = new List<Rule>().ToImmutableList();
+            this.outgoing = new List<Rule>().ToImmutableList();
+            this.users = new List<User>().ToImmutableList();
+            this.locked = new List<DataSet>().ToImmutableList();
+            this.loaded = new List<DataSet>().ToImmutableList();
+        }
+
         public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
         public string subnetName => $"{studyId}-{name.Replace(" ", "-")}-SubNet";
         public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
