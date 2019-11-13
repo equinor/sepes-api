@@ -7,9 +7,9 @@ namespace Sepes.RestApi.Model
     //Internal version of pod model
     public class Pod
     {
-        public readonly ushort id;
-        public readonly string name;
-        public readonly int studyId;
+        public ushort id { get; }
+        public string name { get; }
+        public int studyId { get; }
         public readonly bool allowAll;
         public readonly ImmutableList<Rule> incoming;
         public readonly ImmutableList<Rule> outgoing;
