@@ -106,7 +106,7 @@ namespace Sepes.RestApi.Services
                 command.Parameters.AddWithValue("@podName", name);
                 command.Parameters.AddWithValue("@studyID", studyId);
                 var id = Convert.ToUInt16(await command.ExecuteScalarAsync());
-                return new Pod(id, name, studyId, false, null, null, null, null, null);
+                return new Pod(id, name, studyId);
             }
             finally
             {
