@@ -38,7 +38,8 @@ namespace Sepes.RestApi.Tests.Model
             Assert.Equal(new int[] { 2, 4, 5 }, study.datasetIds);
         }
 
-                [Fact]
+
+        [Fact]
         public void TestEqualsMethods()
         {
             var user1 = new User("Name1", "test@test.com", "sponsor");
@@ -71,6 +72,16 @@ namespace Sepes.RestApi.Tests.Model
             var study3 = new Study("Test-Study", 2, pods, users, users, datasets, false, new int[]{1, 2}, new int[]{1, 2});
             Assert.True(study1.Equals(study2));
             Assert.False(study1.Equals(study3));
+
+            var studySmall = new Study("My study", 123);
+            var studySmall2 = new Study("My study", 123, new HashSet<Pod>());
+            var podsSmall = new HashSet<Pod>();
+            podsSmall.Add(new Pod(1, "test", 1));
+            var studySmall3 = new Study("My study", 123, podsSmall);
+
+            Assert.True(studySmall.Equals(studySmall2));
+            Assert.Equal(1, studySmall3.pods.Count);
+            Assert.False(studySmall.Equals(studySmall3));
         }
     }
 }
