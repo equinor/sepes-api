@@ -23,14 +23,18 @@ namespace Sepes.RestApi.Model
         {
             this.studyName = studyName;
             this.studyId = studyId;
-            this.pods = pods.ToImmutableHashSet();
-            this.sponsors = sponsors.ToImmutableHashSet();
-            this.suppliers = suppliers.ToImmutableHashSet();
-            this.datasets = datasets.ToImmutableHashSet();
+            this.pods = pods == null ? ImmutableHashSet<Pod>.Empty : pods.ToImmutableHashSet();
+            this.sponsors = sponsors == null ? ImmutableHashSet<User>.Empty : sponsors.ToImmutableHashSet();
+            this.suppliers = suppliers == null ? ImmutableHashSet<User>.Empty : suppliers.ToImmutableHashSet();
+            this.datasets = datasets == null ? ImmutableHashSet<DataSet>.Empty : datasets.ToImmutableHashSet();
             this.archived = archived;
             this.userIds = userIds;
             this.datasetIds = datasetIds;
         }
+
+        public Study(string studyName, int studyId, IEnumerable<Pod> pods = null) : 
+            this(studyName, studyId, pods == null ? ImmutableHashSet<Pod>.Empty : pods, ImmutableHashSet<User>.Empty, 
+                ImmutableHashSet<User>.Empty, ImmutableHashSet<DataSet>.Empty, false, new int[]{}, new int[]{}) {}
 
         public StudyInput ToStudyInput() // will be fully implemented later
         {
