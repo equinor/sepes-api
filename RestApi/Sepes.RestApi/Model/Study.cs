@@ -6,17 +6,17 @@ namespace Sepes.RestApi.Model
 
     public class Study
     {
-        public readonly string studyName;
-        public readonly int studyId;
-        public readonly ImmutableHashSet<Pod> pods;
-        public readonly ImmutableHashSet<User> sponsors;
-        public readonly ImmutableHashSet<User> suppliers;
-        public readonly ImmutableHashSet<DataSet> datasets;
-        public readonly bool archived;
+        public string studyName { get; }
+        public int studyId { get; }
+        public ImmutableHashSet<Pod> pods { get; }
+        public ImmutableHashSet<User> sponsors { get; }
+        public ImmutableHashSet<User> suppliers { get; }
+        public ImmutableHashSet<DataSet> datasets { get; }
+        public bool archived { get; }
 
         // old model
-        public readonly int[] userIds;
-        public readonly int[] datasetIds;
+        public int[] userIds { get; }
+        public int[] datasetIds { get; }
 
         public Study(string studyName, int studyId, IEnumerable<Pod> pods, IEnumerable<User> sponsors, 
                     IEnumerable<User> suppliers, IEnumerable<DataSet> datasets, bool archived, int[] userIds, int[] datasetIds)
@@ -32,7 +32,7 @@ namespace Sepes.RestApi.Model
             this.datasetIds = datasetIds;
         }
 
-        public StudyInput ToStudyInput()
+        public StudyInput ToStudyInput() // will be fully implemented later
         {
             return new StudyInput(){
                 studyId = studyId,
