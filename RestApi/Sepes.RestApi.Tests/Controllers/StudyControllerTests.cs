@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Moq;
@@ -17,12 +19,10 @@ namespace Sepes.RestApi.Tests.Controller
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object);
             databaseMock.Setup(db => db.createStudy("TestStudy", new int[] { 2, 3 }, new int[] { 2, 42 })).ReturnsAsync(42);
-            var result = await controller.CreationVars(new Study()
-            {
-                studyName = "TestStudy",
-                userIds = new int[] { 2, 3 },
-                datasetIds = new int[] { 2, 42 }
-            });
+
+            Study study = new Study("test", 12, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false, new int[]{}, new int[]{});
+            
+            var result = await controller.CreationVars(study);
 
 
             Assert.Equal(42, result);
@@ -33,11 +33,8 @@ namespace Sepes.RestApi.Tests.Controller
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object);
             databaseMock.Setup(db => db.updateStudy(42, false)).ReturnsAsync(1);
-            var result = await controller.UpdateVars(new Study()
-            {
-                studyId = 42,
-                archived = false
-            });
+            Study study = new Study("test", 12, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false, new int[]{}, new int[]{});
+            var result = await controller.UpdateVars(study);
 
             Assert.Equal(1, result);
         }
