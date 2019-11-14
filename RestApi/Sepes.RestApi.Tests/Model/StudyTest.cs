@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using Sepes.RestApi.Model;
 using Xunit;
 
@@ -8,13 +10,7 @@ namespace Sepes.RestApi.Tests.Model
         [Fact]
         public void Constructor()
         {
-            var study = new Study(){
-                studyName = "Teststudy",
-                studyId = 42,
-                userIds = new int[] { 2, 5, 1 },
-                datasetIds = new int[] { 2, 4, 5 },
-                archived = false
-            };
+            Study study = new Study("Teststudy", 42, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 });
 
 
             Assert.Equal("Teststudy", study.studyName);
