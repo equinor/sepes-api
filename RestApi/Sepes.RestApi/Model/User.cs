@@ -17,10 +17,7 @@ namespace Sepes.RestApi.Model
 
         public override bool Equals(object obj)
         {
-            return obj is User user &&
-                   userName == user.userName &&
-                   userEmail == user.userEmail &&
-                   userGroup == user.userGroup;
+            return obj is User user && userEmail == user.userEmail;
         }
 
         public override int GetHashCode()
