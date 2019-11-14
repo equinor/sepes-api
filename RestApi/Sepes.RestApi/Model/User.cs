@@ -22,7 +22,7 @@ namespace Sepes.RestApi.Model
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(userName, userEmail, userGroup);
+            return HashCode.Combine(userEmail);
         }
     }
 
