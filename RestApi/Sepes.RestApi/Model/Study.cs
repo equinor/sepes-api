@@ -39,12 +39,31 @@ namespace Sepes.RestApi.Model
             this(studyName, studyId, pods == null ? ImmutableHashSet<Pod>.Empty : pods, ImmutableHashSet<User>.Empty, 
                 ImmutableHashSet<User>.Empty, ImmutableHashSet<DataSet>.Empty, false, new int[]{}, new int[]{}) {}
 
-        public StudyInput ToStudyInput() // will be fully implemented later
+        public StudyInput ToStudyInput()
         {
+            var inputPods = new HashSet<PodInput>();
+            var inputSponsors = new HashSet<string>();
+            var inputSuppliers = new HashSet<string>();
+
+            foreach (Pod pod in pods) {
+                inputPods.Add(pod.ToPodInput());
+            }
+            foreach (User user in sponsors) {
+                inputSponsors.Add(user.userEmail);
+            }
+            foreach (User user in suppliers) {
+                inputSuppliers.Add(user.userEmail);
+            }
+
             return new StudyInput(){
                 studyId = studyId,
                 studyName = studyName,
-                archived = archived
+                archived = archived,
+                pods = inputPods,
+                sponsors = inputSponsors,
+                suppliers = inputSuppliers,
+                userIds = userIds,
+                datasetIds = datasetIds
             };
         }
         
