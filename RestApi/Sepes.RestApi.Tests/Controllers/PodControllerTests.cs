@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Sepes.RestApi.Controller;
@@ -38,7 +39,7 @@ namespace Sepes.RestApi.Tests.Controller
             var pod = await controller.getPods(42);
 
             //Then
-            Assert.Equal(JsonSerializer.Serialize(new Pod(42, "name", 42)), pod);
+            Assert.Equal(JsonSerializer.Serialize(new Pod(42, "name", 3, false, new List<Rule>(), new List<Rule>(), new List<User>(), new List<DataSet>(), new List<DataSet>())), pod);
         }
     }
 
