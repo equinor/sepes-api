@@ -33,25 +33,17 @@ namespace Sepes.RestApi.Model
             this.name = name;
             this.studyId = studyId;
             this.allowAll = allowAll;
-            this.incoming = incoming.ToImmutableList();
-            this.outgoing = outgoing.ToImmutableList();
-            this.users = users.ToImmutableList();
-            this.locked = locked.ToImmutableList();
-            this.loaded = loaded.ToImmutableList();
+            this.incoming = incoming == null ? ImmutableList<Rule>.Empty : incoming.ToImmutableList();
+            this.outgoing = outgoing == null ? ImmutableList<Rule>.Empty : outgoing.ToImmutableList();
+            this.users = users == null ? ImmutableList<User>.Empty : users.ToImmutableList();
+            this.locked = locked == null ? ImmutableList<DataSet>.Empty : locked.ToImmutableList();
+            this.loaded = loaded == null ? ImmutableList<DataSet>.Empty : loaded.ToImmutableList();
         }
 
-        public Pod(ushort id, string name, int studyId)
-        {
-            this.id = id;
-            this.name = name;
-            this.studyId = studyId;
-            this.allowAll = false;
-            this.incoming = new List<Rule>().ToImmutableList();
-            this.outgoing = new List<Rule>().ToImmutableList();
-            this.users = new List<User>().ToImmutableList();
-            this.locked = new List<DataSet>().ToImmutableList();
-            this.loaded = new List<DataSet>().ToImmutableList();
-        }
+        public Pod(ushort id, string name, int studyId) : 
+            this(id, name, studyId, false, ImmutableList<Rule>.Empty, ImmutableList<Rule>.Empty, 
+            ImmutableList<User>.Empty, ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
+
 
         public override bool Equals(object obj)
         {

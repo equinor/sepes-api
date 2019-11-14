@@ -32,5 +32,6 @@ namespace Sepes.RestApi.Model
         {
             return HashCode.Combine(displayName, opaPolicy, azureReference);
         }
+
     }
 }
