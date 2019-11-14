@@ -64,7 +64,7 @@ namespace Sepes.RestApi.Model
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(studyName, studyId, pods, sponsors, suppliers, archived, userIds, datasetIds);
+            return HashCode.Combine(studyName, studyId);
         }
 
     }

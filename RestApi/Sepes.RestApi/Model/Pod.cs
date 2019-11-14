@@ -59,18 +59,7 @@ namespace Sepes.RestApi.Model
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
-            hash.Add(id);
-            hash.Add(name);
-            hash.Add(studyId);
-            hash.Add(allowAll);
-            hash.Add(incoming);
-            hash.Add(outgoing);
-            hash.Add(users);
-            hash.Add(locked);
-            hash.Add(loaded);
-
-            return hash.ToHashCode();
+            return HashCode.Combine(id, name);
         }
     }
 }
