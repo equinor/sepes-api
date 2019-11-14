@@ -54,9 +54,7 @@ namespace Sepes.RestApi.Model
                    allowAll == pod.allowAll &&
                    Enumerable.SequenceEqual(incoming, pod.incoming) &&
                    Enumerable.SequenceEqual(outgoing, pod.outgoing) &&
-                   Enumerable.SequenceEqual(users, pod.users) &&
-                   Enumerable.SequenceEqual(locked, pod.locked) &&
-                   Enumerable.SequenceEqual(loaded, pod.loaded);
+                   Enumerable.SequenceEqual(users, pod.users);
         }
 
         public override int GetHashCode()
