@@ -79,25 +79,12 @@ namespace Sepes.RestApi.Model
                    allowAll == pod.allowAll &&
                    Enumerable.SequenceEqual(incoming, pod.incoming) &&
                    Enumerable.SequenceEqual(outgoing, pod.outgoing) &&
-                   Enumerable.SequenceEqual(users, pod.users) &&
-                   Enumerable.SequenceEqual(locked, pod.locked) &&
-                   Enumerable.SequenceEqual(loaded, pod.loaded);
+                   Enumerable.SequenceEqual(users, pod.users);
         }
 
         public override int GetHashCode()
         {
-            var hash = new HashCode();
-            hash.Add(id);
-            hash.Add(name);
-            hash.Add(studyId);
-            hash.Add(allowAll);
-            hash.Add(incoming);
-            hash.Add(outgoing);
-            hash.Add(users);
-            hash.Add(locked);
-            hash.Add(loaded);
-
-            return hash.ToHashCode();
+            return HashCode.Combine(id, name);
         }
     }
 }

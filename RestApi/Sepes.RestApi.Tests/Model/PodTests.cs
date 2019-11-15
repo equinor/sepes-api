@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Net;
 using Sepes.RestApi.Model;
 using Xunit;
 
@@ -46,6 +48,30 @@ namespace Sepes.RestApi.Tests.Model
         public void AddressSpace(ushort id, string addressSpace) {
             var pod = new Pod(id,"test",0);
             Assert.Equal(addressSpace, pod.addressSpace);
+        }
+
+        [Fact]
+        public void TestEqualsMethod()
+        {
+            var user1 = new User("Name1", "test@test.com", "sponsor");
+            var rule1 = new Rule(8080, IPAddress.Parse("1.1.1.1"));
+            var dataset1 = new DataSet("test", "/test", "twqt4yhqe.qe5w.ywyw5ywq.yq4e5yqe5y");
+
+            var rules = new List<Rule>();
+            rules.Add(rule1);
+            var users = new List<User>();
+            users.Add(user1);
+            var datasets = new List<DataSet>();
+            datasets.Add(dataset1);
+
+            var pod = new Pod(11, "test", 1, false, rules, rules, users, datasets, datasets);
+            var sameAsPod = new Pod(11, "test", 1, false, rules, rules, users, datasets, datasets);
+            var updatedPod = new Pod(11, "test", 1, true, null, null, users, datasets, datasets);
+            var differentPod = new Pod(12, "test2", 1, false, rules, rules, users, datasets, datasets);
+
+            Assert.True(pod.Equals(sameAsPod));
+            Assert.False(pod.Equals(updatedPod));
+            Assert.False(pod.Equals(differentPod));
         }
     }
 }
