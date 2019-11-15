@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Model
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(displayName, opaPolicy, azureReference);
+            return HashCode.Combine(displayName);
         }
 
     }
