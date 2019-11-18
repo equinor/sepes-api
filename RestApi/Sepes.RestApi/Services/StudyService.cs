@@ -16,10 +16,7 @@ namespace Sepes.RestApi.Services {
     public interface IStudyService
     {
         // Get the list of studies based on a user.
-        HashSet<Study> GetStudies(User user);
-
-        // Get the list of archived studies based on a user.
-        Task<ImmutableHashSet<Study>> GetArchived(User user);
+        IEnumerable<Study> GetStudies(User user, bool archived);
 
         // makes changes to the meta data of a study.
         // if based is null it means its a new study.
@@ -46,19 +43,12 @@ namespace Sepes.RestApi.Services {
             _podService = podService;
             
             var inputStudies = GetInputStudies();
-            _studies = ConvertStudies(inputStudies);
-
-            Console.WriteLine("##### studies: "+_studies.Count);
+            _studies = inputStudies.Select(study => study.ToStudy()).ToHashSet();
         }
 
-        public Task<ImmutableHashSet<Study>> GetArchived(User user)
+        public IEnumerable<Study> GetStudies(User user, bool archived)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public HashSet<Study> GetStudies(User user)
-        {
-            return _studies;
+            return _studies.Where(study => study.archived == archived);
         }
 
         public async Task<Study> Save(Study newStudy, Study based)
@@ -76,26 +66,17 @@ namespace Sepes.RestApi.Services {
             throw new System.NotImplementedException();
         }
 
-
-        public HashSet<Study> ConvertStudies(IEnumerable<StudyInput> studies)
-        {
-            var array = new HashSet<Study>();
-            
-            foreach(StudyInput study in studies) {
-                array.Add(study.ToStudy());
-            }
-
-            return array;
-        }
-
         public HashSet<StudyInput> GetInputStudies()
         {
             string studiesJson = _db.getStudies(false).Result;
+            string studiesJsonArchived = _db.getStudies(true).Result;
 
             JsonSerializerOptions opt = new JsonSerializerOptions();
             opt.PropertyNameCaseInsensitive = true;
+
+            var studies = JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJson, opt);
             
-            return JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJson, opt);
+            return studies.Concat(JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJsonArchived, opt)).ToHashSet();
         }
     }
 }
