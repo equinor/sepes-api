@@ -60,6 +60,7 @@ namespace Sepes.RestApi
             services.AddSingleton<IAuthService>(new AuthService(_config.authConfig));
             services.AddSingleton<IAzureService>(new AzureService(_config.azureConfig));
             services.AddSingleton<IPodService, PodService>();
+            services.AddSingleton<IStudyService, StudyService>();
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
