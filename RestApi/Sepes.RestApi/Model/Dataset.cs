@@ -1,3 +1,5 @@
+using System;
+
 namespace Sepes.RestApi.Model
 {
     // Read only view of the current or proposed state of a Pod.
@@ -17,5 +19,19 @@ namespace Sepes.RestApi.Model
             this.opaPolicy = opaPolicy;
             this.azureReference = azureReference;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is DataSet dataset &&
+                   displayName == dataset.displayName &&
+                   opaPolicy == dataset.opaPolicy &&
+                   azureReference == dataset.azureReference;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(displayName);
+        }
+
     }
 }

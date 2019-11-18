@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
+
 
 namespace Sepes.RestApi.Model
 {
@@ -15,8 +18,8 @@ namespace Sepes.RestApi.Model
         public bool archived { get; }
 
         // old model
-        public int[] userIds { get; }
-        public int[] datasetIds { get; }
+        public int[] userIds { get; set; }
+        public int[] datasetIds { get; set; }
 
         public Study(string studyName, int studyId, IEnumerable<Pod> pods, IEnumerable<User> sponsors, 
                     IEnumerable<User> suppliers, IEnumerable<DataSet> datasets, bool archived, int[] userIds, int[] datasetIds)
@@ -44,5 +47,25 @@ namespace Sepes.RestApi.Model
                 archived = archived
             };
         }
+        
+        public override bool Equals(object obj)
+        {
+            return obj is Study study &&
+                   studyName == study.studyName &&
+                   studyId == study.studyId &&
+                   Enumerable.SequenceEqual(pods, study.pods) &&
+                   Enumerable.SequenceEqual(sponsors, study.sponsors) &&
+                   Enumerable.SequenceEqual(suppliers, study.suppliers) &&
+                   Enumerable.SequenceEqual(datasets, study.datasets) &&
+                   archived == study.archived &&
+                   Enumerable.SequenceEqual(userIds, study.userIds) &&
+                   Enumerable.SequenceEqual(datasetIds, study.datasetIds);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(studyName, studyId);
+        }
+
     }
 }
