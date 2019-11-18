@@ -21,6 +21,11 @@ namespace Sepes.RestApi.Model
             this.ip = IPAddress.Parse(ip);
         }
 
+        public RuleInput ToRuleInput()
+        {
+            return new RuleInput(){ port = port, ip = ip.ToString() };
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Rule rule &&
