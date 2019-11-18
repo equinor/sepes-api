@@ -18,10 +18,39 @@ namespace Sepes.RestApi.Model
         public int[] datasetIds { get; set; }
 
 
-        public Study ToStudy() // will be fully implemented later
+        public Study ToStudy()
         {
-            return new Study(studyName, studyId, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), archived, userIds, datasetIds);
+            var studyPods = new HashSet<Pod>();
+            var studySponsors = new HashSet<User>();
+            var studySuppliers = new HashSet<User>();
+
+            int[] studyUserIds = new int[]{};
+            int[] studyDatasetIds = new int[]{};
+
+            if (pods != null) { 
+                foreach (PodInput pod in pods) {
+                    studyPods.Add(pod.ToPod());
+                }
+            }
+            if (sponsors != null) { 
+                foreach (string user in sponsors) {
+                    studySponsors.Add(new User("", user, ""));
+                }
+            }
+            if (suppliers != null) { 
+                foreach (string user in suppliers) {
+                    studySuppliers.Add(new User("", user, ""));
+                }
+            }
+
+            if (userIds != null) {
+                studyUserIds = userIds;
+            }
+            if (datasetIds != null) {
+                studyDatasetIds = datasetIds;
+            }
+
+            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived, studyUserIds, studyDatasetIds);
         }
     }
-
 }

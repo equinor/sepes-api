@@ -73,5 +73,29 @@ namespace Sepes.RestApi.Tests.Model
             Assert.False(pod.Equals(updatedPod));
             Assert.False(pod.Equals(differentPod));
         }
+
+        [Fact]
+        public void TestEqualityForConversions()
+        {
+            var rule1 = new Rule(8080, IPAddress.Parse("1.1.1.1"));
+            var rule2 = new Rule(400, IPAddress.Parse("1.1.1.1"));
+
+            var dataset1 = new DataSet("test", "/test", "twqt4yhqe.qe5w.ywyw5ywq.yq4e5yqe5y");
+            var dataset2 = new DataSet("test2", "/test2", "twqt4yhqe");
+
+            var rules = new List<Rule>();
+            rules.Add(rule1);
+            rules.Add(rule2);
+
+            var datasets = new List<DataSet>();
+            datasets.Add(dataset1);
+            datasets.Add(dataset2);
+
+            var pod = new Pod(11, "pod1", 1, false, rules, rules, new List<User>(), null, null);
+            var pod2 = new Pod(12, "pod2", 1);
+
+            Assert.True(pod.Equals(pod.ToPodInput().ToPod()));
+            Assert.False(pod.Equals(pod2.ToPodInput().ToPod()));
+        }
     }
 }
