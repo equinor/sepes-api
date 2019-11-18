@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 using System.Net;
 
 namespace Sepes.RestApi.Model
@@ -16,6 +18,13 @@ namespace Sepes.RestApi.Model
         public readonly ImmutableList<User> users;
         public readonly ImmutableList<DataSet> locked;
         public readonly ImmutableList<DataSet> loaded;
+
+        public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
+        public string subnetName => $"{studyId}-{name.Replace(" ", "-")}-SubNet";
+        public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
+        public string networkSecurityGroupName => $"{studyId}-{name.Replace(" ", "-")}-NetworkSecurityGroup";
+        public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
+
 
         public Pod(ushort id, string name, int studyId, bool allowAll, IEnumerable<Rule> incoming, IEnumerable<Rule> outgoing, 
                     IEnumerable<User> users, IEnumerable<DataSet> locked, IEnumerable<DataSet> loaded)
@@ -36,10 +45,21 @@ namespace Sepes.RestApi.Model
             ImmutableList<User>.Empty, ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
 
 
-        public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
-        public string subnetName => $"{studyId}-{name.Replace(" ", "-")}-SubNet";
-        public string resourceGroupName => $"{studyId}-{name.Replace(" ", "-")}-ResourceGroup";
-        public string networkSecurityGroupName => $"{studyId}-{name.Replace(" ", "-")}-NetworkSecurityGroup";
-        public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
+        public override bool Equals(object obj)
+        {
+            return obj is Pod pod &&
+                   id == pod.id &&
+                   name == pod.name &&
+                   studyId == pod.studyId &&
+                   allowAll == pod.allowAll &&
+                   Enumerable.SequenceEqual(incoming, pod.incoming) &&
+                   Enumerable.SequenceEqual(outgoing, pod.outgoing) &&
+                   Enumerable.SequenceEqual(users, pod.users);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(id, name);
+        }
     }
 }
