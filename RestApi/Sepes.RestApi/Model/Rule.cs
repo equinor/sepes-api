@@ -15,6 +15,16 @@ namespace Sepes.RestApi.Model
             this.port = port;
             this.ip = ip;
         }
+        public Rule(ushort port, string ip)
+        {
+            this.port = port;
+            this.ip = IPAddress.Parse(ip);
+        }
+
+        public RuleInput ToRuleInput()
+        {
+            return new RuleInput(){ port = port, ip = ip.ToString() };
+        }
 
         public override bool Equals(object obj)
         {

@@ -44,6 +44,31 @@ namespace Sepes.RestApi.Model
             this(id, name, studyId, false, ImmutableList<Rule>.Empty, ImmutableList<Rule>.Empty, 
             ImmutableList<User>.Empty, ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
 
+        public PodInput ToPodInput()
+        {
+            var inputIncoming = new List<RuleInput>();
+            var inputOutgoing = new List<RuleInput>();
+            var inputUsers = new List<string>();
+            
+            foreach (Rule rule in incoming) {
+                inputIncoming.Add(rule.ToRuleInput());
+            }
+            foreach (Rule rule in outgoing) {
+                inputOutgoing.Add(rule.ToRuleInput());
+            }
+            foreach (User user in users) {
+                inputUsers.Add(user.userEmail);
+            }
+
+            return new PodInput(){
+                podId = id,
+                podName = name,
+                studyId = studyId,
+                incoming = inputIncoming.ToArray(),
+                outgoing = inputOutgoing.ToArray(),
+                users = inputUsers.ToArray()
+            };
+        }
 
         public override bool Equals(object obj)
         {

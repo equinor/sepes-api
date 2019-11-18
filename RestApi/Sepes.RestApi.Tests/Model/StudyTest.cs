@@ -63,5 +63,26 @@ namespace Sepes.RestApi.Tests.Model
             Assert.True(study1.Equals(sameAsStudy1));
             Assert.False(study1.Equals(differentStudy));
         }
+
+        [Fact]
+        public void TestEqualityForConversions()
+        {
+            var rule1 = new Rule(8080, IPAddress.Parse("1.1.1.1"));
+            var rule2 = new Rule(400, IPAddress.Parse("1.1.1.1"));
+            var rules = new List<Rule>();
+            rules.Add(rule1);
+            rules.Add(rule2);
+
+            var pod = new Pod(11, "test", 1, false, rules, rules, null, null, null);
+            var pods = new List<Pod>();
+            pods.Add(pod);
+
+            var study1 = new Study("Test-Study", 1, pods, null, null, new List<DataSet>(), false, new int[]{1, 2, 3}, new int[]{1, 2, 3});
+            var study2 = study1.ToStudyInput();
+            var study3 = new Study("Test-Study", 2, pods);
+
+            Assert.True(study1.Equals(study2.ToStudy()));
+            Assert.False(study1.Equals(study3));
+        }
     }
 }
