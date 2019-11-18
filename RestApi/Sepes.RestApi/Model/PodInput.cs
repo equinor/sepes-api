@@ -20,10 +20,10 @@ namespace Sepes.RestApi.Model
             var podUsers = new List<User>();
             
             foreach (RuleInput rule in incoming) {
-                podIncoming.Add(new Rule(rule.port, rule.ip));
+                podIncoming.Add(rule.ToRule());
             }
             foreach (RuleInput rule in outgoing) {
-                podOutgoing.Add(new Rule(rule.port, rule.ip));
+                podOutgoing.Add(rule.ToRule());
             }
             foreach (string user in users) {
                 podUsers.Add(new User("", user, ""));
