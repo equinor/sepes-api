@@ -51,10 +51,10 @@ namespace Sepes.RestApi.Model
             var inputUsers = new List<string>();
             
             foreach (Rule rule in incoming) {
-                inputIncoming.Add(new RuleInput(){port = rule.port, ip = rule.ip.ToString()});
+                inputIncoming.Add(rule.ToRuleInput());
             }
             foreach (Rule rule in outgoing) {
-                inputOutgoing.Add(new RuleInput(){port = rule.port, ip = rule.ip.ToString()});
+                inputOutgoing.Add(rule.ToRuleInput());
             }
             foreach (User user in users) {
                 inputUsers.Add(user.userEmail);
