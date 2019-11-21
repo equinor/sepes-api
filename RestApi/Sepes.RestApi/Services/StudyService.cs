@@ -1,11 +1,8 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System;
 using System.Linq;
 
 namespace Sepes.RestApi.Services {
@@ -42,8 +39,10 @@ namespace Sepes.RestApi.Services {
             _db = dbService;
             _podService = podService;
             
+
             var inputStudies = GetInputStudies();
             _studies = inputStudies.Select(study => study.ToStudy()).ToHashSet();
+            //_studies = _db.GetAllStudies().Result;
         }
 
         public IEnumerable<Study> GetStudies(User user, bool archived)
@@ -56,6 +55,9 @@ namespace Sepes.RestApi.Services {
             int id = await _db.createStudy(newStudy.studyName, newStudy.userIds, newStudy.datasetIds);
             var study = new Study(newStudy.studyName, id, newStudy.pods, newStudy.sponsors, newStudy.suppliers, 
                                   newStudy.datasets, newStudy.archived, newStudy.userIds, newStudy.datasetIds);
+
+            //var study = await _db.SaveStudy(newStudy, based == null);
+
             _studies.Add(study);
 
             return study;
@@ -79,4 +81,5 @@ namespace Sepes.RestApi.Services {
             return studies.Concat(JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJsonArchived, opt)).ToHashSet();
         }
     }
+
 }
