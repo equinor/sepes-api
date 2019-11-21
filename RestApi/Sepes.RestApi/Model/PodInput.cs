@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.RestApi.Model
 {
@@ -15,19 +16,9 @@ namespace Sepes.RestApi.Model
 
         public Pod ToPod()
         {
-            var podIncoming = new List<Rule>();
-            var podOutgoing = new List<Rule>();
-            var podUsers = new List<User>();
-            
-            foreach (RuleInput rule in incoming) {
-                podIncoming.Add(rule.ToRule());
-            }
-            foreach (RuleInput rule in outgoing) {
-                podOutgoing.Add(rule.ToRule());
-            }
-            foreach (string user in users) {
-                podUsers.Add(new User("", user, ""));
-            }
+            var podIncoming = incoming != null ? incoming.Select(r => r.ToRule()) : new List<Rule>();
+            var podOutgoing = outgoing != null ? outgoing.Select(r => r.ToRule()) : new List<Rule>();
+            var podUsers = users != null ? users.Select(u => new User("", u, "")) : new List<User>();
 
             return new Pod(podId, podName, studyId, false, podIncoming, podOutgoing, podUsers, new List<DataSet>(), new List<DataSet>());
         }
