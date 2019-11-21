@@ -4,6 +4,8 @@ using System.Text;
 using Sepes.RestApi.Model;
 using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using System.Collections.Generic;
 
 namespace Sepes.RestApi.Services
 {
@@ -214,6 +216,69 @@ namespace Sepes.RestApi.Services
             Console.WriteLine(response);
             return response;
         }
-    }
 
+
+        public async Task<Study> SaveStudy(Study study, bool isNewStudy)
+        {
+            Study saveStudy = study;
+            await connection.OpenAsync();
+            try
+            {
+                string jsonData = JsonSerializer.Serialize<Study>(study);
+
+                if (isNewStudy) {
+                    string sqlNewStudy = "INSERT INTO dbo.Studies (JsonData) VALUES (@JsonData) SELECT CAST(scope_identity() AS int)";
+                    
+                    SqlCommand command = new SqlCommand(sqlNewStudy, connection);
+                    command.Parameters.AddWithValue("@JsonData", jsonData);
+                    int studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
+
+                    saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
+                                          study.datasets, study.archived, study.userIds, study.datasetIds);
+                    jsonData = JsonSerializer.Serialize<Study>(saveStudy);
+                }
+
+                string sqlUpdateStudy = $"UPDATE dbo.Studies SET JsonData = (@JsonData) WHERE StudyID = {saveStudy.studyId}";
+                SqlCommand updateCommand = new SqlCommand(sqlUpdateStudy, connection);
+                updateCommand.Parameters.AddWithValue("@JsonData", jsonData);
+                updateCommand.ExecuteNonQuery();
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+
+            return saveStudy;
+        }
+
+        public async Task<HashSet<Study>> GetAllStudies()
+        {
+            var studies = new HashSet<Study>();
+
+            await connection.OpenAsync();
+            try
+            {
+                string sqlStudies = "SELECT StudyId, JsonData FROM dbo.Studies";
+
+                using (SqlCommand command = new SqlCommand(sqlStudies, connection))
+                {
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            var study = JsonSerializer.Deserialize<Study>(reader.GetString(1));
+                            studies.Add(study);
+                        }
+                    }
+                }
+            }
+            finally 
+            {
+                await connection.CloseAsync();
+            }
+
+            return studies;
+        }
+
+    }
 }
