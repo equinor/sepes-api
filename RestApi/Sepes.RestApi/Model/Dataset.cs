@@ -7,11 +7,11 @@ namespace Sepes.RestApi.Model
     public class DataSet
     {
         // Name to show user.
-        public readonly string displayName;
+        public string displayName { get; }
         // Link to the policy file or document.
-        public readonly string opaPolicy;
+        public string opaPolicy { get; }
         // Reference to where the data is stored in azure.
-        public readonly string azureReference;
+        public string azureReference { get; }
 
         public DataSet(string name, string opaPolicy, string azureReference)
         {
