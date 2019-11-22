@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Json;
 using Sepes.RestApi.Model;
 using Xunit;
 
@@ -83,6 +84,23 @@ namespace Sepes.RestApi.Tests.Model
 
             Assert.True(study1.Equals(study2.ToStudy()));
             Assert.False(study1.Equals(study3));
+        }
+
+        [Fact]
+        public void TestDBModelConversion()
+        {
+            var pod1 = new Pod(1, "pod1", 1);
+            var pod2 = new Pod(2, "pod2", 1);
+            var pods = new List<Pod>();
+            pods.Add(pod1);
+            pods.Add(pod2);
+            
+            var study = new Study("study", 1, pods);
+            var jsonData = JsonSerializer.Serialize<Study>(study);
+
+            StudyDB studyDB = JsonSerializer.Deserialize<StudyDB>(jsonData);
+
+            Assert.True(study.Equals(studyDB.ToStudy()));
         }
     }
 }
