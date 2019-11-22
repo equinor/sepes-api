@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Model
         public HashSet<PodDB> pods { get; set; }
         public HashSet<UserDB> sponsors { get; set; }
         public HashSet<UserDB> suppliers { get; set; }
-        //public ImmutableHashSet<DataSetDB> datasets { get; set; }
+        public HashSet<DataSetDB> datasets { get; set; }
         public bool archived { get; set; }
 
         // old model
