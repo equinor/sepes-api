@@ -12,9 +12,9 @@ namespace Sepes.RestApi.Model
         public string studyName { get; set; }
         public int studyId { get; set; }
         public HashSet<PodDB> pods { get; set; }
-        //public HashSet<User> sponsors { get; set; }
-        //public HashSet<User> suppliers { get; set; }
-        //public ImmutableHashSet<DataSet> datasets { get; set; }
+        public HashSet<UserDB> sponsors { get; set; }
+        public HashSet<UserDB> suppliers { get; set; }
+        //public ImmutableHashSet<DataSetDB> datasets { get; set; }
         public bool archived { get; set; }
 
         // old model
@@ -25,8 +25,8 @@ namespace Sepes.RestApi.Model
         public Study ToStudy()
         {
             var studyPods = pods != null ? pods.Select(p => p.ToPod()) : new HashSet<Pod>();
-            var studySponsors = /*sponsors != null ? sponsors :*/ new HashSet<User>();
-            var studySuppliers = /*suppliers != null ? suppliers.ToHashSet() :*/ new HashSet<User>();
+            var studySponsors = sponsors != null ? sponsors.Select(u => u.ToUser()) : new HashSet<User>();
+            var studySuppliers = suppliers != null ? suppliers.Select(u => u.ToUser()) : new HashSet<User>();
 
             int[] studyUserIds = new int[]{};
             int[] studyDatasetIds = new int[]{};
