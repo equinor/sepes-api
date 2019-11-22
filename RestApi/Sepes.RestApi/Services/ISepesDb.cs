@@ -1,7 +1,4 @@
-using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Sepes.RestApi.Model;
-using System.Text.Json;
-using Newtonsoft.Json.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
