@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.RestApi.Services
 {
@@ -253,7 +254,7 @@ namespace Sepes.RestApi.Services
 
         public async Task<HashSet<Study>> GetAllStudies()
         {
-            var studies = new HashSet<Study>();
+            var studiesDB = new HashSet<StudyDB>();
 
             await connection.OpenAsync();
             try
@@ -266,8 +267,8 @@ namespace Sepes.RestApi.Services
                     {
                         while (reader.Read())
                         {
-                            var study = JsonSerializer.Deserialize<Study>(reader.GetString(1));
-                            studies.Add(study);
+                            var study = JsonSerializer.Deserialize<StudyDB>(reader.GetString(1));
+                            studiesDB.Add(study);
                         }
                     }
                 }
@@ -277,7 +278,7 @@ namespace Sepes.RestApi.Services
                 await connection.CloseAsync();
             }
 
-            return studies;
+            return studiesDB.Select(study => study.ToStudy()).ToHashSet();
         }
 
     }
