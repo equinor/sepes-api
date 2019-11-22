@@ -5,8 +5,8 @@ namespace Sepes.RestApi.Model
 {
     public class Rule
     {
-        public readonly ushort port;
-        public readonly string ip;
+        public ushort port { get; }
+        public string ip { get; }
 
         public Rule(ushort port, IPAddress ip)
         {
@@ -28,7 +28,7 @@ namespace Sepes.RestApi.Model
         {
             return obj is Rule rule &&
                    port == rule.port &&
-                   ip.Equals(rule.ip);
+                   ip == rule.ip;
         }
 
         public override int GetHashCode()
