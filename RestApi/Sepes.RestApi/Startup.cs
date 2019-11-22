@@ -79,7 +79,12 @@ namespace Sepes.RestApi
 
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
-            app.UseHttpsRedirection();
+
+            // UseHttpsRedirection doesn't work well with docker.
+            if(env.EnvironmentName == "Development") {
+                app.UseHttpsRedirection();
+            }
+
             app.UseAuthentication();
             app.UseAuthorization();
             //app.UseMvc();
