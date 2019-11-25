@@ -8,14 +8,14 @@ namespace Sepes.RestApi.Model
     {
         public string studyName { get; set; }
         public int studyId { get; set; }
-        public HashSet<PodInput> pods { get; set; }
-        public HashSet<string> sponsors { get; set; }
-        public HashSet<string> suppliers { get; set; }
+        public HashSet<PodInput> pods { get; set; } = new HashSet<PodInput>();
+        public HashSet<string> sponsors { get; set; } = new HashSet<string>();
+        public HashSet<string> suppliers { get; set; } = new HashSet<string>();
         public bool archived { get; set; }
 
         // old model
-        public int[] userIds { get; set; }
-        public int[] datasetIds { get; set; }
+        public int[] userIds { get; set; } = new int[]{};
+        public int[] datasetIds { get; set; } = new int[]{};
 
 
         public Study ToStudy()
@@ -24,33 +24,17 @@ namespace Sepes.RestApi.Model
             var studySponsors = new HashSet<User>();
             var studySuppliers = new HashSet<User>();
 
-            int[] studyUserIds = new int[]{};
-            int[] studyDatasetIds = new int[]{};
-
-            if (pods != null) { 
-                foreach (PodInput pod in pods) {
-                    studyPods.Add(pod.ToPod());
-                }
+            foreach (PodInput pod in pods) {
+                studyPods.Add(pod.ToPod());
             }
-            if (sponsors != null) { 
-                foreach (string user in sponsors) {
-                    studySponsors.Add(new User("", user, ""));
-                }
+            foreach (string user in sponsors) {
+                studySponsors.Add(new User("", user, ""));
             }
-            if (suppliers != null) { 
-                foreach (string user in suppliers) {
-                    studySuppliers.Add(new User("", user, ""));
-                }
+            foreach (string user in suppliers) {
+                studySuppliers.Add(new User("", user, ""));
             }
 
-            if (userIds != null) {
-                studyUserIds = userIds;
-            }
-            if (datasetIds != null) {
-                studyDatasetIds = datasetIds;
-            }
-
-            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived, studyUserIds, studyDatasetIds);
+            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived, userIds, datasetIds);
         }
     }
 }
