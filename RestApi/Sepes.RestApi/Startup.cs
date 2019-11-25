@@ -81,7 +81,7 @@ namespace Sepes.RestApi
             app.UseCors(MyAllowSpecificOrigins);
 
             // UseHttpsRedirection doesn't work well with docker.
-            if(env.EnvironmentName == "Development") {
+            if(this._config.httpOnly) {
                 app.UseHttpsRedirection();
             }
 

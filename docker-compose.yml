@@ -10,6 +10,7 @@ services:
       - SEPES_INSTRUMENTATION_KEY
       - SEPES_SUBSCRIPTION_ID
       - SEPES_MSSQL_CONNECTION_STRING
+      - SEPES_HTTP_ONLY="True"
     ports:
       - target: 80
         published: 8080

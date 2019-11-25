@@ -16,6 +16,7 @@ namespace Sepes.RestApi.Services
         string instrumentationKey { get; }
         TokenValidationParameters tokenValidation { get; }
         AuthConfig authConfig { get; }
+        bool httpOnly { get; } 
     }
 
     public class ConfigService : IConfigService
@@ -53,6 +54,7 @@ namespace Sepes.RestApi.Services
         public string instrumentationKey { get; }
         public TokenValidationParameters tokenValidation { get; }
         public AuthConfig authConfig { get; }
+        public bool httpOnly { get; } = false;
 
         public ConfigService(IConfiguration asp, IConfiguration sepes)
         {
@@ -83,6 +85,10 @@ namespace Sepes.RestApi.Services
                 Key = asp["Jwt:Key"],
                 Issuer = asp["Jwt:Issuer"],
             };
+
+            if(sepes["HTTP_ONLY"] == "true"){
+                this.httpOnly = true;
+            }
         }
     }
 }
