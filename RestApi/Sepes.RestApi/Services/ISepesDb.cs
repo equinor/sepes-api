@@ -15,6 +15,6 @@ namespace Sepes.RestApi.Services
         Task<string> getPods(int studyId);
         Task<string> getDatasetList();
         Task<Study> SaveStudy(Study study, bool isNewStudy);
-        Task<HashSet<Study>> GetAllStudies();
+        Task<IEnumerable<Study>> GetAllStudies();
     }
 }

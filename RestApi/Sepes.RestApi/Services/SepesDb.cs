@@ -252,7 +252,7 @@ namespace Sepes.RestApi.Services
             return saveStudy;
         }
 
-        public async Task<HashSet<Study>> GetAllStudies()
+        public async Task<IEnumerable<Study>> GetAllStudies()
         {
             var studiesDB = new HashSet<StudyDB>();
 
@@ -278,7 +278,7 @@ namespace Sepes.RestApi.Services
                 await connection.CloseAsync();
             }
 
-            return studiesDB.Select(study => study.ToStudy()).ToHashSet();
+            return studiesDB.Select(study => study.ToStudy());
         }
 
     }
