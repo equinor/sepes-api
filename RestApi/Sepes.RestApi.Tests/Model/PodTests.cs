@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Tests.Model
         public void Constructor()
         {
             var pod = new Pod(42, "test", 123);
-            Assert.Equal(42, pod.id);
+            Assert.Equal(42, (ushort) pod.id);
             Assert.Equal("test", pod.name);
             Assert.Equal(123, pod.studyId);
         }
@@ -25,7 +25,7 @@ namespace Sepes.RestApi.Tests.Model
                 studyId = 24,
                 tag = "Azure:Tags"
             };
-            Assert.Equal(42, pod.podId);
+            Assert.Equal(42, (ushort) pod.podId);
             Assert.Equal("Testpod", pod.podName);
             Assert.Equal(24, pod.studyId);
             Assert.Equal("Azure:Tags", pod.tag);
