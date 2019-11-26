@@ -29,7 +29,7 @@ namespace Sepes.RestApi.Services {
         ISepesDb _db;
         IPodService _podService;
         HashSet<Study> _studies;
-        int numberOfPods;
+        ushort numberOfPods;
 
 
         public StudyService(ISepesDb dbService, IPodService podService) {
@@ -45,18 +45,24 @@ namespace Sepes.RestApi.Services {
 
         public async Task<Study> Save(Study newStudy, Study based)
         {
-            int id = 1;//await _db.createStudy(newStudy.studyName, newStudy.userIds, newStudy.datasetIds);
-            var study = new Study(newStudy.studyName, id, newStudy.pods, newStudy.sponsors, newStudy.suppliers, 
-                                  newStudy.datasets, newStudy.archived, newStudy.userIds, newStudy.datasetIds);
-
-            //var study = await _db.SaveStudy(newStudy, based == null);
+            Study study = newStudy;
+            if (based == null)
+            {
+                study = await _db.NewStudy(newStudy);
+            }
 
             _studies.Add(study);
 
             if (_studies.Contains(based))
             {
                 Console.WriteLine("####### Contains based study");
-                
+
+                // Look for new pod
+                if (study.pods.Any(pod => !pod.id.HasValue))
+                {
+                    Pod pod = study.pods.ToList().Find(pod => !pod.id.HasValue);
+                    Pod newPod = pod.NewPodId(numberOfPods++);
+                }
             }
 
             return study;
@@ -64,9 +70,9 @@ namespace Sepes.RestApi.Services {
 
         public void LoadStudies()
         {
-            //_studies = _db.GetAllStudies().ToHashSet();
+            _studies = _db.GetAllStudies().Result.ToHashSet();
 
-            numberOfPods = _studies.Sum(study => study.pods.Count);
+            numberOfPods = (ushort) _studies.Sum(study => study.pods.Count);
         }
     }
 
