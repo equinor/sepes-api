@@ -4,6 +4,7 @@ using Sepes.RestApi.Model;
 
 using System.Text.Json;
 using System.Linq;
+using System;
 
 namespace Sepes.RestApi.Services {
 
@@ -21,11 +22,6 @@ namespace Sepes.RestApi.Services {
         // This method will only update the metadata about a study and will not make changes to the azure resources.
         // Use the PodServise for that.
         Task<Study> Save(Study newStudy, Study based);
-
-        // Helper method for the pod service to save the state of a pod when its done.
-        // Should not be used in other situations as it only updates the view not the truth.
-        // Use Pod.Set()
-        Task<Study> SetPod(Pod pod);
     }
 
     public class StudyService: IStudyService {
@@ -33,16 +29,13 @@ namespace Sepes.RestApi.Services {
         ISepesDb _db;
         IPodService _podService;
         HashSet<Study> _studies;
+        int numberOfPods;
 
 
         public StudyService(ISepesDb dbService, IPodService podService) {
             _db = dbService;
             _podService = podService;
-            
-
-            var inputStudies = GetInputStudies();
-            _studies = inputStudies.Select(study => study.ToStudy()).ToHashSet();
-            //_studies = _db.GetAllStudies().Result;
+            numberOfPods = 0;
         }
 
         public IEnumerable<Study> GetStudies(User user, bool archived)
@@ -52,7 +45,7 @@ namespace Sepes.RestApi.Services {
 
         public async Task<Study> Save(Study newStudy, Study based)
         {
-            int id = await _db.createStudy(newStudy.studyName, newStudy.userIds, newStudy.datasetIds);
+            int id = 1;//await _db.createStudy(newStudy.studyName, newStudy.userIds, newStudy.datasetIds);
             var study = new Study(newStudy.studyName, id, newStudy.pods, newStudy.sponsors, newStudy.suppliers, 
                                   newStudy.datasets, newStudy.archived, newStudy.userIds, newStudy.datasetIds);
 
@@ -60,25 +53,20 @@ namespace Sepes.RestApi.Services {
 
             _studies.Add(study);
 
+            if (_studies.Contains(based))
+            {
+                Console.WriteLine("####### Contains based study");
+                
+            }
+
             return study;
         }
 
-        public Task<Study> SetPod(Pod pod)
+        public void LoadStudies()
         {
-            throw new System.NotImplementedException();
-        }
+            //_studies = _db.GetAllStudies().ToHashSet();
 
-        public HashSet<StudyInput> GetInputStudies()
-        {
-            string studiesJson = _db.getStudies(false).Result;
-            string studiesJsonArchived = _db.getStudies(true).Result;
-
-            JsonSerializerOptions opt = new JsonSerializerOptions();
-            opt.PropertyNameCaseInsensitive = true;
-
-            var studies = JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJson, opt);
-            
-            return studies.Concat(JsonSerializer.Deserialize<HashSet<StudyInput>>(studiesJsonArchived, opt)).ToHashSet();
+            numberOfPods = _studies.Sum(study => study.pods.Count);
         }
     }
 
