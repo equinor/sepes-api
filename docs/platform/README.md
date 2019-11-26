@@ -10,6 +10,7 @@
 ## Components
 - Sandbox (in azure)
 - Frontend
+  - [ui](./ui/)
 - Backend
 - Database
 
