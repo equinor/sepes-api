@@ -46,9 +46,9 @@ namespace Sepes.RestApi.Controller
 
         //Update study
         [HttpPost("update")]
-        public async Task<int> UpdateVars([FromBody] Study study)
+        public int UpdateVars([FromBody] Study study)
         {
-            return await _sepesDb.updateStudy(study.studyId, study.archived);
+            return 0;
         }
 
         //Get list of studies

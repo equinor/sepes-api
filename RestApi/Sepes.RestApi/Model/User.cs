@@ -5,9 +5,9 @@ namespace Sepes.RestApi.Model
 
     public class User
     {
-        public string userName { get; set; }
-        public string userEmail { get; set; }
-        public string userGroup { get; set; }
+        public string userName { get; }
+        public string userEmail { get; }
+        public string userGroup { get; }
         
         public User(string userName, string userEmail, string userGroup)
         {
