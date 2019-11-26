@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Tests.Model
             var rule = new Rule(1, IPAddress.Parse("1.1.1.1"));
 
             Assert.Equal(1, rule.port);
-            Assert.Equal(IPAddress.Parse("1.1.1.1"), rule.ip);
+            Assert.Equal(IPAddress.Parse("1.1.1.1").ToString(), rule.ip);
             Assert.Equal("1.1.1.1", rule.ip.ToString());
         }
 

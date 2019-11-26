@@ -1,36 +1,34 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 
 namespace Sepes.RestApi.Model
 {
     public class Rule
     {
-        public readonly ushort port;
-        public readonly IPAddress ip;
+        public ushort port { get; }
+        public string ip { get; }
 
         public Rule(ushort port, IPAddress ip)
         {
             this.port = port;
-            this.ip = ip;
+            this.ip = ip.ToString();
         }
         public Rule(ushort port, string ip)
         {
             this.port = port;
-            this.ip = IPAddress.Parse(ip);
+            this.ip = IPAddress.Parse(ip).ToString();
         }
 
         public RuleInput ToRuleInput()
         {
-            return new RuleInput(){ port = port, ip = ip.ToString() };
+            return new RuleInput(){ port = port, ip = ip };
         }
 
         public override bool Equals(object obj)
         {
             return obj is Rule rule &&
                    port == rule.port &&
-                   ip.Equals(rule.ip);
+                   ip == rule.ip;
         }
 
         public override int GetHashCode()

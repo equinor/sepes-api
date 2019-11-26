@@ -12,12 +12,12 @@ namespace Sepes.RestApi.Model
         public ushort id { get; }
         public string name { get; }
         public int studyId { get; }
-        public readonly bool allowAll;
-        public readonly ImmutableList<Rule> incoming;
-        public readonly ImmutableList<Rule> outgoing;
-        public readonly ImmutableList<User> users;
-        public readonly ImmutableList<DataSet> locked;
-        public readonly ImmutableList<DataSet> loaded;
+        public bool allowAll { get; }
+        public ImmutableList<Rule> incoming { get; }
+        public ImmutableList<Rule> outgoing { get; }
+        public ImmutableList<User> users { get; }
+        public ImmutableList<DataSet> locked { get; }
+        public ImmutableList<DataSet> loaded { get; }
 
         public string networkName => $"{studyId}-{name.Replace(" ", "-")}-Network";
         public string subnetName => $"{studyId}-{name.Replace(" ", "-")}-SubNet";

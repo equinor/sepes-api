@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Text.Json;
 using Sepes.RestApi.Model;
 using Xunit;
 
@@ -96,6 +98,35 @@ namespace Sepes.RestApi.Tests.Model
 
             Assert.True(pod.Equals(pod.ToPodInput().ToPod()));
             Assert.False(pod.Equals(pod2.ToPodInput().ToPod()));
+        }
+
+        [Fact]
+        public void TestDBModelConversion()
+        {
+            var rule1 = new Rule(1, "1.1.1.1");
+            var rule2 = new Rule(2, "1.1.1.2");
+            var rules = new List<Rule>();
+            rules.Add(rule1);
+            rules.Add(rule2);
+
+            var user1 = new User("User", "user@sepes.com", "test");
+            var user2 = new User("User2", "user2@sepes.com", "test");
+            var users = new List<User>();
+            users.Add(user1);
+            users.Add(user2);
+
+            var dataset1 = new DataSet("data", "data", "qwerty.rwethwth.qetrth");
+            var dataset2 = new DataSet("data2", "data2", "qwerty.rwethwth.qetrth2");
+            var datasets = new List<DataSet>();
+            datasets.Add(dataset1);
+            datasets.Add(dataset2);
+
+            var pod = new Pod(1, "pod1", 1, false, rules, rules, users, datasets, datasets);
+            
+            var jsonData = JsonSerializer.Serialize<Pod>(pod);
+            PodDB podDB = JsonSerializer.Deserialize<PodDB>(jsonData);
+
+            Assert.Equal(pod, podDB.ToPod());
         }
     }
 }
