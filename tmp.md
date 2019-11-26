@@ -1,5 +1,5 @@
 # SEPES
-A platform that allows vendors prove their solutions on your data.
+A platform that allows vendors prove their solutions on your data in a sandbox.
 
 ## TMP how to git as a developer
 
