@@ -131,26 +131,7 @@ namespace Sepes.RestApi.Services
             Console.WriteLine(strBuilder.ToString());
         }
 
-        public async Task<int> updateStudy(int studyId, bool archived)
-        {
-            await connection.OpenAsync();
-            try
-            {
-                string sqlStudy = $"UPDATE [dbo].[tblStudy] SET Archived = '{archived}' WHERE StudyID = {studyId}";
-                SqlCommand command = new SqlCommand(sqlStudy, connection);
-                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived}");
-                return command.ExecuteNonQuery();
-            }
-            catch
-            {
-                Console.WriteLine($"### SepesDB: Updating Study {studyId} with archived = {archived} failed");
-                return 0;
-            }
-            finally
-            {
-                await connection.CloseAsync();
-            }
-        }
+
 
         public async Task<string> getStudies(bool archived)
         {
@@ -219,30 +200,21 @@ namespace Sepes.RestApi.Services
         }
 
 
-        public async Task<Study> SaveStudy(Study study, bool isNewStudy)
+        public async Task<Study> NewStudy(Study study)
         {
             Study saveStudy = study;
             await connection.OpenAsync();
             try
             {
                 string jsonData = JsonSerializer.Serialize<Study>(study);
+                string sqlNewStudy = "INSERT INTO dbo.Studies (JsonData) VALUES (@JsonData) SELECT CAST(scope_identity() AS int)";
+                
+                SqlCommand command = new SqlCommand(sqlNewStudy, connection);
+                command.Parameters.AddWithValue("@JsonData", jsonData);
+                int studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
 
-                if (isNewStudy) {
-                    string sqlNewStudy = "INSERT INTO dbo.Studies (JsonData) VALUES (@JsonData) SELECT CAST(scope_identity() AS int)";
-                    
-                    SqlCommand command = new SqlCommand(sqlNewStudy, connection);
-                    command.Parameters.AddWithValue("@JsonData", jsonData);
-                    int studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
-
-                    saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
-                                          study.datasets, study.archived, study.userIds, study.datasetIds);
-                    jsonData = JsonSerializer.Serialize<Study>(saveStudy);
-                }
-
-                string sqlUpdateStudy = $"UPDATE dbo.Studies SET JsonData = (@JsonData) WHERE StudyID = {saveStudy.studyId}";
-                SqlCommand updateCommand = new SqlCommand(sqlUpdateStudy, connection);
-                updateCommand.Parameters.AddWithValue("@JsonData", jsonData);
-                updateCommand.ExecuteNonQuery();
+                saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
+                                        study.datasets, study.archived, study.userIds, study.datasetIds);
             }
             finally
             {
@@ -250,6 +222,28 @@ namespace Sepes.RestApi.Services
             }
 
             return saveStudy;
+        }
+
+        public async Task<bool> UpdateStudy(Study study)
+        {
+            await connection.OpenAsync();
+            try
+            {
+                string jsonData = JsonSerializer.Serialize(study);
+                string sqlUpdateStudy = $"UPDATE dbo.Studies SET JsonData = (@JsonData) WHERE StudyID = {study.studyId}";
+                SqlCommand updateCommand = new SqlCommand(sqlUpdateStudy, connection);
+                updateCommand.Parameters.AddWithValue("@JsonData", jsonData);
+                await updateCommand.ExecuteNonQueryAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
         }
 
         public async Task<IEnumerable<Study>> GetAllStudies()

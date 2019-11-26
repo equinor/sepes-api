@@ -9,12 +9,12 @@ namespace Sepes.RestApi.Services
         //Task<string> getDatasetList();
 
         Task<int> createStudy(string studyName, int[] userIds, int[] datasetIds);
-        Task<int> updateStudy(int studyId, bool archived);
         Task<string> getStudies(bool archived);
         Task<Pod> createPod(string name, int studyId);
         Task<string> getPods(int studyId);
         Task<string> getDatasetList();
-        Task<Study> SaveStudy(Study study, bool isNewStudy);
+        Task<Study> NewStudy(Study study);
+        Task<bool> UpdateStudy(Study study);
         Task<IEnumerable<Study>> GetAllStudies();
     }
 }
