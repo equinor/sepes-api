@@ -27,17 +27,19 @@ namespace Sepes.RestApi.Tests.Controller
 
             Assert.Equal(42, result);
         }
+
         [Fact]
-        public async Task StudyUpdate()
+        public void StudyUpdate()
         {
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object);
-            databaseMock.Setup(db => db.updateStudy(42, false)).ReturnsAsync(1);
             Study study = new Study("test", 12, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false, new int[]{}, new int[]{});
-            var result = await controller.UpdateVars(study);
+            databaseMock.Setup(db => db.UpdateStudy(study)).ReturnsAsync(true);
+            var result = controller.UpdateVars(study);
 
             Assert.Equal(1, result);
         }
+
         [Fact]
         public async Task StudyList()
         {
@@ -48,6 +50,7 @@ namespace Sepes.RestApi.Tests.Controller
 
             Assert.Equal("TestData", result);
         }
+
         [Fact]
         public async Task GetArchived()
         {
@@ -58,6 +61,7 @@ namespace Sepes.RestApi.Tests.Controller
 
             Assert.Equal("TestData", result);
         }
+
         [Fact]
         public async Task GetDataset()
         {
@@ -67,6 +71,6 @@ namespace Sepes.RestApi.Tests.Controller
             var result = await controller.GetDataset();
             Assert.Equal("DatasetList", result);
         }
-    }
 
+    }
 }
