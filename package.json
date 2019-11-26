@@ -1,0 +1,11 @@
+{
+  "name": "sepes",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "config": "node tools/config.js"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0"
+  }
+}
