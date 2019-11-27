@@ -56,11 +56,17 @@ namespace Sepes.RestApi
                 });
             });
 
-            services.AddSingleton<ISepesDb>(new SepesDb(_config.connectionString));
+            var azureService = new AzureService(_config.azureConfig);
+            var dbService = new SepesDb(_config.connectionString);
+            var podService = new PodService(dbService, azureService);
+            var studyService = new StudyService(dbService, podService);
+            studyService.LoadStudies();
+
+            services.AddSingleton<ISepesDb>(dbService);
             services.AddSingleton<IAuthService>(new AuthService(_config.authConfig));
-            services.AddSingleton<IAzureService>(new AzureService(_config.azureConfig));
-            services.AddSingleton<IPodService, PodService>();
-            services.AddSingleton<IStudyService, StudyService>();
+            services.AddSingleton<IAzureService>(azureService);
+            services.AddSingleton<IPodService>(podService);
+            services.AddSingleton<IStudyService>(studyService);
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
         }
