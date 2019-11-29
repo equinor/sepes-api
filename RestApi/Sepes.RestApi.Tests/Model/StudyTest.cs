@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Net;
 using System.Text.Json;
 using Sepes.RestApi.Model;
@@ -101,6 +102,26 @@ namespace Sepes.RestApi.Tests.Model
             StudyDB studyDB = JsonSerializer.Deserialize<StudyDB>(jsonData);
 
             Assert.True(study.Equals(studyDB.ToStudy()));
+        }
+
+        [Fact]
+        public void TestReplacePodsMethod()
+        {
+            var pod1 = new Pod(1, "test1", 1);
+            var pod2 = new Pod(2, "test2", 1);
+            var pods = new List<Pod>();
+            pods.Add(pod1);
+            pods.Add(pod2);
+
+            var study1 = new Study("test", 1, pods);
+
+            pods.Add(new Pod(3, "test3", 1));
+
+            var study2 = study1.ReplacePods(pods);
+
+            Assert.NotEqual(study1, study2);
+            Assert.NotEqual(study1.pods, study2.pods);
+            Assert.Equal(study2.pods, pods.ToImmutableHashSet());
         }
     }
 }
