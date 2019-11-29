@@ -53,32 +53,39 @@ namespace Sepes.RestApi.Services {
             }
             else if (_studies.Contains(based))
             {
-                foreach (var pod in study.pods)
-                {
-                    if (!based.pods.Contains(pod))
-                    {
-                        // Check if pod is new
-                        if (!pod.id.HasValue)
-                        {
-                            // Update list of pod
-                            // generate new pod with id
-                            Pod newPod = pod.NewPodId(numberOfPods++);
-                            var newPods = study.pods.Remove(pod).Add(newPod);
-                            study = study.ReplacePods(newPods);
-
-                            // Update Azure with Pod Service
-                            // _podService.Set(newPod, null);
-                        }
-                        else
-                        {
-                            Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
-                            // _podService.Set(pod, basePod);
-                        }
-                    }
-                }
+                study = UpdatePods(based, study);
 
                 _studies.Remove(based);
                 _studies.Add(study);
+            }
+
+            return study;
+        }
+
+        private Study UpdatePods(Study based, Study study)
+        {
+            foreach (var pod in study.pods)
+            {
+                if (!based.pods.Contains(pod))
+                {
+                    // Check if pod is new
+                    if (!pod.id.HasValue)
+                    {
+                        // Update list of pod
+                        // generate new pod with id
+                        Pod newPod = pod.NewPodId(numberOfPods++);
+                        var newPods = study.pods.Remove(pod).Add(newPod);
+                        study = study.ReplacePods(newPods);
+
+                        // Update Azure with Pod Service
+                        // _podService.Set(newPod, null);
+                    }
+                    else
+                    {
+                        Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
+                        // _podService.Set(pod, basePod);
+                    }
+                }
             }
 
             return study;
