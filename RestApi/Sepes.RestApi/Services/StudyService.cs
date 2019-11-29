@@ -18,7 +18,6 @@ namespace Sepes.RestApi.Services {
         // If based is null it means its a new study.
         // This call will only succeed if based is the same as the current version of that study.
         // This method will only update the metadata about a study and will not make changes to the azure resources.
-        // Use the PodServise for that.
         Task<Study> Save(Study newStudy, Study based);
     }
 
@@ -33,6 +32,8 @@ namespace Sepes.RestApi.Services {
         public StudyService(ISepesDb dbService, IPodService podService) {
             _db = dbService;
             _podService = podService;
+
+            _studies = new HashSet<Study>();
             numberOfPods = 0;
         }
 
@@ -56,17 +57,19 @@ namespace Sepes.RestApi.Services {
                 {
                     if (!based.pods.Contains(pod))
                     {
-                        if (!pod.id.HasValue) // new pod
+                        // Check if pod is new
+                        if (!pod.id.HasValue)
                         {
+                            // Update list of pod
                             // generate new pod with id
                             Pod newPod = pod.NewPodId(numberOfPods++);
-
-                            // _podService.Set(newPod, null);
-                            
                             var newPods = study.pods.Remove(pod).Add(newPod);
                             study = study.ReplacePods(newPods);
+
+                            // Update Azure with Pod Service
+                            // _podService.Set(newPod, null);
                         }
-                        else // edited pod
+                        else
                         {
                             Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
                             // _podService.Set(pod, basePod);
@@ -74,6 +77,7 @@ namespace Sepes.RestApi.Services {
                     }
                 }
 
+                _studies.Remove(based);
                 _studies.Add(study);
             }
 
