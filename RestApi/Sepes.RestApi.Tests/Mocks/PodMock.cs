@@ -45,5 +45,10 @@ namespace Sepes.RestApi.Tests.Mocks
         {
             return Task.FromResult(JsonSerializer.Serialize(new Pod(42, "name", studyID, false, new List<Rule>(), new List<Rule>(), new List<User>(), new List<DataSet>(), new List<DataSet>())));
         }
+
+        public Task Set(Pod newPod, Pod based)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

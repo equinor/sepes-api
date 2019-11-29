@@ -1,5 +1,7 @@
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 
@@ -11,6 +13,7 @@ namespace Sepes.RestApi.Services
     {
         Task<Pod> CreateNewPod(string name, int userID);
         Task<string> GetPods(int studyID);
+        Task Set(Pod newPod, Pod based);
     }
 
     public class PodService : IPodService
@@ -24,6 +27,7 @@ namespace Sepes.RestApi.Services
             _azure = azure;
         }
 
+// old
         public async Task<Pod> CreateNewPod(string name, int studyID)
         {
             var pod = await _database.createPod(name, studyID);
@@ -57,5 +61,52 @@ namespace Sepes.RestApi.Services
         {
             return await _database.getPods(studyID);
         }
+
+// new
+        public async Task Set(Pod newPod, Pod based)
+        {
+            if (based == null)
+            {
+                await _azure.CreateResourceGroup(newPod.resourceGroupName);
+                await _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
+                await _azure.CreateSecurityGroup(newPod.networkSecurityGroupName, newPod.resourceGroupName);
+            }
+            // pod.allowAll != basePod.allowAll // Apply allow all
+
+            if (!based.incoming.SequenceEqual(newPod.incoming))
+            {
+                var inbound = new Dictionary<ushort, string[]>();
+
+                foreach (var rule in newPod.incoming) {
+                    inbound[rule.port].Append(rule.ip);
+                }
+
+                foreach (var port in inbound.Keys) {
+                    // TASK manage securitygroup, rulename and prority
+                    Task addInbound = _azure.NsgAllowInboundPort(newPod.networkSecurityGroupName, newPod.resourceGroupName, "ruleName", 100, inbound[port], (int) port);
+                    addInbound.Start();
+                }
+            }
+            if (!based.outgoing.SequenceEqual(newPod.outgoing))
+            {
+                // Apply rules
+            }
+
+            List<Task> addUsersTasks = new List<Task>();
+            foreach (var user in newPod.users)
+            {
+                if (!based.users.Contains(user))
+                {
+                    Task addUserToResGroup = _azure.AddUserToResourceGroup(user.userEmail, newPod.resourceGroupName);
+                    Task addUserToNetwork = _azure.AddUserToNetwork(user.userEmail, newPod.networkName);
+                    addUsersTasks.Add(addUserToResGroup);
+                    addUsersTasks.Add(addUserToNetwork);
+                    addUserToResGroup.Start();
+                    addUserToNetwork.Start();
+                }
+            }
+            Task.WaitAll(addUsersTasks.ToArray());
+        }
+
     }
 }
