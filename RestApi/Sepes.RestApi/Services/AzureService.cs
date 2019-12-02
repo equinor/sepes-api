@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
 using System.Linq;
+using System.Collections.Immutable;
 
 namespace Sepes.RestApi.Services
 {
@@ -34,12 +33,12 @@ namespace Sepes.RestApi.Services
                     .Create();
             }
         }
+
         public string getSubscription()
         {
             return _azure.GetCurrentSubscription().DisplayName;
         }
 
-        // CreateResourceGroup(...);
         public async Task<string> CreateResourceGroup(string networkName)
         {
             //Create ResourceGroup
@@ -50,19 +49,13 @@ namespace Sepes.RestApi.Services
             return resourceGroup.Id;//return resource id from iresource objects
 
         }
-        // TerminateResourceGroup(...);
+        
         public Task TerminateResourceGroup(string commonResourceGroup)
         {
             //Wrap in try...catch? Or was that done in controller?
             return _azure.ResourceGroups.DeleteByNameAsync(commonResourceGroup); //Delete might not be what we want.
             //Might instead want to get list of all users then remove them?
         }
-
-        // Add gives a user contributor to a resource group and network join on a network
-        // AddUser(...)
-        // RemoveUser(...)
-
-        // CreateNetwork(...)
 
         public async Task<string> CreateNetwork(string networkName, string addressSpace)
         {
@@ -75,34 +68,36 @@ namespace Sepes.RestApi.Services
             return network.Id;
         }
 
-        // RemoveNetwork(...)
         public async Task RemoveNetwork(string vNetName)
         {
             await _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
             return;
         }
 
-        // CreateNsg(...)
-        public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
+        public async Task<string> CreateSecurityGroup(string securityGroupName, string resourceGroupName)
         {
+            string nsgName = GenerateNSGName(securityGroupName, resourceGroupName);
+
             await _azure.NetworkSecurityGroups
-                .Define(securityGroupName)
+                .Define(nsgName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
+            
+            return nsgName;
         }
         public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
         {
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
-        // ApplyNsg(...)
+        
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
             await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
         }
-        // RemoveNsg(...)
+        
         public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
         {
             //Remove the security group from a subnet.
@@ -140,6 +135,16 @@ namespace Sepes.RestApi.Services
                 .Attach()
                 .ApplyAsync();
         }
+
+        public string GenerateNSGName(string networkSecurityGroupName, string resourceGroupName)
+        {
+            var nsgNames = _azure.NetworkSecurityGroups.ListByResourceGroup(resourceGroupName).Select(nsg => nsg.Name);
+
+            if (nsgNames.Contains(networkSecurityGroupName)) return "$"+networkSecurityGroupName;
+
+            return networkSecurityGroupName;
+        }
+
         public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort, string[] externalAddresses, int externalPort)
         {
             await _azure.NetworkSecurityGroups
@@ -162,6 +167,7 @@ namespace Sepes.RestApi.Services
 
 
         //// Pod user/role management
+        // Gives a user contributor to a resource group and network join on a network
         public async Task<string> AddUserToResourceGroup(string userId, string resourceGroupName) 
         {
             var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
