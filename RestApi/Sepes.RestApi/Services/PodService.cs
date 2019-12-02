@@ -115,10 +115,10 @@ namespace Sepes.RestApi.Services
             if (!based.outgoing.SequenceEqual(newPod.outgoing))
             {
                 Dictionary<ushort, string[]> outbound = GenerateRuleDictionary(newPod.outgoing);
-                int priority = 1000;
+                int priority = 100;
 
                 foreach (var port in outbound.Keys) {
-                    _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port).Start();
+                    _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port).Start();
                 }
             }
 
