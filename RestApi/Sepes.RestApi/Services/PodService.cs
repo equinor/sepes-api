@@ -67,8 +67,11 @@ namespace Sepes.RestApi.Services
         {
             if (based == null)
             {
-                await _azure.CreateResourceGroup(newPod.resourceGroupName);
-                await _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
+                Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
+                Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
+                createRes.Start();
+                createNet.Start();
+                await Task.WhenAll(new Task[]{createRes, createNet});
             }
 
             Task NsgTask = ManageNetworkSecurityGroup(newPod, based);
