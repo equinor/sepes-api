@@ -15,11 +15,27 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         private ISepesDb _sepesDb;
+        private IStudyService _studyService;
 
-        public StudyController(ISepesDb dbService)
+        public StudyController(ISepesDb dbService, IStudyService studyService)
         {
             _sepesDb = dbService;
+            _studyService = studyService;
         }
+
+
+        [HttpPost("save")]
+        public async Task<StudyInput> SaveStudy([FromBody] StudyInput[] studies)
+        {
+            if (studies[1] == null) {
+                Study study = await _studyService.Save(studies[0].ToStudy(), null);
+                return study.ToStudyInput();
+            }
+
+            
+            return studies[0];
+        }
+
 
         //Create study
         [HttpPost("create")]

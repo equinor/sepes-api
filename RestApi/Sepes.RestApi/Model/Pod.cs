@@ -9,7 +9,7 @@ namespace Sepes.RestApi.Model
     //Internal version of pod model
     public class Pod
     {
-        public ushort id { get; }
+        public ushort? id { get; }
         public string name { get; }
         public int studyId { get; }
         public bool allowAll { get; }
@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Model
         public string addressSpace => $"10.{1 + id / 256}.{id % 256}.0/24";
 
 
-        public Pod(ushort id, string name, int studyId, bool allowAll, IEnumerable<Rule> incoming, IEnumerable<Rule> outgoing, 
+        public Pod(ushort? id, string name, int studyId, bool allowAll, IEnumerable<Rule> incoming, IEnumerable<Rule> outgoing, 
                     IEnumerable<User> users, IEnumerable<DataSet> locked, IEnumerable<DataSet> loaded)
         {
             this.id = id;
@@ -40,7 +40,7 @@ namespace Sepes.RestApi.Model
             this.loaded = loaded == null ? ImmutableList<DataSet>.Empty : loaded.ToImmutableList();
         }
 
-        public Pod(ushort id, string name, int studyId) : 
+        public Pod(ushort? id, string name, int studyId) : 
             this(id, name, studyId, false, ImmutableList<Rule>.Empty, ImmutableList<Rule>.Empty, 
             ImmutableList<User>.Empty, ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
 
@@ -68,6 +68,11 @@ namespace Sepes.RestApi.Model
                 outgoing = inputOutgoing.ToArray(),
                 users = inputUsers.ToArray()
             };
+        }
+
+        public Pod NewPodId(ushort newId)
+        {
+            return new Pod(newId, name, studyId, allowAll, incoming, outgoing, users, locked, loaded);
         }
 
         public override bool Equals(object obj)
