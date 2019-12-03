@@ -133,7 +133,7 @@ namespace Sepes.RestApi.Services
                 _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName).Start();
             }
             else {
-                _azure.DeleteSecurityGroup("$"+nsgName, newPod.resourceGroupName).Start();
+                _azure.DeleteSecurityGroup(nsgName+"0", newPod.resourceGroupName).Start();
             }
         }
 
