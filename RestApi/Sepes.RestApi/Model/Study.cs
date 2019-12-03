@@ -66,6 +66,11 @@ namespace Sepes.RestApi.Model
                 datasetIds = datasetIds
             };
         }
+
+        public Study ReplacePods(IEnumerable<Pod> newPods)
+        {
+            return new Study(studyName, studyId, newPods, sponsors, suppliers, datasets, archived, userIds, datasetIds);
+        }
         
         public override bool Equals(object obj)
         {
