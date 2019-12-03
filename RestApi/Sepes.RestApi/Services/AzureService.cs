@@ -140,7 +140,7 @@ namespace Sepes.RestApi.Services
         {
             var nsgNames = _azure.NetworkSecurityGroups.ListByResourceGroup(resourceGroupName).Select(nsg => nsg.Name);
 
-            if (nsgNames.Contains(networkSecurityGroupName)) return "$"+networkSecurityGroupName;
+            if (nsgNames.Contains(networkSecurityGroupName)) return networkSecurityGroupName+"0";
 
             return networkSecurityGroupName;
         }
