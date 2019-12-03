@@ -102,10 +102,17 @@ namespace Sepes.RestApi.Services
 
         private async Task ManageNetworkSecurityGroup(Pod newPod, Pod based)
         {
-            string nsgName = await _azure.CreateSecurityGroup(newPod.networkSecurityGroupName, newPod.resourceGroupName);
+            // Generate network security network name
+            var nsgNames = _azure.GetNSGNames(newPod.resourceGroupName);
+            string nsgName = newPod.networkSecurityGroupName;
+            if (nsgNames.Contains(newPod.networkSecurityGroupName)) nsgName = newPod.networkSecurityGroupName+"0";
+            
+            // Create nsg with generated nsg name
+            await _azure.CreateSecurityGroup(nsgName, newPod.resourceGroupName);
 
             // pod.allowAll != basePod.allowAll // Apply allow all
 
+            // Set inbound and outbound rules
             if (!based.incoming.SequenceEqual(newPod.incoming))
             {
                 Dictionary<ushort, string[]> inbound = GenerateRuleDictionary(newPod.incoming);
@@ -129,11 +136,11 @@ namespace Sepes.RestApi.Services
             await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "subnet1", newPod.networkName);
 
             // Delete old nsg
-            if (nsgName == newPod.networkSecurityGroupName) {
-                _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName).Start();
-            }
-            else {
+            if (nsgName == newPod.networkSecurityGroupName && nsgNames.Contains(nsgName+"0")) {
                 _azure.DeleteSecurityGroup(nsgName+"0", newPod.resourceGroupName).Start();
+            }
+            else if (nsgName == newPod.networkSecurityGroupName+"0" && nsgNames.Contains(newPod.networkSecurityGroupName)) {
+                _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName).Start();
             }
         }
 

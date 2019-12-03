@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.Linq;
 using System.Collections.Immutable;
+using System.Collections.Generic;
 
 namespace Sepes.RestApi.Services
 {
@@ -74,18 +75,14 @@ namespace Sepes.RestApi.Services
             return;
         }
 
-        public async Task<string> CreateSecurityGroup(string securityGroupName, string resourceGroupName)
+        public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
         {
-            string nsgName = GenerateNSGName(securityGroupName, resourceGroupName);
-
             await _azure.NetworkSecurityGroups
-                .Define(nsgName)
+                .Define(securityGroupName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
-            
-            return nsgName;
         }
         public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
         {
@@ -95,13 +92,19 @@ namespace Sepes.RestApi.Services
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithExistingNetworkSecurityGroup(securityGroupName).Parent().ApplyAsync();
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName)
+                .Update()
+                .UpdateSubnet(subnetName)
+                .WithExistingNetworkSecurityGroup(securityGroupName)
+                .Parent()
+                .ApplyAsync();
         }
         
         public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
         {
             //Remove the security group from a subnet.
-            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName).Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
+            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName)
+                .Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
         public async Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort)
         {
@@ -136,16 +139,19 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-        public string GenerateNSGName(string networkSecurityGroupName, string resourceGroupName)
+        public IEnumerable<string> GetNSGNames(string resourceGroupName)
         {
-            var nsgNames = _azure.NetworkSecurityGroups.ListByResourceGroup(resourceGroupName).Select(nsg => nsg.Name);
-
-            if (nsgNames.Contains(networkSecurityGroupName)) return networkSecurityGroupName+"0";
-
-            return networkSecurityGroupName;
+            return _azure.NetworkSecurityGroups.ListByResourceGroupAsync(resourceGroupName).Result.Select(nsg => nsg.Name);
         }
 
-        public async Task NsgAllowPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort, string[] externalAddresses, int externalPort)
+        public async Task NsgAllowPort(string securityGroupName,
+                                       string resourceGroupName,
+                                       string ruleName,
+                                       int priority,
+                                       string[] internalAddresses,
+                                       int internalPort,
+                                       string[] externalAddresses,
+                                       int externalPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
