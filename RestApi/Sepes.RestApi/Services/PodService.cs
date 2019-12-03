@@ -69,15 +69,11 @@ namespace Sepes.RestApi.Services
             {
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
-                createRes.Start();
-                createNet.Start();
                 await Task.WhenAll(createRes, createNet);
             }
 
             Task NsgTask = ManageNetworkSecurityGroup(newPod, based);
             Task AddUsersTask = AddUsers(newPod, based);
-            NsgTask.Start();
-            AddUsersTask.Start();
 
             await Task.WhenAll(NsgTask, AddUsersTask);
         }
@@ -87,14 +83,12 @@ namespace Sepes.RestApi.Services
             List<Task> addUsersTasks = new List<Task>();
             foreach (var user in newPod.users)
             {
-                if (!based.users.Contains(user))
+                if (based == null || !based.users.Contains(user))
                 {
                     Task addUserToResGroup = _azure.AddUserToResourceGroup(user.userEmail, newPod.resourceGroupName);
                     Task addUserToNetwork = _azure.AddUserToNetwork(user.userEmail, newPod.networkName);
                     addUsersTasks.Add(addUserToResGroup);
                     addUsersTasks.Add(addUserToNetwork);
-                    addUserToResGroup.Start();
-                    addUserToNetwork.Start();
                 }
             }
             await Task.WhenAll(addUsersTasks.ToArray());
@@ -117,25 +111,23 @@ namespace Sepes.RestApi.Services
 
             // Set inbound and outbound rules
             var addRuleTasks = new List<Task>();
-            if (!based.incoming.SequenceEqual(newPod.incoming))
+            if (based == null || !based.incoming.SequenceEqual(newPod.incoming))
             {
                 Dictionary<ushort, string[]> inbound = GenerateRuleDictionary(newPod.incoming);
                 int priority = 100;
 
                 foreach (var port in inbound.Keys) {
                     var addRule = _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, inbound[port], (int) port);
-                    addRule.Start();
                     addRuleTasks.Add(addRule);
                 }
             }
-            if (!based.outgoing.SequenceEqual(newPod.outgoing))
+            if (based == null || !based.outgoing.SequenceEqual(newPod.outgoing))
             {
                 Dictionary<ushort, string[]> outbound = GenerateRuleDictionary(newPod.outgoing);
                 int priority = 100;
 
                 foreach (var port in outbound.Keys) {
                     var addRule = _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port);
-                    addRule.Start();
                     addRuleTasks.Add(addRule);
                 }
             }
@@ -155,12 +147,8 @@ namespace Sepes.RestApi.Services
 
         private Dictionary<ushort, string[]> GenerateRuleDictionary(IEnumerable<Rule> array)
         {
-            var ruleDict = new Dictionary<ushort, string[]>();
-
-            foreach (var rule in array) {
-                ruleDict[rule.port].Append(rule.ip);
-            }
-
+            var g = array.GroupBy(r => r.port, r => r.ip, (port, ips) => new { Key = port, Value = ips});
+            var ruleDict = g.ToDictionary(r => r.Key, r => r.Value.ToArray());
             return ruleDict;
         }
     }
