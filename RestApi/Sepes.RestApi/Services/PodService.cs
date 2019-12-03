@@ -102,10 +102,13 @@ namespace Sepes.RestApi.Services
 
         private async Task ManageNetworkSecurityGroup(Pod newPod, Pod based)
         {
+            string nsgNameDefault = newPod.networkSecurityGroupName;
+            string nsgNameDef2 = nsgNameDefault+"2";
+
             // Generate network security network name
             var nsgNames = _azure.GetNSGNames(newPod.resourceGroupName);
-            string nsgName = newPod.networkSecurityGroupName;
-            if (nsgNames.Contains(newPod.networkSecurityGroupName)) nsgName = newPod.networkSecurityGroupName+"0";
+            string nsgName = nsgNameDefault;
+            if (nsgNames.Contains(newPod.networkSecurityGroupName)) nsgName = nsgNameDef2;
             
             // Create nsg with generated nsg name
             await _azure.CreateSecurityGroup(nsgName, newPod.resourceGroupName);
@@ -142,11 +145,11 @@ namespace Sepes.RestApi.Services
             await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "subnet1", newPod.networkName);
 
             // Delete old nsg
-            if (nsgName == newPod.networkSecurityGroupName && nsgNames.Contains(nsgName+"0")) {
-                await _azure.DeleteSecurityGroup(nsgName+"0", newPod.resourceGroupName);
+            if (nsgName == nsgNameDefault && nsgNames.Contains(nsgNameDef2)) {
+                await _azure.DeleteSecurityGroup(nsgNameDef2, newPod.resourceGroupName);
             }
-            else if (nsgName == newPod.networkSecurityGroupName+"0" && nsgNames.Contains(newPod.networkSecurityGroupName)) {
-                await _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName);
+            else if (nsgName == nsgNameDef2 && nsgNames.Contains(nsgNameDefault)) {
+                await _azure.DeleteSecurityGroup(nsgNameDefault, newPod.resourceGroupName);
             }
         }
 
