@@ -71,7 +71,7 @@ namespace Sepes.RestApi.Services
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
                 createRes.Start();
                 createNet.Start();
-                await Task.WhenAll(new Task[]{createRes, createNet});
+                await Task.WhenAll(createRes, createNet);
             }
 
             Task NsgTask = ManageNetworkSecurityGroup(newPod, based);
@@ -79,7 +79,7 @@ namespace Sepes.RestApi.Services
             NsgTask.Start();
             AddUsersTask.Start();
 
-            await Task.WhenAll(new Task[]{NsgTask, AddUsersTask});
+            await Task.WhenAll(NsgTask, AddUsersTask);
         }
 
         private async Task AddUsers(Pod newPod, Pod based)
@@ -113,13 +113,16 @@ namespace Sepes.RestApi.Services
             // pod.allowAll != basePod.allowAll // Apply allow all
 
             // Set inbound and outbound rules
+            var addRuleTasks = new List<Task>();
             if (!based.incoming.SequenceEqual(newPod.incoming))
             {
                 Dictionary<ushort, string[]> inbound = GenerateRuleDictionary(newPod.incoming);
                 int priority = 100;
 
                 foreach (var port in inbound.Keys) {
-                    _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, inbound[port], (int) port).Start();
+                    var addRule = _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, inbound[port], (int) port);
+                    addRule.Start();
+                    addRuleTasks.Add(addRule);
                 }
             }
             if (!based.outgoing.SequenceEqual(newPod.outgoing))
@@ -128,19 +131,22 @@ namespace Sepes.RestApi.Services
                 int priority = 100;
 
                 foreach (var port in outbound.Keys) {
-                    _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port).Start();
+                    var addRule = _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port);
+                    addRule.Start();
+                    addRuleTasks.Add(addRule);
                 }
             }
+            await Task.WhenAll(addRuleTasks.ToArray());
 
             // Apply network security group to subnet
             await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "subnet1", newPod.networkName);
 
             // Delete old nsg
             if (nsgName == newPod.networkSecurityGroupName && nsgNames.Contains(nsgName+"0")) {
-                _azure.DeleteSecurityGroup(nsgName+"0", newPod.resourceGroupName).Start();
+                await _azure.DeleteSecurityGroup(nsgName+"0", newPod.resourceGroupName);
             }
             else if (nsgName == newPod.networkSecurityGroupName+"0" && nsgNames.Contains(newPod.networkSecurityGroupName)) {
-                _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName).Start();
+                await _azure.DeleteSecurityGroup(nsgName, newPod.resourceGroupName);
             }
         }
 
