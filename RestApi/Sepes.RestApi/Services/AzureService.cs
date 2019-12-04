@@ -35,11 +35,6 @@ namespace Sepes.RestApi.Services
             }
         }
 
-        public string getSubscription()
-        {
-            return _azure.GetCurrentSubscription().DisplayName;
-        }
-
         public async Task<string> CreateResourceGroup(string networkName)
         {
             //Create ResourceGroup
@@ -63,7 +58,7 @@ namespace Sepes.RestApi.Services
             var network = await _azure.Networks.Define(networkName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
-                .WithAddressSpace(addressSpace)
+                .WithAddressSpace(addressSpace).WithSubnet("Subnet01", addressSpace)
                 .CreateAsync();
 
             return network.Id;
@@ -92,10 +87,11 @@ namespace Sepes.RestApi.Services
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName)
-                .Update()
+            var nsg = _azure.NetworkSecurityGroups.GetByResourceGroup(resourceGroupName, securityGroupName);
+            var network = _azure.Networks.GetByResourceGroup(_commonResourceGroup, networkName);
+            await network.Update()
                 .UpdateSubnet(subnetName)
-                .WithExistingNetworkSecurityGroup(securityGroupName)
+                .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
         }
