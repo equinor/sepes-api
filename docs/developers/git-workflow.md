@@ -2,6 +2,8 @@
 
 (example)
 
+Say I want to develop a feature. I will then...
+
 1. Create a feature branch from branch `master` in local repo
    ```sh
    # Be sure that you got the latest changes (ie pull request) in local repo
@@ -17,7 +19,8 @@
       git commit -m "Some small change"
       git push
       ```
-1. When development is done, create a pull request and run code review in github
+1. When development is done, create a pull request and run code review in github  
+
    If code review is OK 
    1. Squash & merge into branch `master`
    1. Delete feature branch in github
