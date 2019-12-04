@@ -9,6 +9,7 @@
 
 ## Components
 - Sandbox (in azure)
+- Azure portal
 - Frontend
   - [ui](./ui/)
 - Backend
@@ -16,7 +17,7 @@
 
 TODO
 - Add description for each component (why, what, how)   
-- Add a diagram for how all these components connect to each other
+- Add a infrastructur diagram for how all these components connect to each other
 
 ## User-flow, authentication and authorization
 
