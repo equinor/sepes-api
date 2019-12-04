@@ -67,6 +67,7 @@ namespace Sepes.RestApi.Services
         {
             if (based == null)
             {
+                Console.WriteLine("#### Creating Resource group and network");
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
                 await Task.WhenAll(createRes, createNet);
@@ -85,6 +86,7 @@ namespace Sepes.RestApi.Services
             {
                 if (based == null || !based.users.Contains(user))
                 {
+                    Console.WriteLine("#### Adding user "+user.userEmail);
                     Task addUserToResGroup = _azure.AddUserToResourceGroup(user.userEmail, newPod.resourceGroupName);
                     Task addUserToNetwork = _azure.AddUserToNetwork(user.userEmail, newPod.networkName);
                     addUsersTasks.Add(addUserToResGroup);
@@ -117,8 +119,8 @@ namespace Sepes.RestApi.Services
                 int priority = 100;
 
                 foreach (var port in inbound.Keys) {
-                    var addRule = _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, inbound[port], (int) port);
-                    addRuleTasks.Add(addRule);
+                    await _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, inbound[port], (int) port);
+                    Console.WriteLine("#### Added rule inbound "+port+" "+inbound[port].ElementAt(0));
                 }
             }
             if (based == null || !based.outgoing.SequenceEqual(newPod.outgoing))
@@ -127,14 +129,14 @@ namespace Sepes.RestApi.Services
                 int priority = 100;
 
                 foreach (var port in outbound.Keys) {
-                    var addRule = _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port);
-                    addRuleTasks.Add(addRule);
+                    await _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port);
+                    Console.WriteLine("#### Added rule outbound "+port+" "+outbound[port].ToString());
                 }
             }
-            await Task.WhenAll(addRuleTasks.ToArray());
 
             // Apply network security group to subnet
-            await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "subnet1", newPod.networkName);
+            Console.WriteLine($"#### ApplySecurityGroup() {newPod.resourceGroupName}, {nsgName}, Subnet01, {newPod.networkName}");
+            await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "Subnet01", newPod.networkName);
 
             // Delete old nsg
             if (nsgName == nsgNameDefault && nsgNames.Contains(nsgNameDef2)) {
