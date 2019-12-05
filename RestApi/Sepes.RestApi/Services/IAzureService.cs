@@ -7,7 +7,7 @@ namespace Sepes.RestApi.Services
     {
         Task<string> CreateResourceGroup(string podName);
         Task TerminateResourceGroup(string resourceGroupName);
-        Task<string> CreateNetwork(string networkName, string addressSpace);
+        Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName);
         Task CreateSecurityGroup(string securityGroupName, string resourceGroupName);
         Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName);
         Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
@@ -18,6 +18,6 @@ namespace Sepes.RestApi.Services
         
         Task<string> AddUserToResourceGroup(string userId, string resourceGroupName);
         Task<string> AddUserToNetwork(string userId, string networkName);
-        IEnumerable<string> GetNSGNames(string resourceGroupName);
+        Task<IEnumerable<string>> GetNSGNames(string resourceGroupName);
     }
 }
