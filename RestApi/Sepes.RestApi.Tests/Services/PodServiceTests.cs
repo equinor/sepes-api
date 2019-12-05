@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Moq;
@@ -25,7 +26,7 @@ namespace Sepes.RestApi.Tests.Services
 
             //Then
             Assert.Equal(testPod, pod);
-            azureMock.Verify(azure => azure.CreateNetwork("42-test-Network", "10.1.1.0/24"), Times.Once);
+            azureMock.Verify(azure => azure.CreateNetwork("42-test-Network", "10.1.1.0/24", "subnet1"), Times.Once);
             azureMock.Verify(azure => azure.CreateResourceGroup("42-test-ResourceGroup"), Times.Once);
             azureMock.VerifyNoOtherCalls();
         }
@@ -135,11 +136,13 @@ namespace Sepes.RestApi.Tests.Services
 
 
             azureMock.Verify(az => az.CreateResourceGroup(newPod.resourceGroupName), Times.Once);
-            azureMock.Verify(az => az.CreateNetwork(newPod.networkName, newPod.addressSpace), Times.Once);
+            azureMock.Verify(az => az.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName), Times.Once);
+            azureMock.Verify(az => az.CreateSecurityGroup(newPod.networkSecurityGroupName, newPod.resourceGroupName), Times.Once);
             azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, newPod.resourceGroupName, "Port_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
             azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, newPod.resourceGroupName, "Port_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
             azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, newPod.resourceGroupName, "Port_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
             azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, newPod.resourceGroupName, "Port_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
+            azureMock.Verify(az => az.ApplySecurityGroup(newPod.resourceGroupName, newPod.networkSecurityGroupName, newPod.subnetName, newPod.networkName), Times.Once);
 
             azureMock.Verify(az => az.AddUserToNetwork("1", newPod.networkName), Times.Once);
             azureMock.Verify(az => az.AddUserToResourceGroup("1", newPod.resourceGroupName), Times.Once);
@@ -150,25 +153,28 @@ namespace Sepes.RestApi.Tests.Services
         [Fact]
         public async Task TestSetUpdatedPod()
         {
-            // setup services
+            //Given
             var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
             var podService = new PodService(databaseMock.Object, azureMock.Object);
 
-            //Given
             var users = new List<User>();
             users.Add(new User("1", "1", "1"));
             users.Add(new User("2", "2", "2"));
             var based = new Pod(1, "test", 1, false, null, null, users, null, null);
 
-            var UpdatedUsers = new List<User>(users);
-            UpdatedUsers.Add(new User("3", "3", "3"));
-            var newPod = new Pod(1, "test", 1, false, null, null, UpdatedUsers, null, null);
+            var updatedUsers = new List<User>(users);
+            updatedUsers.Add(new User("3", "3", "3"));
+            var newPod = new Pod(1, "test", 1, false, null, null, updatedUsers, null, null);
+
+            azureMock.Setup(az => az.GetNSGNames(newPod.resourceGroupName)).ReturnsAsync(new string[]{newPod.networkSecurityGroupName});
 
             //When
             await podService.Set(newPod, based);
 
             //Then
+            // create new nsg
+            azureMock.Verify(az => az.CreateSecurityGroup(newPod.networkSecurityGroupName+"2", newPod.resourceGroupName), Times.Once);
             // should not add old users
             azureMock.Verify(az => az.AddUserToNetwork("1", newPod.networkName), Times.Never);
             azureMock.Verify(az => az.AddUserToResourceGroup("1", newPod.resourceGroupName), Times.Never);
@@ -178,6 +184,10 @@ namespace Sepes.RestApi.Tests.Services
             // add new user
             azureMock.Verify(az => az.AddUserToNetwork("3", newPod.networkName), Times.Once);
             azureMock.Verify(az => az.AddUserToResourceGroup("3", newPod.resourceGroupName), Times.Once);
+
+            // delete old nsg
+            azureMock.Verify(az => az.DeleteSecurityGroup(newPod.networkSecurityGroupName, newPod.resourceGroupName), Times.Once);
         }
+        
     }
 }
