@@ -53,12 +53,12 @@ namespace Sepes.RestApi.Services
             //Might instead want to get list of all users then remove them?
         }
 
-        public async Task<string> CreateNetwork(string networkName, string addressSpace)
+        public async Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName)
         {
             var network = await _azure.Networks.Define(networkName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(_commonResourceGroup)
-                .WithAddressSpace(addressSpace).WithSubnet("Subnet01", addressSpace)
+                .WithAddressSpace(addressSpace).WithSubnet(subnetName, addressSpace)
                 .CreateAsync();
 
             return network.Id;
@@ -135,9 +135,10 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-        public IEnumerable<string> GetNSGNames(string resourceGroupName)
+        public async Task<IEnumerable<string>> GetNSGNames(string resourceGroupName)
         {
-            return _azure.NetworkSecurityGroups.ListByResourceGroupAsync(resourceGroupName).Result.Select(nsg => nsg.Name);
+            var nsgs = await _azure.NetworkSecurityGroups.ListByResourceGroupAsync(resourceGroupName);
+            return nsgs.Select(nsg => nsg.Name);
         }
 
         public async Task NsgAllowPort(string securityGroupName,

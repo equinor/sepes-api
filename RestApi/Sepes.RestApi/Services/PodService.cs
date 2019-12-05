@@ -32,7 +32,7 @@ namespace Sepes.RestApi.Services
         {
             var pod = await _database.createPod(name, studyID);
             var resourceGroupName = await _azure.CreateResourceGroup(pod.resourceGroupName);
-            await _azure.CreateNetwork(pod.networkName, pod.addressSpace);
+            await _azure.CreateNetwork(pod.networkName, pod.addressSpace, "subnet1");
             return pod;
         }
         public async Task createNsg(string securityGroupName, string resourceGroupName)
@@ -69,14 +69,22 @@ namespace Sepes.RestApi.Services
             {
                 Console.WriteLine("#### Creating Resource group and network");
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
-                Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace);
+                Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName);
                 await Task.WhenAll(createRes, createNet);
             }
 
-            Task NsgTask = ManageNetworkSecurityGroup(newPod, based);
-            Task AddUsersTask = AddUsers(newPod, based);
+            var tasks = new List<Task>();
 
-            await Task.WhenAll(NsgTask, AddUsersTask);
+            // Create network security group and add rules, apply to subnet
+            bool mustCreateNewNSG = based == null || 
+                !based.incoming.SequenceEqual(newPod.incoming) ||
+                !based.outgoing.SequenceEqual(newPod.outgoing);
+            if (mustCreateNewNSG) tasks.Add(ManageNetworkSecurityGroup(newPod, based));
+
+            // Add users to resources
+            tasks.Add(AddUsers(newPod, based));
+
+            await Task.WhenAll(tasks);
         }
 
         private async Task AddUsers(Pod newPod, Pod based)
@@ -102,12 +110,16 @@ namespace Sepes.RestApi.Services
             string nsgNameDef2 = nsgNameDefault+"2";
 
             // Generate network security network name
-            var nsgNames = _azure.GetNSGNames(newPod.resourceGroupName);
+            var nsgNames = await _azure.GetNSGNames(newPod.resourceGroupName);
             string nsgName = nsgNameDefault;
             if (nsgNames.Contains(newPod.networkSecurityGroupName)) nsgName = nsgNameDef2;
             
             // Create nsg with generated nsg name
-            await _azure.CreateSecurityGroup(nsgName, newPod.resourceGroupName);
+            bool mustCreateNewNSG = based == null || 
+                !based.incoming.SequenceEqual(newPod.incoming) ||
+                !based.outgoing.SequenceEqual(newPod.outgoing);
+            
+            if (mustCreateNewNSG) await _azure.CreateSecurityGroup(nsgName, newPod.resourceGroupName);
 
             // pod.allowAll != basePod.allowAll // Apply allow all
 
@@ -135,8 +147,8 @@ namespace Sepes.RestApi.Services
             }
 
             // Apply network security group to subnet
-            Console.WriteLine($"#### ApplySecurityGroup() {newPod.resourceGroupName}, {nsgName}, Subnet01, {newPod.networkName}");
-            await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, "Subnet01", newPod.networkName);
+            Console.WriteLine($"#### ApplySecurityGroup() {newPod.resourceGroupName}, {nsgName}, {newPod.subnetName}, {newPod.networkName}");
+            await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, newPod.subnetName, newPod.networkName);
 
             // Delete old nsg
             if (nsgName == nsgNameDefault && nsgNames.Contains(nsgNameDef2)) {
