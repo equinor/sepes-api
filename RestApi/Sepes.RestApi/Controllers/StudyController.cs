@@ -5,6 +5,8 @@ using Sepes.RestApi.Services;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.RestApi.Controller
 {
@@ -31,9 +33,10 @@ namespace Sepes.RestApi.Controller
                 Study study = await _studyService.Save(studies[0].ToStudy(), null);
                 return study.ToStudyInput();
             }
-
-            
-            return studies[0];
+            else {
+                Study study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
+                return study.ToStudyInput();
+            }
         }
 
 
@@ -53,15 +56,15 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet("list")]
-        public async Task<string> GetStudies()
+        public IEnumerable<StudyInput> GetStudies()
         {
-            return await _sepesDb.getStudies(false);
+            return _studyService.GetStudies(new User("","",""), false).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("archived")]
-        public async Task<string> GetArchivedStudies()
+        public IEnumerable<StudyInput> GetArchived()
         {
-            return await _sepesDb.getStudies(true);
+            return _studyService.GetStudies(new User("","",""), true).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("dataset")]
