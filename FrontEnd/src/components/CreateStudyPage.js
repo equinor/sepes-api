@@ -47,7 +47,8 @@ class CreateStudyPage extends Component {
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} removeUser={this.removeSupplier} />
                 <SepesDataList header="Dataset" data={this.state.data} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
-            <SepesPodList data={this.state.pods} newPod={this.newPod} openPod={this.openPod}/>
+            
+            { this.state.studyId !== null ?  <SepesPodList className="podList" data={this.state.pods} newPod={this.newPod} openPod={this.openPod}/> : null}
         </div>);
     }
 
