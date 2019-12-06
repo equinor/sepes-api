@@ -78,7 +78,7 @@ namespace Sepes.RestApi.Services
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
-
+            //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
             await this.NsgApplyBaseRules(securityGroupName,resourceGroupName);
         }
         public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
