@@ -19,10 +19,6 @@ class PodPage extends Component {
             podName: "",
             podId: null,
 
-            networkName: "",
-            resourceGroupName: "",
-            addressSpace: "",
-
             saveBtnDisabled: false
         }
     }
@@ -48,12 +44,6 @@ class PodPage extends Component {
                 </div>
                 <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule}/>
                 <PodRules header="Outgoing rules" data={this.state.outgoing} addItem={this.addOutgoingRule} removeItem={this.removeOutgoingRule}/>
-                { this.state.networkName !== "" ? 
-                <div style={{padding: 5}}>
-                    <p>Network name: { this.state.networkName }</p>
-                    <p>Resource group: { this.state.resourceGroupName }</p>
-                    <p>Address space: { this.state.addressSpace }</p>
-                </div> : null } 
             </div>
             <div id="pod-dataset-list">
                 { this.props.state.selection.dataset.map((item) => (
@@ -61,6 +51,19 @@ class PodPage extends Component {
                 ))}
             </div>
         </div>);
+    }
+
+    componentDidMount() {
+        let pod = this.props.state.selection.pod;
+        if (pod.podId !== null) {
+            this.setState({
+                incoming: pod.incoming,
+                outgoing: pod.outgoing,
+                podName: pod.podName,
+                podId: pod.podId
+            });
+        }
+        
     }
 
     addIncomingRule = (port, ip) => {
