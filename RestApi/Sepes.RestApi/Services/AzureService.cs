@@ -108,7 +108,7 @@ namespace Sepes.RestApi.Services
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
                 .Update()
                 .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
-                .AllowInbound()
+                .AllowOutbound()
                 .FromAddresses(internalAddresses)
                 .FromPort(internalPort)
                 .ToAnyAddress()
