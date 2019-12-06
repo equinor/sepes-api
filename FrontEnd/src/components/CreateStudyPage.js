@@ -61,7 +61,9 @@ class CreateStudyPage extends Component {
                 studyName: study.studyName,
                 studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
                 archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
-                pods: study.pods
+                pods: study.pods,
+                sponsors: study.sponsors,
+                suppliers: study.suppliers
             });
         }
         
@@ -148,11 +150,10 @@ class CreateStudyPage extends Component {
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
         sepes.createStudy(study, based)
-            .then(returnValue => returnValue.text())
-            .then(id => {
-                if (parseInt(id) !== -1) {
-                    this.setState({studyId: parseInt(id)});
-                }
+            .then(returnValue => returnValue.json())
+            .then(json => {
+                this.setState({studyId: json.studyId});
+                this.setState({saveBtnDisabled: false});
             })
             .catch(() => {
                 this.setState({saveBtnDisabled: false});
