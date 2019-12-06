@@ -94,16 +94,31 @@ class PodPage extends Component {
         this.setState({saveBtnDisabled: true});
         
         console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
+
+        let based = this.props.state.selectedStudy;
+        let study = this.props.state.selectedStudy;
+
+        let pod = {
+            incoming: this.state.incoming,
+            outgoing: this.state.outgoing,
+            podName: this.state.podName,
+            podId: this.state.podId,
+        }
+
+        if (this.state.podId === null) {
+            study.pods.push(pod);
+        }
+        else {
+            let index = study.pods.findIndex(item => item.podId === pod.podId);
+            study.pods[index] = pod;
+        }
         
-        sepes.createPod(this.props.state.selectedStudy.StudyId, this.state.podName)
+        sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(json => {
-                this.setState({
+                /*this.setState({
                     podId: parseInt(json.id),
-                    networkName: json.networkName,
-                    resourceGroupName: json.resourceGroupName,
-                    addressSpace: json.addressSpace
-                });
+                });*/
                 console.log(json)
             })
             .catch(() => {
