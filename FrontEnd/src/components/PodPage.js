@@ -118,9 +118,15 @@ class PodPage extends Component {
         
         sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
-            .then(json => {
-                
-                console.log(json)
+            .then(study => {
+                if (this.state.podId === null) {
+                    let podId = study.pods[study.pods.length-1].podId
+                    this.setState({
+                        podId
+                    });
+                    console.log(study);
+                }
+                this.setState({saveBtnDisabled: false});
             })
             .catch(() => {
                 this.setState({saveBtnDisabled: false});
