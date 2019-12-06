@@ -47,7 +47,7 @@ class CreateStudyPage extends Component {
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} removeUser={this.removeSupplier} />
                 <SepesDataList header="Dataset" data={this.state.data} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
-            <SepesPodList data={this.state.pods} newPod={this.newPod} />
+            <SepesPodList data={this.state.pods} newPod={this.newPod} openPod={this.openPod}/>
         </div>);
     }
 
@@ -55,11 +55,15 @@ class CreateStudyPage extends Component {
         let study = this.props.state.selectedStudy;
         //let study = StudyService.getCurrentStudy();
 
-        this.setState({
-            studyName: study.StudyName,
-            studyId: typeof(study.StudyId) === "undefined" || study.StudyId === null ? null : study.StudyId,
-            archived: typeof(study.Archived) === "undefined" || study.Archived === false ? false : true
-        });
+        if (study.studyId !== null) {
+            this.setState({
+                studyName: study.studyName,
+                studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
+                archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
+                pods: study.pods
+            });
+        }
+        
 
         sepes.getData().then(response => response.json())
             .then(json => {
@@ -120,7 +124,11 @@ class CreateStudyPage extends Component {
     }
 
     newPod = () => {
-        this.props.changePage("pod", {dataset: this.state.dataset});
+        this.props.changePage("pod", {dataset: this.state.dataset, pod: {podId: null}});
+    }
+
+    openPod = (pod) => {
+        this.props.changePage("pod", {dataset: this.state.dataset, pod});
     }
 
     setPods = (pods) => {
