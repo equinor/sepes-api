@@ -78,6 +78,8 @@ namespace Sepes.RestApi.Services
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
+            //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
+            await this.NsgApplyBaseRules(securityGroupName,resourceGroupName);
         }
         public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
         {
@@ -133,6 +135,49 @@ namespace Sepes.RestApi.Services
                 .WithPriority(priority)
                 .Attach()
                 .ApplyAsync();
+        }
+        public async Task NsgApplyBaseRules(string securityGroupName, string resourceGroupName)
+        {
+            await _azure.NetworkSecurityGroups
+            .GetByResourceGroup(resourceGroupName, securityGroupName)
+            .Update()
+            .DefineRule("DenyInbound")
+            .DenyInbound()
+            .FromAnyAddress()
+            .FromAnyPort()
+            .ToAnyAddress()
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4050)
+            .Attach()
+            .DefineRule("AllowVnetInBound2")
+            .AllowInbound()
+            .FromAddress("VirtualNetwork")
+            .FromAnyPort()
+            .ToAddress("VirtualNetwork")
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4000)
+            .Attach()
+            .DefineRule("DenyOutbound")
+            .DenyOutbound()
+            .FromAnyAddress()
+            .FromAnyPort()
+            .ToAnyAddress()
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4050)
+            .Attach()
+            .DefineRule("AllowVnetoutBound2")
+            .AllowOutbound()
+            .FromAddress("VirtualNetwork")
+            .FromAnyPort()
+            .ToAddress("VirtualNetwork")
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4000)
+            .Attach()
+            .ApplyAsync();
         }
 
         public async Task<IEnumerable<string>> GetNSGNames(string resourceGroupName)
