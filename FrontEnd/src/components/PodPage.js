@@ -96,13 +96,14 @@ class PodPage extends Component {
         console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
 
         let based = this.props.state.selectedStudy;
-        let study = this.props.state.selectedStudy;
+        let study = JSON.parse(JSON.stringify(based));
 
         let pod = {
             incoming: this.state.incoming,
             outgoing: this.state.outgoing,
             podName: this.state.podName,
             podId: this.state.podId,
+            studyId: study.studyId
         }
 
         if (this.state.podId === null) {
@@ -112,13 +113,13 @@ class PodPage extends Component {
             let index = study.pods.findIndex(item => item.podId === pod.podId);
             study.pods[index] = pod;
         }
+
+        console.log([study, based])
         
         sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(json => {
-                /*this.setState({
-                    podId: parseInt(json.id),
-                });*/
+                
                 console.log(json)
             })
             .catch(() => {
