@@ -31,7 +31,7 @@ class PodPage extends Component {
                         className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
                     <link />
                 <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e)=> this.setState({podName: e.target.value})} />
-                { this.state.podId === null ? <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button> : null }
+                <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar podsidebar">
