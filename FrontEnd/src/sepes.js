@@ -11,20 +11,21 @@ export default class Sepes {
         return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/list");
     }
 
-    createStudy = (study) => {
-        console.log("Create study: "+study.studyName+" - "+study.datasetIds.length+" dataset");
-        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/pod/create", {
+    createStudy = (study, based) => {
+        console.log("Save study: "+study.studyName);
+        console.log([study, based]);
+        return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/save", {
           method: "post",
           headers: { 
             "Content-Type": "application/json", 
             "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
           },
-          body: JSON.stringify(study)
+          body: JSON.stringify([study, based])
         });
     }
 
     createPod = (studyID, podName) => {
-        console.log(`Create pod: ${podName} - with study id ${studyID}`);
+        /*console.log(`Create pod: ${podName} - with study id ${studyID}`);
         return fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/pod/create", {
           method: "post",
           headers: { 
@@ -32,7 +33,7 @@ export default class Sepes {
             "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
           },
           body: JSON.stringify({studyID, podName})
-        });
+        });*/
     }
 
     getPods = (studyId) => {
@@ -40,14 +41,14 @@ export default class Sepes {
     }
 
     updateStudy(studyId, archived) {
-      fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/update", {
+      /*fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/study/update", {
         method: "post",
         headers: { 
           "Content-Type": "application/json", 
           "Authorization": "Bearer " + localStorage.getItem("SepesJWT"),
         },
         body: JSON.stringify({studyId, archived})
-      });
+      });*/
     }
 
     getSepesToken(azureAccountName, azureRawIdToken) {

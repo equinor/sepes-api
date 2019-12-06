@@ -71,20 +71,6 @@ class CreateStudyPage extends Component {
                 console.log(json);
                 this.setState({data: json});
             });
-        
-        /*console.log("get pods for study "+study.StudyId);
-        if (typeof study.StudyId === 'number') {
-            console.log("get pods for study "+study.StudyId);
-            sepes.getPods(study.StudyId)
-                .then(response => response.json())
-                .then(pods => {
-                    console.log("fetch pods");
-                    console.log(pods);
-                    if (pods !== null && typeof(pods) !== "undefined" && pods !== "undefined") {
-                        this.setState({pods});
-                    }
-                });
-        }*/
     }
 
     addSponsors = (user) => {
@@ -151,12 +137,16 @@ class CreateStudyPage extends Component {
         let state = this.state;
         let study = {
             studyName: state.studyName,
-            userIds: state.sponsors.concat(state.suppliers),
+            userIds: [],
             datasetIds: state.dataset,
             archived: false,
+            sponsors: state.sponsors,
+            suppliers: state.suppliers
         }
+
+        let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
-        sepes.createStudy(study)
+        sepes.createStudy(study, based)
             .then(returnValue => returnValue.text())
             .then(id => {
                 if (parseInt(id) !== -1) {
