@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 
 import Sepes from '../sepes.js';
+import addSymbol from '../plus1.svg';
+
 const sepes = new Sepes();
 
 class CreateStudyPage extends Component {
@@ -23,6 +25,7 @@ class CreateStudyPage extends Component {
                 <div style={{display: "table"}}>
                     <div className="study" onClick={this.newStudy}>
                         <p style={{fontWeight: "bold"}}>New Study</p>
+                        <p><img src={addSymbol} style={{width: 60}}/></p>
                     </div>
                     { this.props.state.studies.map((item) => (
                         <div className="study" onClick={() => this.openStudy(item)}>
