@@ -142,7 +142,7 @@ namespace Sepes.RestApi.Services
 
                 foreach (var port in outbound.Keys) {
                     await _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, priority++, outbound[port], (int) port);
-                    Console.WriteLine("#### Added rule outbound "+port+" "+outbound[port].ToString());
+                    Console.WriteLine("#### Added rule outbound "+port+" "+outbound[port].ElementAt(0));
                 }
             }
 
