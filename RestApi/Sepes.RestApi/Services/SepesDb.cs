@@ -215,12 +215,12 @@ namespace Sepes.RestApi.Services
 
                 saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
                                         study.datasets, study.archived, study.userIds, study.datasetIds);
-                await UpdateStudy(saveStudy);
             }
             finally
             {
                 await connection.CloseAsync();
             }
+            await UpdateStudy(saveStudy);
 
             return saveStudy;
         }
@@ -262,8 +262,15 @@ namespace Sepes.RestApi.Services
                     {
                         while (reader.Read())
                         {
-                            var study = JsonSerializer.Deserialize<StudyDB>(reader.GetString(1));
-                            studiesDB.Add(study);
+                            try {
+                                var study = JsonSerializer.Deserialize<StudyDB>(reader.GetString(1));
+                                studiesDB.Add(study);
+                                Console.WriteLine("#### SepesDB: Add study to studiesDB list");
+                            }
+                            catch {
+                                Console.WriteLine("#### SepesDB: Add study FAILED");
+                            }
+                            
                         }
                     }
                 }
