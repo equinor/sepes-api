@@ -107,6 +107,10 @@ class PodPage extends Component {
         }
 
         if (this.state.podId === null) {
+            if (typeof study.pods === "undefined") {
+                study.pods = [];
+            }
+
             study.pods.push(pod);
         }
         else {
