@@ -215,12 +215,12 @@ namespace Sepes.RestApi.Services
 
                 saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
                                         study.datasets, study.archived, study.userIds, study.datasetIds);
-                await UpdateStudy(saveStudy);
             }
             finally
             {
                 await connection.CloseAsync();
             }
+            await UpdateStudy(saveStudy);
 
             return saveStudy;
         }
