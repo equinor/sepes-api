@@ -66,14 +66,6 @@ class CreateStudyPage extends Component {
                 suppliers: study.suppliers
             });
         }
-        
-
-        sepes.getData().then(response => response.json())
-            .then(json => {
-                console.log("fetch dataset");
-                console.log(json);
-                this.setState({data: json});
-            });
     }
 
     addSponsors = (user) => {
@@ -120,18 +112,9 @@ class CreateStudyPage extends Component {
         this.props.changePage("pod", {dataset: this.state.dataset, pod});
     }
 
-    setPods = (pods) => {
-        //if (pods !== null && typeof(pods) !== "undefined") {
-            this.setState({pods});
-        //}
-    }
 
     updateAchived = () => {
-        if (this.state.studyId !== null) {
-            let archive = !this.state.archived;
-            this.setState({archived: archive});
-            sepes.updateStudy(this.state.studyId, archive);
-        }
+        this.setState({archived: !this.state.archived});
     }
 
     saveStudy = () => {
