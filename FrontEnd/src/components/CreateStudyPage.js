@@ -137,6 +137,8 @@ class CreateStudyPage extends Component {
             .then(json => {
                 this.setState({studyId: json.studyId});
                 this.setState({saveBtnDisabled: false});
+
+                this.props.setStudy(json);
             })
             .catch(() => {
                 this.setState({saveBtnDisabled: false});
