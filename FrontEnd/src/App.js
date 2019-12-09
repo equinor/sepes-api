@@ -63,8 +63,8 @@ class App extends React.Component {
             setStudy={this.setSelectedStudy} 
             setStudies={this.setStudies} 
             setArchived={this.setArchived} /> : null}
-        {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} /> : null}
-        {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} /> : null}
+        {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
+        {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
       </div>
     );
   }
