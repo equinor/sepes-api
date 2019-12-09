@@ -6,7 +6,7 @@ export default function SepesPodList(props) {
     return <div className="podlist">
         <div className="pod" onClick={props.newPod}>
             <p style={{ fontWeight: "bold" }}>New Pod</p>
-            <p><img src={addSymbol} style={{ width: 60 }} /></p>
+            <p><img src={addSymbol} alt={"+"} style={{ width: 60 }} /></p>
         </div>
         {
             props.data.map((item) => (
