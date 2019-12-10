@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  restapi:
+    build: ./RestApi
+    environment:
+      - SEPES_NAME
+      - SEPES_TENANT_ID
+      - SEPES_CLIENT_ID
+      - SEPES_CLIENT_SECRET
+      - SEPES_INSTRUMENTATION_KEY
+      - SEPES_SUBSCRIPTION_ID
+      - SEPES_MSSQL_CONNECTION_STRING
+      - SEPES_HTTP_ONLY=true
+    ports:
+      - target: 80
+        published: 8080
+        protocol: tcp
+        mode: host
+    

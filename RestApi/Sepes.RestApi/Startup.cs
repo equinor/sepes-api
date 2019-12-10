@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Sepes.RestApi.Services;
 using System.Diagnostics.CodeAnalysis;
 
-
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
@@ -86,7 +85,12 @@ namespace Sepes.RestApi
 
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
-            app.UseHttpsRedirection();
+
+            // UseHttpsRedirection doesn't work well with docker.
+            if(!this._config.httpOnly) {
+                app.UseHttpsRedirection();
+            }
+
             app.UseAuthentication();
             app.UseAuthorization();
             //app.UseMvc();
