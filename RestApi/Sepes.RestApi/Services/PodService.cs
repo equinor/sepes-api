@@ -67,7 +67,6 @@ namespace Sepes.RestApi.Services
         {
             if (based == null)
             {
-                Console.WriteLine("#### Creating Resource group and network");
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName);
                 await Task.WhenAll(createRes, createNet);
@@ -94,7 +93,6 @@ namespace Sepes.RestApi.Services
             {
                 if (based == null || !based.users.Contains(user))
                 {
-                    Console.WriteLine("#### Adding user "+user.userEmail);
                     Task addUserToResGroup = _azure.AddUserToResourceGroup(user.userEmail, newPod.resourceGroupName);
                     Task addUserToNetwork = _azure.AddUserToNetwork(user.userEmail, newPod.networkName);
                     addUsersTasks.Add(addUserToResGroup);
@@ -124,28 +122,23 @@ namespace Sepes.RestApi.Services
             int inPriority = 100;
             foreach (var port in inbound.Keys) {
                 await _azure.NsgAllowInboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, inPriority++, inbound[port], (int) port);
-                Console.WriteLine("#### Added rule inbound "+port+" "+inbound[port].ElementAt(0));
             }
         
             Dictionary<ushort, string[]> outbound = GenerateRuleDictionary(newPod.outgoing);
             int outPriority = 100;
             foreach (var port in outbound.Keys) {
                 await _azure.NsgAllowOutboundPort(nsgName, newPod.resourceGroupName, "Port_" + port, outPriority++, outbound[port], (int) port);
-                Console.WriteLine("#### Added rule outbound "+port+" "+outbound[port].ElementAt(0));
             }
 
 
             // Apply network security group to subnet
-            Console.WriteLine($"#### ApplySecurityGroup() {newPod.resourceGroupName}, {nsgName}, {newPod.subnetName}, {newPod.networkName}");
             await _azure.ApplySecurityGroup(newPod.resourceGroupName, nsgName, newPod.subnetName, newPod.networkName);
 
             // Delete old nsg
             if (nsgName == nsgNameDefault && nsgNames.Contains(nsgNameDef2)) {
-                Console.WriteLine("#### Deleting old nsg "+nsgNameDef2);
                 await _azure.DeleteSecurityGroup(nsgNameDef2, newPod.resourceGroupName);
             }
             else if (nsgName == nsgNameDef2 && nsgNames.Contains(nsgNameDefault)) {
-                Console.WriteLine("#### Deleting old nsg "+nsgNameDefault);
                 await _azure.DeleteSecurityGroup(nsgNameDefault, newPod.resourceGroupName);
             }
         }
