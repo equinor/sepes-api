@@ -80,8 +80,6 @@ namespace Sepes.RestApi.Services {
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
-                        Console.WriteLine("Create pod with pod id "+newPod.id);
-
                         // Update Azure with Pod Service
                         await _podService.Set(newPod, null);
                     }
