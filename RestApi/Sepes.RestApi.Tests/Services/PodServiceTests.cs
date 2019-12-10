@@ -161,11 +161,16 @@ namespace Sepes.RestApi.Tests.Services
             var users = new List<User>();
             users.Add(new User("1", "1", "1"));
             users.Add(new User("2", "2", "2"));
-            var based = new Pod(1, "test", 1, false, null, null, users, null, null);
+            var rules = new List<Rule>();
+            rules.Add(new Rule(1, "1.1.1.1"));
+            var based = new Pod(1, "test", 1, false, rules, rules, users, null, null);
 
             var updatedUsers = new List<User>(users);
             updatedUsers.Add(new User("3", "3", "3"));
-            var newPod = new Pod(1, "test", 1, false, null, null, updatedUsers, null, null);
+            var updatedRules = new List<Rule>();
+            updatedRules.Add(new Rule(8000, "8.0.0.0"));
+            updatedRules.Add(new Rule(8000, "8.0.0.1"));
+            var newPod = new Pod(1, "test", 1, false, updatedRules, null, updatedUsers, null, null);
 
             azureMock.Setup(az => az.GetNSGNames(newPod.resourceGroupName)).ReturnsAsync(new string[]{newPod.networkSecurityGroupName});
 
