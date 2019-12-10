@@ -6,8 +6,8 @@ using Sepes.RestApi.Model;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.Linq;
-using System.Collections.Immutable;
 using System.Collections.Generic;
+using Microsoft.Azure.Management.Network.Fluent;
 
 namespace Sepes.RestApi.Services
 {
@@ -72,15 +72,17 @@ namespace Sepes.RestApi.Services
 
         public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
         {
-            await _azure.NetworkSecurityGroups
+            var nsg = await _azure.NetworkSecurityGroups
                 .Define(securityGroupName)
                 .WithRegion(Region.EuropeNorth)
                 .WithExistingResourceGroup(resourceGroupName)
                 /*.WithTag()*/
                 .CreateAsync();
+
             //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
-            await this.NsgApplyBaseRules(securityGroupName,resourceGroupName);
+            await this.NsgApplyBaseRules(nsg);
         }
+
         public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
         {
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
@@ -150,11 +152,10 @@ namespace Sepes.RestApi.Services
                 .Attach()
                 .ApplyAsync();
         }
-        public async Task NsgApplyBaseRules(string securityGroupName, string resourceGroupName)
+
+        public async Task NsgApplyBaseRules(INetworkSecurityGroup nsg)
         {
-            await _azure.NetworkSecurityGroups
-            .GetByResourceGroup(resourceGroupName, securityGroupName)
-            .Update()
+            await nsg.Update()
             .DefineRule("DenyInbound")
             .DenyInbound()
             .FromAnyAddress()
@@ -164,6 +165,7 @@ namespace Sepes.RestApi.Services
             .WithAnyProtocol()
             .WithPriority(4050)
             .Attach()
+
             .DefineRule("AllowVnetInBound2")
             .AllowInbound()
             .FromAddress("VirtualNetwork")
@@ -173,6 +175,7 @@ namespace Sepes.RestApi.Services
             .WithAnyProtocol()
             .WithPriority(4000)
             .Attach()
+
             .DefineRule("DenyOutbound")
             .DenyOutbound()
             .FromAnyAddress()
@@ -182,6 +185,7 @@ namespace Sepes.RestApi.Services
             .WithAnyProtocol()
             .WithPriority(4050)
             .Attach()
+            
             .DefineRule("AllowVnetoutBound2")
             .AllowOutbound()
             .FromAddress("VirtualNetwork")
