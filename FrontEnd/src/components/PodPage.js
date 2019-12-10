@@ -129,8 +129,8 @@ class PodPage extends Component {
                         podId
                     });
                     console.log(study);
-                    this.props.setStudy(study);
                 }
+                this.props.setStudy(study);
                 this.setState({saveBtnDisabled: false});
             })
             .catch(() => {
