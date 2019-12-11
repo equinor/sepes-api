@@ -34,7 +34,7 @@ class CreateStudyPage extends Component {
                     <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
-                { this.state.studyId === null ? <button disabled={this.state.saveBtnDisabled} onClick={this.saveStudy}>Save</button> : null }
+                <button disabled={this.state.saveBtnDisabled} onClick={this.saveStudy}>Save</button>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar">
@@ -47,7 +47,8 @@ class CreateStudyPage extends Component {
                 <SepesUserList header="Suppliers" data={this.state.suppliers} addItem={this.addSuppliers} removeUser={this.removeSupplier} />
                 <SepesDataList header="Dataset" data={this.state.data} addItem={this.addDataset} removeItem={this.removeDataset}/>
             </div>
-            <SepesPodList data={this.state.pods} newPod={this.newPod} />
+            
+            { typeof this.state.studyId === "number" ?  <SepesPodList className="podList" data={this.state.pods} newPod={this.newPod} openPod={this.openPod}/> : null}
         </div>);
     }
 
@@ -55,32 +56,16 @@ class CreateStudyPage extends Component {
         let study = this.props.state.selectedStudy;
         //let study = StudyService.getCurrentStudy();
 
-        this.setState({
-            studyName: study.StudyName,
-            studyId: typeof(study.StudyId) === "undefined" || study.StudyId === null ? null : study.StudyId,
-            archived: typeof(study.Archived) === "undefined" || study.Archived === false ? false : true
-        });
-
-        sepes.getData().then(response => response.json())
-            .then(json => {
-                console.log("fetch dataset");
-                console.log(json);
-                this.setState({data: json});
+        if (study.studyId !== null) {
+            this.setState({
+                studyName: study.studyName,
+                studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
+                archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
+                pods: study.pods,
+                sponsors: study.sponsors,
+                suppliers: study.suppliers
             });
-        
-        /*console.log("get pods for study "+study.StudyId);
-        if (typeof study.StudyId === 'number') {
-            console.log("get pods for study "+study.StudyId);
-            sepes.getPods(study.StudyId)
-                .then(response => response.json())
-                .then(pods => {
-                    console.log("fetch pods");
-                    console.log(pods);
-                    if (pods !== null && typeof(pods) !== "undefined" && pods !== "undefined") {
-                        this.setState({pods});
-                    }
-                });
-        }*/
+        }
     }
 
     addSponsors = (user) => {
@@ -120,21 +105,16 @@ class CreateStudyPage extends Component {
     }
 
     newPod = () => {
-        this.props.changePage("pod", {dataset: this.state.dataset});
+        this.props.changePage("pod", {dataset: this.state.dataset, pod: {podId: null}});
     }
 
-    setPods = (pods) => {
-        //if (pods !== null && typeof(pods) !== "undefined") {
-            this.setState({pods});
-        //}
+    openPod = (pod) => {
+        this.props.changePage("pod", {dataset: this.state.dataset, pod});
     }
+
 
     updateAchived = () => {
-        if (this.state.studyId !== null) {
-            let archive = !this.state.archived;
-            this.setState({archived: archive});
-            sepes.updateStudy(this.state.studyId, archive);
-        }
+        this.setState({archived: !this.state.archived});
     }
 
     saveStudy = () => {
@@ -143,17 +123,22 @@ class CreateStudyPage extends Component {
         let state = this.state;
         let study = {
             studyName: state.studyName,
-            userIds: state.sponsors.concat(state.suppliers),
+            userIds: [],
             datasetIds: state.dataset,
             archived: false,
+            sponsors: state.sponsors,
+            suppliers: state.suppliers
         }
+
+        let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
-        sepes.createStudy(study)
-            .then(returnValue => returnValue.text())
-            .then(id => {
-                if (parseInt(id) !== -1) {
-                    this.setState({studyId: parseInt(id)});
-                }
+        sepes.createStudy(study, based)
+            .then(returnValue => returnValue.json())
+            .then(json => {
+                this.setState({studyId: json.studyId});
+                this.setState({saveBtnDisabled: false});
+
+                this.props.setStudy(json);
             })
             .catch(() => {
                 this.setState({saveBtnDisabled: false});

@@ -19,10 +19,6 @@ class PodPage extends Component {
             podName: "",
             podId: null,
 
-            networkName: "",
-            resourceGroupName: "",
-            addressSpace: "",
-
             saveBtnDisabled: false
         }
     }
@@ -35,7 +31,7 @@ class PodPage extends Component {
                         className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
                     <link />
                 <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e)=> this.setState({podName: e.target.value})} />
-                { this.state.podId === null ? <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button> : null }
+                <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div className="sidebar podsidebar">
@@ -48,12 +44,6 @@ class PodPage extends Component {
                 </div>
                 <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule}/>
                 <PodRules header="Outgoing rules" data={this.state.outgoing} addItem={this.addOutgoingRule} removeItem={this.removeOutgoingRule}/>
-                { this.state.networkName !== "" ? 
-                <div style={{padding: 5}}>
-                    <p>Network name: { this.state.networkName }</p>
-                    <p>Resource group: { this.state.resourceGroupName }</p>
-                    <p>Address space: { this.state.addressSpace }</p>
-                </div> : null } 
             </div>
             <div id="pod-dataset-list">
                 { this.props.state.selection.dataset.map((item) => (
@@ -61,6 +51,19 @@ class PodPage extends Component {
                 ))}
             </div>
         </div>);
+    }
+
+    componentDidMount() {
+        let pod = this.props.state.selection.pod;
+        if (pod.podId !== null) {
+            this.setState({
+                incoming: pod.incoming,
+                outgoing: pod.outgoing,
+                podName: pod.podName,
+                podId: pod.podId
+            });
+        }
+        
     }
 
     addIncomingRule = (port, ip) => {
@@ -91,17 +94,44 @@ class PodPage extends Component {
         this.setState({saveBtnDisabled: true});
         
         console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
+
+        let based = this.props.state.selectedStudy;
+        let study = JSON.parse(JSON.stringify(based));
+
+        let pod = {
+            incoming: this.state.incoming,
+            outgoing: this.state.outgoing,
+            podName: this.state.podName,
+            podId: this.state.podId,
+            studyId: study.studyId
+        }
+
+        if (this.state.podId === null) {
+            if (typeof study.pods === "undefined") {
+                study.pods = [];
+            }
+
+            study.pods.push(pod);
+        }
+        else {
+            let index = study.pods.findIndex(item => item.podId === pod.podId);
+            study.pods[index] = pod;
+        }
+
+        console.log([study, based])
         
-        sepes.createPod(this.props.state.selectedStudy.StudyId, this.state.podName)
+        sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
-            .then(json => {
-                this.setState({
-                    podId: parseInt(json.id),
-                    networkName: json.networkName,
-                    resourceGroupName: json.resourceGroupName,
-                    addressSpace: json.addressSpace
-                });
-                console.log(json)
+            .then(study => {
+                if (this.state.podId === null) {
+                    let podId = study.pods[study.pods.length-1].podId
+                    this.setState({
+                        podId
+                    });
+                    console.log(study);
+                }
+                this.props.setStudy(study);
+                this.setState({saveBtnDisabled: false});
             })
             .catch(() => {
                 this.setState({saveBtnDisabled: false});

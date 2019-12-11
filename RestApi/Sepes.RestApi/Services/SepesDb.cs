@@ -265,12 +265,8 @@ namespace Sepes.RestApi.Services
                             try {
                                 var study = JsonSerializer.Deserialize<StudyDB>(reader.GetString(1));
                                 studiesDB.Add(study);
-                                Console.WriteLine("#### SepesDB: Add study to studiesDB list");
                             }
-                            catch {
-                                Console.WriteLine("#### SepesDB: Add study FAILED");
-                            }
-                            
+                            catch {}
                         }
                     }
                 }

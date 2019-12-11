@@ -66,8 +66,8 @@ function validateUser(user) {
 
 
 export function addRule(port, ip, array) {
-    if (findRuleIndex(array, port, ip) === -1) {
-        return [...array, {port, ip}]
+    if (findRuleIndex(array, Number(port), ip) === -1) {
+        return [...array, {port: Number(port), ip}]
     }
 
     return array

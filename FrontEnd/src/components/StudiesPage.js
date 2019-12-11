@@ -1,6 +1,8 @@
 import React, {Component} from 'react'
 
 import Sepes from '../sepes.js';
+import addSymbol from '../plus1.svg';
+
 const sepes = new Sepes();
 
 class CreateStudyPage extends Component {
@@ -22,11 +24,14 @@ class CreateStudyPage extends Component {
             <div style={{padding: 50, paddingRight: 0}}>
                 <div style={{display: "table"}}>
                     <div className="study" onClick={this.newStudy}>
-                        <p>New Study</p>
+                        <p style={{fontWeight: "bold"}}>New Study</p>
+                        <p><img src={addSymbol} alt={"+"} style={{width: 60}}/></p>
                     </div>
-                    { this.state.studies.map((item) => (
+                    { this.props.state.studies.map((item) => (
                         <div className="study" onClick={() => this.openStudy(item)}>
-                            <p>{item.StudyName}</p>
+                            <p style={{fontWeight: "bold"}}>{item.studyName}</p>
+                            <p>Pods: {item.pods.length}</p>
+                            <p>Users: {item.suppliers.length}</p>
                         </div>
                     ))}
                 </div>
@@ -36,9 +41,7 @@ class CreateStudyPage extends Component {
                 <div style={{paddingTop: 30, display: "table"}}>
                     { this.state.archivedStudies.map((item) => (
                         <div className="study" onClick={() => this.openStudy(item)}>
-                            <p>{item.StudyName}</p>
-                            <p>Pods: 2</p>
-                            <p>Datasets: 5</p>
+                            <p style={{fontWeight: "bold"}}>{item.StudyName}</p>
                         </div>
                     ))}
                 </div>
@@ -52,11 +55,13 @@ class CreateStudyPage extends Component {
                 console.log("fetch studies");
                 console.log(json);
                 this.setState({studies: json});
+
+                this.props.setStudies(json);
             });
     }
 
     newStudy = () => {
-        this.props.setStudy({StudyID: null, StudyName: ""});
+        this.props.setStudy({studyId: null, studyName: ""});
         this.props.changePage("study", {});
     }
 

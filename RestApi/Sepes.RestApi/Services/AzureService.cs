@@ -6,8 +6,8 @@ using Sepes.RestApi.Model;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.Linq;
-using System.Collections.Immutable;
 using System.Collections.Generic;
+using Microsoft.Azure.Management.Network.Fluent;
 
 namespace Sepes.RestApi.Services
 {
@@ -70,24 +70,28 @@ namespace Sepes.RestApi.Services
             return;
         }
 
-        public async Task CreateSecurityGroup(string securityGroupName, string resourceGroupName)
+        public async Task CreateSecurityGroup(string securityGroupName)
         {
-            await _azure.NetworkSecurityGroups
+            var nsg = await _azure.NetworkSecurityGroups
                 .Define(securityGroupName)
                 .WithRegion(Region.EuropeNorth)
-                .WithExistingResourceGroup(resourceGroupName)
+                .WithExistingResourceGroup(_commonResourceGroup)
                 /*.WithTag()*/
                 .CreateAsync();
+
+            //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
+            await this.NsgApplyBaseRules(nsg);
         }
-        public async Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName)
+
+        public async Task DeleteSecurityGroup(string securityGroupName)
         {
-            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
+            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(_commonResourceGroup, securityGroupName);
         }
         
-        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        public async Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            var nsg = _azure.NetworkSecurityGroups.GetByResourceGroup(resourceGroupName, securityGroupName);
+            var nsg = _azure.NetworkSecurityGroups.GetByResourceGroup(_commonResourceGroup, securityGroupName);
             var network = _azure.Networks.GetByResourceGroup(_commonResourceGroup, networkName);
             await network.Update()
                 .UpdateSubnet(subnetName)
@@ -96,44 +100,44 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
         
-        public async Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName)
+        public async Task RemoveSecurityGroup(string subnetName, string networkName)
         {
             //Remove the security group from a subnet.
-            await _azure.Networks.GetByResourceGroup(resourceGroupName, networkName)
+            await _azure.Networks.GetByResourceGroup(_commonResourceGroup, networkName)
                 .Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
 
+
         public async Task NsgAllowInboundPort(string securityGroupName,
-                                              string resourceGroupName,
                                               string ruleName,
                                               int priority,
                                               string[] internalAddresses,
                                               int internalPort)
         {
             await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .GetByResourceGroup(_commonResourceGroup, securityGroupName) //can be changed to get by ID
                 .Update()
                 .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
                 .AllowInbound()
                 .FromAddresses(internalAddresses)
-                .FromPort(internalPort)
+                .FromAnyPort()
                 .ToAnyAddress()
-                .ToAnyPort()
+                .ToPort(internalPort)
                 .WithAnyProtocol()
                 .WithPriority(priority)
                 .Attach()
                 .ApplyAsync();
         }
 
+
         public async Task NsgAllowOutboundPort(string securityGroupName,
-                                               string resourceGroupName,
                                                string ruleName,
                                                int priority,
                                                string[] externalAddresses,
                                                int externalPort)
         {
             await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .GetByResourceGroup(_commonResourceGroup, securityGroupName) //can be changed to get by ID
                 .Update()
                 .DefineRule(ruleName)
                 .AllowOutbound()
@@ -147,9 +151,54 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-        public async Task<IEnumerable<string>> GetNSGNames(string resourceGroupName)
+        public async Task NsgApplyBaseRules(INetworkSecurityGroup nsg)
         {
-            var nsgs = await _azure.NetworkSecurityGroups.ListByResourceGroupAsync(resourceGroupName);
+            await nsg.Update()
+            .DefineRule("DenyInbound")
+            .DenyInbound()
+            .FromAnyAddress()
+            .FromAnyPort()
+            .ToAnyAddress()
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4050)
+            .Attach()
+
+            .DefineRule("AllowVnetInBound2")
+            .AllowInbound()
+            .FromAddress("VirtualNetwork")
+            .FromAnyPort()
+            .ToAddress("VirtualNetwork")
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4000)
+            .Attach()
+
+            .DefineRule("DenyOutbound")
+            .DenyOutbound()
+            .FromAnyAddress()
+            .FromAnyPort()
+            .ToAnyAddress()
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4050)
+            .Attach()
+            
+            .DefineRule("AllowVnetoutBound2")
+            .AllowOutbound()
+            .FromAddress("VirtualNetwork")
+            .FromAnyPort()
+            .ToAddress("VirtualNetwork")
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(4000)
+            .Attach()
+            .ApplyAsync();
+        }
+
+        public async Task<IEnumerable<string>> GetNSGNames()
+        {
+            var nsgs = await _azure.NetworkSecurityGroups.ListByResourceGroupAsync(_commonResourceGroup);
             return nsgs.Select(nsg => nsg.Name);
         }
 

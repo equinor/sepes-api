@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 
 using System.Linq;
+using System;
 
 namespace Sepes.RestApi.Services {
 
@@ -53,7 +54,8 @@ namespace Sepes.RestApi.Services {
             }
             else if (_studies.Contains(based))
             {
-                study = UpdatePods(based, study);
+                study = await UpdatePods(based, study);
+                await _db.UpdateStudy(study);
 
                 _studies.Remove(based);
                 _studies.Add(study);
@@ -62,7 +64,7 @@ namespace Sepes.RestApi.Services {
             return study;
         }
 
-        private Study UpdatePods(Study based, Study study)
+        private async Task<Study> UpdatePods(Study based, Study study)
         {
             foreach (var pod in study.pods)
             {
@@ -74,16 +76,17 @@ namespace Sepes.RestApi.Services {
                         // Update list of pod
                         // generate new pod with id
                         Pod newPod = pod.NewPodId(numberOfPods++);
+                        newPod = newPod.AddUserList(study.suppliers);
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
                         // Update Azure with Pod Service
-                        // _podService.Set(newPod, null);
+                        await _podService.Set(newPod, null);
                     }
                     else
                     {
                         Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
-                        // _podService.Set(pod, basePod);
+                        await _podService.Set(pod, basePod);
                     }
                 }
             }
