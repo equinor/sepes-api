@@ -42,25 +42,27 @@ namespace Sepes.RestApi.Tests.Controller
         }
 
         [Fact]
-        public async Task StudyList()
+        public void StudyList()
         {
+            //_studyService.GetStudies(new User("","",""), false)
             var databaseMock = new Mock<ISepesDb>();
-            var controller = new StudyController(databaseMock.Object, new Mock<IStudyService>().Object);
-            databaseMock.Setup(db => db.getStudies(false)).ReturnsAsync("TestData");
-            var result = await controller.GetStudies();
+            var studyServiceMock = new Mock<IStudyService>();
+            var controller = new StudyController(databaseMock.Object, studyServiceMock.Object);
+            studyServiceMock.Setup(s => s.GetStudies(new User("","",""), false)).Returns(new List<Study>());
+            var result = controller.GetStudies();
 
-            Assert.Equal("TestData", result);
+            Assert.Equal(new List<StudyInput>(), result);
         }
 
         [Fact]
-        public async Task GetArchived()
+        public void GetArchived()
         {
             var databaseMock = new Mock<ISepesDb>();
             var controller = new StudyController(databaseMock.Object, new Mock<IStudyService>().Object);
-            databaseMock.Setup(db => db.getStudies(true)).ReturnsAsync("TestData");
-            var result = await controller.GetArchivedStudies();
+            //databaseMock.Setup(db => db.getStudies(true)).ReturnsAsync(new List<StudyInput>());
+            var result = controller.GetArchived();
 
-            Assert.Equal("TestData", result);
+            Assert.Equal(new List<StudyInput>(), result);
         }
 
         [Fact]

@@ -75,6 +75,11 @@ namespace Sepes.RestApi.Model
             return new Pod(newId, name, studyId, allowAll, incoming, outgoing, users, locked, loaded);
         }
 
+        public Pod AddUserList(IEnumerable<User> newUsers)
+        {
+            return new Pod(id, name, studyId, allowAll, incoming, outgoing, newUsers, locked, loaded);
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Pod pod &&

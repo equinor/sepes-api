@@ -23,12 +23,6 @@ class App extends React.Component {
       tokenId: "",
       userName: "demo@sepes.com",
       jwtTest: "Result from backend",
-      sepesData: {
-        suppliers: [],
-        sponsors: [],
-        dataset: []
-      },
-      //studyName: "",
       page: "none",
       selection: {
         dataset: [],
@@ -38,6 +32,8 @@ class App extends React.Component {
         StudyId: null,
         StudyName: "",
       },
+      studies: [],
+      archived: []
     }
 
     this.msalConfig = {
@@ -60,9 +56,15 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
-        {this.state.page === "studies" ? <StudiesPage state={this.state} changePage={this.changePage} selection={this.state.selection} setStudy={this.setSelectedStudy} /> : null}
-        {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} /> : null}
-        {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} /> : null}
+        {this.state.page === "studies" ? 
+          <StudiesPage state={this.state} 
+            changePage={this.changePage} 
+            selection={this.state.selection} 
+            setStudy={this.setSelectedStudy} 
+            setStudies={this.setStudies} 
+            setArchived={this.setArchived} /> : null}
+        {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
+        {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
       </div>
     );
   }
@@ -174,6 +176,18 @@ class App extends React.Component {
   changePage = (page, selection) => {
     this.setState({
       page, selection
+    });
+  }
+
+  setStudies = (studies) => {
+    this.setState({
+      studies
+    });
+  }
+  
+  setArchived = (archivedStudies) => {
+    this.setState({
+      archived: archivedStudies
     });
   }
   
