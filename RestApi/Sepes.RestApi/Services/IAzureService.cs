@@ -8,16 +8,16 @@ namespace Sepes.RestApi.Services
         Task<string> CreateResourceGroup(string podName);
         Task TerminateResourceGroup(string resourceGroupName);
         Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName);
-        Task CreateSecurityGroup(string securityGroupName, string resourceGroupName);
-        Task DeleteSecurityGroup(string securityGroupName, string resourceGroupName);
-        Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
-        Task RemoveSecurityGroup(string resourceGroupName, string subnetName, string networkName);
+        Task CreateSecurityGroup(string securityGroupName);
+        Task DeleteSecurityGroup(string securityGroupName);
+        Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkName);
+        Task RemoveSecurityGroup(string subnetName, string networkName);
 
-        Task NsgAllowOutboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort);
-        Task NsgAllowInboundPort(string securityGroupName, string resourceGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);
+        Task NsgAllowOutboundPort(string securityGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort);
+        Task NsgAllowInboundPort(string securityGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);
         
         Task<string> AddUserToResourceGroup(string userId, string resourceGroupName);
         Task<string> AddUserToNetwork(string userId, string networkName);
-        Task<IEnumerable<string>> GetNSGNames(string resourceGroupName);
+        Task<IEnumerable<string>> GetNSGNames();
     }
 }
