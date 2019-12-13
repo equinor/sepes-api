@@ -1,0 +1,28 @@
+@startuml "SEPES_Component"
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Container.puml
+
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+
+Person(user, "User")
+
+System_Boundary(c1, "SEPES"){
+    
+    Container(frontend, "Single Page Application", "Javascript, React")
+    
+    Container(backend, "API Application", "Dotnet, Asp.Net")
+
+    ContainerDb(database, "State Storage","MSSQL")    
+    
+}
+System_Ext(azure,"Azure API")
+
+
+Rel(user, frontend, "Interacts","HTTPS")
+Rel(frontend, backend, "Sends changes","JSON/HTTPS")
+Rel(backend, azure, "creates/changes resources","HTTPS")
+Rel_R(backend, database, "Backs up state")
+
+@enduml
