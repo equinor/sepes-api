@@ -1,0 +1,55 @@
+@startuml "techtribesjs"
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Container.puml
+' uncomment the following line and comment the first to use locally
+' !include C4_Container.puml
+
+LAYOUT_TOP_DOWN
+'LAYOUT_AS_SKETCH
+LAYOUT_WITH_LEGEND
+
+
+Person(user, "User")
+
+System_Boundary(c1, "techtribes.js"){
+    
+    Container(frontend, "Web Application", "Java, React", "Allows users to create or edit sandbox environments.")
+
+    Container(azure_prtl, "Azure Portal", "Cloud Platform", "Users manages content of sandboxes.")
+
+    Container(restapi, "Rest Api", "Dotnet, Asp.Net", "Manages the sandbox environment")
+
+    Container(azure_rg, "Azure Resource Groups")
+
+    Container(azure_net, "Azure Network")
+
+    ContainerDb(state_db, "State Database", "MySQL", "Stores the state")
+
+    Container(str_acc, "Storage Account", "Stores a copy of the data used by the sandbox")
+
+    Container(opa, "Policy Service", "OPA")
+    
+    Container(azure_ad, "Azure AD")
+
+    Container(azure_dc, "Azure Datacatalog")
+}
+System_Ext(datasrc, "Data Source")
+
+
+Rel(user, frontend, "Uses", "HTTPS")
+Rel(user, azure_prtl, "Manages", "HTTPS")
+
+Rel(frontend, restapi, "Reads from and writes to", "JSON/HTTPS")
+Rel(restapi, state_db, "Updates state")
+
+Rel(azure_prtl, azure_rg, "Perform small tweaks?")
+Rel(azure_prtl, azure_net, "Perform small tweaks?")
+
+Rel_U(restapi, azure_ad, "Provides userlist", "HTTPS")
+
+Rel(datasrc, azure_dc, "Abstracts sensitive data from SEPES")
+
+
+
+Lay_R(rel_db, filesystem) 'Probly tells it to put things next to eachother
+
+@enduml
