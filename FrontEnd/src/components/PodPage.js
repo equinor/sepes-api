@@ -37,7 +37,7 @@ class PodPage extends Component {
             <div className="sidebar podsidebar">
                 <div>
                     <div style={{padding: "20px"}}>
-                        <label><input type="checkbox" onChange={()=>console.log("Toggle internet")} />
+                        <label><input type="checkbox" onChange={this.openInternet()} />
                             Open internet for this pod
                         </label>
                     </div>
@@ -64,6 +64,12 @@ class PodPage extends Component {
             });
         }
         
+    }
+    openInternet(isOpen) {
+        this.setState({
+            //Open internet variabel.
+            //openInternet = isOpen
+        })
     }
 
     addIncomingRule = (port, ip) => {
