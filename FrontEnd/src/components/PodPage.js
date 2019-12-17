@@ -5,7 +5,7 @@ import PodDataset from './PodDataset.js';
 
 import * as StudyService from "../studyService"
 
-import spinner from "../Rolling-1s-24px.svg"
+import spinner from "../loadicon.svg"
 
 import Sepes from '../sepes.js';
 const sepes = new Sepes();
