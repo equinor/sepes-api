@@ -38,7 +38,11 @@ class PodPage extends Component {
                 <div className="sidebar podsidebar">
                     <div>
                         <div style={{ padding: "20px" }}>
-                            {nsgswitch( this.state.openInternet, this.toggleNSG())}
+                            <nsgswitch
+                            isOn={this.state.openInternet}
+                            onColor="#EF476F"
+                            handleToggle={() => this.toggleNSG()}
+                            />
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
