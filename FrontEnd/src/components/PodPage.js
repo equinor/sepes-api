@@ -6,9 +6,9 @@ import PodDataset from './PodDataset.js';
 import * as StudyService from "../studyService"
 
 import Sepes from '../sepes.js';
-import nsgswitch from './nsgSwitch';
+import nsgSwitch from './nsgSwitch';
 const sepes = new Sepes();
-
+var self = this;
 class PodPage extends Component {
     constructor(props) {
         super(props);
@@ -38,10 +38,10 @@ class PodPage extends Component {
                 <div className="sidebar podsidebar">
                     <div>
                         <div style={{ padding: "20px" }}>
-                            <nsgswitch
+                            <nsgSwitch
                             isOn={this.state.openInternet}
                             onColor="#EF476F"
-                            handleToggle={() => this.toggleNSG()}
+                            handleToggle={() => self.toggleNSG()}
                             />
                         </div>
                     </div>
