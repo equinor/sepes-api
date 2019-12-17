@@ -45,7 +45,7 @@ Rel(frontmdl,frontact, "")
 Rel(frontact,frontstd, "")
 
 
-Rel(podsrvc,azure, "Updates")
+Rel_U(podsrvc,azure, "Updates")
 
 
 @enduml
