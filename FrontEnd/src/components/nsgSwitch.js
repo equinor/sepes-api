@@ -1,9 +1,9 @@
 import React from 'react';
 import './nsgSwitch.css';
 
-const Switch = ({ isOn, handleToggle }) => {
+const nsgswitch = ({ isOn, handleToggle , onColor}) => {
     return (
-      <>
+        <>
         <input
           checked={isOn}
           onChange={handleToggle}
@@ -12,6 +12,7 @@ const Switch = ({ isOn, handleToggle }) => {
           type="checkbox"
         />
         <label
+          style={{ background: isOn && onColor }}
           className="react-switch-label"
           htmlFor={`react-switch-new`}
         >
@@ -21,4 +22,4 @@ const Switch = ({ isOn, handleToggle }) => {
     );
   };
 
-export default Switch;
+export default nsgswitch;
