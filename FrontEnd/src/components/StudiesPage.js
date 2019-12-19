@@ -28,7 +28,7 @@ class CreateStudyPage extends Component {
                         <p><img src={addSymbol} alt={"+"} style={{width: 60}}/></p>
                     </div>
                     { this.props.state.studies.map((item) => (
-                        <div className="study" onClick={() => this.openStudy(item)}>
+                        <div key={item.studyId} className="study" onClick={() => this.openStudy(item)}>
                             <p style={{fontWeight: "bold"}}>{item.studyName}</p>
                             <p>Pods: {item.pods.length}</p>
                             <p>Users: {item.suppliers.length}</p>

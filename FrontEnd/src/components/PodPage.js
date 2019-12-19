@@ -6,7 +6,7 @@ import PodDataset from './PodDataset.js';
 import * as StudyService from "../studyService"
 
 import Sepes from '../sepes.js';
-import nsgSwitch from './nsgSwitch';
+import Nsgswitch from './nsgSwitch';
 const sepes = new Sepes();
 var self = this;
 class PodPage extends Component {
@@ -37,12 +37,13 @@ class PodPage extends Component {
                 </header>
                 <div className="sidebar podsidebar">
                     <div>
-                        <div style={{ padding: "20px" }}>
-                            <nsgSwitch
+                        <div className="nsgSwitchclass" style={{ padding: "20px" }}>
+                        <label>Remove all rules
+                            <Nsgswitch
                             isOn={this.state.openInternet}
                             onColor="#EF476F"
-                            handleToggle={() => self.toggleNSG()}
-                            />
+                            handleToggle={() => self.toggleNSG(!self.state.openInternet)}
+                            /></label>
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
