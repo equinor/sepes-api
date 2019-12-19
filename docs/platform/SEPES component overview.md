@@ -4,7 +4,7 @@ In this document SEPES, with its different components, will be described/ docume
 
 ## SEPES Frontend ##
 
-Frontend allowes users to manage 
+Frontend allows users to manage pods.
 
 This contains the following roles:
 - Admin: Access to all resources 
@@ -20,7 +20,7 @@ Protocol: https
 ## Azure Portal ##
 
 Azure Portal is used by vendors to create resources for their experiment. 
-Documentation can be found at microsoft homepage
+Documentation can be found at microsoft homepage.  https://docs.microsoft.com/azure/ Should use in international one that redirects to local version.
 
 Tech Stack: N/A
 
@@ -32,7 +32,7 @@ Protocol: https
 
 Coordinate the different services, and make actions on the behalf of the user.
 
-Tech Stack: asp.net core, C#
+Tech Stack: dot.net, asp.net core, C#
 
 Maturity:
 
@@ -92,11 +92,11 @@ Protocol: Uses http, so have to be driven in the docker. Link documentation at O
 
 ## Azure AD ##
 
-Used for autentication
+Used for autentication. Link for Azure AD use. https://docs.microsoft.com/en-us/azure/active-directory/
+
 
 Maturity: 
 
-Link for Azure AD use. https://docs.microsoft.com/en-us/azure/active-directory/
 
 Protocol: OAuth2, OpenID Connect, https
 
@@ -114,8 +114,8 @@ Protocol: https
 
 The data catalog provides the link to data.
 
-Protocol: https
-
-
 
 Maturity is based on Maufacturing Readiness Level. https://rescoll.fr/wp-content/uploads/2014/01/MRL.jpg
+
+
+Protocol: https
