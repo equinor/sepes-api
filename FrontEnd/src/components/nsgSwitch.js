@@ -1,7 +1,7 @@
 import React from 'react';
 import './nsgSwitch.css';
 
-const nsgSwitch = ({ isOn, handleToggle, onColor }) => {
+const Nsgswitch = ({ isOn, handleToggle, onColor }) => {
     return (
         <>
             <input
@@ -22,4 +22,4 @@ const nsgSwitch = ({ isOn, handleToggle, onColor }) => {
     );
 };
 
-export default nsgSwitch;
+export default Nsgswitch;

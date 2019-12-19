@@ -12,16 +12,16 @@ export default function SepesPodList(props) {
             props.data.map((item) => (
                 <div key={item.podId} className="pod" onClick={() => props.openPod(item)}>
                     <p style={{ fontWeight: "bold" }}>{item.podName}</p>
-                    <p style={{ fontSize: 10 }}>
+                    <div style={{ fontSize: 10 }}>
                         Incoming
                     {item.incoming.map(rule => (
-                            <div>{rule.port} {rule.ip}</div>
-                        ))}</p>
-                    <p style={{ fontSize: 10 }}>
+                            <p>key={rule.port+rule.ip} {rule.port} {rule.ip}</p>
+                        ))}</div>
+                    <div style={{ fontSize: 10 }}>
                         Outgoing
                     {item.outgoing.map(rule => (
-                            <div>{rule.port} {rule.ip}</div>
-                        ))}</p>
+                            <p>key={rule.port+rule.ip} {rule.port} {rule.ip}</p>
+                        ))}</div>
                 </div>
             ))}
     </div>
