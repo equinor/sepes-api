@@ -42,7 +42,7 @@ class PodPage extends Component {
                             <Nsgswitch
                             isOn={this.state.openInternet}
                             onColor="#EF476F"
-                            handleToggle={() => self.toggleNSG(!self.state.openInternet)}
+                            handleToggle={this.updateNsg}
                             /></label>
                         </div>
                     </div>
@@ -68,17 +68,8 @@ class PodPage extends Component {
             });
         }
     }
-    toggleNSG(input) {
-        if (input) {
-            alert("checked")
-            /*this.setState({
-                openInternet: true
-            });*/
-        } else {
-            /*this.setState({
-                openInternet: false
-            });*/
-        }
+    updateNsg = () => {
+        this.setState({openInternet: !this.state.openInternet});
     }
 
     addIncomingRule = (port, ip) => {
