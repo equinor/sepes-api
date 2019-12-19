@@ -41,7 +41,7 @@ Maturity:
 
 Protocol: Uses https rest protocol and can be configured to use http. http should only be used for cases that requires it. 
 
-Its only safe its behind a proxy that handle HTTPS terminations. Or in local development setting. Docker compose have nothing to do with protocol on it own. Proxy is the important keyword.
+Its only safe its behind a proxy that handle HTTPS terminations. Or in local development setting. 
 
 As an example docker compose is configured to use http, this is still safe as the docker wrapper uses https outside.
 
@@ -97,7 +97,8 @@ Protocol: Uses http, so have to be driven in the docker. Link documentation at O
 
 ## Azure AD ##
 
-Used for autentication. Link for Azure AD use. https://docs.microsoft.com/nb-no/azure/active-directory/
+Used for autentication. Link for Azure AD use. https://docs.microsoft.com/azure/active-directory/
+
 
 Maturity: 
 
