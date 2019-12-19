@@ -4,7 +4,7 @@ In this document SEPES, with its different components, will be described/ docume
 
 ## SEPES Frontend ##
 
-Frontend allows users to manage pods.
+Frontend allows users to manage sandboxes.
 
 This contains the following roles:
 - Admin: Access to all resources 
@@ -12,6 +12,9 @@ This contains the following roles:
 - Supplier: External vendors
 
 Tech Stack: 
+  * React JS https://reactjs.org/
+  * WebPack https://webpack.js.org/
+  * HTML, CSS and JavaScript
 
 Maturity: 3
 
@@ -32,11 +35,13 @@ Protocol: https
 
 Coordinate the different services, and make actions on the behalf of the user.
 
-Tech Stack: dot.net, asp.net core, C#
+Tech Stack: .net, asp.net core, C#
 
 Maturity:
 
-Protocol: Uses https rest protocol and can be configured to use http. http should only be used for cases that requires it.
+Protocol: Uses https rest protocol and can be configured to use http. http should only be used for cases that requires it. 
+
+Its only safe its behind a proxy that handle HTTPS terminations. Or in local development setting. Docker compose have nothing to do with protocol on it own. Proxy is the important keyword.
 
 As an example docker compose is configured to use http, this is still safe as the docker wrapper uses https outside.
 
@@ -92,8 +97,7 @@ Protocol: Uses http, so have to be driven in the docker. Link documentation at O
 
 ## Azure AD ##
 
-Used for autentication. Link for Azure AD use. https://docs.microsoft.com/en-us/azure/active-directory/
-
+Used for autentication. Link for Azure AD use. https://docs.microsoft.com/nb-no/azure/active-directory/
 
 Maturity: 
 
