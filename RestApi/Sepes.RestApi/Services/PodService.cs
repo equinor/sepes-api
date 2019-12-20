@@ -78,8 +78,8 @@ namespace Sepes.RestApi.Services
             bool mustCreateNewNSG = based == null || 
                 !based.incoming.SequenceEqual(newPod.incoming) ||
                 !based.outgoing.SequenceEqual(newPod.outgoing);
-            if (mustCreateNewNSG) tasks.Add(ManageNetworkSecurityGroup(newPod));
-
+            if (!newPod.allowAll && mustCreateNewNSG) tasks.Add(ManageNetworkSecurityGroup(newPod));
+            if (newPod.allowAll && !based.allowAll) tasks.Add(RemoveNetworkSecurityGroup(newPod));
             // Add users to resources
             tasks.Add(AddUsers(newPod, based));
 
@@ -141,6 +141,11 @@ namespace Sepes.RestApi.Services
             else if (nsgName == nsgNameDef2 && nsgNames.Contains(nsgNameDefault)) {
                 await _azure.DeleteSecurityGroup(nsgNameDefault);
             }
+        }
+        private async Task RemoveNetworkSecurityGroup(Pod newPod)
+        {
+            Console.WriteLine("###########Tried to delete group");
+            await _azure.RemoveSecurityGroup(newPod.subnetName, newPod.networkName);
         }
 
         private Dictionary<ushort, string[]> GenerateRuleDictionary(IEnumerable<Rule> array)
