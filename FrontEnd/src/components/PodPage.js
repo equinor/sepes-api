@@ -64,6 +64,7 @@ class PodPage extends Component {
                 incoming: pod.incoming,
                 outgoing: pod.outgoing,
                 podName: pod.podName,
+                openInternet: pod.openInternet,
                 podId: pod.podId
             });
         }
@@ -109,6 +110,7 @@ class PodPage extends Component {
             outgoing: this.state.outgoing,
             podName: this.state.podName,
             podId: this.state.podId,
+            openInternet: this.state.openInternet,
             studyId: study.studyId
         }
 
