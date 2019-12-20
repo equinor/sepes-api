@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Model
         public ushort? id { get; }
         public string name { get; }
         public int studyId { get; }
-        public bool allowAll { get; }
+        public bool allowAll { get; } //Used to remove NSG from subnet
         public ImmutableList<Rule> incoming { get; }
         public ImmutableList<Rule> outgoing { get; }
         public ImmutableList<User> users { get; }
