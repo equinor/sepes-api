@@ -22,7 +22,7 @@ namespace Sepes.RestApi.Model
             var podOutgoing = outgoing != null ? outgoing.Select(r => r.ToRule()) : new List<Rule>();
             var podUsers = users != null ? users.Select(u => u.ToUser()) : new List<User>();
 
-            return new Pod(id, name, studyId, false, podIncoming, podOutgoing, podUsers, new List<DataSet>(), new List<DataSet>());
+            return new Pod(id, name, studyId, allowAll, podIncoming, podOutgoing, podUsers, new List<DataSet>(), new List<DataSet>());
         }
         
     }
