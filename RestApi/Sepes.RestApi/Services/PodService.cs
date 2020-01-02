@@ -11,8 +11,6 @@ namespace Sepes.RestApi.Services
     // It do not own the Pod state and need to talk to StudyService to keep its up to date.
     public interface IPodService
     {
-        Task<Pod> CreateNewPod(string name, int userID);
-        Task<string> GetPods(int studyID);
         Task Set(Pod newPod, Pod based);
     }
 
@@ -26,43 +24,6 @@ namespace Sepes.RestApi.Services
             _database = database;
             _azure = azure;
         }
-
-// old
-        public async Task<Pod> CreateNewPod(string name, int studyID)
-        {
-            var pod = await _database.createPod(name, studyID);
-            var resourceGroupName = await _azure.CreateResourceGroup(pod.resourceGroupName);
-            await _azure.CreateNetwork(pod.networkName, pod.addressSpace, "subnet1");
-            return pod;
-        }
-        public async Task createNsg(string securityGroupName, string resourceGroupName)
-        {
-            await _azure.CreateSecurityGroup(securityGroupName/*, resourceGroupName*/);
-        }
-        public async Task deleteNsg(string securityGroupName, string resourceGroupName){
-            await _azure.DeleteSecurityGroup(securityGroupName/*, resourceGroupName*/);
-        }
-        public async Task applyNsg(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
-        {
-            //throw new NotImplementedException();
-            await _azure.ApplySecurityGroup(/*resourceGroupName ,*/securityGroupName, subnetName, networkName);
-
-        }
-        public async Task removeNsg(string resourceGroupName, string subnetName, string networkName)
-        {
-            await _azure.RemoveSecurityGroup(/*resourceGroupName, */subnetName, networkName);
-        }
-        public Task<UInt16> deleteUnused()
-        {
-            throw new NotImplementedException();
-            //needs to check for any policies that are not currently in use by any pods/belong to deleted pods.
-        }
-        public async Task<string> GetPods(int studyID)
-        {
-            return await _database.getPods(studyID);
-        }
-
-// new
         public async Task Set(Pod newPod, Pod based)
         {
             if (based == null)
