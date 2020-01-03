@@ -5,8 +5,16 @@
 LAYOUT_LEFT_RIGHT
 LAYOUT_WITH_LEGEND
 
+Container_Boundary(sepes, "Sepes"){
+    Container(frontend, "Frontend", "React/Javascript")
+    Container(backend, "Authorization Controller", "Dotnet")
+}
 
 
+System_Ext(azure, "Microsoft sign in service", "Azure")
+
+Rel(frontend, backend, "passes through", "HTTPS")
+Rel(backend, azure, "requests login", "HTTPS")
 
 
 @enduml
