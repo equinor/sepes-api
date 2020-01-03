@@ -64,6 +64,7 @@ namespace Sepes.RestApi.Model
                 podId = id,
                 podName = name,
                 studyId = studyId,
+                openInternet = allowAll,
                 incoming = inputIncoming.ToArray(),
                 outgoing = inputOutgoing.ToArray(),
                 users = inputUsers.ToArray()
