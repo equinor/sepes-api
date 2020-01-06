@@ -39,8 +39,11 @@ namespace Sepes.RestApi.Services
             bool mustCreateNewNSG = based == null || 
                 !based.incoming.SequenceEqual(newPod.incoming) ||
                 !based.outgoing.SequenceEqual(newPod.outgoing);
-            if (!newPod.allowAll && mustCreateNewNSG) tasks.Add(ManageNetworkSecurityGroup(newPod));
+            if (!newPod.allowAll && (mustCreateNewNSG || based.allowAll)) tasks.Add(ManageNetworkSecurityGroup(newPod));
+            //Removes nsg from 
             if (newPod.allowAll && !based.allowAll) tasks.Add(RemoveNetworkSecurityGroup(newPod));
+
+            
             // Add users to resources
             tasks.Add(AddUsers(newPod, based));
 
