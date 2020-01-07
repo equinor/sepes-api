@@ -38,7 +38,7 @@ SEPES_SUBSCRIPTION_ID=
 This is the Subscrition ID of the subscribtion sepes will use for its operation
 
 SEPES_MSSQL_CONNECTION_STRING=
-Needs to be in following format: 
+Needs to be in following format: "Data Source={ip or url to server};Initial Catalog={name of catalog};User ID={userID};Password={password}"
 
 SEPES_HTTP_ONLY=false
 This should only be set to true if you are intending to run SEPES behind some other proxy that will provide encryption, like for example Docker.
