@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="914px" preserveAspectRatio="none" style="width:1256px;height:914px;" version="1.1" viewBox="0 0 1256 914" width="1256px" zoomAndPan="magnify"><defs/><g><!--cluster c1--><rect fill="#FFFFFF" height="686" style="stroke: #444444; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;" width="1053" x="167" y="24"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="55" x="666" y="42.6094">SEPES</text><text fill="#444444" font-family="sans-serif" font-size="12" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="51" x="668" y="58.582">[System]</text><!--entity frontend--><rect fill="#438DD5" height="108.0469" style="stroke: #3C7FC0; stroke-width: 1.5;" width="206" x="183" y="254"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="124" x="224" y="280.6094">Web Application</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="70" x="251" y="296.582">[Java, React]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="288" y="313.752"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="182" x="193" y="331.3613">Allows users to create or edit</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="146" x="213" y="348.9707">sandbox environments.</text><!--entity azure_prtl--><rect fill="#438DD5" height="108.0469" style="stroke: #3C7FC0; stroke-width: 1.5;" width="189" x="191.5" y="111"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="94" x="239" y="137.6094">Azure Portal</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="88" x="242" y="153.582">[Cloud Platform]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="288" y="170.752"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="165" x="201.5" y="188.3613">Users manages content of</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="72" x="250" y="205.9707">sandboxes.</text><!--entity restapi--><rect fill="#438DD5" height="108.0469" style="stroke: #3C7FC0; stroke-width: 1.5;" width="163" x="610.5" y="254"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="662" y="280.6094">RestApi</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="91" x="646.5" y="296.582">[Dotnet, Asp.Net]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="694" y="313.752"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="139" x="620.5" y="331.3613">Manages the sandbox</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="78" x="653" y="348.9707">environment</text><!--entity azure_rg--><rect fill="#438DD5" height="55.2188" style="stroke: #3C7FC0; stroke-width: 1.5;" width="204" x="998.5" y="173.5"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="184" x="1008.5" y="200.1094">Azure Resource Groups</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="83" x="1059" y="216.082">[Cloud System]</text><!--entity azure_net--><rect fill="#438DD5" height="55.2188" style="stroke: #3C7FC0; stroke-width: 1.5;" width="133" x="1034" y="265.5"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="113" x="1044" y="292.1094">Azure Network</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="83" x="1059" y="308.082">[Cloud System]</text><!--entity state_db--><path d="M624.5,424.5 C624.5,414.5 692,414.5 692,414.5 C692,414.5 759.5,414.5 759.5,424.5 L759.5,503.9375 C759.5,513.9375 692,513.9375 692,513.9375 C692,513.9375 624.5,513.9375 624.5,503.9375 L624.5,424.5 " fill="#438DD5" style="stroke: #3C7FC0; stroke-width: 1.5;"/><path d="M624.5,424.5 C624.5,434.5 692,434.5 692,434.5 C692,434.5 759.5,434.5 759.5,424.5 " fill="none" style="stroke: #3C7FC0; stroke-width: 1.5;"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="115" x="634.5" y="455.1094">State Database</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="45" x="669.5" y="471.082">[MySQL]</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="694" y="488.252"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="100" x="642" y="505.8613">Stores the state</text><!--entity str_acc--><rect fill="#438DD5" height="70.3125" style="stroke: #3C7FC0; stroke-width: 1.5;" width="207" x="997" y="563"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="128" x="1036.5" y="589.6094">Storage Account</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="184" x="1007" y="605.582">[Stores a copy of the data used by</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="71" x="1065" y="620.6758">the sandbox]</text><!--entity opa--><rect fill="#438DD5" height="55.2188" style="stroke: #3C7FC0; stroke-width: 1.5;" width="128" x="1036.5" y="394.5"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="108" x="1046.5" y="421.1094">Policy Service</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="31" x="1085" y="437.082">[OPA]</text><!--entity azure_ad--><rect fill="#438DD5" height="55.2188" style="stroke: #3C7FC0; stroke-width: 1.5;" width="103" x="640.5" y="548.5"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="72" x="656" y="575.1094">Azure AD</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="83" x="650.5" y="591.082">[Cloud System]</text><!--entity azure_dc--><rect fill="#438DD5" height="55.2188" style="stroke: #3C7FC0; stroke-width: 1.5;" width="190" x="597" y="638.5"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="140" x="622" y="665.1094">Azure Datacatalog</text><text fill="#FFFFFF" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="170" x="607" y="681.082">[Links SEPES to sensitive data]</text><!--entity user--><rect fill="#08427B" height="40.125" style="stroke: #073B6F; stroke-width: 1.5;" width="56" x="6" y="208"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="36" x="16" y="234.6094">User</text><!--entity datasrc--><rect fill="#999999" height="40.125" style="stroke: #8A8A8A; stroke-width: 1.5;" width="114" x="1043.5" y="726"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="94" x="1053.5" y="752.6094">Data Source</text><!--link user to frontend--><path d="M62.1832,241.439 C71.5072,245.769 82.0906,250.378 92,254 C119.494,264.048 149.762,273.324 178.011,281.25 " fill="none" id="user-frontend" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="182.893,282.612,175.2999,276.3395,178.0771,281.2677,173.1489,284.0449,182.893,282.612" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="29" x="107" y="235.4951">Uses</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="45" x="99" y="250.8086">[HTTPS]</text><!--link user to azure_prtl--><path d="M62.2303,221.138 C92.0844,213.615 141.72,201.107 186.571,189.804 " fill="none" id="user-azure_prtl" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="191.453,188.574,181.7485,186.8937,186.6045,189.7954,183.7028,194.6514,191.453,188.574" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="57" x="93" y="182.4951">Manages</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="45" x="99" y="197.8086">[HTTPS]</text><!--link frontend to restapi--><path d="M389.207,308 C455.826,308 541.785,308 604.914,308 " fill="none" id="frontend-restapi" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="610.183,308,601.183,304,605.183,308,601.183,312,610.183,308" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="142" x="420" y="273.4951">Reads from and writes</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="12" x="487" y="289.8467">to</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="80" x="453" y="305.1602">[JSON/HTTPS]</text><!--link state_db to restapi--><path d="M692,409.101 C692,393.875 692,377.358 692,362.173 " fill="none" id="state_db-restapi" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="692,414.212,696,405.212,692,409.212,688,405.212,692,414.212" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="85" x="637.5" y="393.7451">Updates state</text><!--link azure_prtl to azure_rg--><path d="M380.544,158.792 C512.2,151.772 759.305,144.891 967,175 C975.613,176.249 984.514,177.682 993.439,179.22 " fill="none" id="azure_prtl-azure_rg" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="998.398,180.085,990.2185,174.599,993.4723,179.2264,988.8448,182.4802,998.398,180.085" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="145" x="619.5" y="149.4951">Perform small tweaks?</text><!--link azure_prtl to azure_net--><path d="M380.665,170.822 C566.381,182.396 963.779,207.335 967,209 C985.807,218.721 980.272,233.025 997,246 C1006.76,253.574 1017.94,260.27 1029.25,266.061 " fill="none" id="azure_prtl-azure_net" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1033.76,268.319,1027.5097,260.7076,1029.291,266.0766,1023.9219,267.858,1033.76,268.319" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="145" x="619.5" y="181.4951">Perform small tweaks?</text><!--link restapi to str_acc--><path d="M752.558,362.139 C772.388,379.009 795.034,397.084 817,412 C879.681,454.563 903.734,451.312 967,493 C997.708,513.235 1030.1,538.815 1055.17,559.661 " fill="none" id="restapi-str_acc" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1059.13,562.964,1054.7961,554.1199,1055.2959,559.7547,1049.6612,560.2545,1059.13,562.964" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="89" x="847.5" y="408.4951">Requests data</text><!--link restapi to opa--><path d="M773.589,333.138 C788.018,337.513 802.935,341.954 817,346 C889.965,366.988 974.044,389.379 1031.38,404.379 " fill="none" id="restapi-opa" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1036.49,405.716,1028.8025,399.5595,1031.6543,404.4449,1026.7688,407.2967,1036.49,405.716" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="99" x="840.5" y="326.4951">Verifies request</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="57" x="863.5" y="342.8467">complies</text><!--link restapi to azure_net--><path d="M773.797,305.019 C848.301,302.269 957.803,298.229 1028.88,295.606 " fill="none" id="restapi-azure_net" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1033.94,295.419,1024.7977,291.756,1028.9434,295.6047,1025.0948,299.7505,1033.94,295.419" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="48" x="868" y="295.4951">Creates</text><!--link restapi to azure_rg--><path d="M773.627,284.92 C788.052,280.883 802.958,276.771 817,273 C875.127,257.392 940.207,240.749 993.24,227.4 " fill="none" id="restapi-azure_rg" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="998.333,226.118,988.6295,224.4324,993.4838,227.3367,990.5794,232.1911,998.333,226.118" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="48" x="868" y="231.4951">Creates</text><!--link azure_dc to str_acc--><path d="M787.025,650.271 C848.163,640.044 928.057,626.679 991.754,616.024 " fill="none" id="azure_dc-str_acc" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="996.699,615.197,987.1627,612.7355,991.7674,616.0213,988.4816,620.626,996.699,615.197" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="862" y="617.4951">Creates a</text><!--link azure_dc to opa--><path d="M756.469,638.491 C766.934,633.148 777.467,627.249 787,621 C801.756,611.326 802.458,604.992 817,595 C879.272,552.212 902.626,554.555 967,515 C998.594,495.587 1032.82,471.481 1058.57,452.676 " fill="none" id="azure_dc-opa" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1062.63,449.705,1053.0064,451.7996,1058.5973,452.661,1057.736,458.2518,1062.63,449.705" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="74" x="855" y="511.4951">Load policy</text><!--link azure_ad to restapi--><path d="M640.29,567.549 C587.876,555.928 509.462,529.439 473,471.5 C432.63,407.351 527.913,359.598 605.275,332.756 " fill="none" id="azure_ad-restapi" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="610.343,331.018,600.532,330.1553,605.6136,332.6406,603.1282,337.7223,610.343,331.018" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="104" x="441" y="452.9951">Provides userlist</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="45" x="470.5" y="468.3086">[HTTPS]</text><!--link azure_dc to datasrc--><path d="M792.177,685.5182 C871.028,701.0363 978.499,722.1867 1043.23,734.9251 " fill="none" id="azure_dc-datasrc" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="787.025,684.5044,795.083,690.1674,791.9309,685.4701,796.6281,682.318,787.025,684.5044" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="148" x="818" y="671.4951">Abstracts sensitive data</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="76" x="854" y="687.8467">from SEPES</text><!--link frontend to azure_prtl--><rect fill="#DDDDDD" height="119.6563" rx="5" ry="5" style="stroke: #000000; stroke-width: 1.0;" width="174" x="1071" y="784"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="0" x="1133" y="805.5332"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="33" x="1137" y="805.5332">Type</text><rect fill="#08427B" height="17.6094" style="stroke: none; stroke-width: 1.0;" width="56" x="1077" y="808.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1101" y="823.1426"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="44" x="1137" y="823.1426">person</text><rect fill="#686868" height="17.6094" style="stroke: none; stroke-width: 1.0;" width="56" x="1077" y="826.2188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1101" y="840.752"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="98" x="1137" y="840.752">external person</text><rect fill="#1168BD" height="17.6094" style="stroke: none; stroke-width: 1.0;" width="56" x="1077" y="843.8281"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1089" y="858.3613"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="44" x="1137" y="858.3613">system</text><rect fill="#999999" height="17.6094" style="stroke: none; stroke-width: 1.0;" width="56" x="1077" y="861.4375"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1101" y="875.9707"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="98" x="1137" y="875.9707">external system</text><rect fill="#438DD5" height="17.6094" style="stroke: none; stroke-width: 1.0;" width="56" x="1077" y="879.0469"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1089" y="893.5801"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="59" x="1137" y="893.5801">container</text><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="791" y2="791"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="808.6094" y2="808.6094"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="826.2188" y2="826.2188"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="843.8281" y2="843.8281"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="861.4375" y2="861.4375"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="879.0469" y2="879.0469"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1239" y1="896.6563" y2="896.6563"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1077" x2="1077" y1="791" y2="896.6563"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1133" x2="1133" y1="791" y2="896.6563"/><line style="stroke: #000000; stroke-width: 1.0;" x1="1239" x2="1239" y1="791" y2="896.6563"/><!--
+@startuml "User_Interaction_Flow"
+
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam rectangle {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam database {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam Arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+skinparam rectangle<<boundary>> {
+    Shadowing false
+    StereotypeFontSize 0
+    FontColor #444444
+    BorderColor #444444
+    BorderStyle dashed
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+
+skinparam rectangle<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+
+skinparam rectangle<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+skinparam rectangle<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+skinparam database<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+skinparam database<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+skinparam database<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+
+
+
+
+
+
+
+
+left to right direction
+hide stereotype
+legend right
+|=              |= Type |
+|<#08427B>      | person |
+|<#686868>      | external person |
+|<#1168BD>   | system |
+|<#999999>      | external system |
+|<#438DD5>   | container |
+endlegend
+
+
+rectangle "==User" <<person>> as user
+
+rectangle "==SEPES\n<size:12>[System]</size>" <<boundary>> as c1{
+    
+    rectangle "==Web Application\n//<size:12>[Java, React]</size>//\n\n Allows users to create or edit sandbox environments." <<container>> as frontend
+
+    rectangle "==Azure Portal\n//<size:12>[Cloud Platform]</size>//\n\n Users manages content of sandboxes." <<container>> as azure_prtl
+
+    rectangle "==RestApi\n//<size:12>[Dotnet, Asp.Net]</size>//\n\n Manages the sandbox environment" <<container>> as restapi
+
+    rectangle "==Azure Resource Groups\n//<size:12>[Cloud System]</size>//" <<container>> as azure_rg
+
+    rectangle "==Azure Network\n//<size:12>[Cloud System]</size>//" <<container>> as azure_net
+
+    database "==State Database\n//<size:12>[MySQL]</size>//\n\n Stores the state" <<container>> as state_db
+
+    rectangle "==Storage Account\n//<size:12>[Stores a copy of the data used by the sandbox]</size>//" <<container>> as str_acc
+
+    rectangle "==Policy Service\n//<size:12>[OPA]</size>//" <<container>> as opa
+    
+    rectangle "==Azure AD\n//<size:12>[Cloud System]</size>//" <<container>> as azure_ad
+
+    rectangle "==Azure Datacatalog\n//<size:12>[Links SEPES to sensitive data]</size>//" <<container>> as azure_dc
+}
+rectangle "==Data Source" <<external_system>> as datasrc
+
+
+user - -> frontend : "===Uses\n//<size:12>[HTTPS]</size>//"
+user -RIGHT-> azure_prtl : "===Manages\n//<size:12>[HTTPS]</size>//"
+
+frontend - -> restapi : "===Reads from and writes to\n//<size:12>[JSON/HTTPS]</size>//"
+restapi -LEFT-> state_db : "===Updates state"
+        
+azure_prtl - -> azure_rg : "===Perform small tweaks?"
+azure_prtl - -> azure_net : "===Perform small tweaks?"
+
+restapi - -> str_acc : "===Requests data"
+restapi - -> opa : "===Verifies request complies"
+restapi - -> azure_net : "===Creates"
+restapi - -> azure_rg : "===Creates"
+
+
+azure_dc - -> str_acc : "===Creates a"
+azure_dc - -> opa : "===Load policy"
+
+
+azure_ad -RIGHT-> restapi : "===Provides userlist\n//<size:12>[HTTPS]</size>//"
+
+datasrc -UP-> azure_dc : "===Abstracts sensitive data from SEPES"
+
+frontend -[hidden]R- azure_prtl
+
+@enduml
+
+PlantUML version 1.2018.14(Fri Dec 21 17:33:16 CET 2018)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Java Version: 1.8.0_231-b11
+Operating System: Windows 10
+OS Version: 10.0
+Default Encoding: Cp1252
+Language: en
+Country: US
+--></g></svg>
