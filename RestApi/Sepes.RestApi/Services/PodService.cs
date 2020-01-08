@@ -108,7 +108,6 @@ namespace Sepes.RestApi.Services
         }
         private async Task RemoveNetworkSecurityGroup(Pod newPod)
         {
-            Console.WriteLine("###########Tried to delete group");
             await _azure.RemoveSecurityGroup(newPod.subnetName, newPod.networkName);
         }
 
