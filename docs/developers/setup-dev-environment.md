@@ -10,6 +10,10 @@ Node.js https://nodejs.org/en/
 
 Microsoft SQL Server Developer https://www.microsoft.com/nb-no/sql-server/sql-server-downloads
 
+Azure subscribtion.
+
+Microsoft SQL server
+
 
 ## Add dependencies
 
