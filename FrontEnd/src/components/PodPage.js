@@ -8,7 +8,6 @@ import * as StudyService from "../studyService"
 import Sepes from '../sepes.js';
 import Nsgswitch from './nsgSwitch';
 const sepes = new Sepes();
-var self = this;
 class PodPage extends Component {
     constructor(props) {
         super(props);
