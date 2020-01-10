@@ -10,16 +10,21 @@ Node.js https://nodejs.org/en/
 
 Microsoft SQL Server Developer https://www.microsoft.com/nb-no/sql-server/sql-server-downloads
 
-Azure subscribtion.
+Microsoft SQL Server
 
-Microsoft SQL server
+### Azure
+These services are required
+-AD app 
+-Subscribtion
+-Insight
+
 
 
 ## Add dependencies
 
-In both the Sepes.RestApi and Sepes.RestApi.Test folder run "dotnet restore"
+In both the Sepes.RestApi and Sepes.RestApi.Test folder run the command "dotnet restore"
 
-In the FrontEnd folder you need to run "npm install"
+In the FrontEnd folder you need to run the commdand "npm install"
 
 
 ## Setup config:
@@ -47,22 +52,35 @@ Needs to be in following format: "Data Source={ip or url to server};Initial Cata
 SEPES_HTTP_ONLY=false
 This should only be set to true if you are intending to run SEPES behind some other proxy that will provide encryption, like for example Docker.
 
-
+    
 ## Setup database
-Option 1:
-    Use the script to deploy the needed table into an existing sql server of your choice.
+* Option 1: Use SQL Query
+    * Create or have an SQL Server
+    * Open a connection to SQL Server
+    * Use the query file or copy its contents into the management softwares query editor.
 
-Option 2:
-    Use the full server copy and import it into Microsoft SQL Server Management Studio.
-    You need an existing sql server on Azure you can target for deployment
-    Use Microsoft SQL Server Management Studio to locally instal and test the full file.
-    Right click database and select Tasks>Deploy to azure
+* Option 2:
+    * Use the full server copy and import it into Microsoft SQL Server Management Studio.
+    * You need an existing sql server on Azure you can target for deployment
+    * Use Microsoft SQL Server Management Studio to locally instal and test the full file.
+    * Right click database and select Tasks>Deploy to azure
 
 ## Setup monitoring service.
-    In Azure create an Application Insights instance for SEPES and add its instrumentation key to the .env file as described above.
+In Azure create an Application Insights instance for SEPES and add its instrumentation key to the .env file as described above.
 
 ## Common issues:
 
-Error "Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+Error: 
+```
+"Failed to load resource: net::ERR_CERT_AUTHORITY_INVALID"
+```
 Solution:
-            Try running "dotnet dev-certs https --clean" then  "dotnet dev-certs https --trust" to reinstall the dev certificate
+Run the below command
+```
+dotnet dev-certs https --clean
+```
+then after that command succesfully executes, run
+```
+dotnet dev-certs https --trust
+```
+This should reinstal the dev-certificate
