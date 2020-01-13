@@ -38,22 +38,6 @@ namespace Sepes.RestApi.Controller
                 return study.ToStudyInput();
             }
         }
-
-
-        //Create study
-        [HttpPost("create")]
-        public async Task<int> CreationVars([FromBody] Study value)
-        {
-            return await _sepesDb.createStudy(value.studyName, value.userIds, value.datasetIds);
-        }
-
-        //Update study
-        [HttpPost("update")]
-        public int UpdateVars([FromBody] Study study)
-        {
-            return 0;
-        }
-
         //Get list of studies
         [HttpGet("list")]
         public IEnumerable<StudyInput> GetStudies()
