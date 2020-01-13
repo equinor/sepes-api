@@ -62,7 +62,7 @@ This should only be set to true if you are intending to run SEPES behind some ot
 * Option 2:
     * Use the full server copy and import it into Microsoft SQL Server Management Studio.
     * You need an existing sql server on Azure you can target for deployment
-    * Use Microsoft SQL Server Management Studio to locally instal and test the full file.
+    * Use Microsoft SQL Server Management Studio to locally import.
     * Right click database and select Tasks>Deploy to azure
 
 ## Setup monitoring service.
