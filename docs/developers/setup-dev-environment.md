@@ -35,11 +35,11 @@ npm install
 
 ## Setup config:
 
-You can get the config values from the following places
+All values bellow are written in without quotation marks
 ```
-SEPES_NAME=sepes-dev
+SEPES_NAME=
 ```
-This is the name that will be used to create resources within azure. Make sure to not use spaces
+This is the name that will be used to create resources within azure. Do not include spaces.
 ```
 SEPES_TENANT_ID=            
 ```
