@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Model
         public ushort? id { get; }
         public string name { get; }
         public int studyId { get; }
-        public bool allowAll { get; }
+        public bool allowAll { get; } //Used to remove NSG from subnet
         public ImmutableList<Rule> incoming { get; }
         public ImmutableList<Rule> outgoing { get; }
         public ImmutableList<User> users { get; }
@@ -64,6 +64,7 @@ namespace Sepes.RestApi.Model
                 podId = id,
                 podName = name,
                 studyId = studyId,
+                openInternet = allowAll,
                 incoming = inputIncoming.ToArray(),
                 outgoing = inputOutgoing.ToArray(),
                 users = inputUsers.ToArray()
