@@ -5,7 +5,7 @@ import SepesPodList from './SepesPodList'
 
 import * as StudyService from "../studyService"
 
-import spinner from "../loadicon.svg"
+import spinner from "../spinner.svg"
 
 import Sepes from '../sepes.js';
 const sepes = new Sepes();
