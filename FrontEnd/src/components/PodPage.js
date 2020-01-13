@@ -105,8 +105,7 @@ class PodPage extends Component {
         let props = this.props;
         props.setSavingState(true);
 
-
-        let based = this.props.state.selectedStudy;
+        let based = props.state.selectedStudy;
         let study = JSON.parse(JSON.stringify(based));
 
         let pod = {
