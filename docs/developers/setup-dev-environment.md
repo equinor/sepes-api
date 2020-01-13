@@ -66,8 +66,9 @@ This should only be set to true if you are intending to run SEPES behind some ot
     * Right click database and select Tasks>Deploy to azure
 
 ## Setup monitoring service.
-In Azure create an Application Insights instance for SEPES and add its instrumentation key to the .env file as described above.
-
+* Create an Application Insights instance for SEPES
+* In the overview tab copy the "Instrumentation Key" and paste into the .env file as described above.
+* Boot up an instance of SEPES to verify that it logs correctly to Application Insights
 ## Common issues:
 
 Error: 
