@@ -4,52 +4,69 @@
 
 To be able to run and develop for this project there are a some runtimes that need to be installed.
 
-Dotnet Core SDK 3.0 https://dotnet.microsoft.com/download
+* Dotnet Core SDK 3.0 https://dotnet.microsoft.com/download
 
-Node.js https://nodejs.org/en/
+* Node.js https://nodejs.org/en/
 
-Microsoft SQL Server Developer https://www.microsoft.com/nb-no/sql-server/sql-server-downloads
+* Microsoft SQL Server Developer https://www.microsoft.com/nb-no/sql-server/sql-server-downloads
 
-Microsoft SQL Server
+* Microsoft SQL Server
 
 ### Azure
 These services are required
--AD app 
--Subscribtion
--Insight
+* AD app 
+* Subscribtion
+* Insight
 
 
 
 ## Add dependencies
 
-In both the Sepes.RestApi and Sepes.RestApi.Test folder run the command "dotnet restore"
+In both the Sepes.RestApi and Sepes.RestApi.Test folder run the command 
+```
+dotnet restore
+```
 
-In the FrontEnd folder you need to run the commdand "npm install"
+In the FrontEnd folder you need to run the command 
+```
+npm install
+```
 
 
 ## Setup config:
 
 You can get the config values from the following places
-
+```
 SEPES_NAME=sepes-dev
+```
 This is the name that will be used to create resources within azure. Make sure to not use spaces
-
+```
 SEPES_TENANT_ID=            
-
+```
+```
 SEPES_CLIENT_ID=            
-
+```
+```
 SEPES_CLIENT_SECRET=        
-
+```
+```
 SEPES_INSTRUMENTATION_KEY=  
+```
 THis is found on the Application Insights service created on Azure for logging. It can be found in the Overview tab.
-
+```
 SEPES_SUBSCRIPTION_ID=      
+```
 This is the Subscrition ID of the subscribtion sepes will use for its operation
-
+```
 SEPES_MSSQL_CONNECTION_STRING=
-Needs to be in following format: "Data Source={ip or url to server};Initial Catalog={name of catalog};User ID={userID};Password={password}"
-
+```
+Needs to be in following format: 
+```
+Data Source={ip or url to server};Initial Catalog={name of catalog};User ID={userID};Password={password}
+```
+```
 SEPES_HTTP_ONLY=false
+```
 This should only be set to true if you are intending to run SEPES behind some other proxy that will provide encryption, like for example Docker.
 
     
