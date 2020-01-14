@@ -21,7 +21,7 @@ namespace Sepes.RestApi.Tests.Services
             rules.Add(new Rule(80, "1.1.1.1"));
             rules.Add(new Rule(80, "2.2.2.2"));
             rules.Add(new Rule(3000, "3.3.3.3"));
-            var newPod = new Pod(1, "test", 1, false, rules, rules, users, null, null);
+            var newPod = new Pod(1, "test", 1, false, rules, rules, null, null);
 
             var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
@@ -59,14 +59,14 @@ namespace Sepes.RestApi.Tests.Services
             users.Add(new User("2", "2", "2"));
             var rules = new List<Rule>();
             rules.Add(new Rule(1, "1.1.1.1"));
-            var based = new Pod(1, "test", 1, false, rules, rules, users, null, null);
+            var based = new Pod(1, "test", 1, false, rules, rules, null, null);
 
             var updatedUsers = new List<User>(users);
             updatedUsers.Add(new User("3", "3", "3"));
             var updatedRules = new List<Rule>();
             updatedRules.Add(new Rule(8000, "8.0.0.0"));
             updatedRules.Add(new Rule(8000, "8.0.0.1"));
-            var newPod = new Pod(1, "test", 1, false, updatedRules, null, updatedUsers, null, null);
+            var newPod = new Pod(1, "test", 1, false, updatedRules, null, null, null);
 
             azureMock.Setup(az => az.GetNSGNames()).ReturnsAsync(new string[]{newPod.networkSecurityGroupName});
 
