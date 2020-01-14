@@ -5,6 +5,8 @@ import PodDataset from './PodDataset.js';
 
 import * as StudyService from "../studyService"
 
+import spinner from "../spinner.svg"
+
 import Sepes from '../sepes.js';
 import Nsgswitch from './nsgSwitch';
 const sepes = new Sepes();
@@ -23,7 +25,9 @@ class PodPage extends Component {
         }
     }
     render() {
+        let appstate = this.props.state;
         return (
+
             <div>
                 <header>
                     <span><b>
@@ -31,7 +35,8 @@ class PodPage extends Component {
                             className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
                     <link />
                     <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e) => this.setState({ podName: e.target.value })} />
-                    <button disabled={this.state.saveBtnDisabled} onClick={this.createPod}>Save</button>
+                    <button disabled={appstate.saving} onClick={this.createPod}>Save</button>
+                    { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
                     <span className="loggedInUser">Logged in as <b>{this.props.state.userName}</b></span>
                 </header>
                 <div className="sidebar podsidebar">
@@ -97,11 +102,10 @@ class PodPage extends Component {
     }
 
     createPod = () => {
-        this.setState({ saveBtnDisabled: true });
+        let props = this.props;
+        props.setSavingState(true);
 
-        console.log(`New pod: ${this.props.state.selectedStudy.StudyId}, ${this.state.podName}`)
-
-        let based = this.props.state.selectedStudy;
+        let based = props.state.selectedStudy;
         let study = JSON.parse(JSON.stringify(based));
 
         let pod = {
@@ -125,8 +129,6 @@ class PodPage extends Component {
             study.pods[index] = pod;
         }
 
-        console.log([study, based])
-
         sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(study => {
@@ -135,13 +137,13 @@ class PodPage extends Component {
                     this.setState({
                         podId
                     });
-                    console.log(study);
                 }
-                this.props.setStudy(study);
-                this.setState({ saveBtnDisabled: false });
+                props.setStudy(study);
+                props.setSavingState(false);
             })
             .catch(() => {
-                this.setState({ saveBtnDisabled: false });
+                props.setSavingState(false);
+
             });
     }
 }
