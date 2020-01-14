@@ -5,6 +5,8 @@ import SepesPodList from './SepesPodList'
 
 import * as StudyService from "../studyService"
 
+import spinner from "../spinner.svg"
+
 import Sepes from '../sepes.js';
 const sepes = new Sepes();
 
@@ -27,6 +29,7 @@ class CreateStudyPage extends Component {
     }
 
     render() {
+        let appstate = this.props.state;
         return (
         <div>
             <header>
@@ -34,8 +37,9 @@ class CreateStudyPage extends Component {
                     <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
-                <button disabled={this.state.saveBtnDisabled} onClick={this.saveStudy}>Save</button>
-                <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
+                <button disabled={appstate.saving} onClick={this.saveStudy}>Save</button>
+                { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
+                <span className="loggedInUser">Logged in as <b>{ appstate.userName }</b></span>
             </header>
             <div className="sidebar">
                 <div style={{padding: "20px"}}>
@@ -118,7 +122,8 @@ class CreateStudyPage extends Component {
     }
 
     saveStudy = () => {
-        this.setState({saveBtnDisabled: true});
+        let props = this.props;
+        props.setSavingState(true);
 
         let state = this.state;
         let study = {
@@ -136,12 +141,11 @@ class CreateStudyPage extends Component {
             .then(returnValue => returnValue.json())
             .then(json => {
                 this.setState({studyId: json.studyId});
-                this.setState({saveBtnDisabled: false});
-
-                this.props.setStudy(json);
+                props.setSavingState(false);
+                props.setStudy(json);
             })
             .catch(() => {
-                this.setState({saveBtnDisabled: false});
+                props.setSavingState(false);
             });
     }
 }

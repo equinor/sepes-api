@@ -22,7 +22,6 @@ class App extends React.Component {
       tokenName: "",
       tokenId: "",
       userName: "demo@sepes.com",
-      jwtTest: "Result from backend",
       page: "none",
       selection: {
         dataset: [],
@@ -32,6 +31,10 @@ class App extends React.Component {
         StudyId: null,
         StudyName: "",
       },
+      saving: false,
+      
+      
+      jwtTest: "Result from backend",
       studies: [],
       archived: []
     }
@@ -63,8 +66,20 @@ class App extends React.Component {
             setStudy={this.setSelectedStudy} 
             setStudies={this.setStudies} 
             setArchived={this.setArchived} /> : null}
-        {this.state.page === "study" ? <CreateStudyPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
-        {this.state.page === "pod" ? <PodPage state={this.state} changePage={this.changePage} setStudy={this.setSelectedStudy} /> : null}
+
+        {this.state.page === "study" ? 
+          <CreateStudyPage 
+            state={this.state} 
+            changePage={this.changePage} 
+            setStudy={this.setSelectedStudy}
+            setSavingState={this.setSavingState} /> : null}
+            
+        {this.state.page === "pod" ? 
+          <PodPage 
+            state={this.state} 
+            changePage={this.changePage} 
+            setStudy={this.setSelectedStudy}
+            setSavingState={this.setSavingState} /> : null}
       </div>
     );
   }
@@ -188,6 +203,12 @@ class App extends React.Component {
   setArchived = (archivedStudies) => {
     this.setState({
       archived: archivedStudies
+    });
+  }
+
+  setSavingState = (saving) => {
+    this.setState({
+      saving
     });
   }
   
