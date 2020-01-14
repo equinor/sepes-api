@@ -19,11 +19,13 @@ namespace Sepes.RestApi.Services
         private readonly ISepesDb _database;
         private readonly IAzureService _azure;
 
+
         public PodService(ISepesDb database, IAzureService azure)
         {
             _database = database;
             _azure = azure;
         }
+
         public async Task Set(Pod newPod, Pod based)
         {
             if (based == null)
@@ -104,6 +106,7 @@ namespace Sepes.RestApi.Services
                 await _azure.DeleteSecurityGroup(nsgNameDefault);
             }
         }
+
         private async Task RemoveNetworkSecurityGroup(Pod newPod)
         {
             await _azure.RemoveSecurityGroup(newPod.subnetName, newPod.networkName);
