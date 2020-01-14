@@ -6,7 +6,6 @@ namespace Sepes.RestApi.Services
 {
     public interface ISepesDb
     {
-        //Task<string> getDatasetList();
         Task<string> getDatasetList();
         Task<Study> NewStudy(Study study);
         Task<bool> UpdateStudy(Study study);
