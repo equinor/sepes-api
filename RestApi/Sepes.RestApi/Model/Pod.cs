@@ -15,7 +15,6 @@ namespace Sepes.RestApi.Model
         public bool allowAll { get; } //Used to remove NSG from subnet
         public ImmutableList<Rule> incoming { get; }
         public ImmutableList<Rule> outgoing { get; }
-        public ImmutableList<User> users { get; }
         public ImmutableList<DataSet> locked { get; }
         public ImmutableList<DataSet> loaded { get; }
 
@@ -27,7 +26,7 @@ namespace Sepes.RestApi.Model
 
 
         public Pod(ushort? id, string name, int studyId, bool allowAll, IEnumerable<Rule> incoming, IEnumerable<Rule> outgoing, 
-                    IEnumerable<User> users, IEnumerable<DataSet> locked, IEnumerable<DataSet> loaded)
+                    IEnumerable<DataSet> locked, IEnumerable<DataSet> loaded)
         {
             this.id = id;
             this.name = name;
@@ -35,14 +34,13 @@ namespace Sepes.RestApi.Model
             this.allowAll = allowAll;
             this.incoming = incoming == null ? ImmutableList<Rule>.Empty : incoming.ToImmutableList();
             this.outgoing = outgoing == null ? ImmutableList<Rule>.Empty : outgoing.ToImmutableList();
-            this.users = users == null ? ImmutableList<User>.Empty : users.ToImmutableList();
             this.locked = locked == null ? ImmutableList<DataSet>.Empty : locked.ToImmutableList();
             this.loaded = loaded == null ? ImmutableList<DataSet>.Empty : loaded.ToImmutableList();
         }
 
         public Pod(ushort? id, string name, int studyId) : 
             this(id, name, studyId, false, ImmutableList<Rule>.Empty, ImmutableList<Rule>.Empty, 
-            ImmutableList<User>.Empty, ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
+            ImmutableList<DataSet>.Empty, ImmutableList<DataSet>.Empty) {}
 
         public PodInput ToPodInput()
         {
@@ -56,9 +54,6 @@ namespace Sepes.RestApi.Model
             foreach (Rule rule in outgoing) {
                 inputOutgoing.Add(rule.ToRuleInput());
             }
-            foreach (User user in users) {
-                inputUsers.Add(user.userEmail);
-            }
 
             return new PodInput(){
                 podId = id,
@@ -66,19 +61,13 @@ namespace Sepes.RestApi.Model
                 studyId = studyId,
                 openInternet = allowAll,
                 incoming = inputIncoming.ToArray(),
-                outgoing = inputOutgoing.ToArray(),
-                users = inputUsers.ToArray()
+                outgoing = inputOutgoing.ToArray()
             };
         }
 
         public Pod NewPodId(ushort newId)
         {
-            return new Pod(newId, name, studyId, allowAll, incoming, outgoing, users, locked, loaded);
-        }
-
-        public Pod AddUserList(IEnumerable<User> newUsers)
-        {
-            return new Pod(id, name, studyId, allowAll, incoming, outgoing, newUsers, locked, loaded);
+            return new Pod(newId, name, studyId, allowAll, incoming, outgoing, locked, loaded);
         }
 
         public override bool Equals(object obj)
@@ -89,8 +78,7 @@ namespace Sepes.RestApi.Model
                    studyId == pod.studyId &&
                    allowAll == pod.allowAll &&
                    Enumerable.SequenceEqual(incoming, pod.incoming) &&
-                   Enumerable.SequenceEqual(outgoing, pod.outgoing) &&
-                   Enumerable.SequenceEqual(users, pod.users);
+                   Enumerable.SequenceEqual(outgoing, pod.outgoing);
         }
 
         public override int GetHashCode()

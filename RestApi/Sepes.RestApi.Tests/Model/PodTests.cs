@@ -66,10 +66,10 @@ namespace Sepes.RestApi.Tests.Model
             var datasets = new List<DataSet>();
             datasets.Add(dataset1);
 
-            var pod = new Pod(11, "test", 1, false, rules, rules, users, datasets, datasets);
-            var sameAsPod = new Pod(11, "test", 1, false, rules, rules, users, datasets, datasets);
-            var updatedPod = new Pod(11, "test", 1, true, null, null, users, datasets, datasets);
-            var differentPod = new Pod(12, "test2", 1, false, rules, rules, users, datasets, datasets);
+            var pod = new Pod(11, "test", 1, false, rules, rules, datasets, datasets);
+            var sameAsPod = new Pod(11, "test", 1, false, rules, rules, datasets, datasets);
+            var updatedPod = new Pod(11, "test", 1, true, null, null, datasets, datasets);
+            var differentPod = new Pod(12, "test2", 1, false, rules, rules, datasets, datasets);
 
             Assert.True(pod.Equals(sameAsPod));
             Assert.False(pod.Equals(updatedPod));
@@ -93,7 +93,7 @@ namespace Sepes.RestApi.Tests.Model
             datasets.Add(dataset1);
             datasets.Add(dataset2);
 
-            var pod = new Pod(11, "pod1", 1, false, rules, rules, new List<User>(), null, null);
+            var pod = new Pod(11, "pod1", 1, false, rules, rules, null, null);
             var pod2 = new Pod(12, "pod2", 1);
 
             Assert.True(pod.Equals(pod.ToPodInput().ToPod()));
@@ -121,7 +121,7 @@ namespace Sepes.RestApi.Tests.Model
             datasets.Add(dataset1);
             datasets.Add(dataset2);
 
-            var pod = new Pod(1, "pod1", 1, false, rules, rules, users, datasets, datasets);
+            var pod = new Pod(1, "pod1", 1, false, rules, rules, datasets, datasets);
             
             var jsonData = JsonSerializer.Serialize<Pod>(pod);
             PodDB podDB = JsonSerializer.Deserialize<PodDB>(jsonData);
