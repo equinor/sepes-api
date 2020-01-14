@@ -91,9 +91,10 @@ class CreateStudyPage extends Component {
     }
 
     removeSupplier = (user) => {
-        this.setState({
+        // Currently unable to remove users in Azure
+        /*this.setState({
             suppliers: StudyService.removeUser(user, this.state.suppliers)
-        });
+        });*/
     }
 
     addDataset = (dataset) => {
@@ -127,8 +128,9 @@ class CreateStudyPage extends Component {
 
         let state = this.state;
         let study = {
+            studyId: state.studyId,
             studyName: state.studyName,
-            userIds: [],
+            pods: state.pods,
             datasetIds: state.dataset,
             archived: false,
             sponsors: state.sponsors,

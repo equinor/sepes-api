@@ -11,7 +11,6 @@ namespace Sepes.RestApi.Model
         public string tag { get; set; }
         public RuleInput[] incoming { get; set; } = new RuleInput[]{};
         public RuleInput[] outgoing { get; set; } = new RuleInput[]{};
-        public string[] users { get; set; } = new string[]{};
         //Corresponds to allowAll internally
         public bool openInternet { get; set; }
 
@@ -20,9 +19,8 @@ namespace Sepes.RestApi.Model
         {
             var podIncoming = incoming.Select(r => r.ToRule());
             var podOutgoing = outgoing.Select(r => r.ToRule());
-            var podUsers = users.Select(u => new User("", u, ""));
 
-            return new Pod(podId, podName, studyId, openInternet, podIncoming, podOutgoing, podUsers, new List<DataSet>(), new List<DataSet>());
+            return new Pod(podId, podName, studyId, openInternet, podIncoming, podOutgoing, new List<DataSet>(), new List<DataSet>());
         }
     }
 }
