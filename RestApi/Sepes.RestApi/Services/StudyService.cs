@@ -68,7 +68,7 @@ namespace Sepes.RestApi.Services {
         {
             foreach (var pod in study.pods)
             {
-                if (!based.pods.Contains(pod))
+                if (!based.pods.Contains(pod) || !based.suppliers.SequenceEqual(study.suppliers))
                 {
                     // Check if pod is new
                     if (!pod.id.HasValue)
@@ -76,17 +76,16 @@ namespace Sepes.RestApi.Services {
                         // Update list of pod
                         // generate new pod with id
                         Pod newPod = pod.NewPodId(numberOfPods++);
-                        newPod = newPod.AddUserList(study.suppliers);
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
                         // Update Azure with Pod Service
-                        await _podService.Set(newPod, null);
+                        await _podService.Set(newPod, null, study.suppliers, null);
                     }
                     else
                     {
                         Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
-                        await _podService.Set(pod, basePod);
+                        await _podService.Set(pod, basePod, study.suppliers, based.suppliers);
                     }
                 }
             }
