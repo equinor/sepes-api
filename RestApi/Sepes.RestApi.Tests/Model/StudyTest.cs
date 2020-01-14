@@ -55,7 +55,7 @@ namespace Sepes.RestApi.Tests.Model
             var datasets = new List<DataSet>();
             datasets.Add(dataset1);
 
-            var pod = new Pod(11, "test", 1, false, rules, rules, users, datasets, datasets);
+            var pod = new Pod(11, "test", 1, false, rules, rules, datasets, datasets);
             var pods = new List<Pod>();
             pods.Add(pod);
 
@@ -75,7 +75,7 @@ namespace Sepes.RestApi.Tests.Model
             rules.Add(rule1);
             rules.Add(rule2);
 
-            var pod = new Pod(11, "test", 1, false, rules, rules, null, null, null);
+            var pod = new Pod(11, "test", 1, false, rules, rules, null, null);
             var pods = new List<Pod>();
             pods.Add(pod);
 

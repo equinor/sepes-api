@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,7 @@ namespace Sepes.RestApi.Services
     // It do not own the Pod state and need to talk to StudyService to keep its up to date.
     public interface IPodService
     {
-        Task Set(Pod newPod, Pod based);
+        Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers);
     }
 
     public class PodService : IPodService
@@ -24,7 +23,7 @@ namespace Sepes.RestApi.Services
             _database = database;
             _azure = azure;
         }
-        public async Task Set(Pod newPod, Pod based)
+        public async Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
         {
             if (based == null)
             {
@@ -45,17 +44,17 @@ namespace Sepes.RestApi.Services
 
             
             // Add users to resources
-            tasks.Add(AddUsers(newPod, based));
+            tasks.Add(AddUsers(newPod, newUsers, basedUsers));
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task AddUsers(Pod newPod, Pod based)
+        private async Task AddUsers(Pod newPod, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
         {
             List<Task> addUsersTasks = new List<Task>();
-            foreach (var user in newPod.users)
+            foreach (var user in newUsers)
             {
-                if (based == null || !based.users.Contains(user))
+                if (basedUsers == null || !basedUsers.Contains(user))
                 {
                     Task addUserToResGroup = _azure.AddUserToResourceGroup(user.userEmail, newPod.resourceGroupName);
                     Task addUserToNetwork = _azure.AddUserToNetwork(user.userEmail, newPod.networkName);
