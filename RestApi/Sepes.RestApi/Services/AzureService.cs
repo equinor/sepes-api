@@ -42,15 +42,14 @@ namespace Sepes.RestApi.Services
                     .Define(networkName)
                     .WithRegion(Region.EuropeNorth)
                     .CreateAsync();
-            return resourceGroup.Id;//return resource id from iresource objects
 
+            //return resource id from iresource objects
+            return resourceGroup.Id;
         }
         
         public Task TerminateResourceGroup(string commonResourceGroup)
         {
-            //Wrap in try...catch? Or was that done in controller?
-            return _azure.ResourceGroups.DeleteByNameAsync(commonResourceGroup); //Delete might not be what we want.
-            //Might instead want to get list of all users then remove them?
+            throw new NotImplementedException();
         }
 
         public async Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName)
@@ -225,9 +224,6 @@ namespace Sepes.RestApi.Services
                 .Attach()
                 .ApplyAsync();
         }
-
-        // ApplyDataset(...)
-        // Don't need a remove dataset as that happes when resource group gets terminated.
 
 
         //// Pod user/role management
