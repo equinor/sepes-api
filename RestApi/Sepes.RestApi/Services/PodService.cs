@@ -18,6 +18,7 @@ namespace Sepes.RestApi.Services
         private readonly ISepesDb _database;
         private readonly IAzureService _azure;
 
+
         public PodService(ISepesDb database, IAzureService azure)
         {
             _database = database;
@@ -35,11 +36,11 @@ namespace Sepes.RestApi.Services
             var tasks = new List<Task>();
 
             // Create network security group and add rules, apply to subnet
-            bool mustCreateNewNSG = based == null || 
+            bool newRulesAreAdded = based == null || 
                 !based.incoming.SequenceEqual(newPod.incoming) ||
                 !based.outgoing.SequenceEqual(newPod.outgoing);
-            if (!newPod.allowAll && (mustCreateNewNSG || based.allowAll)) tasks.Add(ManageNetworkSecurityGroup(newPod));
-            //Removes nsg from 
+            if (!newPod.allowAll && (newRulesAreAdded || based.allowAll)) tasks.Add(ManageNetworkSecurityGroup(newPod));
+            // Removes nsg from subnet
             if (newPod.allowAll && !based.allowAll) tasks.Add(RemoveNetworkSecurityGroup(newPod));
 
             
@@ -78,8 +79,6 @@ namespace Sepes.RestApi.Services
             // Create nsg with generated nsg name
             await _azure.CreateSecurityGroup(nsgName);
 
-            // pod.allowAll != basePod.allowAll // Apply allow all
-
             // Set inbound and outbound rules
             Dictionary<ushort, string[]> inbound = GenerateRuleDictionary(newPod.incoming);
             int inPriority = 100;
@@ -105,6 +104,7 @@ namespace Sepes.RestApi.Services
                 await _azure.DeleteSecurityGroup(nsgNameDefault);
             }
         }
+
         private async Task RemoveNetworkSecurityGroup(Pod newPod)
         {
             await _azure.RemoveSecurityGroup(newPod.subnetName, newPod.networkName);
