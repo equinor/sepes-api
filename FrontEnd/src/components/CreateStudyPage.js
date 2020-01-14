@@ -128,13 +128,16 @@ class CreateStudyPage extends Component {
 
         let state = this.state;
         let study = {
-            studyId: state.studyId,
             studyName: state.studyName,
             pods: state.pods,
             datasetIds: state.dataset,
             archived: false,
             sponsors: state.sponsors,
             suppliers: state.suppliers
+        }
+
+        if (state.studyId !== null) {
+            study.studyId = state.studyId;
         }
 
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
