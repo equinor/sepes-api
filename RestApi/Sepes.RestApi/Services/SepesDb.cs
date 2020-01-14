@@ -50,19 +50,7 @@ namespace Sepes.RestApi.Services
 
             return response;
         }
-        private static void createInsertValues(int studyId, int[] array, StringBuilder strBuilder)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                strBuilder.Append("(" + array[i] + ", " + studyId + ")");
-                if (i != array.Length - 1)
-                {
-                    strBuilder.Append(", ");
-                }
-            }
 
-            Console.WriteLine(strBuilder.ToString());
-        }
         public async Task<Study> NewStudy(Study study)
         {
             Study saveStudy = study;
