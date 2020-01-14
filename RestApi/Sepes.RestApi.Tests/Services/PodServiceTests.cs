@@ -28,16 +28,16 @@ namespace Sepes.RestApi.Tests.Services
             var podService = new PodService(databaseMock.Object, azureMock.Object);
 
 
-            await podService.Set(newPod, null);
+            await podService.Set(newPod, null, users, null);
 
 
             azureMock.Verify(az => az.CreateResourceGroup(newPod.resourceGroupName), Times.Once);
             azureMock.Verify(az => az.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName), Times.Once);
             azureMock.Verify(az => az.CreateSecurityGroup(newPod.networkSecurityGroupName), Times.Once);
-            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "Port_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
-            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "Port_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
-            azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, "Port_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
-            azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, "Port_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
+            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "in_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
+            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "in_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
+            azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, "out_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Once);
+            azureMock.Verify(az => az.NsgAllowOutboundPort(newPod.networkSecurityGroupName, "out_3000", 101, new string[]{"3.3.3.3"}, 3000), Times.Once);
             azureMock.Verify(az => az.ApplySecurityGroup(newPod.networkSecurityGroupName, newPod.subnetName, newPod.networkName), Times.Once);
 
             azureMock.Verify(az => az.AddUserToNetwork("1", newPod.networkName), Times.Once);
@@ -71,7 +71,7 @@ namespace Sepes.RestApi.Tests.Services
             azureMock.Setup(az => az.GetNSGNames()).ReturnsAsync(new string[]{newPod.networkSecurityGroupName});
 
             //When
-            await podService.Set(newPod, based);
+            await podService.Set(newPod, based, updatedUsers, users);
 
             //Then
             // create new nsg
