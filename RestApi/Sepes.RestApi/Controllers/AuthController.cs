@@ -28,6 +28,7 @@ namespace Sepes.RestApi.Controller
             //Issue 41: look into error handling for identifiable conditions. Ex. if azure verification timed out.
             return SepesToken;
         }
+        
         //Takes old token, and generates a new token.
         [Authorize]
         [HttpPost("refreshtoken")]
