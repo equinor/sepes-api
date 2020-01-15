@@ -25,7 +25,7 @@ Rel(sepes, azurenet, "Creates")
 Rel(sepes, azurerg, "Creates")
 Rel(sepes, storageacc, "Creates")
 Rel_L(storageacc, azurecat, "Requests data")
-Rel(azurecat, datasrc, "")
+Rel(azurecat, datasrc, "Mirrors section of")
 Rel_U(azurecat,opa, "Defines")
 
 @enduml

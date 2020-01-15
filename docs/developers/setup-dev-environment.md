@@ -4,19 +4,17 @@
 
 To be able to run and develop for this project there are a some runtimes that need to be installed.
 
-* Dotnet Core SDK 3.0 https://dotnet.microsoft.com/download
+* [Dotnet Core SDK 3.0](https://dotnet.microsoft.com/download)
 
-* Node.js https://nodejs.org/en/
+* [Node.js](https://nodejs.org/en/)
 
-* Microsoft SQL Server Developer https://www.microsoft.com/nb-no/sql-server/sql-server-downloads
-
-* Microsoft SQL Server
+* [Microsoft SQL Server](https://www.microsoft.com/nb-no/sql-server/sql-server-downloads)
 
 ### Azure
 These services are required
-* AD app 
-* Subscribtion
-* Insight
+* AD app
+* Subscribtions
+* Application Insight
 
 
 
@@ -52,7 +50,7 @@ SEPES_CLIENT_SECRET=
 ```
 SEPES_INSTRUMENTATION_KEY=  
 ```
-THis is found on the Application Insights service created on Azure for logging. It can be found in the Overview tab.
+This is found in the Overview tab foun in the Application Insights service created in Azure.
 ```
 SEPES_SUBSCRIPTION_ID=      
 ```
