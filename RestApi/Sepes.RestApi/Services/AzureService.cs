@@ -128,7 +128,6 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-
         public async Task NsgAllowOutboundPort(string securityGroupName,
                                                string ruleName,
                                                int priority,
@@ -200,31 +199,6 @@ namespace Sepes.RestApi.Services
             var nsgs = await _azure.NetworkSecurityGroups.ListByResourceGroupAsync(_commonResourceGroup);
             return nsgs.Select(nsg => nsg.Name);
         }
-
-        public async Task NsgAllowPort(string securityGroupName,
-                                       string resourceGroupName,
-                                       string ruleName,
-                                       int priority,
-                                       string[] internalAddresses,
-                                       int internalPort,
-                                       string[] externalAddresses,
-                                       int externalPort)
-        {
-            await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
-                .Update()
-                .DefineRule(ruleName)
-                .AllowInbound()
-                .FromAddresses(internalAddresses)
-                .FromPort(internalPort)
-                .ToAddresses(externalAddresses)
-                .ToPort(externalPort)
-                .WithAnyProtocol()
-                .WithPriority(priority)
-                .Attach()
-                .ApplyAsync();
-        }
-
 
         //// Pod user/role management
         // Gives a user contributor to a resource group and network join on a network
