@@ -15,10 +15,6 @@ namespace Sepes.RestApi.Model
         public HashSet<DataSetDB> datasets { get; set; }
         public bool archived { get; set; }
 
-        // old model
-        public int[] userIds { get; set; }
-        public int[] datasetIds { get; set; }
-
 
         public Study ToStudy()
         {
@@ -26,18 +22,7 @@ namespace Sepes.RestApi.Model
             var studySponsors = sponsors != null ? sponsors.Select(u => u.ToUser()) : new HashSet<User>();
             var studySuppliers = suppliers != null ? suppliers.Select(u => u.ToUser()) : new HashSet<User>();
 
-            int[] studyUserIds = new int[]{};
-            int[] studyDatasetIds = new int[]{};
-
-
-            if (userIds != null) {
-                studyUserIds = userIds;
-            }
-            if (datasetIds != null) {
-                studyDatasetIds = datasetIds;
-            }
-
-            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived, studyUserIds, studyDatasetIds);
+            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived);
         }
 
     }

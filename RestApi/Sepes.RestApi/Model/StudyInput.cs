@@ -13,10 +13,6 @@ namespace Sepes.RestApi.Model
         public HashSet<string> suppliers { get; set; } = new HashSet<string>();
         public bool archived { get; set; }
 
-        // old model
-        public int[] userIds { get; set; } = new int[]{};
-        public int[] datasetIds { get; set; } = new int[]{};
-
 
         public Study ToStudy()
         {
@@ -34,7 +30,7 @@ namespace Sepes.RestApi.Model
                 studySuppliers.Add(new User("", user, ""));
             }
 
-            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived, userIds, datasetIds);
+            return new Study(studyName, studyId, studyPods, studySponsors, studySuppliers, new HashSet<DataSet>(), archived);
         }
     }
 }
