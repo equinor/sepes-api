@@ -1,5 +1,3 @@
-var studies = []
-
 export var currentStudy = {
     studyId: null,
     studyName: "",

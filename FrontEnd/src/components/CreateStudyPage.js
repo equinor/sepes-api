@@ -58,7 +58,6 @@ class CreateStudyPage extends Component {
 
     componentDidMount() {
         let study = this.props.state.selectedStudy;
-        //let study = StudyService.getCurrentStudy();
 
         if (study.studyId !== null) {
             this.setState({
