@@ -42,7 +42,7 @@ class PodPage extends Component {
                 <div className="sidebar podsidebar">
                     <div>
                         <div className="nsgSwitchclass" style={{ padding: "20px" }}>
-                        <label>Remove all rules
+                        <label>Open internet
                             <Nsgswitch
                             isOn={this.state.openInternet}
                             onColor="#EF476F"
