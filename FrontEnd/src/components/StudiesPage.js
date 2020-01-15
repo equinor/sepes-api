@@ -73,7 +73,6 @@ class CreateStudyPage extends Component {
     }
 
     showArchived = () => {
-        //this.setState({archivedStudies: ["Old study", "Good old days", "Remember when things just worked?", "Nostalgia"]})
         sepes.getStudies(true)
             .then(response => response.json())
             .then(json => {
