@@ -65,7 +65,7 @@ namespace Sepes.RestApi.Services
                 int studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
 
                 saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
-                                        study.datasets, study.archived, study.userIds, study.datasetIds);
+                                        study.datasets, study.archived);
             }
             finally
             {
