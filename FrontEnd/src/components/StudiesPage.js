@@ -41,7 +41,9 @@ class CreateStudyPage extends Component {
                 <div style={{paddingTop: 30, display: "table"}}>
                     { this.state.archivedStudies.map((item) => (
                         <div className="study" onClick={() => this.openStudy(item)}>
-                            <p style={{fontWeight: "bold"}}>{item.StudyName}</p>
+                            <p style={{fontWeight: "bold"}}>{item.studyName}</p>
+                            <p>Pods: {item.pods.length}</p>
+                            <p>Users: {item.suppliers.length}</p>
                         </div>
                     ))}
                 </div>
@@ -71,7 +73,6 @@ class CreateStudyPage extends Component {
     }
 
     showArchived = () => {
-        //this.setState({archivedStudies: ["Old study", "Good old days", "Remember when things just worked?", "Nostalgia"]})
         sepes.getStudies(true)
             .then(response => response.json())
             .then(json => {

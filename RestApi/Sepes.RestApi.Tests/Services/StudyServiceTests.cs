@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
 using Moq;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
@@ -28,7 +26,6 @@ namespace Sepes.RestApi.Tests.Services
 
 
             var savedStudy = await studyService.Save(study, based);
-
             var expected = new Study("test edit", 1);
 
             var length = studyService.GetStudies(new User("","",""), false).Count();
@@ -71,7 +68,7 @@ namespace Sepes.RestApi.Tests.Services
         public async void TestGetStudies()
         {
             var based = new Study("test", 1);
-            var study = new Study("test edit", 1, null, null, null, null, true, null, null);
+            var study = new Study("test edit", 1, null, null, null, null, true);
             var study2 = new Study("test2", 2);
             var study3 = new Study("test2", 3);
 

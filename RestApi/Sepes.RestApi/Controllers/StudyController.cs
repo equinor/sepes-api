@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
-using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,7 +23,6 @@ namespace Sepes.RestApi.Controller
             _studyService = studyService;
         }
 
-
         [HttpPost("save")]
         public async Task<StudyInput> SaveStudy([FromBody] StudyInput[] studies)
         {
@@ -38,6 +35,7 @@ namespace Sepes.RestApi.Controller
                 return study.ToStudyInput();
             }
         }
+
         //Get list of studies
         [HttpGet("list")]
         public IEnumerable<StudyInput> GetStudies()

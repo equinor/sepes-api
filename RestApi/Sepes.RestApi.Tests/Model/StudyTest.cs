@@ -13,13 +13,11 @@ namespace Sepes.RestApi.Tests.Model
         [Fact]
         public void Constructor()
         {
-            Study study = new Study("Teststudy", 42, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 });
+            Study study = new Study("Teststudy", 42, new List<Pod>(), new List<User>(), new List<User>(), new List<DataSet>(), false);
 
 
             Assert.Equal("Teststudy", study.studyName);
             Assert.Equal(42, study.studyId);
-            Assert.Equal(new int[] { 2, 5, 1 }, study.userIds);
-            Assert.Equal(new int[] { 2, 4, 5 }, study.datasetIds);
             Assert.False(study.archived);
         }
         [Fact]
@@ -28,16 +26,11 @@ namespace Sepes.RestApi.Tests.Model
             var study = new StudyInput()
             {
                 studyName = "Teststudy",
-                studyId = 42,
-                userIds = new int[] { 2, 5, 1 },
-                datasetIds = new int[] { 2, 4, 5 }
-            };//"Teststudy", 42, new int[] { 2, 5, 1 }, new int[] { 2, 4, 5 }
-
+                studyId = 42
+            };
 
             Assert.Equal("Teststudy", study.studyName);
             Assert.Equal(42, study.studyId);
-            Assert.Equal(new int[] { 2, 5, 1 }, study.userIds);
-            Assert.Equal(new int[] { 2, 4, 5 }, study.datasetIds);
         }
 
 
@@ -59,8 +52,8 @@ namespace Sepes.RestApi.Tests.Model
             var pods = new List<Pod>();
             pods.Add(pod);
 
-            var study1 = new Study("Test-Study", 1, pods, users, users, datasets, false, new int[]{1, 2, 3}, new int[]{1, 2, 3});
-            var sameAsStudy1 = new Study("Test-Study", 1, pods, users, users, datasets, false, new int[]{1, 2, 3}, new int[]{1, 2, 3});
+            var study1 = new Study("Test-Study", 1, pods, users, users, datasets, false);
+            var sameAsStudy1 = new Study("Test-Study", 1, pods, users, users, datasets, false);
             var differentStudy = new Study("Test-Study3", 3, pods);
             Assert.True(study1.Equals(sameAsStudy1));
             Assert.False(study1.Equals(differentStudy));
@@ -79,7 +72,7 @@ namespace Sepes.RestApi.Tests.Model
             var pods = new List<Pod>();
             pods.Add(pod);
 
-            var study1 = new Study("Test-Study", 1, pods, null, null, new List<DataSet>(), false, new int[]{1, 2, 3}, new int[]{1, 2, 3});
+            var study1 = new Study("Test-Study", 1, pods, null, null, new List<DataSet>(), false);
             var study2 = study1.ToStudyInput();
             var study3 = new Study("Test-Study", 2, pods);
 

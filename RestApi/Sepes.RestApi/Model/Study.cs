@@ -17,12 +17,9 @@ namespace Sepes.RestApi.Model
         public ImmutableHashSet<DataSet> datasets { get; }
         public bool archived { get; }
 
-        // old model
-        public int[] userIds { get; set; }
-        public int[] datasetIds { get; set; }
 
         public Study(string studyName, int studyId, IEnumerable<Pod> pods, IEnumerable<User> sponsors, 
-                    IEnumerable<User> suppliers, IEnumerable<DataSet> datasets, bool archived, int[] userIds, int[] datasetIds)
+                    IEnumerable<User> suppliers, IEnumerable<DataSet> datasets, bool archived)
         {
             this.studyName = studyName;
             this.studyId = studyId;
@@ -31,13 +28,11 @@ namespace Sepes.RestApi.Model
             this.suppliers = suppliers == null ? ImmutableHashSet<User>.Empty : suppliers.ToImmutableHashSet();
             this.datasets = datasets == null ? ImmutableHashSet<DataSet>.Empty : datasets.ToImmutableHashSet();
             this.archived = archived;
-            this.userIds = userIds;
-            this.datasetIds = datasetIds;
         }
 
         public Study(string studyName, int studyId, IEnumerable<Pod> pods = null) : 
             this(studyName, studyId, pods == null ? ImmutableHashSet<Pod>.Empty : pods, ImmutableHashSet<User>.Empty, 
-                ImmutableHashSet<User>.Empty, ImmutableHashSet<DataSet>.Empty, false, new int[]{}, new int[]{}) {}
+                ImmutableHashSet<User>.Empty, ImmutableHashSet<DataSet>.Empty, false) {}
 
         public StudyInput ToStudyInput()
         {
@@ -61,15 +56,13 @@ namespace Sepes.RestApi.Model
                 archived = archived,
                 pods = inputPods,
                 sponsors = inputSponsors,
-                suppliers = inputSuppliers,
-                userIds = userIds,
-                datasetIds = datasetIds
+                suppliers = inputSuppliers
             };
         }
 
         public Study ReplacePods(IEnumerable<Pod> newPods)
         {
-            return new Study(studyName, studyId, newPods, sponsors, suppliers, datasets, archived, userIds, datasetIds);
+            return new Study(studyName, studyId, newPods, sponsors, suppliers, datasets, archived);
         }
         
         public override bool Equals(object obj)
@@ -81,9 +74,7 @@ namespace Sepes.RestApi.Model
                    Enumerable.SequenceEqual(sponsors, study.sponsors) &&
                    Enumerable.SequenceEqual(suppliers, study.suppliers) &&
                    Enumerable.SequenceEqual(datasets, study.datasets) &&
-                   archived == study.archived &&
-                   Enumerable.SequenceEqual(userIds, study.userIds) &&
-                   Enumerable.SequenceEqual(datasetIds, study.datasetIds);
+                   archived == study.archived;
         }
 
         public override int GetHashCode()
