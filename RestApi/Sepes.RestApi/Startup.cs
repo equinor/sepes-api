@@ -28,15 +28,8 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //Adds the secret azure insight token. Make sure to set this if using logging via azure innsight
-            //Use ' dotnet user-secrets set "AzureLogToken:ServiceApiKey" "YOURKEY" ' To add a secret key.
-
             // The following line enables Application Insights telemetry collection.
-            //If this is left empty then no logs are made. Unknown if still affects performance.
-
-            //Issue: 38 Check the all the logs thoroughly before you close out this issue. Test a the webapi functions and make sure none of them causes sensitive data to be logged. 
-
-            //Secret key can be set up for with either dotnet secret key or in environment values, secret key will overwrite ENV.
+            // If this is left empty then no logs are made. Unknown if still affects performance.
             services.AddApplicationInsightsTelemetry(_config.instrumentationKey);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -47,10 +40,9 @@ namespace Sepes.RestApi
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder =>
                 {
-                    /* builder.WithOrigins("http://example.com",
-                                        "http://www.contoso.com");
-                    */
-                    //Issue: 39  replace with above commented code. Preferably add config support for the URLs. Perhaps an if to check if environment is running in development so we can still easily debug without changing code
+                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
+                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
+                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
@@ -93,7 +85,6 @@ namespace Sepes.RestApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-            //app.UseMvc();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

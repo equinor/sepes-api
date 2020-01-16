@@ -58,7 +58,6 @@ class CreateStudyPage extends Component {
 
     componentDidMount() {
         let study = this.props.state.selectedStudy;
-        //let study = StudyService.getCurrentStudy();
 
         if (study.studyId !== null) {
             this.setState({
@@ -131,7 +130,7 @@ class CreateStudyPage extends Component {
             studyName: state.studyName,
             pods: state.pods,
             datasetIds: state.dataset,
-            archived: false,
+            archived: state.archived,
             sponsors: state.sponsors,
             suppliers: state.suppliers
         }

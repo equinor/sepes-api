@@ -1,15 +1,6 @@
 import React from 'react';
 
 export default function SepesDataList(props) {
-    /*var addRemove = (e, id) => {
-        if (e.target.checked) {
-            props.addItem(id, "datasetIds");
-        }
-        else {
-            props.removeItem(id, "datasetIds");
-        }
-    }*/
-
     var demoAddRemove = (e, id) => {
         if (e.target.checked) {
             props.addItem(id);
