@@ -12,8 +12,8 @@ This contains the following roles:
 - Supplier: External vendors
 
 Tech Stack: 
-  * React JS https://reactjs.org/
-  * WebPack https://webpack.js.org/
+  * [React JS](https://reactjs.org/)
+  * [WebPack](https://webpack.js.org/)
   * HTML, CSS and JavaScript
 
 Maturity: 3
@@ -23,7 +23,7 @@ Protocol: https
 ## Azure Portal ##
 
 Azure Portal is used by vendors to create resources for their experiment. 
-Documentation can be found at microsoft homepage.  https://docs.microsoft.com/azure/ Should use in international one that redirects to local version.
+Documentation can be found at [Microsoft homepage.](https://docs.microsoft.com/azure/)
 
 Tech Stack: N/A
 
@@ -120,7 +120,7 @@ Protocol: https
 The data catalog provides the link to data.
 
 
-Maturity is based on Maufacturing Readiness Level. https://rescoll.fr/wp-content/uploads/2014/01/MRL.jpg
+Maturity is based on [Manufacturing Readiness Level.](https://rescoll.fr/wp-content/uploads/2014/01/MRL.jpg)
 
 
 Protocol: https
