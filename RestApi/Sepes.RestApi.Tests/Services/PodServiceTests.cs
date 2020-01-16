@@ -89,6 +89,64 @@ namespace Sepes.RestApi.Tests.Services
             // delete old nsg
             azureMock.Verify(az => az.DeleteSecurityGroup(newPod.networkSecurityGroupName), Times.Once);
         }
+
+        [Fact]
+        public async Task TestSetNewPodWithOpenInternet()
+        {
+            var users = new List<User>();
+            var rules = new List<Rule>();
+            rules.Add(new Rule(80, "1.1.1.1"));
+            rules.Add(new Rule(80, "2.2.2.2"));
+            rules.Add(new Rule(3000, "3.3.3.3"));
+
+            bool openInternet = true;
+            var newPod = new Pod(1, "test", 1, openInternet, rules, rules, null, null);
+
+            var databaseMock = new Mock<ISepesDb>();
+            var azureMock = new Mock<IAzureService>();
+            var podService = new PodService(databaseMock.Object, azureMock.Object);
+
+
+            await podService.Set(newPod, null, users, null);
+
+
+            azureMock.Verify(az => az.CreateResourceGroup(newPod.resourceGroupName), Times.Once);
+            azureMock.Verify(az => az.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName), Times.Once);
+            azureMock.Verify(az => az.CreateSecurityGroup(newPod.networkSecurityGroupName), Times.Never);
+            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "in_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Never);
+            azureMock.Verify(az => az.ApplySecurityGroup(newPod.networkSecurityGroupName, newPod.subnetName, newPod.networkName), Times.Never);
+        }
+
+        [Fact]
+        public async Task TestSetUpdatedPodWithOpenInternet()
+        {
+            var users = new List<User>();
+            var rules = new List<Rule>();
+            rules.Add(new Rule(80, "1.1.1.1"));
+            rules.Add(new Rule(80, "2.2.2.2"));
+            rules.Add(new Rule(3000, "3.3.3.3"));
+
+            bool openInternet = false;
+            var based = new Pod(1, "test", 1, openInternet, rules, rules, null, null);
+
+            openInternet = true;
+            var newPod = new Pod(1, "test", 1, openInternet, rules, rules, null, null);
+
+            var databaseMock = new Mock<ISepesDb>();
+            var azureMock = new Mock<IAzureService>();
+            var podService = new PodService(databaseMock.Object, azureMock.Object);
+
+
+            await podService.Set(newPod, based, users, null);
+
+            azureMock.Verify(az => az.RemoveSecurityGroup(newPod.subnetName, newPod.networkName), Times.Once);
+
+            azureMock.Verify(az => az.CreateResourceGroup(newPod.resourceGroupName), Times.Never);
+            azureMock.Verify(az => az.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName), Times.Never);
+            azureMock.Verify(az => az.CreateSecurityGroup(newPod.networkSecurityGroupName), Times.Never);
+            azureMock.Verify(az => az.NsgAllowInboundPort(newPod.networkSecurityGroupName, "in_80", 100, new string[]{"1.1.1.1", "2.2.2.2"}, 80), Times.Never);
+            azureMock.Verify(az => az.ApplySecurityGroup(newPod.networkSecurityGroupName, newPod.subnetName, newPod.networkName), Times.Never);
+        }
         
     }
 }

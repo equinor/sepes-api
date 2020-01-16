@@ -1,0 +1,61 @@
+@startuml "User_Interaction_Flow"
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Container.puml
+
+
+LAYOUT_LEFT_RIGHT
+LAYOUT_WITH_LEGEND
+
+
+Person(user, "User")
+
+System_Boundary(c1, "SEPES"){
+    
+    Container(frontend, "Web Application", "Java, React", "Allows users to create or edit sandbox environments.")
+
+    Container(azure_prtl, "Azure Portal", "Cloud Platform", "Users manages content of sandboxes.")
+
+    Container(restapi, "RestApi", "Dotnet, Asp.Net", "Manages the sandbox environment")
+
+    Container(azure_rg, "Azure Resource Groups","Cloud System")
+
+    Container(azure_net, "Azure Network", "Cloud System")
+
+    ContainerDb(state_db, "State Database", "MySQL", "Stores the state")
+
+    Container(str_acc, "Storage Account", "Stores a copy of the data used by the sandbox")
+
+    Container(opa, "Policy Service", "OPA")
+    
+    Container(azure_ad, "Azure AD","Cloud System")
+
+    Container(azure_dc, "Azure Datacatalog","Links SEPES to sensitive data")
+}
+System_Ext(datasrc, "Data Source")
+
+
+Rel(user, frontend, "Uses", "HTTPS")
+Rel_R(user, azure_prtl, "Manages", "HTTPS")
+
+Rel(frontend, restapi, "Reads from and writes to", "JSON/HTTPS")
+Rel_L(restapi, state_db, "Updates state")
+        
+Rel(azure_prtl, azure_rg, "Perform small tweaks?")
+Rel(azure_prtl, azure_net, "Perform small tweaks?")
+
+Rel(restapi, str_acc, "Requests data")
+Rel(restapi, opa, "Verifies request complies")
+Rel(restapi, azure_net, "Creates")
+Rel(restapi, azure_rg, "Creates")
+
+
+Rel(azure_dc, str_acc, "Creates a")
+Rel(azure_dc, opa, "Load policy")
+
+
+Rel_R(azure_ad, restapi, "Provides userlist", "HTTPS")
+
+Rel_U(datasrc, azure_dc, "Abstracts sensitive data from SEPES")
+
+Lay_R(frontend, azure_prtl)
+
+@enduml
