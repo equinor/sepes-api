@@ -1,0 +1,23 @@
+@startuml "Context"
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Container.puml
+
+
+LAYOUT_TOP_DOWN
+LAYOUT_WITH_LEGEND
+
+
+Person(user, "User")
+
+System_Boundary(c1, "SEPES"){
+    
+    System(sepes, "Sepes", "Allows users to create or edit sandbox environments.")
+    
+}
+System_Ext(azure, "Azure")
+System_Ext(database, "Database")
+
+Rel(user,sepes,"Interacts with")
+Rel_R(sepes, azure, "Applies changes")
+Rel(sepes, database, "Copies state")
+
+@enduml

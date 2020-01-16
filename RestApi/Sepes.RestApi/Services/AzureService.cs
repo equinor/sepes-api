@@ -35,11 +35,11 @@ namespace Sepes.RestApi.Services
             }
         }
 
-        public async Task<string> CreateResourceGroup(string networkName)
+        public async Task<string> CreateResourceGroup(string resourceGroupName)
         {
             //Create ResourceGroup
             var resourceGroup = await _azure.ResourceGroups
-                    .Define(networkName)
+                    .Define(resourceGroupName)
                     .WithRegion(Region.EuropeNorth)
                     .CreateAsync();
 
