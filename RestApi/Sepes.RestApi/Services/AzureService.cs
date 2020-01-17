@@ -68,7 +68,7 @@ namespace Sepes.RestApi.Services
             return network.Id;
         }
 
-        public async Task RemoveNetwork(string vNetName)
+        public async Task DeleteNetwork(string vNetName)
         {
             await _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
             return;

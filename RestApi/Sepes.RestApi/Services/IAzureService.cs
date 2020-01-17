@@ -7,8 +7,8 @@ namespace Sepes.RestApi.Services
     {
         Task<string> CreateResourceGroup(string podName);
         Task DeleteResourceGroup(string resourceGroupName);
-        Task TerminateResourceGroup(string resourceGroupName);
         Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName);
+        Task DeleteNetwork(string vNetName);
         Task CreateSecurityGroup(string securityGroupName);
         Task DeleteSecurityGroup(string securityGroupName);
         Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkName);
