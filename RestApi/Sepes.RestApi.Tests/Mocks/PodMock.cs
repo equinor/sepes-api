@@ -13,5 +13,9 @@ namespace Sepes.RestApi.Tests.Mocks
         {
             throw new NotImplementedException();
         }
+        public Task Delete(Pod pod)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

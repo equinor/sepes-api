@@ -11,6 +11,7 @@ namespace Sepes.RestApi.Services
     public interface IPodService
     {
         Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers);
+        Task Delete(Pod pod);
     }
 
     public class PodService : IPodService
@@ -48,6 +49,11 @@ namespace Sepes.RestApi.Services
             tasks.Add(AddUsers(newPod, newUsers, basedUsers));
 
             await Task.WhenAll(tasks);
+        }
+        public async Task Delete(Pod pod){
+            await _azure.DeleteNetwork(pod.networkName);
+            await _azure.DeleteResourceGroup(pod.resourceGroupName);
+            //await _azure.Delete
         }
 
         private async Task AddUsers(Pod newPod, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
