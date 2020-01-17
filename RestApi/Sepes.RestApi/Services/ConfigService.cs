@@ -64,7 +64,8 @@ namespace Sepes.RestApi.Services
                 sepes["CLIENT_ID"],
                 sepes["CLIENT_SECRET"],
                 sepes["SUBSCRIPTION_ID"],
-                $"{sepes["name"]}-{asp["Azure:CommonResourceGroupName"]}"
+                $"{sepes["name"]}-{asp["Azure:CommonResourceGroupName"]}",
+                sepes["JOIN_NETWORK_ROLE_NAME"]
             );
             instrumentationKey = sepes["INSTRUMENTATION_KEY"];
 
