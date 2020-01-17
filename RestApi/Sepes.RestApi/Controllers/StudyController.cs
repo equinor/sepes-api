@@ -38,9 +38,10 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost("pod/delete")]
         //Gets the Based state from frontend to queue a delete
+        //Checks pod against the study state
         public async void DeletePod([FromBody] PodInput podIn)
         {
-            return _studyService.DeletePod(podIn.ToPod());
+            await _studyService.DeletePod(podIn.ToPod());
         }
 
         //Get list of studies
