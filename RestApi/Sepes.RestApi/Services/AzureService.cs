@@ -8,6 +8,7 @@ using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.Azure.Management.Network.Fluent;
+using System.Threading; 
 
 namespace Sepes.RestApi.Services
 {
@@ -47,9 +48,13 @@ namespace Sepes.RestApi.Services
             return resourceGroup.Id;
         }
         
-        public Task TerminateResourceGroup(string commonResourceGroup)
+        public async Task DeleteResourceGroup(string resourceGroupName)
         {
-            throw new NotImplementedException();
+            //Cancelation token can be saved so the azure delete can be aborted. But has not been done in this use case.
+            CancellationTokenSource source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+            
+            await _azure.ResourceGroups.BeginDeleteByNameAsync(resourceGroupName, token);
         }
 
         public async Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName)

@@ -6,6 +6,7 @@ namespace Sepes.RestApi.Services
     public interface IAzureService
     {
         Task<string> CreateResourceGroup(string podName);
+        Task DeleteResourceGroup(string resourceGroupName);
         Task TerminateResourceGroup(string resourceGroupName);
         Task<string> CreateNetwork(string networkName, string addressSpace, string subnetName);
         Task CreateSecurityGroup(string securityGroupName);
