@@ -62,8 +62,8 @@ class CreateStudyPage extends Component {
         if (study.studyId !== null) {
             this.setState({
                 studyName: study.studyName,
-                studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
-                archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
+                studyId: study.studyId,
+                archived: study.archived,
                 pods: study.pods,
                 sponsors: study.sponsors,
                 suppliers: study.suppliers
