@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
-
 using System.Linq;
 using System;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Sepes.RestApi.Services
 {
@@ -21,12 +23,11 @@ namespace Sepes.RestApi.Services
         // This call will only succeed if based is the same as the current version of that study.
         // This method will only update the metadata about a study and will not make changes to the azure resources.
         Task<Study> Save(Study newStudy, Study based);
-        Task DeletePod(Pod pod);
+        Task<int> DeletePod(Pod pod);
     }
 
     public class StudyService : IStudyService
     {
-
         ISepesDb _db;
         IPodService _podService;
         HashSet<Study> _studies;
@@ -67,30 +68,39 @@ namespace Sepes.RestApi.Services
 
             return study;
         }
-        public async Task DeletePod(Pod pod)
+
+        public async Task<int> DeletePod(Pod pod)
         {
+            var studyList = _studies.ToList();
+            Study study = null;
+
+            foreach ( var iStudy in studyList)
+            {
+                if (iStudy.studyId == pod.studyId)
+                {
+                    study = iStudy;
+                }
+
+            }
+            
+            if (study.pods.Contains(pod))
+            {
+                await _podService.Delete(pod);
+                //Delete from database
+                study.pods.Remove(pod);//A bit unsure if this works
+                await _db.UpdateStudy(study);
+                return (int)pod.id;
+                
+            }
+            else{
+                return -1; //Error data mismatch, pod changed or not found. Refresh and try again
+            }
 
             //If results to 1 it implies pod is in memory and matches.
             //If 2 implies that pod is in memory but different state. Returns error to frontend telling user to refresh pod and reverify as it might be in active use
             //If checking fails to find pod it returns 0 and triggers error to frontend telling it to ask user to refresh
-            int podmatches = 0;
-            
-
-            if (podmatches == 1/*pod is in memory and matches (no changes)*/)
-            {
-                //If pod matches memory then it can be assumed pod deletion is valid.
-                await _podService.Delete(pod);
-
-            }
-            else if (podmatches == 2)
-            {
-                //If pod has been changed we can assume it is still in use and return an error to user
-                return /*error for frontend to show error message asking user to refresh and re-verify it needs deletion*/;
-            }
-                //If above steps fail
-                return ;
-
         }
+
         private async Task<Study> UpdatePods(Study based, Study study)
         {
             foreach (var pod in study.pods)
