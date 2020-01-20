@@ -33,7 +33,7 @@ class CreateStudyPage extends Component {
         <div>
             <header>
                 <span><b>
-                    <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
+                    <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
                 <button disabled={appstate.saving} onClick={this.saveStudy}>Save</button>
