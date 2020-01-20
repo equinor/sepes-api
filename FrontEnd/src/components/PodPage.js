@@ -19,9 +19,7 @@ class PodPage extends Component {
             outgoing: [],
             dataset: [],
             podName: "",
-            podId: null,
-
-            saveBtnDisabled: false
+            podId: null
         }
     }
     render() {
