@@ -24,7 +24,6 @@ class CreateStudyPage extends Component {
             studyName: "",
 
             data: [],
-            saveBtnDisabled: false,
         }
     }
 
