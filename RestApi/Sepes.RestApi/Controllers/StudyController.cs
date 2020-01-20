@@ -6,6 +6,7 @@ using Sepes.RestApi.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Sepes.RestApi.Controller
 {
