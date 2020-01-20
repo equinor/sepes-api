@@ -139,7 +139,7 @@ class CreateStudyPage extends Component {
 
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
-        sepes.createStudy(study, based)
+        sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(json => {
                 this.setState({studyId: json.studyId});
