@@ -19,7 +19,7 @@ class CreateStudyPage extends Component {
         return (
         <div>
             <header>
-                <span><b>Sepes</b></span>
+                <span><b>Studies</b></span>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div style={{padding: 50, paddingRight: 0}}>
