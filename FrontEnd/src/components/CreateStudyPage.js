@@ -129,7 +129,6 @@ class CreateStudyPage extends Component {
         let study = {
             studyName: state.studyName,
             pods: state.pods,
-            datasetIds: state.dataset,
             archived: state.archived,
             sponsors: state.sponsors,
             suppliers: state.suppliers
