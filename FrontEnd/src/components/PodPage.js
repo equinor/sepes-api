@@ -19,9 +19,7 @@ class PodPage extends Component {
             outgoing: [],
             dataset: [],
             podName: "",
-            podId: null,
-
-            saveBtnDisabled: false
+            podId: null
         }
     }
     render() {
@@ -31,11 +29,11 @@ class PodPage extends Component {
             <div>
                 <header>
                     <span><b>
-                        <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > <span
-                            className="link" onClick={() => this.props.changePage("study")}>Study</span> > Pod </b></span>
+                        <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > <span
+                            className="link" onClick={() => this.props.changePage("study")}>{appstate.selectedStudy.studyName}</span> > </b></span>
                     <link />
                     <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e) => this.setState({ podName: e.target.value })} />
-                    <button disabled={appstate.saving} onClick={this.createPod}>Save</button>
+                    <button disabled={appstate.saving} onClick={this.savePod}>Save</button>
                     { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
                     <span className="loggedInUser">Logged in as <b>{this.props.state.userName}</b></span>
                 </header>
@@ -101,7 +99,7 @@ class PodPage extends Component {
         });
     }
 
-    createPod = () => {
+    savePod = () => {
         let props = this.props;
         props.setSavingState(true);
 
@@ -129,7 +127,7 @@ class PodPage extends Component {
             study.pods[index] = pod;
         }
 
-        sepes.createStudy(study, based)
+        sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(study => {
                 if (this.state.podId === null) {
