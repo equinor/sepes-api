@@ -87,8 +87,12 @@ namespace Sepes.RestApi.Services
             {
                 await _podService.Delete(pod);
                 //Delete from database
-                study.pods.Remove(pod);//A bit unsure if this works
+                var tempPods = study.pods.Remove(pod);//A bit unsure if this works
+                var studynew = study.ReplacePods(tempPods);
                 await _db.UpdateStudy(study);
+                
+                _studies.Remove(study);
+                _studies.Add(studynew);
                 return (int)pod.id;
                 
             }
