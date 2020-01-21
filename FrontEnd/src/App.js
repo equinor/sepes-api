@@ -33,9 +33,7 @@ class App extends React.Component {
       },
       // used to disable save button for a study and its pods when saving a study or pod, based on study id
       savingStudyId: -1,
-      
-      
-      jwtTest: "Result from backend",
+
       studies: [],
       archived: []
     }
@@ -157,29 +155,6 @@ class App extends React.Component {
     localStorage.removeItem(JWT_NAME);
     this.appInsights.clearAuthenticatedUserContext();
     this.appInsights.trackEvent({name: 'Logout'});
-  }
-
-  testSepesAPI = () => {
-    fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/values", {
-      method: "get",
-      headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
-    }).then(data => data.text())
-    .then(data => {
-      if(data.length === 0) {
-        this.setState({
-          jwtTest: "FAIL"
-        });
-      } else {
-        this.setState({
-          jwtTest: data
-        });
-      }
-    }).catch(error => {
-      console.log(error);
-      this.setState({
-        jwtTest: "FAIL"
-      });
-    })
   }
 
   setSelectedStudy = (study) => {
