@@ -86,11 +86,12 @@ namespace Sepes.RestApi.Services
             if (study.pods.Contains(pod))
             {
                 await _podService.Delete(pod);
-                //Delete from database
-                var tempPods = study.pods.Remove(pod);//A bit unsure if this works
+                //Remove pod from study
+                var tempPods = study.pods.Remove(pod);
                 var studynew = study.ReplacePods(tempPods);
-                await _db.UpdateStudy(study);
-                
+                //Delete from database
+                await _db.UpdateStudy(studynew);
+                //Replace study in memory
                 _studies.Remove(study);
                 _studies.Add(studynew);
                 return (int)pod.id;
