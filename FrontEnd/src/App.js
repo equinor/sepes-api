@@ -114,7 +114,6 @@ class App extends React.Component {
       tokenId: this.msalApp.getAccount().accountIdentifier,
       userName: this.msalApp.getAccount().userName
     });
-    console.log(this.msalApp.getAccount().userName);
   }
 
   login = () => {

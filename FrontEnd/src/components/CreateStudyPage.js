@@ -24,7 +24,6 @@ class CreateStudyPage extends Component {
             studyName: "",
 
             data: [],
-            saveBtnDisabled: false,
         }
     }
 
@@ -34,7 +33,7 @@ class CreateStudyPage extends Component {
         <div>
             <header>
                 <span><b>
-                    <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
+                    <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
                 <button disabled={appstate.saving} onClick={this.saveStudy}>Save</button>
@@ -62,8 +61,8 @@ class CreateStudyPage extends Component {
         if (study.studyId !== null) {
             this.setState({
                 studyName: study.studyName,
-                studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
-                archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
+                studyId: study.studyId,
+                archived: study.archived,
                 pods: study.pods,
                 sponsors: study.sponsors,
                 suppliers: study.suppliers
@@ -129,7 +128,6 @@ class CreateStudyPage extends Component {
         let study = {
             studyName: state.studyName,
             pods: state.pods,
-            datasetIds: state.dataset,
             archived: state.archived,
             sponsors: state.sponsors,
             suppliers: state.suppliers
@@ -141,7 +139,7 @@ class CreateStudyPage extends Component {
 
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
-        sepes.createStudy(study, based)
+        sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(json => {
                 this.setState({studyId: json.studyId});
