@@ -27,6 +27,7 @@ class PodPage extends Component {
     render() {
         let appstate = this.props.state;
         let study = appstate.selectedStudy;
+        // disables saving based on study id
         let disableSave = study.studyId === appstate.savingStudyId;
 
         return (

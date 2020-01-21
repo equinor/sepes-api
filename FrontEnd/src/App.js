@@ -31,6 +31,7 @@ class App extends React.Component {
         StudyId: null,
         StudyName: "",
       },
+      // used to disable save button for a study and its pods when saving a study or pod, based on study id
       savingStudyId: -1,
       
       
