@@ -31,7 +31,7 @@ class App extends React.Component {
         StudyId: null,
         StudyName: "",
       },
-      saving: false,
+      savingStudyId: -1,
       
       
       jwtTest: "Result from backend",
@@ -205,9 +205,9 @@ class App extends React.Component {
     });
   }
 
-  setSavingState = (saving) => {
+  setSavingState = (savingStudyId) => {
     this.setState({
-      saving
+      savingStudyId
     });
   }
   

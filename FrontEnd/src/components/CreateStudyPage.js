@@ -1,15 +1,15 @@
-import React, {Component} from 'react'
-import SepesUserList from './SepesUserList'
-import SepesDataList from './SepesDataList'
-import SepesPodList from './SepesPodList'
+import React, {Component} from 'react';
+import SepesUserList from './SepesUserList';
+import SepesDataList from './SepesDataList';
+import SepesPodList from './SepesPodList';
 
-import * as StudyService from "../studyService"
+import spinner from "../spinner.svg";
 
-import spinner from "../spinner.svg"
-
+import * as StudyService from "../studyService";
 import Sepes from '../sepes.js';
-const sepes = new Sepes();
 
+
+const sepes = new Sepes();
 
 class CreateStudyPage extends Component {
     constructor(props) {
@@ -29,6 +29,8 @@ class CreateStudyPage extends Component {
 
     render() {
         let appstate = this.props.state;
+        let disableSave = this.state.studyId === appstate.savingStudyId;
+
         return (
         <div>
             <header>
@@ -36,8 +38,8 @@ class CreateStudyPage extends Component {
                     <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
-                <button disabled={appstate.saving} onClick={this.saveStudy}>Save</button>
-                { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
+                <button disabled={disableSave} onClick={this.saveStudy}>Save</button>
+                { disableSave ? <img src={spinner} className="spinner" alt="" /> : null }
                 <span className="loggedInUser">Logged in as <b>{ appstate.userName }</b></span>
             </header>
             <div className="sidebar">
@@ -115,16 +117,15 @@ class CreateStudyPage extends Component {
         this.props.changePage("pod", {dataset: this.state.dataset, pod});
     }
 
-
     updateAchived = () => {
         this.setState({archived: !this.state.archived});
     }
 
     saveStudy = () => {
         let props = this.props;
-        props.setSavingState(true);
-
         let state = this.state;
+
+        
         let study = {
             studyName: state.studyName,
             pods: state.pods,
@@ -132,22 +133,25 @@ class CreateStudyPage extends Component {
             sponsors: state.sponsors,
             suppliers: state.suppliers
         }
-
         if (state.studyId !== null) {
             study.studyId = state.studyId;
         }
-
+        
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
+        props.setSavingState(state.studyId);
         sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(json => {
+                // Set state 
                 this.setState({studyId: json.studyId});
-                props.setSavingState(false);
                 props.setStudy(json);
+
+                // Enable saving
+                props.setSavingState(-1);
             })
             .catch(() => {
-                props.setSavingState(false);
+                props.setSavingState(-1);
             });
     }
 }
