@@ -29,6 +29,7 @@ class CreateStudyPage extends Component {
 
     render() {
         let appstate = this.props.state;
+        // disables saving based on study id
         let disableSave = this.state.studyId === appstate.savingStudyId;
 
         return (
