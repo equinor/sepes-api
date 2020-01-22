@@ -30,7 +30,10 @@ class CreateStudyPage extends Component {
     render() {
         let appstate = this.props.state;
         // disables saving based on study id
-        let disableSave = this.state.studyId === appstate.savingStudyId;
+        let disableSave = false;
+        appstate.savingStudyIds.forEach(id => {
+            if (id === this.state.studyId) disableSave = true;
+        });
 
         return (
         <div>
@@ -143,16 +146,20 @@ class CreateStudyPage extends Component {
         props.setSavingState(state.studyId);
         sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
-            .then(json => {
+            .then(returnedStudy => {
                 // Set state 
-                this.setState({studyId: json.studyId});
-                props.setStudy(json);
+                if (this.state.studyId === null) {
+                    this.setState({studyId: returnedStudy.studyId});
+                }
+
+                // Update base study
+                props.updateStudy(returnedStudy);
 
                 // Enable saving
-                props.setSavingState(-1);
+                props.removeSavingState(study.studyId);
             })
             .catch(() => {
-                props.setSavingState(-1);
+                props.removeSavingState(study.studyId);
             });
     }
 }

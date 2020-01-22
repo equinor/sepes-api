@@ -28,16 +28,17 @@ class PodPage extends Component {
         let appstate = this.props.state;
         let study = appstate.selectedStudy;
         // disables saving based on study id
-        let disableSave = study.studyId === appstate.savingStudyId;
+        let disableSave = false;
+        appstate.savingStudyIds.forEach(id => {
+            if (id === study.studyId) disableSave = true;
+        });
 
         return (
-
             <div>
                 <header>
                     <span><b>
                         <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > <span
                             className="link" onClick={() => this.props.changePage("study")}>{study.studyName}</span> > </b></span>
-                    <link />
                     <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e) => this.setState({ podName: e.target.value })} />
                     <button disabled={disableSave} onClick={this.savePod}>Save</button>
                     { disableSave ? <img src={spinner} className="spinner" alt="" /> : null }
@@ -134,23 +135,22 @@ class PodPage extends Component {
         }
         
         props.setSavingState(study.studyId);
-        console.log("setSavingState "+study.studyId)
-
-
         sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
-            .then(study => {
+            .then(returnedStudy => {
                 if (this.state.podId === null) {
-                    let podId = study.pods[study.pods.length - 1].podId
-                    this.setState({
-                        podId
-                    });
+                    let podId = returnedStudy.pods[returnedStudy.pods.length - 1].podId
+                    this.setState({podId});
                 }
-                props.setStudy(study);
-                props.setSavingState(-1);
+
+                // Update base study
+                props.updateStudy(returnedStudy);
+                
+                // Enable save button
+                props.removeSavingState(study.studyId);
             })
             .catch(() => {
-                props.setSavingState(-1);
+                props.removeSavingState(study.studyId);
 
             });
     }
