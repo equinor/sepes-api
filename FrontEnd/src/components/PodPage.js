@@ -36,18 +36,21 @@ class PodPage extends Component {
                     <link />
                     <input type="text" placeholder="Pod name" id="new-study-input" value={this.state.podName} onChange={(e) => this.setState({ podName: e.target.value })} />
                     <button disabled={appstate.saving} onClick={this.createPod}>Save</button>
-                    { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
+                    {appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null}
                     <span className="loggedInUser">Logged in as <b>{this.props.state.userName}</b></span>
                 </header>
                 <div className="sidebar podsidebar">
                     <div>
                         <div className="nsgSwitchclass" style={{ padding: "20px" }}>
-                        <label>Open internet
+                            <label>Open internet
                             <Nsgswitch
-                            isOn={this.state.openInternet}
-                            onColor="#EF476F"
-                            handleToggle={this.updateNsg}
-                            /></label>
+                                    isOn={this.state.openInternet}
+                                    onColor="#EF476F"
+                                    handleToggle={this.updateNsg}
+                                /></label>
+                        </div>
+                        <div>
+                            {true ? <button className="deletebtn" onClick={this.deletePod}>Delete Pod</button> : null}
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
@@ -61,7 +64,7 @@ class PodPage extends Component {
             </div>);
     }
 
-    componentDidMount() {
+    componentDidMount() { 
         let pod = this.props.state.selection.pod;
         if (pod.podId !== null) {
             this.setState({
@@ -74,7 +77,7 @@ class PodPage extends Component {
         }
     }
     updateNsg = () => {
-        this.setState({openInternet: !this.state.openInternet});
+        this.setState({ openInternet: !this.state.openInternet });
     }
 
     addIncomingRule = (port, ip) => {
@@ -145,6 +148,35 @@ class PodPage extends Component {
                 props.setSavingState(false);
 
             });
+    }
+
+    deletePod = () => {
+        let props = this.props;
+        //props.setSavingState(true);
+
+        let based = props.state.selectedStudy;
+        let study = JSON.parse(JSON.stringify(based));
+        //Removes pod from Study
+        study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
+        
+        sepes.createStudy(study, based);
+        console.log([study,based])
+        /* Return handling should just be replaced with something that removes pod from state and then changes page to study page
+            .then(returnValue => returnValue.json())
+            .then(study => {
+                if (this.state.podId === null) {
+                    let podId = study.pods[study.pods.length - 1].podId
+                    this.setState({
+                        podId
+                    });
+                }
+                props.setStudy(study);
+                props.setSavingState(false);
+            })
+            .catch(() => {
+                props.setSavingState(false);
+
+            });*/
     }
 }
 
