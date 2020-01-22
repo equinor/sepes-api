@@ -23,16 +23,18 @@ class App extends React.Component {
       tokenId: "",
       userName: "demo@sepes.com",
       page: "none",
+
+      // the pod and datasets selected in a study
       selection: {
         dataset: [],
-        pods: [],
+        pod: null,
       },
       selectedStudy: {
         StudyId: null,
         StudyName: "",
       },
       // used to disable save button for a study and its pods when saving a study or pod, based on study id
-      savingStudyId: -1,
+      savingStudyIds: [],
 
       studies: [],
       archived: []
@@ -70,15 +72,17 @@ class App extends React.Component {
           <CreateStudyPage 
             state={this.state} 
             changePage={this.changePage} 
-            setStudy={this.setSelectedStudy}
-            setSavingState={this.setSavingState} /> : null}
+            updateStudy={this.updateSelectedStudy}
+            setSavingState={this.setSavingState}
+            removeSavingState={this.removeSavingState} /> : null}
             
         {this.state.page === "pod" ? 
           <PodPage 
             state={this.state} 
             changePage={this.changePage} 
-            setStudy={this.setSelectedStudy}
-            setSavingState={this.setSavingState} /> : null}
+            updateStudy={this.updateSelectedStudy}
+            setSavingState={this.setSavingState}
+            removeSavingState={this.removeSavingState} /> : null}
       </div>
     );
   }
@@ -163,6 +167,12 @@ class App extends React.Component {
     });
   }
 
+  updateSelectedStudy = (study) => {
+    if (study.studyId === this.state.selectedStudy.studyId || this.state.selectedStudy.studyId == null) {
+      this.setSelectedStudy(study)
+    }
+  }
+
   changePage = (page, selection) => {
     this.setState({
       page, selection
@@ -181,9 +191,19 @@ class App extends React.Component {
     });
   }
 
-  setSavingState = (savingStudyId) => {
+  // Adds an id to a list of study ids that are curently being saved to disable saving for that study
+  setSavingState = (studyId) => {
     this.setState({
-      savingStudyId
+      savingStudyIds: [...this.state.savingStudyIds, studyId]
+    });
+  }
+
+  // Removes id from list of study ids to enable saving
+  removeSavingState = (studyId) => {
+    let newArray = [...this.state.savingStudyIds];
+    newArray.splice(newArray.indexOf(studyId));
+    this.setState({
+      savingStudyIds: newArray
     });
   }
   
