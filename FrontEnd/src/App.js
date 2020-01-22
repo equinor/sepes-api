@@ -201,7 +201,7 @@ class App extends React.Component {
   // Removes id from list of study ids to enable saving
   removeSavingState = (studyId) => {
     let newArray = [...this.state.savingStudyIds];
-    newArray.splice(newArray.indexOf(studyId));
+    newArray.splice(newArray.indexOf(studyId), 1);
     this.setState({
       savingStudyIds: newArray
     });
