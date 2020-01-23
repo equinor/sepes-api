@@ -68,10 +68,9 @@ namespace Sepes.RestApi.Services
 
         public async Task<int> DeletePod(Pod pod)
         {
-            var studyList = _studies.ToList();
             Study study = null;
 
-            foreach ( var iStudy in studyList)
+            foreach ( var iStudy in _studies.ToList())
             {
                 if (iStudy.studyId == pod.studyId)
                 {

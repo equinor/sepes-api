@@ -28,6 +28,45 @@ namespace Sepes.RestApi.Controller
         [HttpPost("save")]
         public async Task<StudyInput> SaveStudy([FromBody] StudyInput[] studies)
         {
+            //Begin sketch, this code needs to be placed after the bellow checks
+            //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
+            List<Pod> toDelete = null;
+
+            foreach (PodInput podBased in studies[1].pods)
+            {
+
+                foreach (PodInput podNew in studies[0].pods)
+                {
+
+                    if (podBased == podNew) //Temp, needs redo
+                    {
+                        toDelete.Add(podBased.ToPod()); //Add podID to list.
+                    }
+                }
+            }
+            //Loop through toDelete and perform deletes from list
+            foreach (Pod podDelete in toDelete)
+            {
+                await _studyService.DeletePod(podDelete);
+            }
+
+            //Sketch two
+
+            //These must happen only if no changes are needed. Maybe must be moved to studyservice
+            //Get lists of pods
+            List<PodInput> basedPod = studies[1].pods.ToList();
+            List<PodInput> newPod = studies[0].pods.ToList();
+
+            //Compare lists to get diff
+            var diffPod = basedPod.Except(newPod).ToList(); //Will work but would exclude mismatches between based and new, possibly risks deleting wrong thing. Better to compare pod ID Perhaps another foreach to just compare podIDs
+            //Start deletion for those not found
+            foreach (PodInput pod in diffPod)
+            {
+                await _studyService.DeletePod(pod.ToPod());//Find the pod element.
+            }
+            //End sketch
+
+
             if (studies[1] == null)
             {
                 Study study = await _studyService.Save(studies[0].ToStudy(), null);
