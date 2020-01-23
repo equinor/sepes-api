@@ -3,9 +3,6 @@ using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 using System.Linq;
 using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Core;
 
 namespace Sepes.RestApi.Services
 {
@@ -31,7 +28,7 @@ namespace Sepes.RestApi.Services
         ISepesDb _db;
         IPodService _podService;
         HashSet<Study> _studies;
-        ushort numberOfPods;
+        ushort highestPodId;
 
 
         public StudyService(ISepesDb dbService, IPodService podService)
@@ -40,7 +37,7 @@ namespace Sepes.RestApi.Services
             _podService = podService;
 
             _studies = new HashSet<Study>();
-            numberOfPods = 0;
+            highestPodId = 0;
         }
 
         public IEnumerable<Study> GetStudies(User user, bool archived)
@@ -117,7 +114,7 @@ namespace Sepes.RestApi.Services
                     {
                         // Update list of pod
                         // generate new pod with id
-                        Pod newPod = pod.NewPodId(numberOfPods++);
+                        Pod newPod = pod.NewPodId(++highestPodId);
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
@@ -138,8 +135,22 @@ namespace Sepes.RestApi.Services
         public void LoadStudies()
         {
             _studies = _db.GetAllStudies().Result.ToHashSet();
-            numberOfPods = (ushort)_studies.Sum(study => study.pods.Count);
+            FindHighestPodId();
         }
-    }
 
+        private void FindHighestPodId()
+        {
+            foreach (var study in _studies)
+            {
+                foreach (var pod in study.pods)
+                {
+                    if (pod.id > highestPodId)
+                    {
+                        highestPodId = (ushort) pod.id;
+                    }
+                }
+            }
+        }
+
+    }
 }
