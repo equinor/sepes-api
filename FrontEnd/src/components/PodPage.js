@@ -50,7 +50,7 @@ class PodPage extends Component {
                                 /></label>
                         </div>
                         <div>
-                            {true ? <button className="deletebtn" onClick={this.deletePod}>Delete Pod</button> : null}
+                            {appstate.selectedStudy.archived ? <button className="deletebtn" onClick={this.deletePod}>Delete Pod</button> : null}
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
@@ -159,6 +159,7 @@ class PodPage extends Component {
         //Removes pod from Study
         study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
         
+        //Send request to backend
         sepes.createStudy(study, based);
         console.log([study,based])
         /* Return handling should just be replaced with something that removes pod from state and then changes page to study page
