@@ -16,8 +16,21 @@ namespace Sepes.RestApi.Services
         Task NsgAllowOutboundPort(string securityGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort);
         Task NsgAllowInboundPort(string securityGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);
         
+        /// <summary>
+        /// Gives a user access to a resource group by giving the user a built in contributer role
+        /// </summary>
+        /// <returns>The user's id</returns>
         Task<string> AddUserToResourceGroup(string userId, string resourceGroupName);
+
+        /// <summary>
+        /// Gives a user access to a network by giving the user a custom join network role
+        /// </summary>
+        /// <returns>The user's id</returns>
         Task<string> AddUserToNetwork(string userId, string networkName);
+
+        /// <summary>
+        /// Get a list of names of Network Security Groups from a common resource group for NSGs and networks
+        /// </summary>
         Task<IEnumerable<string>> GetNSGNames();
     }
 }
