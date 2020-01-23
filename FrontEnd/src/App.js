@@ -23,18 +23,19 @@ class App extends React.Component {
       tokenId: "",
       userName: "demo@sepes.com",
       page: "none",
+
+      // the pod and datasets selected in a study
       selection: {
         dataset: [],
-        pods: [],
+        pod: null,
       },
       selectedStudy: {
         StudyId: null,
         StudyName: "",
       },
-      saving: false,
-      
-      
-      jwtTest: "Result from backend",
+      // used to disable save button for a study and its pods when saving a study or pod, based on study id
+      savingStudyIds: [],
+
       studies: [],
       archived: []
     }
@@ -71,15 +72,17 @@ class App extends React.Component {
           <CreateStudyPage 
             state={this.state} 
             changePage={this.changePage} 
-            setStudy={this.setSelectedStudy}
-            setSavingState={this.setSavingState} /> : null}
+            updateStudy={this.updateSelectedStudy}
+            setSavingState={this.setSavingState}
+            removeSavingState={this.removeSavingState} /> : null}
             
         {this.state.page === "pod" ? 
           <PodPage 
             state={this.state} 
             changePage={this.changePage} 
-            setStudy={this.setSelectedStudy}
-            setSavingState={this.setSavingState} /> : null}
+            updateStudy={this.updateSelectedStudy}
+            setSavingState={this.setSavingState}
+            removeSavingState={this.removeSavingState} /> : null}
       </div>
     );
   }
@@ -158,33 +161,16 @@ class App extends React.Component {
     this.appInsights.trackEvent({name: 'Logout'});
   }
 
-  testSepesAPI = () => {
-    fetch(process.env.REACT_APP_SEPES_BASE_URL+"/api/values", {
-      method: "get",
-      headers: { "Authorization": "Bearer " + localStorage.getItem(JWT_NAME) }
-    }).then(data => data.text())
-    .then(data => {
-      if(data.length === 0) {
-        this.setState({
-          jwtTest: "FAIL"
-        });
-      } else {
-        this.setState({
-          jwtTest: data
-        });
-      }
-    }).catch(error => {
-      console.log(error);
-      this.setState({
-        jwtTest: "FAIL"
-      });
-    })
-  }
-
   setSelectedStudy = (study) => {
     this.setState({
       selectedStudy: study
     });
+  }
+
+  updateSelectedStudy = (study) => {
+    if (study.studyId === this.state.selectedStudy.studyId || this.state.selectedStudy.studyId == null) {
+      this.setSelectedStudy(study)
+    }
   }
 
   changePage = (page, selection) => {
@@ -205,9 +191,19 @@ class App extends React.Component {
     });
   }
 
-  setSavingState = (saving) => {
+  // Adds an id to a list of study ids that are curently being saved to disable saving for that study
+  setSavingState = (studyId) => {
     this.setState({
-      saving
+      savingStudyIds: [...this.state.savingStudyIds, studyId]
+    });
+  }
+
+  // Removes id from list of study ids to enable saving
+  removeSavingState = (studyId) => {
+    let newArray = [...this.state.savingStudyIds];
+    newArray.splice(newArray.indexOf(studyId), 1);
+    this.setState({
+      savingStudyIds: newArray
     });
   }
   
