@@ -78,22 +78,6 @@ namespace Sepes.RestApi.Controller
             {
                 return BadRequest("Too many deletion requests. Only single deletions supported at this time.");
             }
-
-            //Sketch two
-
-            //Get lists of pods
-            List<PodInput> basedPod = studies[1].pods.ToList();
-            List<PodInput> newPod = studies[0].pods.ToList();
-
-
-
-            //Compare lists to get diff
-            var diffPod = basedPod.Except(newPod).ToList(); //Will work but would include mismatches between based and new, possibly risks deleting wrong thing. Better to compare pod ID Perhaps another foreach to just compare podIDs
-            //Start deletion for those not found
-            foreach (PodInput pod in diffPod)
-            {
-                await _studyService.DeletePod(pod.ToPod());//Find the pod element.
-            }
             //End sketch
 
 
@@ -106,26 +90,6 @@ namespace Sepes.RestApi.Controller
             {
                 Study study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
                 return study.ToStudyInput();
-            }
-        }
-
-        [HttpPost("pod/delete")]
-        //Gets the Based state from frontend to queue a delete
-        //Checks pod against the study state
-        public async Task<IActionResult> DeletePod([FromBody] PodInput podIn)
-        {
-            var response = await _studyService.DeletePod(podIn.ToPod());
-            if (response == podIn.podId)
-            {
-                return Ok("Pod: " + podIn.podId + " deleted.");
-            }
-            else if (response == -1)
-            {
-                return BadRequest("Error: Pod does not match memory or is not found. Refresh and try again.");
-            }
-            else
-            {
-                return StatusCode(500, "Deletion may have suceeded. Refresh browser and check again");
             }
         }
 
