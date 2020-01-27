@@ -81,7 +81,7 @@ namespace Sepes.RestApi.Controller
                 }
             }
             //If based is null it can be assumed this will be a newly created study
-            else if (studies[1] == null)
+            if (studies[1] == null)
             {
                 Study study = await _studyService.Save(studies[0].ToStudy(), null);
                 return study.ToStudyInput();
