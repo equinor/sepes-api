@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize]
+    //[Authorize]
     public class StudyController : ControllerBase
     {
         private ISepesDb _sepesDb;
@@ -30,13 +31,20 @@ namespace Sepes.RestApi.Controller
         {
             //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
             
+            
+            //If based is null it can be assumed this will be a newly created study
+            if (studies[1] == null)
+            {
+                Study study = await _studyService.Save(studies[0].ToStudy(), null);
+                return study.ToStudyInput();
+            }
             //If based has more pods than new version then it can be assumed pods are requested to be deleted.
-            if (studies[1].pods.Count() > studies[0].pods.Count())
+            else if (studies[1].pods.Count() > studies[0].pods.Count())
             {
                 
-                List<ushort?> podIdBased = null;
-                List<ushort?> podIdNew = null;
-
+                List<ushort?> podIdBased = new List<ushort?>();
+                List<ushort?> podIdNew = new List<ushort?>();
+                
                 foreach (PodInput podBased in studies[1].pods)
                 {
                     podIdBased.Add(podBased.podId);
@@ -79,12 +87,7 @@ namespace Sepes.RestApi.Controller
                 {
                     return BadRequest("Too many deletion requests. Only single deletions supported at this time.");
                 }
-            }
-            //If based is null it can be assumed this will be a newly created study
-            if (studies[1] == null)
-            {
-                Study study = await _studyService.Save(studies[0].ToStudy(), null);
-                return study.ToStudyInput();
+                return BadRequest("Unable to process request");
             }
             //Otherwise it must be a change.
             else
