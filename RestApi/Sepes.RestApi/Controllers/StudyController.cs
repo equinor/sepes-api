@@ -26,39 +26,69 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost("save")]
-        public async Task<StudyInput> SaveStudy([FromBody] StudyInput[] studies)
+        public async Task<ActionResult<StudyInput>> SaveStudy([FromBody] StudyInput[] studies)
         {
-            //Begin sketch, this code needs to be placed after the bellow checks
+            //Begin sketch, this code needs to be integrated in bellow checks. Reason for keeping it outside studyservice would be to be able to return actionresults for error handling in frontend
+            //Error handling draft currently in [HttpPost("pod/delete")] and functional in there. 
             //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
-            List<Pod> toDelete = null;
+
+            //These must happen only if no changes are needed. Maybe must be moved to studyservice
+            List<ushort?> podIdBased = null;
+            List<ushort?> podIdNew = null;
 
             foreach (PodInput podBased in studies[1].pods)
             {
+                podIdBased.Add(podBased.podId);
+            }
+            foreach (PodInput podNew in studies[0].pods)
+            {
+                podIdNew.Add(podNew.podId);
+            }
 
-                foreach (PodInput podNew in studies[0].pods)
+            var podIdDiff = podIdBased.Except(podIdNew);
+
+            //Make sure only one deletion has been ordered
+            if (podIdDiff.Count() == 1)
+            {
+                //Fetch the pod whose podId matches
+                foreach (PodInput podIn in studies[1].pods)
                 {
-
-                    if (podBased == podNew) //Temp, needs redo
+                    if (podIn.podId == podIdDiff.First())
                     {
-                        toDelete.Add(podBased.ToPod()); //Add podID to list.
+                        //Perform delete
+                        Pod podToDelete = podIn.ToPod();
+                        var response = await _studyService.DeletePod(podToDelete);
+
+                        if (response == podIn.podId)
+                        {
+                            return Ok("Pod: " + podIn.podId + " deleted.");
+                        }
+                        else if (response == -1)
+                        {
+                            return BadRequest("Error: Pod does not match memory or is not found. Refresh and try again.");
+                        }
+                        else
+                        {
+                            return StatusCode(500, "Deletion status unknown. Refresh browser and check again.");
+                        }
                     }
                 }
             }
-            //Loop through toDelete and perform deletes from list
-            foreach (Pod podDelete in toDelete)
+            else
             {
-                await _studyService.DeletePod(podDelete);
+                return BadRequest("Too many deletion requests. Only single deletions supported at this time.");
             }
 
             //Sketch two
 
-            //These must happen only if no changes are needed. Maybe must be moved to studyservice
             //Get lists of pods
             List<PodInput> basedPod = studies[1].pods.ToList();
             List<PodInput> newPod = studies[0].pods.ToList();
 
+
+
             //Compare lists to get diff
-            var diffPod = basedPod.Except(newPod).ToList(); //Will work but would exclude mismatches between based and new, possibly risks deleting wrong thing. Better to compare pod ID Perhaps another foreach to just compare podIDs
+            var diffPod = basedPod.Except(newPod).ToList(); //Will work but would include mismatches between based and new, possibly risks deleting wrong thing. Better to compare pod ID Perhaps another foreach to just compare podIDs
             //Start deletion for those not found
             foreach (PodInput pod in diffPod)
             {
@@ -95,7 +125,7 @@ namespace Sepes.RestApi.Controller
             }
             else
             {
-                return StatusCode(500,"Deletion may have suceeded. Refresh browser and check again");
+                return StatusCode(500, "Deletion may have suceeded. Refresh browser and check again");
             }
         }
 
