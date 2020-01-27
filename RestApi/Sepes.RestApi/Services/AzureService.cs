@@ -111,7 +111,7 @@ namespace Sepes.RestApi.Services
                                               string ruleName,
                                               int priority,
                                               string[] internalAddresses,
-                                              int internalPort)
+                                              int toPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(_commonResourceGroup, securityGroupName) //can be changed to get by ID
@@ -121,7 +121,7 @@ namespace Sepes.RestApi.Services
                 .FromAddresses(internalAddresses)
                 .FromAnyPort()
                 .ToAnyAddress()
-                .ToPort(internalPort)
+                .ToPort(toPort)
                 .WithAnyProtocol()
                 .WithPriority(priority)
                 .Attach()
@@ -132,7 +132,7 @@ namespace Sepes.RestApi.Services
                                                string ruleName,
                                                int priority,
                                                string[] externalAddresses,
-                                               int externalPort)
+                                               int toPort)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(_commonResourceGroup, securityGroupName) //can be changed to get by ID
@@ -142,7 +142,7 @@ namespace Sepes.RestApi.Services
                 .FromAnyAddress()
                 .FromAnyPort()
                 .ToAddresses(externalAddresses)
-                .ToPort(externalPort)
+                .ToPort(toPort)
                 .WithAnyProtocol()
                 .WithPriority(priority)
                 .Attach()
