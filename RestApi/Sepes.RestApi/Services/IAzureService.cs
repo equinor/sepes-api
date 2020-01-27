@@ -40,12 +40,22 @@ namespace Sepes.RestApi.Services
         /// <summary>
         /// Allow traffic outbound, to a specified port and a list of ip adresses.
         /// </summary>
-        Task NsgAllowOutboundPort(string securityGroupName, string ruleName, int priority, string[] internalAddresses, int internalPort);
+        /// <param name="securityGroupName">The name of the network security group</param>
+        /// <param name="ruleName">A name that is unique for this security group, both outbound and inbound ports</param>
+        /// <param name="priority">A number between 100 and 4096 deciding what rules takes priority over others. Lower numbers have higher priority.</param>
+        /// <param name="externalAddresses">Traffic destination addresses</param>
+        /// <param name="toPort">Traffic destination port</param>
+        Task NsgAllowOutboundPort(string securityGroupName, string ruleName, int priority, string[] externalAddresses, int toPort);
 
         /// <summary>
         /// Allow traffic inbound, to a specified port from a list of ip adresses.
         /// </summary>
-        Task NsgAllowInboundPort(string securityGroupName, string ruleName, int priority, string[] externalAddresses, int externalPort);
+        /// <param name="securityGroupName">The name of the network security group</param>
+        /// <param name="ruleName">A name that is unique for this security group, both outbound and inbound ports</param>
+        /// <param name="priority">A number between 100 and 4096 deciding what rules takes priority over others. Lower numbers have higher priority.</param>
+        /// <param name="externalAddresses">Traffic source addresses</param>
+        /// <param name="toPort">Traffic destination port</param>
+        Task NsgAllowInboundPort(string securityGroupName, string ruleName, int priority, string[] internalAddresses, int toPort);
         
         /// <summary>
         /// Gives a user access to a resource group by giving the user a built in contributer role.
