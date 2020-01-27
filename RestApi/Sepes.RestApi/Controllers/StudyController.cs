@@ -65,8 +65,7 @@ namespace Sepes.RestApi.Controller
                         if (podIn.podId == podIdDiff.First())
                         {
                             //Perform delete
-                            Pod podToDelete = podIn.ToPod();
-                            var response = await _studyService.DeletePod(podToDelete);
+                            var response = await _studyService.DeletePod(podIn.ToPod());
 
                             if (response == podIn.podId)
                             {
