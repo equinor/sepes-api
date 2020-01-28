@@ -20,7 +20,7 @@ namespace Sepes.RestApi.Services
         // This call will only succeed if based is the same as the current version of that study.
         // This method will only update the metadata about a study and will not make changes to the azure resources.
         Task<Study> Save(Study newStudy, Study based);
-        Task<int> DeletePod(Pod pod);
+        Task<Study> DeletePod(Pod pod);
     }
 
     public class StudyService : IStudyService
@@ -66,7 +66,7 @@ namespace Sepes.RestApi.Services
             return study;
         }
 
-        public async Task<int> DeletePod(Pod pod)
+        public async Task<Study> DeletePod(Pod pod)
         {
             Study study = null;
 
@@ -90,11 +90,11 @@ namespace Sepes.RestApi.Services
                 //Replace study in memory
                 _studies.Remove(study);
                 _studies.Add(studynew);
-                return (int)pod.id;
+                return studynew;
                 
             }
             else{
-                return -1; //Error data mismatch, pod changed or not found. Refresh and try again
+                return null; //Error data mismatch, pod changed or not found. Refresh and try again
             }
 
             //If results to 1 it implies pod is in memory and matches.

@@ -67,11 +67,11 @@ namespace Sepes.RestApi.Controller
                             //Perform delete
                             var response = await _studyService.DeletePod(podIn.ToPod());
 
-                            if (response == podIn.podId)
+                            if (response != null)
                             {
-                                return Ok("Pod: " + podIn.podId + " deleted.");
+                                return Ok(response);
                             }
-                            else if (response == -1)
+                            else if (response == null)
                             {
                                 return BadRequest("Error: Pod does not match memory or is not found. Refresh and try again.");
                             }
