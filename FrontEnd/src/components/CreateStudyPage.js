@@ -129,7 +129,7 @@ class CreateStudyPage extends Component {
         let props = this.props;
         let state = this.state;
 
-        
+        // create new or updated study object
         let study = {
             studyName: state.studyName,
             pods: state.pods,
@@ -141,9 +141,13 @@ class CreateStudyPage extends Component {
             study.studyId = state.studyId;
         }
         
+        // create base study based on selected study
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
+        // disable save button
         props.setSavingState(state.studyId);
+
+        // save study
         sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(returnedStudy => {

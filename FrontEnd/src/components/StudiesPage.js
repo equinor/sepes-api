@@ -41,6 +41,7 @@ class CreateStudyPage extends Component {
     }
 
     componentDidMount() {
+        // get studies from backend
         sepes.getStudies(false).then(response => response.json())
             .then(json => {
                 this.setState({studies: json});
@@ -50,11 +51,14 @@ class CreateStudyPage extends Component {
     }
 
     newStudy = () => {
+        // set current study as a new study with no id and no name
         this.props.setStudy({studyId: null, studyName: ""});
+        
         this.props.changePage("study", {});
     }
 
     openStudy = (study) => {
+        // set selected study as current study, then open the study page
         this.props.setStudy(study);
         this.props.changePage("study", {});
     }
