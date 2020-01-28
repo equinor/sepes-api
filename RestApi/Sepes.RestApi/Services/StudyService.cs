@@ -70,7 +70,7 @@ namespace Sepes.RestApi.Services
         {
             Study study = null;
 
-            foreach ( var iStudy in _studies.ToList())
+            foreach (var iStudy in _studies.ToList())
             {
                 if (iStudy.studyId == pod.studyId)
                 {
@@ -78,10 +78,10 @@ namespace Sepes.RestApi.Services
                 }
 
             }
-            
+
             if (study.pods.Contains(pod))
             {
-                await _podService.Delete(pod);
+                await _podService.Set(null, pod, null, null);
                 //Remove pod from study
                 var tempPods = study.pods.Remove(pod);
                 var studynew = study.ReplacePods(tempPods);
@@ -91,9 +91,10 @@ namespace Sepes.RestApi.Services
                 _studies.Remove(study);
                 _studies.Add(studynew);
                 return studynew;
-                
+
             }
-            else{
+            else
+            {
                 return null; //Error data mismatch, pod changed or not found. Refresh and try again
             }
 
@@ -145,7 +146,7 @@ namespace Sepes.RestApi.Services
                 {
                     if (pod.id > highestPodId)
                     {
-                        highestPodId = (ushort) pod.id;
+                        highestPodId = (ushort)pod.id;
                     }
                 }
             }

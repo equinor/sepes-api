@@ -11,7 +11,6 @@ namespace Sepes.RestApi.Services
     public interface IPodService
     {
         Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers);
-        Task Delete(Pod pod);
     }
 
     public class PodService : IPodService
@@ -27,7 +26,12 @@ namespace Sepes.RestApi.Services
         }
         public async Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
         {
-            if (based == null)
+            if (newPod == null)
+            {
+                await this.Delete(based);
+                return;
+            }
+            else if (based == null)
             {
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName);
@@ -56,22 +60,10 @@ namespace Sepes.RestApi.Services
             await _azure.DeleteNetwork(pod.networkName);
             await _azure.DeleteResourceGroup(pod.resourceGroupName);
             var (nsgOldName, nsgNewName) = await GetNSGName(pod.networkSecurityGroupName);
-            
+
             //Have to try catch so both can be attempted deleted
-            try
-            {
-                await _azure.DeleteSecurityGroup(nsgOldName);
-            }
-            catch (System.Exception)
-            {
-            }
-            try
-            {
-                await _azure.DeleteSecurityGroup(nsgNewName);
-            }
-            catch (System.Exception)
-            {
-            }
+            await _azure.DeleteSecurityGroup(nsgOldName);
+            await _azure.DeleteSecurityGroup(nsgNewName);
         }
 
         private async Task AddUsers(Pod newPod, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
@@ -123,8 +115,9 @@ namespace Sepes.RestApi.Services
                 await _azure.DeleteSecurityGroup(nsgOldName);
 
             }
-            catch (System.Exception)
+            catch (System.Exception e)
             {
+                Console.WriteLine(e);
             }
 
 
