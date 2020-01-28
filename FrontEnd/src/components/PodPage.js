@@ -152,7 +152,7 @@ class PodPage extends Component {
 
     deletePod = () => {
         let props = this.props;
-        //props.setSavingState(true);
+        props.setSavingState(true);
 
         let based = props.state.selectedStudy;
         let study = JSON.parse(JSON.stringify(based));
@@ -160,9 +160,7 @@ class PodPage extends Component {
         study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
         
         //Send request to backend
-        sepes.createStudy(study, based);
-        console.log([study,based])
-        /* Return handling should just be replaced with something that removes pod from state and then changes page to study page
+        sepes.createStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(study => {
                 if (this.state.podId === null) {
@@ -173,11 +171,13 @@ class PodPage extends Component {
                 }
                 props.setStudy(study);
                 props.setSavingState(false);
+                props.changePage("studies")
             })
             .catch(() => {
                 props.setSavingState(false);
+                props.changePage("studies")
 
-            });*/
+            });
     }
 }
 
