@@ -89,6 +89,7 @@ class App extends React.Component {
 
 
   componentDidMount() {
+    // login to azure
     if (this.msalApp.getAccount()) {
       this.showInfo();
       let account = this.msalApp.getAccount();
@@ -161,30 +162,35 @@ class App extends React.Component {
     this.appInsights.trackEvent({name: 'Logout'});
   }
 
+  // set current study to be shown on study page
   setSelectedStudy = (study) => {
     this.setState({
       selectedStudy: study
     });
   }
 
+  // updates current study if id of study is the same as current study
   updateSelectedStudy = (study) => {
     if (study.studyId === this.state.selectedStudy.studyId || this.state.selectedStudy.studyId == null) {
       this.setSelectedStudy(study)
     }
   }
 
+  // changes the page to said page with selected pod and dataset
   changePage = (page, selection) => {
     this.setState({
       page, selection
     });
   }
 
+  // set list of studies
   setStudies = (studies) => {
     this.setState({
       studies
     });
   }
   
+  // set list of archived studies
   setArchived = (archivedStudies) => {
     this.setState({
       archived: archivedStudies

@@ -110,9 +110,13 @@ class PodPage extends Component {
     savePod = () => {
         let props = this.props;
         
+        // set current selected study as the base study
         let based = props.state.selectedStudy;
+
+        // make copy of base study, will become updated study
         let study = JSON.parse(JSON.stringify(based));
         
+        // create a new pod object
         let pod = {
             incoming: this.state.incoming,
             outgoing: this.state.outgoing,
@@ -122,6 +126,7 @@ class PodPage extends Component {
             studyId: study.studyId
         }
         
+        // add new pod to list of pods in updated study, or update existing pod
         if (this.state.podId === null) {
             if (typeof study.pods === "undefined") {
                 study.pods = [];
@@ -134,7 +139,10 @@ class PodPage extends Component {
             study.pods[index] = pod;
         }
         
+        // disable save button
         props.setSavingState(study.studyId);
+
+        // save study
         sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(returnedStudy => {
@@ -151,7 +159,6 @@ class PodPage extends Component {
             })
             .catch(() => {
                 props.removeSavingState(study.studyId);
-
             });
     }
 }
