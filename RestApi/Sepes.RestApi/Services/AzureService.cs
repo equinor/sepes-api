@@ -153,7 +153,9 @@ namespace Sepes.RestApi.Services
                 .Attach()
                 .ApplyAsync();
         }
-
+        ///<summary>
+        ///NsgApplyBaseRules readd the default rules added by Azure but without the tunnel for Azures load balancer.
+        ///</summary>
         public async Task NsgApplyBaseRules(INetworkSecurityGroup nsg)
         {
             await nsg.Update()
@@ -199,14 +201,20 @@ namespace Sepes.RestApi.Services
             .ApplyAsync();
         }
 
+        ///<summary>
+        ///Returns a string with the existing Network Security Groups
+        ///</summary>
         public async Task<IEnumerable<string>> GetNSGNames()
         {
             var nsgs = await _azure.NetworkSecurityGroups.ListByResourceGroupAsync(_commonResourceGroup);
             return nsgs.Select(nsg => nsg.Name);
         }
 
-        //// Pod user/role management
-        // Gives a user contributor to a resource group and network join on a network
+        ///<summary>
+        ///Gives a user contributor to a resource group
+        ///</summary>
+        ///<param name="userId">A GUID string unique to the user</param>
+        ///<param name="resourceGroupName">The name of the resource group to add the user to</param>
         public async Task<string> AddUserToResourceGroup(string userId, string resourceGroupName) 
         {
             var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
@@ -219,6 +227,11 @@ namespace Sepes.RestApi.Services
                 .CreateAsync().Result.Id;
         }
 
+        ///<summary>
+        ///Gives a user network join on a network
+        ///</summary>
+        ///<param name="userId">A GUID string unique to the user</param>
+        ///<param name="resourceGroupName">The name of the network to add the user to</param>
         public async Task<string> AddUserToNetwork(string userId, string networkName) 
         {
             var network = await _azure.Networks.GetByResourceGroupAsync(_commonResourceGroup, networkName);
