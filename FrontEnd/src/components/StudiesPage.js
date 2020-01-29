@@ -31,7 +31,7 @@ class CreateStudyPage extends Component {
                     <StudyList studies={this.state.studies} openStudy={this.openStudy} />
                 </div>
                 <div>
-                    <button onClick={this.showArchived}>Show archived studies</button>
+                    <button onClick={this.showArchived} id="show-archived">Show archived studies</button>
                 </div>
                 <div style={{paddingTop: 30, display: "table"}}>
                     <StudyList studies={this.state.archivedStudies} openStudy={this.openStudy} />
