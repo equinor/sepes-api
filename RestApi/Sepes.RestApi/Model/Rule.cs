@@ -24,6 +24,11 @@ namespace Sepes.RestApi.Model
             return new RuleInput(){ port = port, ip = ip };
         }
 
+        public RuleDB ToRuleDB()
+        {
+            return new RuleDB(){ port = port, ip = ip };
+        }
+
         public override bool Equals(object obj)
         {
             return obj is Rule rule &&
