@@ -47,11 +47,7 @@ namespace Sepes.RestApi.Services
             //return resource id from iresource objects
             return resourceGroup.Id;
         }
-
-        ///<summary>
-        ///Delete a Resource Group from Azure. WARNING this will also delete all resources contained within that Pod.
-        ///</summary>
-        ///<param name="resourceGroupName">Name of the Resource Group to delete.</param>
+        
         public async Task DeleteResourceGroup(string resourceGroupName)
         {
             //Cancelation token can be saved so the azure delete can be aborted. But has not been done in this use case.
@@ -71,21 +67,12 @@ namespace Sepes.RestApi.Services
 
             return network.Id;
         }
-
-        ///<summary>
-        ///Delete a Network resource from Azure.
-        ///</summary>
-        ///<param name="vNetName">Name of the Network to delete.</param>
         public async Task DeleteNetwork(string vNetName)
         {
             await _azure.Networks.DeleteByResourceGroupAsync(_commonResourceGroup, vNetName);
             return;
         }
 
-        ///<summary>
-        ///Create a new Network Security Group resource on Azure and add the Base Rules so that Azure load balancer does not interfere with the Pods
-        ///</summary>
-        ///<param name="securityGroupName">Unique name of the Network Security Group to create.</param>
         public async Task CreateSecurityGroup(string securityGroupName)
         {
             var nsg = await _azure.NetworkSecurityGroups
@@ -99,21 +86,11 @@ namespace Sepes.RestApi.Services
             await this.NsgApplyBaseRules(nsg);
         }
 
-        ///<summary>
-        ///Delete a Network Security Group from Azure. It is required that the NSG is not tied to any subnet before performing this task.
-        ///</summary>
-        ///<param name="securityGroupName">Name of the Network Security Group to delete.</param>
         public async Task DeleteSecurityGroup(string securityGroupName)
         {
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(_commonResourceGroup, securityGroupName);
         }
 
-        ///<summary>
-        ///Add an existing Netork Security Group to a subnet
-        ///</summary>
-        ///<param name="securityGroupName">Name of the Network Security Group to add.</param>
-        ///<param name="subnetName">Name of the subnet to modify</param>
-        ///<param name="networkName">Name of the network the subnet belongs to.</param>
         public async Task ApplySecurityGroup(string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
@@ -126,11 +103,6 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-        ///<summary>
-        ///Remove a Network Security Group from a subnet
-        ///</summary>
-        ///<param name="subnetName">Name of the subnet to modify</param>
-        ///<param name="networkName">Name of the network the subnet belongs to.</param>
         public async Task RemoveSecurityGroup(string subnetName, string networkName)
         {
             //Remove the security group from a subnet.
@@ -138,14 +110,6 @@ namespace Sepes.RestApi.Services
                 .Update().UpdateSubnet(subnetName).WithoutNetworkSecurityGroup().Parent().ApplyAsync();
         }
 
-        ///<summary>
-        ///Adds rules to an Nsg. This lets an array of internal addresses and a specified external port talk to any external address and internal port.
-        ///</summary>
-        ///<param name="securityGroupname">Name of the Network Security Group to modify</param>
-        ///<param name="ruleName">Gives the rules a name. Does not have to be unique</param>
-        ///<param name="priority">Specifies the priority of the rule. Each rule must have a unique priority. Check azure for detailed explanation.</param>
-        ///<param name="internalAddresses">An array of internal addresses</param>
-        ///<param name="toPort">The External port to open</param>
         public async Task NsgAllowInboundPort(string securityGroupName,
                                               string ruleName,
                                               int priority,
@@ -167,14 +131,6 @@ namespace Sepes.RestApi.Services
                 .ApplyAsync();
         }
 
-        ///<summary>
-        ///Adds rules to an Nsg. This lets an array of external addresses and a specified port talk to any internal address and port combo.
-        ///</summary>
-        ///<param name="securityGroupname">Name of the Network Security Group to modify</param>
-        ///<param name="ruleName">Gives the rules a name. Does not have to be unique</param>
-        ///<param name="priority">Specifies the priority of the rule. Each rule must have a unique priority. Check azure for detailed explanation.</param>
-        ///<param name="externalAddresses">An array of external addresses</param>
-        ///<param name="toPort">The External port to open</param>
         public async Task NsgAllowOutboundPort(string securityGroupName,
                                                string ruleName,
                                                int priority,
@@ -253,11 +209,6 @@ namespace Sepes.RestApi.Services
             return nsgs.Select(nsg => nsg.Name);
         }
 
-        ///<summary>
-        ///Gives a user contributor to a resource group
-        ///</summary>
-        ///<param name="userId">A GUID string unique to the user</param>
-        ///<param name="resourceGroupName">The name of the resource group to add the user to</param>
         public async Task<string> AddUserToResourceGroup(string userId, string resourceGroupName)
         {
             var resourceGroup = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
@@ -270,11 +221,7 @@ namespace Sepes.RestApi.Services
                 .CreateAsync().Result.Id;
         }
 
-        ///<summary>
-        ///Gives a user network join on a network
-        ///</summary>
-        ///<param name="userId">A GUID string unique to the user</param>
-        ///<param name="resourceGroupName">The name of the network to add the user to</param>
+        
         public async Task<string> AddUserToNetwork(string userId, string networkName)
         {
             var network = await _azure.Networks.GetByResourceGroupAsync(_commonResourceGroup, networkName);
