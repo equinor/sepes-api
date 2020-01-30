@@ -2,6 +2,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  color: #080808;
 }
 
 #root {
@@ -10,10 +11,28 @@ html, body {
 
 .App {
   width: 100%; 
-    height: 100%;
-    margin-left: auto; 
-    margin-right: auto; 
-    position: relative;
+  height: 100%;
+  margin-left: auto; 
+  margin-right: auto; 
+  position: relative;
+  background: #f7f8fa;
+}
+
+#show-archived {
+  background-color: white;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #c9c9c9;
+  background-image: -moz-linear-gradient( center top, #ffffff 5%, #ececec 100% );
+  background-image: -webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ffffff), color-stop(1, #ececec) ); 
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ededed');
+  box-shadow: 0 1px 3px 0 rgba(20,23,28,.15);
+  -moz-box-shadow: 0 1px 3px 0 rgba(20,23,28,.15);
+  -webkit-box-shadow: 0 1px 3px 0 rgba(20,23,28,.15);
+}
+
+#show-archived:hover {
+  border-color: #9a9a9a;
 }
 
 .btn {
@@ -28,60 +47,35 @@ html, body {
 .link:hover {
   cursor: pointer;
   text-decoration-line: underline;
-  color: #085db1;
+  color: #2d88ff;
 }
 
 header {
   box-sizing: border-box;
   padding: 10px; 
-  background: whitesmoke; 
+  background: #353535; 
   height: 40px;
-}
-
-.pod {
-  border: 1px solid rgb(149, 149, 149); 
-  border-radius: 5px;
-  width: 170px; 
-  height: 220px; 
-  float: left;
-  text-align: center;
-  padding-top: 10px;
-  margin-right: 30px;
-  margin-bottom: 30px;
-  margin-left: 1px;
-  margin-top: 1px;
-  overflow: hidden;
-}
-
-.pod:hover {
-  cursor: pointer;
-  border: 2px solid rgb(45, 136, 255);
-  margin-right: 29px;
-  margin-bottom: 29px;
-  margin-left: 0px;
-  margin-top: 0px;
-}
-
-.podlist {
-  padding: 50px; 
-  position: absolute; 
-  left: 300px;
+  color: #efefef;
 }
 
 .study-head {
-  background: #dedede;
+  background: #f7f8fa;
   padding: 6px 10px;
   color: black;
   font-weight: bold;
+  border-top: 1px solid #eaeaea;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .sidebar {
   position: absolute;
   top: 40px;
   bottom: 0px;
-  width: 300px; 
-  background: whitesmoke; 
+  width: 300px;
   float: left;
+  box-shadow: 3px 0px 3px 0 rgba(212, 212, 212, 0.25);
+  background-image: -webkit-gradient( linear, left top, right top, color-stop(0.05, #e2e2e200), color-stop(1, #e9e9ea38) );
+  border-right: 1px solid #e4e4e4;
 }
 
 .sidebar-block {
@@ -114,9 +108,12 @@ header {
 
 #new-study-input {
   border: none;
-  border-bottom: 2px dotted #c5c5c5;
+  border-bottom: 2px dotted #efefef3d;
   outline-style: none;
   background: transparent;
+  color: #efefef;
+  font-weight: bold;
+  margin-right: 6px;
 }
 
 
@@ -126,13 +123,22 @@ header {
 }
 
 table, th, td {
-  border: 1px solid #6f6f6f;
+  border: 1px solid #a9a9a9;
   border-collapse: collapse;
   text-align: center;
+  padding: 2px;
 }
 
 table {
   width: 100%;
+}
+
+.rule-input {
+  border: 1px solid darkgrey;
+  border-right: none;
+  padding: 3px;
+  /*width: 98px 198px;*/
+  text-align: center;
 }
 
 #pod-dataset-list {
@@ -166,10 +172,19 @@ table {
   margin-top: 5px;
 }
 
+.podlist {
+  padding: 50px; 
+  position: absolute; 
+  left: 300px;
+}
 
-/* Studies */
-.study {
-  border: 2px solid rgb(149, 149, 149); 
+
+.spinner {
+  position: absolute;
+  padding-left: 5px;
+}
+
+.card {
   border-radius: 5px;
   width: 170px; 
   height: 220px; 
@@ -180,14 +195,11 @@ table {
   margin-bottom: 30px;
   margin-left: 1px;
   margin-top: 1px;
+  box-shadow: 0 1px 3px 0 rgba(20,23,28,.15);
+  background: white;
 }
 
-.study:hover {
-  border: 2px solid #2d88ff;
+.card:hover {
   cursor: pointer;
-}
-
-.spinner {
-  position: absolute;
-  padding-left: 5px;
+  box-shadow: 0 1px 3px 0 rgba(20, 23, 28, 0.46);
 }

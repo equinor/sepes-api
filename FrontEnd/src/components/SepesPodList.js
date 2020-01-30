@@ -4,13 +4,13 @@ import addSymbol from '../plus1.svg';
 
 export default function SepesPodList(props) {
     return <div className="podlist">
-        <div className="pod" onClick={props.newPod}>
+        <div className="card" onClick={props.newPod}>
             <p style={{ fontWeight: "bold" }}>New Pod</p>
             <p><img src={addSymbol} alt={"+"} style={{ width: 60 }} /></p>
         </div>
         {
             props.data.map((item) => (
-                <div key={item.podId} className="pod" onClick={() => props.openPod(item)}>
+                <div key={item.podId} className="card" onClick={() => props.openPod(item)}>
                     <p style={{ fontWeight: "bold" }}>{item.podName}</p>
                     <div style={{ fontSize: 10 }}>
                         Incoming
