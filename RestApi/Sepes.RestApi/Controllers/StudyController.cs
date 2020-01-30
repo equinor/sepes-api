@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using System;
 
 namespace Sepes.RestApi.Controller
 {
@@ -24,13 +27,19 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost("save")]
-        public async Task<StudyInput> SaveStudy([FromBody] StudyInput[] studies)
+        public async Task<ActionResult<StudyInput>> SaveStudy([FromBody] StudyInput[] studies)
         {
-            if (studies[1] == null) {
+            //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
+            
+            //If based is null it can be assumed this will be a newly created study
+            if (studies[1] == null)
+            {
                 Study study = await _studyService.Save(studies[0].ToStudy(), null);
                 return study.ToStudyInput();
             }
-            else {
+            //Otherwise it must be a change.
+            else
+            {
                 Study study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
                 return study.ToStudyInput();
             }
@@ -40,13 +49,13 @@ namespace Sepes.RestApi.Controller
         [HttpGet("list")]
         public IEnumerable<StudyInput> GetStudies()
         {
-            return _studyService.GetStudies(new User("","",""), false).Select(study => study.ToStudyInput());
+            return _studyService.GetStudies(new User("", "", ""), false).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("archived")]
         public IEnumerable<StudyInput> GetArchived()
         {
-            return _studyService.GetStudies(new User("","",""), true).Select(study => study.ToStudyInput());
+            return _studyService.GetStudies(new User("", "", ""), true).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("dataset")]

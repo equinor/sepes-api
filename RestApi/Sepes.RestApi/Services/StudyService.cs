@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sepes.RestApi.Model;
-
 using System.Linq;
 using System;
 
-namespace Sepes.RestApi.Services {
+namespace Sepes.RestApi.Services
+{
 
     // The main job of the Study Service is to own and keep track Study and Pod state.
     // This service is the only one that can change the internal representation of Study and pod.
@@ -26,20 +26,21 @@ namespace Sepes.RestApi.Services {
         Task<Study> Save(Study newStudy, Study based);
     }
 
-    public class StudyService: IStudyService {
-
+    public class StudyService : IStudyService
+    {
         ISepesDb _db;
         IPodService _podService;
         HashSet<Study> _studies;
-        ushort numberOfPods;
+        ushort highestPodId;
 
 
-        public StudyService(ISepesDb dbService, IPodService podService) {
+        public StudyService(ISepesDb dbService, IPodService podService)
+        {
             _db = dbService;
             _podService = podService;
 
             _studies = new HashSet<Study>();
-            numberOfPods = 0;
+            highestPodId = 0;
         }
 
         public IEnumerable<Study> GetStudies(User user, bool archived)
@@ -58,7 +59,7 @@ namespace Sepes.RestApi.Services {
             }
             else if (_studies.Contains(based))
             {
-                study = await UpdatePods(based, study);
+                study = await ManagePods(based, study);
                 await _db.UpdateStudy(study);
 
                 _studies.Remove(based);
@@ -68,7 +69,19 @@ namespace Sepes.RestApi.Services {
             return study;
         }
 
-        private async Task<Study> UpdatePods(Study based, Study study)
+        private async Task<Study> ManagePods(Study based, Study study)
+        {
+            study = await CreateOrUpdatePods(based, study);
+
+            if (study.archived && based.archived)
+            {
+                await DeletePods(based, study);
+            }
+            
+            return study;
+        }
+
+        private async Task<Study> CreateOrUpdatePods(Study based, Study study)
         {
             foreach (var pod in study.pods)
             {
@@ -79,7 +92,7 @@ namespace Sepes.RestApi.Services {
                     {
                         // Update list of pod
                         // generate new pod with id
-                        Pod newPod = pod.NewPodId(numberOfPods++);
+                        Pod newPod = pod.NewPodId(++highestPodId);
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
@@ -97,11 +110,38 @@ namespace Sepes.RestApi.Services {
             return study;
         }
 
+        private async Task DeletePods(Study based, Study study)
+        {
+            List<Task> deletePodTasks = new List<Task>();
+            foreach (var pod in based.pods)
+            {
+                if (!study.pods.Contains(pod))
+                {
+                    deletePodTasks.Add(_podService.Set(null, pod, null, null));
+                }
+            }
+            await Task.WhenAll(deletePodTasks.ToArray());
+        }
+
         public void LoadStudies()
         {
             _studies = _db.GetAllStudies().Result.ToHashSet();
-            numberOfPods = (ushort) _studies.Sum(study => study.pods.Count);
+            FindHighestPodId();
         }
-    }
 
+        private void FindHighestPodId()
+        {
+            foreach (var study in _studies)
+            {
+                foreach (var pod in study.pods)
+                {
+                    if (pod.id > highestPodId)
+                    {
+                        highestPodId = (ushort)pod.id;
+                    }
+                }
+            }
+        }
+
+    }
 }

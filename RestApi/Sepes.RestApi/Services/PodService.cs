@@ -28,15 +28,19 @@ namespace Sepes.RestApi.Services
         private readonly IAzureService _azure;
 
 
-        public PodService(ISepesDb database, IAzureService azure)
+        public PodService(IAzureService azure)
         {
-            _database = database;
             _azure = azure;
         }
-
+        
         public async Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
         {
-            if (based == null)
+            if (newPod == null)
+            {
+                await this.Delete(based);
+                return;
+            }
+            else if (based == null)
             {
                 Task createRes = _azure.CreateResourceGroup(newPod.resourceGroupName);
                 Task createNet = _azure.CreateNetwork(newPod.networkName, newPod.addressSpace, newPod.subnetName);
@@ -46,18 +50,29 @@ namespace Sepes.RestApi.Services
             var tasks = new List<Task>();
 
             // Create network security group and add rules, apply to subnet
-            bool newRulesAreAdded = based == null || 
+            bool newRulesAreAdded = based == null ||
                 !based.incoming.SequenceEqual(newPod.incoming) ||
                 !based.outgoing.SequenceEqual(newPod.outgoing);
             if (!newPod.allowAll && (newRulesAreAdded || based.allowAll)) tasks.Add(ManageNetworkSecurityGroup(newPod));
             // Removes nsg from subnet
             if (newPod.allowAll && based != null && !based.allowAll) tasks.Add(RemoveNetworkSecurityGroup(newPod));
 
-            
+
             // Add users to resources
             tasks.Add(AddUsers(newPod, newUsers, basedUsers));
 
             await Task.WhenAll(tasks);
+        }
+
+        public async Task Delete(Pod pod)
+        {
+            //Remove nsg assignment so deletion can be done without error
+            await _azure.DeleteNetwork(pod.networkName);
+            await _azure.DeleteResourceGroup(pod.resourceGroupName);
+            var (nsg1, nsg2) = GetNSGNameVariants(pod.networkSecurityGroupName);
+
+            await _azure.DeleteSecurityGroup(nsg1);
+            await _azure.DeleteSecurityGroup(nsg2);
         }
 
         private async Task AddUsers(Pod newPod, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
@@ -78,8 +93,7 @@ namespace Sepes.RestApi.Services
 
         private async Task ManageNetworkSecurityGroup(Pod newPod)
         {
-            string nsgNameDefault = newPod.networkSecurityGroupName;
-            string nsgNameDef2 = nsgNameDefault+"2";
+            var (nsgNameDefault, nsgNameDef2) = GetNSGNameVariants(newPod.networkSecurityGroupName);
 
             // Generate network security network name
             var nsgNames = await _azure.GetNSGNames();
@@ -122,9 +136,14 @@ namespace Sepes.RestApi.Services
 
         private Dictionary<ushort, string[]> GenerateRuleDictionary(IEnumerable<Rule> array)
         {
-            var g = array.GroupBy(r => r.port, r => r.ip, (port, ips) => new { Key = port, Value = ips});
+            var g = array.GroupBy(r => r.port, r => r.ip, (port, ips) => new { Key = port, Value = ips });
             var ruleDict = g.ToDictionary(r => r.Key, r => r.Value.ToArray());
             return ruleDict;
+        }
+
+        private (string default1, string default2) GetNSGNameVariants(string networkSecurityGroupName)
+        {
+            return (networkSecurityGroupName, networkSecurityGroupName+"2");
         }
     }
 }
