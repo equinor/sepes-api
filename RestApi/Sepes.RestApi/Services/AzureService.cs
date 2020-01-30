@@ -25,7 +25,7 @@ namespace Sepes.RestApi.Services
         {
             _commonResourceGroup = config.commonGroup;
             _azure = Azure.Authenticate(config.credentials).WithDefaultSubscription();
-            _joinNetworkRoleName = "ExampleJoinNetwork";
+            _joinNetworkRoleName = config.joinNetworkRoleName;
 
             if (!_azure.ResourceGroups.Contain(_commonResourceGroup))
             {
