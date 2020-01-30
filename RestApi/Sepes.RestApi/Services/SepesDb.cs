@@ -53,7 +53,7 @@ namespace Sepes.RestApi.Services
 
         public async Task<Study> NewStudy(Study study)
         {
-            Study saveStudy = study;
+            StudyDB saveStudy = study.ToStudyDB();
             await connection.OpenAsync();
             try
             {
@@ -64,25 +64,27 @@ namespace Sepes.RestApi.Services
                 command.Parameters.AddWithValue("@JsonData", jsonData);
                 int studyId = Convert.ToUInt16(await command.ExecuteScalarAsync());
 
-                saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
-                                        study.datasets, study.archived);
+                //saveStudy = new Study(study.studyName, studyId, study.pods, study.sponsors, study.suppliers, 
+                //                        study.datasets, study.archived);
+                saveStudy.studyId = studyId;
             }
             finally
             {
                 await connection.CloseAsync();
             }
-            await UpdateStudy(saveStudy);
+            await UpdateStudy(saveStudy.ToStudy());
 
-            return saveStudy;
+            return saveStudy.ToStudy();
         }
 
         public async Task<bool> UpdateStudy(Study study)
         {
+            var updateStudy = study.ToStudyDB();
             await connection.OpenAsync();
             try
             {
-                string jsonData = JsonSerializer.Serialize(study);
-                string sqlUpdateStudy = $"UPDATE dbo.Studies SET JsonData = (@JsonData) WHERE StudyID = {study.studyId}";
+                string jsonData = JsonSerializer.Serialize(updateStudy);
+                string sqlUpdateStudy = $"UPDATE dbo.Studies SET JsonData = (@JsonData) WHERE StudyID = {updateStudy.studyId}";
                 SqlCommand updateCommand = new SqlCommand(sqlUpdateStudy, connection);
                 updateCommand.Parameters.AddWithValue("@JsonData", jsonData);
                 await updateCommand.ExecuteNonQueryAsync();

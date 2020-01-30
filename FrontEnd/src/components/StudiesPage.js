@@ -2,6 +2,7 @@ import React, {Component} from 'react'
 
 import Sepes from '../sepes.js';
 import addSymbol from '../plus1.svg';
+import StudyList from './StudyList.js';
 
 const sepes = new Sepes();
 
@@ -18,7 +19,7 @@ class CreateStudyPage extends Component {
         return (
         <div>
             <header>
-                <span><b>Sepes</b></span>
+                <span><b>Studies</b></span>
                 <span className="loggedInUser">Logged in as <b>{ this.props.state.userName }</b></span>
             </header>
             <div style={{padding: 50, paddingRight: 0}}>
@@ -27,35 +28,22 @@ class CreateStudyPage extends Component {
                         <p style={{fontWeight: "bold"}}>New Study</p>
                         <p><img src={addSymbol} alt={"+"} style={{width: 60}}/></p>
                     </div>
-                    { this.props.state.studies.map((item) => (
-                        <div key={item.studyId} className="study" onClick={() => this.openStudy(item)}>
-                            <p style={{fontWeight: "bold"}}>{item.studyName}</p>
-                            <p>Pods: {item.pods.length}</p>
-                            <p>Users: {item.suppliers.length}</p>
-                        </div>
-                    ))}
+                    <StudyList studies={this.state.studies} openStudy={this.openStudy} />
                 </div>
                 <div>
                     <button onClick={this.showArchived}>Show archived studies</button>
                 </div>
                 <div style={{paddingTop: 30, display: "table"}}>
-                    { this.state.archivedStudies.map((item) => (
-                        <div className="study" onClick={() => this.openStudy(item)}>
-                            <p style={{fontWeight: "bold"}}>{item.studyName}</p>
-                            <p>Pods: {item.pods.length}</p>
-                            <p>Users: {item.suppliers.length}</p>
-                        </div>
-                    ))}
+                    <StudyList studies={this.state.archivedStudies} openStudy={this.openStudy} />
                 </div>
             </div>
         </div>);
     }
 
     componentDidMount() {
+        // get studies from backend
         sepes.getStudies(false).then(response => response.json())
             .then(json => {
-                console.log("fetch studies");
-                console.log(json);
                 this.setState({studies: json});
 
                 this.props.setStudies(json);
@@ -63,11 +51,14 @@ class CreateStudyPage extends Component {
     }
 
     newStudy = () => {
+        // set current study as a new study with no id and no name
         this.props.setStudy({studyId: null, studyName: ""});
+        
         this.props.changePage("study", {});
     }
 
     openStudy = (study) => {
+        // set selected study as current study, then open the study page
         this.props.setStudy(study);
         this.props.changePage("study", {});
     }
@@ -76,8 +67,6 @@ class CreateStudyPage extends Component {
         sepes.getStudies(true)
             .then(response => response.json())
             .then(json => {
-                console.log("fetch archived studies");
-                console.log(json);
                 this.setState({archivedStudies: json});
             });
     }

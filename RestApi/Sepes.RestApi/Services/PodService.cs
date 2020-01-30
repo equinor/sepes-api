@@ -10,7 +10,16 @@ namespace Sepes.RestApi.Services
     // It do not own the Pod state and need to talk to StudyService to keep its up to date.
     public interface IPodService
     {
-        Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers);
+        /// <summary>
+        /// Creates or updates a pod based on the differences between a base base pod serving as current state, and 
+        /// a new pod object becoming the updated state. Also adds users to resources based on the diffence between 
+        /// the current list of users and an updated list of users.
+        /// </summary>
+        /// <param name="updatedPod">The new or updated pod</param>
+        /// <param name="basePod">The current pod</param>
+        /// <param name="updatedUsers">The updated list of users</param>
+        /// <param name="baseUsers">The current list of users</param>
+        Task Set(Pod updatedPod, Pod basePod, IEnumerable<User> updatedUsers, IEnumerable<User> baseUsers);
     }
 
     public class PodService : IPodService

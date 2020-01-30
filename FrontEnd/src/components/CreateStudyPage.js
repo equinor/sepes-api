@@ -1,15 +1,15 @@
-import React, {Component} from 'react'
-import SepesUserList from './SepesUserList'
-import SepesDataList from './SepesDataList'
-import SepesPodList from './SepesPodList'
+import React, {Component} from 'react';
+import SepesUserList from './SepesUserList';
+import SepesDataList from './SepesDataList';
+import SepesPodList from './SepesPodList';
 
-import * as StudyService from "../studyService"
+import spinner from "../spinner.svg";
 
-import spinner from "../spinner.svg"
-
+import * as StudyService from "../studyService";
 import Sepes from '../sepes.js';
-const sepes = new Sepes();
 
+
+const sepes = new Sepes();
 
 class CreateStudyPage extends Component {
     constructor(props) {
@@ -24,21 +24,26 @@ class CreateStudyPage extends Component {
             studyName: "",
 
             data: [],
-            saveBtnDisabled: false,
         }
     }
 
     render() {
         let appstate = this.props.state;
+        // disables saving based on study id
+        let disableSave = false;
+        appstate.savingStudyIds.forEach(id => {
+            if (id === this.state.studyId) disableSave = true;
+        });
+
         return (
         <div>
             <header>
                 <span><b>
-                    <span className="link" onClick={() => this.props.changePage("studies")}>Sepes</span> > </b>
+                    <span className="link" onClick={() => this.props.changePage("studies")}>Studies</span> > </b>
                 </span>
                 <input type="text" placeholder="Study name" id="new-study-input" value={this.state.studyName} onChange={(e)=> this.setState({studyName: e.target.value})} />
-                <button disabled={appstate.saving} onClick={this.saveStudy}>Save</button>
-                { appstate.saving ? <img src={spinner} className="spinner" alt="" /> : null }
+                <button disabled={disableSave} onClick={this.saveStudy}>Save</button>
+                { disableSave ? <img src={spinner} className="spinner" alt="" /> : null }
                 <span className="loggedInUser">Logged in as <b>{ appstate.userName }</b></span>
             </header>
             <div className="sidebar">
@@ -62,8 +67,8 @@ class CreateStudyPage extends Component {
         if (study.studyId !== null) {
             this.setState({
                 studyName: study.studyName,
-                studyId: typeof(study.studyId) === "undefined" || study.studyId === null ? null : study.studyId,
-                archived: typeof(study.srchived) === "undefined" || study.archived === false ? false : true,
+                studyId: study.studyId,
+                archived: study.archived,
                 pods: study.pods,
                 sponsors: study.sponsors,
                 suppliers: study.suppliers
@@ -116,40 +121,49 @@ class CreateStudyPage extends Component {
         this.props.changePage("pod", {dataset: this.state.dataset, pod});
     }
 
-
     updateAchived = () => {
         this.setState({archived: !this.state.archived});
     }
 
     saveStudy = () => {
         let props = this.props;
-        props.setSavingState(true);
-
         let state = this.state;
+
+        // create new or updated study object
         let study = {
             studyName: state.studyName,
             pods: state.pods,
-            datasetIds: state.dataset,
             archived: state.archived,
             sponsors: state.sponsors,
             suppliers: state.suppliers
         }
-
         if (state.studyId !== null) {
             study.studyId = state.studyId;
         }
-
+        
+        // create base study based on selected study
         let based = this.state.studyId === null ? null : this.props.state.selectedStudy;
         
-        sepes.createStudy(study, based)
+        // disable save button
+        props.setSavingState(state.studyId);
+
+        // save study
+        sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
-            .then(json => {
-                this.setState({studyId: json.studyId});
-                props.setSavingState(false);
-                props.setStudy(json);
+            .then(returnedStudy => {
+                // Set state 
+                if (this.state.studyId === null) {
+                    this.setState({studyId: returnedStudy.studyId});
+                }
+
+                // Update base study
+                props.updateStudy(returnedStudy);
+
+                // Enable saving
+                props.removeSavingState(study.studyId);
             })
             .catch(() => {
-                props.setSavingState(false);
+                props.removeSavingState(study.studyId);
             });
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Net;
 
 namespace Sepes.RestApi.Model
 {
@@ -62,6 +61,18 @@ namespace Sepes.RestApi.Model
                 openInternet = allowAll,
                 incoming = inputIncoming.ToArray(),
                 outgoing = inputOutgoing.ToArray()
+            };
+        }
+
+        public PodDB ToPodDB()
+        {
+            return new PodDB(){
+                id = (ushort) id,
+                name = name,
+                studyId = studyId,
+                allowAll = allowAll,
+                incoming = incoming.Select(rule => rule.ToRuleDB()).ToList(),
+                outgoing = outgoing.Select(rule => rule.ToRuleDB()).ToList()
             };
         }
 
