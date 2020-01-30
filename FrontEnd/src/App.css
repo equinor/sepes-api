@@ -2,6 +2,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  color: #080808;
 }
 
 #root {
@@ -112,6 +113,7 @@ header {
   background: transparent;
   color: #efefef;
   font-weight: bold;
+  margin-right: 6px;
 }
 
 
@@ -124,10 +126,19 @@ table, th, td {
   border: 1px solid #a9a9a9;
   border-collapse: collapse;
   text-align: center;
+  padding: 2px;
 }
 
 table {
   width: 100%;
+}
+
+.rule-input {
+  border: 1px solid darkgrey;
+  border-right: none;
+  padding: 3px;
+  /*width: 98px 198px;*/
+  text-align: center;
 }
 
 #pod-dataset-list {
@@ -161,34 +172,19 @@ table {
   margin-top: 5px;
 }
 
-.pod {
-  border-radius: 5px;
-  width: 170px; 
-  height: 220px; 
-  float: left;
-  text-align: center;
-  padding-top: 10px;
-  margin-right: 30px;
-  margin-bottom: 30px;
-  margin-left: 1px;
-  margin-top: 1px;
-  box-shadow: 0 1px 3px 0 rgba(20,23,28,.15);
-  background: white;
-}
-
-.pod:hover {
-  cursor: pointer;
-  box-shadow: 0 1px 3px 0 rgba(20, 23, 28, 0.46);
-}
-
 .podlist {
   padding: 50px; 
   position: absolute; 
   left: 300px;
 }
 
-/* Studies */
-.study {
+
+.spinner {
+  position: absolute;
+  padding-left: 5px;
+}
+
+.card {
   border-radius: 5px;
   width: 170px; 
   height: 220px; 
@@ -203,12 +199,7 @@ table {
   background: white;
 }
 
-.study:hover {
+.card:hover {
   cursor: pointer;
   box-shadow: 0 1px 3px 0 rgba(20, 23, 28, 0.46);
-}
-
-.spinner {
-  position: absolute;
-  padding-left: 5px;
 }

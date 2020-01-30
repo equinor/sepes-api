@@ -24,7 +24,7 @@ class CreateStudyPage extends Component {
             </header>
             <div style={{padding: 50, paddingRight: 0}}>
                 <div style={{display: "table"}}>
-                    <div className="study" onClick={this.newStudy}>
+                    <div className="card" onClick={this.newStudy}>
                         <p style={{fontWeight: "bold"}}>New Study</p>
                         <p><img src={addSymbol} alt={"+"} style={{width: 60}}/></p>
                     </div>
