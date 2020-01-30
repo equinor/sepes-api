@@ -49,7 +49,7 @@ namespace Sepes.RestApi
 
             var azureService = new AzureService(_config.azureConfig);
             var dbService = new SepesDb(_config.connectionString);
-            var podService = new PodService(dbService, azureService);
+            var podService = new PodService(azureService);
             var studyService = new StudyService(dbService, podService);
             studyService.LoadStudies();
 
