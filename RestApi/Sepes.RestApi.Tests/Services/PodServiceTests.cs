@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Moq;
 using Sepes.RestApi.Model;
@@ -23,9 +21,8 @@ namespace Sepes.RestApi.Tests.Services
             rules.Add(new Rule(3000, "3.3.3.3"));
             var newPod = new Pod(1, "test", 1, false, rules, rules, null, null);
 
-            var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
-            var podService = new PodService(databaseMock.Object, azureMock.Object);
+            var podService = new PodService(azureMock.Object);
 
 
             await podService.Set(newPod, null, users, null);
@@ -50,9 +47,8 @@ namespace Sepes.RestApi.Tests.Services
         public async Task TestSetUpdatedPod()
         {
             //Given
-            var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
-            var podService = new PodService(databaseMock.Object, azureMock.Object);
+            var podService = new PodService(azureMock.Object);
 
             var users = new List<User>();
             users.Add(new User("1", "1", "1"));
@@ -102,9 +98,8 @@ namespace Sepes.RestApi.Tests.Services
             bool openInternet = true;
             var newPod = new Pod(1, "test", 1, openInternet, rules, rules, null, null);
 
-            var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
-            var podService = new PodService(databaseMock.Object, azureMock.Object);
+            var podService = new PodService(azureMock.Object);
 
 
             await podService.Set(newPod, null, users, null);
@@ -132,9 +127,8 @@ namespace Sepes.RestApi.Tests.Services
             openInternet = true;
             var newPod = new Pod(1, "test", 1, openInternet, rules, rules, null, null);
 
-            var databaseMock = new Mock<ISepesDb>();
             var azureMock = new Mock<IAzureService>();
-            var podService = new PodService(databaseMock.Object, azureMock.Object);
+            var podService = new PodService(azureMock.Object);
 
 
             await podService.Set(newPod, based, users, null);

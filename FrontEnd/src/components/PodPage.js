@@ -47,12 +47,15 @@ class PodPage extends Component {
                 <div className="sidebar podsidebar">
                     <div>
                         <div className="nsgSwitchclass" style={{ padding: "20px" }}>
-                        <label>Open internet
+                            <label>Open internet
                             <Nsgswitch
-                            isOn={this.state.openInternet}
-                            onColor="#EF476F"
-                            handleToggle={this.updateNsg}
-                            /></label>
+                                    isOn={this.state.openInternet}
+                                    onColor="#EF476F"
+                                    handleToggle={this.updateNsg}
+                                /></label>
+                        </div>
+                        <div>
+                            {appstate.selectedStudy.archived ? <button className="deletebtn" disabled={disableSave} onClick={this.deletePod}>Delete Pod</button> : null}
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
@@ -66,7 +69,7 @@ class PodPage extends Component {
             </div>);
     }
 
-    componentDidMount() {
+    componentDidMount() { 
         let pod = this.props.state.selection.pod;
         if (pod.podId !== null) {
             this.setState({
@@ -80,7 +83,7 @@ class PodPage extends Component {
     }
 
     updateNsg = () => {
-        this.setState({openInternet: !this.state.openInternet});
+        this.setState({ openInternet: !this.state.openInternet });
     }
 
     addIncomingRule = (port, ip) => {
@@ -159,6 +162,39 @@ class PodPage extends Component {
             })
             .catch(() => {
                 props.removeSavingState(study.studyId);
+            });
+    }
+
+    deletePod = () => {
+        let props = this.props;
+
+        
+
+        let based = props.state.selectedStudy;
+        let study = JSON.parse(JSON.stringify(based));
+        //Disable buttons during delete
+        props.setSavingState(study.studyId);
+        //Removes pod from Study
+        study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
+        
+        //Send request to backend
+        sepes.saveStudy(study, based)
+            .then(returnValue => returnValue.json())
+            .then(study => {
+                if (this.state.podId === null) {
+                    let podId = study.pods[study.pods.length - 1].podId
+                    this.setState({
+                        podId
+                    });
+                }
+                props.updateStudy(study);
+                props.removeSavingState(study.studyId);
+                props.changePage("study");
+            })
+            .catch(() => {
+                props.removeSavingState(study.studyId);
+                props.changePage("study");
+
             });
     }
 }
