@@ -189,11 +189,11 @@ class PodPage extends Component {
                 }
                 props.updateStudy(study);
                 props.removeSavingState(study.studyId);
-                props.changePage("study")
+                props.changePage("study");
             })
             .catch(() => {
                 props.removeSavingState(study.studyId);
-                props.changePage("study")
+                props.changePage("study");
 
             });
     }
