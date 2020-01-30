@@ -16,6 +16,15 @@ namespace Sepes.RestApi.Model
             this.userGroup = userGroup;
         }
 
+        public UserDB ToUserDB()
+        {
+            return new UserDB(){
+                userName = userName,
+                userEmail = userEmail,
+                userGroup = userGroup
+            };
+        }
+
         public override bool Equals(object obj)
         {
             return obj is User user && userEmail == user.userEmail;

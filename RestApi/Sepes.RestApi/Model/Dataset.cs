@@ -20,6 +20,15 @@ namespace Sepes.RestApi.Model
             this.azureReference = azureReference;
         }
 
+        public DataSetDB ToDataSetDB()
+        {
+            return new DataSetDB(){
+                displayName = displayName,
+                opaPolicy = opaPolicy,
+                azureReference = azureReference
+            };
+        }
+
         public override bool Equals(object obj)
         {
             return obj is DataSet dataset &&
