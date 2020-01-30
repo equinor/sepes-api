@@ -175,7 +175,7 @@ class PodPage extends Component {
         study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
         
         //Send request to backend
-        sepes.createStudy(study, based)
+        sepes.saveStudy(study, based)
             .then(returnValue => returnValue.json())
             .then(study => {
                 if (this.state.podId === null) {
@@ -186,11 +186,11 @@ class PodPage extends Component {
                 }
                 props.setStudy(study);
                 props.setSavingState(false);
-                props.changePage("studies")
+                props.changePage("study")
             })
             .catch(() => {
                 props.setSavingState(false);
-                props.changePage("studies")
+                props.changePage("study")
 
             });
     }
