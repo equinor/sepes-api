@@ -6,7 +6,6 @@ using System.Linq;
 
 namespace Sepes.RestApi.Model
 {
-
     public class Study
     {
         public string studyName { get; }
@@ -57,6 +56,19 @@ namespace Sepes.RestApi.Model
                 pods = inputPods,
                 sponsors = inputSponsors,
                 suppliers = inputSuppliers
+            };
+        }
+
+        public StudyDB ToStudyDB()
+        {
+            return new StudyDB(){
+                studyId = studyId,
+                studyName = studyName,
+                archived = archived,
+                pods = pods.Select(pod => pod.ToPodDB()).ToHashSet(),
+                sponsors = sponsors.Select(user => user.ToUserDB()).ToHashSet(),
+                suppliers = suppliers.Select(user => user.ToUserDB()).ToHashSet(),
+                datasets = datasets.Select(dataset => dataset.ToDataSetDB()).ToHashSet()
             };
         }
 
