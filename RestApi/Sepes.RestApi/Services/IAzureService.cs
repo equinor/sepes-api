@@ -5,7 +5,11 @@ namespace Sepes.RestApi.Services
 {
     public interface IAzureService
     {
-        Task<string> CreateResourceGroup(string podName);
+        ///<summary>
+        ///Creates a resource group with the name provided and returns a resource group ID
+        ///</summary>
+        ///<param name="resourceGroupName">Name of the pod to create a Resource Group for</param>
+        Task<string> CreateResourceGroup(string resourceGroupName);
         ///<summary>
         ///Delete a Resource Group from Azure. WARNING this will also delete all resources contained within that Pod.
         ///</summary>
@@ -75,6 +79,9 @@ namespace Sepes.RestApi.Services
         ///<param name="userId">A GUID string unique to the user</param>
         ///<param name="resourceGroupName">The name of the network to add the user to</param>
         Task<string> AddUserToNetwork(string userId, string networkName);
+        ///<summary>
+        ///Gets a string representing all the existing Network Security Groups in the applications common Resource Group as defined in config.
+        ///</summary>
         Task<IEnumerable<string>> GetNSGNames();
     }
 }
