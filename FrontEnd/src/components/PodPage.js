@@ -55,7 +55,7 @@ class PodPage extends Component {
                                 /></label>
                         </div>
                         <div>
-                            {appstate.selectedStudy.archived ? <button className="deletebtn" onClick={this.deletePod}>Delete Pod</button> : null}
+                            {appstate.selectedStudy.archived ? <button className="deletebtn" disabled={disableSave} onClick={this.deletePod}>Delete Pod</button> : null}
                         </div>
                     </div>
                     <PodRules header="Incoming rules" data={this.state.incoming} addItem={this.addIncomingRule} removeItem={this.removeIncomingRule} />
@@ -167,10 +167,13 @@ class PodPage extends Component {
 
     deletePod = () => {
         let props = this.props;
-        props.setSavingState(true);
+
+        
 
         let based = props.state.selectedStudy;
         let study = JSON.parse(JSON.stringify(based));
+        //Disable buttons during delete
+        props.setSavingState(study.studyId);
         //Removes pod from Study
         study.pods.splice(study.pods.findIndex(pod => pod.podId === this.state.podId), 1);
         
@@ -184,12 +187,12 @@ class PodPage extends Component {
                         podId
                     });
                 }
-                props.setStudy(study);
-                props.setSavingState(false);
+                props.updateStudy(study);
+                props.removeSavingState(study.studyId);
                 props.changePage("study")
             })
             .catch(() => {
-                props.setSavingState(false);
+                props.removeSavingState(study.studyId);
                 props.changePage("study")
 
             });
