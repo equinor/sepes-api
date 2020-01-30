@@ -62,9 +62,8 @@ header {
   padding: 6px 10px;
   color: black;
   font-weight: bold;
-  border-color: #e2e2e2;
-  border-top: 1px solid;
-  border-bottom: 1px solid;
+  border-top: 1px solid #eaeaea;
+  border-bottom: 1px solid #eaeaea;
 }
 
 .sidebar {
