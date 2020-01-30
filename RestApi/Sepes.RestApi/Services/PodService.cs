@@ -28,9 +28,8 @@ namespace Sepes.RestApi.Services
         private readonly IAzureService _azure;
 
 
-        public PodService(ISepesDb database, IAzureService azure)
+        public PodService(IAzureService azure)
         {
-            _database = database;
             _azure = azure;
         }
         
