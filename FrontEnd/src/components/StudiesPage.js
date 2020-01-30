@@ -24,14 +24,14 @@ class CreateStudyPage extends Component {
             </header>
             <div style={{padding: 50, paddingRight: 0}}>
                 <div style={{display: "table"}}>
-                    <div className="study" onClick={this.newStudy}>
+                    <div className="card" onClick={this.newStudy}>
                         <p style={{fontWeight: "bold"}}>New Study</p>
                         <p><img src={addSymbol} alt={"+"} style={{width: 60}}/></p>
                     </div>
                     <StudyList studies={this.state.studies} openStudy={this.openStudy} />
                 </div>
                 <div>
-                    <button onClick={this.showArchived}>Show archived studies</button>
+                    <button onClick={this.showArchived} id="show-archived">Show archived studies</button>
                 </div>
                 <div style={{paddingTop: 30, display: "table"}}>
                     <StudyList studies={this.state.archivedStudies} openStudy={this.openStudy} />
