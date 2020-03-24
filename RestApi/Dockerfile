@@ -5,8 +5,6 @@ WORKDIR /app
 COPY /Sepes.RestApi/*.csproj .
 RUN dotnet restore
 
-
-
 # Copy everything else and build
 COPY /Sepes.RestApi/. .
 RUN dotnet publish -c Release -o out
