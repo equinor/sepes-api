@@ -38,7 +38,7 @@ namespace Sepes.RestApi.Services
                 // Bail the function
                 if(currentDirectory == null) return;
                 // Found it bail the loop.
-                if(currentDirectory.Name == "RestApi") break;
+                if(currentDirectory.Name == "src") break;
                 // Try next parent.
                 currentDirectory = currentDirectory.Parent;
             }

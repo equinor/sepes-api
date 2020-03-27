@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
     <UserSecretsId>0ed63c9d-69c7-486e-a2j8-ec8eef11s91f</UserSecretsId>
   </PropertyGroup>
@@ -9,9 +9,9 @@
   <ItemGroup>
     <PackageReference Include="dotenv.net" Version="1.0.6" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="3.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.26.1" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.26.1" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.5.0" />
