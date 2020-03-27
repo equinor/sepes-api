@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   web:
-    build: ./FrontEnd
+    build: ./src/FrontEnd
     environment:
       - REACT_APP_INSTRUMENTATION_KEY
       - REACT_APP_AUTH_CLIENT_ID
@@ -12,7 +12,7 @@ services:
         protocol: tcp
         mode: host
   restapi:
-    build: ./RestApi
+    build: ./src/RestApi
     environment:
       - SEPES_NAME
       - SEPES_TENANT_ID
