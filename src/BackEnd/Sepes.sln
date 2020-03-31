@@ -5,9 +5,9 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.RestApi", "Sepes.RestApi\Sepes.RestApi.csproj", "{CD846C63-916B-4933-A281-5793817DED09}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.RestApi.Tests", "Sepes.RestApi.Tests\Sepes.RestApi.Tests.csproj", "{1CBDA700-4C9A-4932-9052-06311E6064D8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Tests", "Sepes.Tests\Sepes.Tests.csproj", "{1CBDA700-4C9A-4932-9052-06311E6064D8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.RestApi.Infrastructure", "Sepes.RestApi.Infrastructure\Sepes.RestApi.Infrastructure.csproj", "{CB5753CF-F8F1-4336-95CD-595C1230F347}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.Infrastructure", "Sepes.Infrastructure\Sepes.Infrastructure.csproj", "{CB5753CF-F8F1-4336-95CD-595C1230F347}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

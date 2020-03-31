@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Sepes.RestApi.Services;
 using Xunit;
 
-namespace Sepes.RestApi.Tests.Services
+namespace Sepes.Tests.Services
 {
     public class ConfigServiceTests
     {

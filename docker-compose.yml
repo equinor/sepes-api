@@ -12,7 +12,7 @@ services:
         protocol: tcp
         mode: host
   restapi:
-    build: ./src/RestApi
+    build: ./src/BackEnd
     environment:
       - SEPES_NAME
       - SEPES_TENANT_ID
