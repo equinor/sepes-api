@@ -51,6 +51,7 @@ class App extends React.Component {
       }
     };
     this.msalApp = new Msal.UserAgentApplication(this.msalConfig);
+    
     this.appInsights = new ApplicationInsights({ config: {
       instrumentationKey: process.env.REACT_APP_INSTRUMENTATION_KEY
     } });

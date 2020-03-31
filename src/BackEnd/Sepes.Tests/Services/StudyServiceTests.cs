@@ -5,7 +5,7 @@ using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 using Xunit;
 
-namespace Sepes.RestApi.Tests.Services
+namespace Sepes.Tests.Services
 {
     public class StudyServiceTests
     {

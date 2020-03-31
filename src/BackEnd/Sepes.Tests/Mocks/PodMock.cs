@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Sepes.RestApi.Model;
 using Sepes.RestApi.Services;
 
-namespace Sepes.RestApi.Tests.Mocks
+namespace Sepes.Tests.Mocks
 {
     internal class PodMock : IPodService
     {

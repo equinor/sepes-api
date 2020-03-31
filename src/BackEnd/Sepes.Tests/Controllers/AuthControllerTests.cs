@@ -5,7 +5,7 @@ using Sepes.RestApi.Model;
 using Microsoft.Extensions.Options;
 using Sepes.RestApi.Services;
 
-namespace Sepes.RestApi.Tests.Controller
+namespace Sepes.Tests.Controller
 {
     public class AuthControllerTests
     {

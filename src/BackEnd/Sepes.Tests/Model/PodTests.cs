@@ -5,7 +5,7 @@ using System.Text.Json;
 using Sepes.RestApi.Model;
 using Xunit;
 
-namespace Sepes.RestApi.Tests.Model
+namespace Sepes.Tests.Model
 {
     public class PodTests
     {
