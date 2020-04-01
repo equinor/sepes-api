@@ -1,55 +1,56 @@
+using Sepes.Infrastructure.Model.SepesSqlModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
-    public class Study
+    public class StudyDto
     {
         public string studyName { get; }
         public int studyId { get; }
-        public ImmutableHashSet<Pod> pods { get; }
-        public ImmutableHashSet<User> sponsors { get; }
-        public ImmutableHashSet<User> suppliers { get; }
+        public ImmutableHashSet<PodDto> pods { get; }
+        public ImmutableHashSet<UserDto> sponsors { get; }
+        public ImmutableHashSet<UserDto> suppliers { get; }
         public ImmutableHashSet<DataSet> datasets { get; }
         public bool archived { get; }
 
 
-        public Study(string studyName, int studyId, IEnumerable<Pod> pods, IEnumerable<User> sponsors, 
-                    IEnumerable<User> suppliers, IEnumerable<DataSet> datasets, bool archived)
+        public StudyDto(string studyName, int studyId, IEnumerable<PodDto> pods, IEnumerable<UserDto> sponsors, 
+                    IEnumerable<UserDto> suppliers, IEnumerable<DataSet> datasets, bool archived)
         {
             this.studyName = studyName;
             this.studyId = studyId;
-            this.pods = pods == null ? ImmutableHashSet<Pod>.Empty : pods.ToImmutableHashSet();
-            this.sponsors = sponsors == null ? ImmutableHashSet<User>.Empty : sponsors.ToImmutableHashSet();
-            this.suppliers = suppliers == null ? ImmutableHashSet<User>.Empty : suppliers.ToImmutableHashSet();
+            this.pods = pods == null ? ImmutableHashSet<PodDto>.Empty : pods.ToImmutableHashSet();
+            this.sponsors = sponsors == null ? ImmutableHashSet<UserDto>.Empty : sponsors.ToImmutableHashSet();
+            this.suppliers = suppliers == null ? ImmutableHashSet<UserDto>.Empty : suppliers.ToImmutableHashSet();
             this.datasets = datasets == null ? ImmutableHashSet<DataSet>.Empty : datasets.ToImmutableHashSet();
             this.archived = archived;
         }
 
-        public Study(string studyName, int studyId, IEnumerable<Pod> pods = null) : 
-            this(studyName, studyId, pods == null ? ImmutableHashSet<Pod>.Empty : pods, ImmutableHashSet<User>.Empty, 
-                ImmutableHashSet<User>.Empty, ImmutableHashSet<DataSet>.Empty, false) {}
+        public StudyDto(string studyName, int studyId, IEnumerable<PodDto> pods = null) : 
+            this(studyName, studyId, pods == null ? ImmutableHashSet<PodDto>.Empty : pods, ImmutableHashSet<UserDto>.Empty, 
+                ImmutableHashSet<UserDto>.Empty, ImmutableHashSet<DataSet>.Empty, false) {}
 
-        public StudyInput ToStudyInput()
+        public StudyInputDto ToStudyInput()
         {
-            var inputPods = new HashSet<PodInput>();
+            var inputPods = new HashSet<PodInputDto>();
             var inputSponsors = new HashSet<string>();
             var inputSuppliers = new HashSet<string>();
 
-            foreach (Pod pod in pods) {
+            foreach (PodDto pod in pods) {
                 inputPods.Add(pod.ToPodInput());
             }
-            foreach (User user in sponsors) {
+            foreach (UserDto user in sponsors) {
                 inputSponsors.Add(user.userEmail);
             }
-            foreach (User user in suppliers) {
+            foreach (UserDto user in suppliers) {
                 inputSuppliers.Add(user.userEmail);
             }
 
-            return new StudyInput(){
+            return new StudyInputDto(){
                 studyId = studyId,
                 studyName = studyName,
                 archived = archived,
@@ -72,14 +73,14 @@ namespace Sepes.RestApi.Model
             };
         }
 
-        public Study ReplacePods(IEnumerable<Pod> newPods)
+        public StudyDto ReplacePods(IEnumerable<PodDto> newPods)
         {
-            return new Study(studyName, studyId, newPods, sponsors, suppliers, datasets, archived);
+            return new StudyDto(studyName, studyId, newPods, sponsors, suppliers, datasets, archived);
         }
         
         public override bool Equals(object obj)
         {
-            return obj is Study study &&
+            return obj is StudyDto study &&
                    studyName == study.studyName &&
                    studyId == study.studyId &&
                    Enumerable.SequenceEqual(pods, study.pods) &&

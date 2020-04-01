@@ -1,14 +1,14 @@
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using System;
-using System.Threading.Tasks;
-using Sepes.RestApi.Model;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Sepes.Infrastructure.Dto;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Services
 {

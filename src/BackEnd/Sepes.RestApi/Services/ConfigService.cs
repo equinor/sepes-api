@@ -5,7 +5,7 @@ using System.Text;
 using dotenv.net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using Sepes.RestApi.Model;
+using Sepes.Infrastructure.Dto;
 
 namespace Sepes.RestApi.Services
 {

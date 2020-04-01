@@ -1,26 +1,26 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
-    public class PodInput
+    public class PodInputDto
     {
         public ushort? podId { get; set; }
         public string podName { get; set; }
         public int studyId { get; set; }
         public string tag { get; set; }
-        public RuleInput[] incoming { get; set; } = new RuleInput[]{};
-        public RuleInput[] outgoing { get; set; } = new RuleInput[]{};
+        public RuleInputDto[] incoming { get; set; } = new RuleInputDto[]{};
+        public RuleInputDto[] outgoing { get; set; } = new RuleInputDto[]{};
         //Corresponds to allowAll internally
         public bool openInternet { get; set; }
 
 
-        public Pod ToPod()
+        public PodDto ToPod()
         {
             var podIncoming = incoming.Select(r => r.ToRule());
             var podOutgoing = outgoing.Select(r => r.ToRule());
 
-            return new Pod(podId, podName, studyId, openInternet, podIncoming, podOutgoing, new List<DataSet>(), new List<DataSet>());
+            return new PodDto(podId, podName, studyId, openInternet, podIncoming, podOutgoing, new List<DataSet>(), new List<DataSet>());
         }
     }
 }

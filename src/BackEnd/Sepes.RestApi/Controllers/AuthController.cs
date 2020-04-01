@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using Sepes.RestApi.Model;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Dto;
 using Sepes.RestApi.Services;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
 
 namespace Sepes.RestApi.Controller
 {

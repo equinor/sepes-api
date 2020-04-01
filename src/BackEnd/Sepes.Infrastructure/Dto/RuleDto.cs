@@ -1,27 +1,28 @@
+using Sepes.Infrastructure.Model.SepesSqlModels;
 using System;
 using System.Net;
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
-    public class Rule
+    public class RuleDto
     {
         public ushort port { get; }
         public string ip { get; }
 
-        public Rule(ushort port, IPAddress ip)
+        public RuleDto(ushort port, IPAddress ip)
         {
             this.port = port;
             this.ip = ip.ToString();
         }
-        public Rule(ushort port, string ip)
+        public RuleDto(ushort port, string ip)
         {
             this.port = port;
             this.ip = IPAddress.Parse(ip).ToString();
         }
 
-        public RuleInput ToRuleInput()
+        public RuleInputDto ToRuleInput()
         {
-            return new RuleInput(){ port = port, ip = ip };
+            return new RuleInputDto(){ port = port, ip = ip };
         }
 
         public RuleDB ToRuleDB()
@@ -31,7 +32,7 @@ namespace Sepes.RestApi.Model
 
         public override bool Equals(object obj)
         {
-            return obj is Rule rule &&
+            return obj is RuleDto rule &&
                    port == rule.port &&
                    ip == rule.ip;
         }

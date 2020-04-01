@@ -1,5 +1,7 @@
 
-namespace Sepes.RestApi.Model
+using Sepes.Infrastructure.Dto;
+
+namespace Sepes.Infrastructure.Model.SepesSqlModels
 {
     public class UserDB
     {
@@ -7,6 +9,6 @@ namespace Sepes.RestApi.Model
         public string userEmail { get; set; }
         public string userGroup { get; set; }
 
-        public User ToUser() => new User(userName, userEmail, userGroup);
+        public UserDto ToUser() => new UserDto(userName, userEmail, userGroup);
     }
 }

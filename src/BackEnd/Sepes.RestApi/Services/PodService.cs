@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sepes.RestApi.Model;
+using Sepes.Infrastructure.Dto;
 
 namespace Sepes.RestApi.Services
 {
@@ -19,7 +19,7 @@ namespace Sepes.RestApi.Services
         /// <param name="basePod">The current pod</param>
         /// <param name="updatedUsers">The updated list of users</param>
         /// <param name="baseUsers">The current list of users</param>
-        Task Set(Pod updatedPod, Pod basePod, IEnumerable<User> updatedUsers, IEnumerable<User> baseUsers);
+        Task Set(PodDto updatedPod, PodDto basePod, IEnumerable<UserDto> updatedUsers, IEnumerable<UserDto> baseUsers);
     }
 
     public class PodService : IPodService
@@ -33,7 +33,7 @@ namespace Sepes.RestApi.Services
             _azure = azure;
         }
         
-        public async Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
+        public async Task Set(PodDto newPod, PodDto based, IEnumerable<UserDto> newUsers, IEnumerable<UserDto> basedUsers)
         {
             if (newPod == null)
             {
@@ -64,7 +64,7 @@ namespace Sepes.RestApi.Services
             await Task.WhenAll(tasks);
         }
 
-        public async Task Delete(Pod pod)
+        public async Task Delete(PodDto pod)
         {
             //Remove nsg assignment so deletion can be done without error
             await _azure.DeleteNetwork(pod.networkName);
@@ -75,7 +75,7 @@ namespace Sepes.RestApi.Services
             await _azure.DeleteSecurityGroup(nsg2);
         }
 
-        private async Task AddUsers(Pod newPod, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
+        private async Task AddUsers(PodDto newPod, IEnumerable<UserDto> newUsers, IEnumerable<UserDto> basedUsers)
         {
             List<Task> addUsersTasks = new List<Task>();
             foreach (var user in newUsers)
@@ -91,7 +91,7 @@ namespace Sepes.RestApi.Services
             await Task.WhenAll(addUsersTasks.ToArray());
         }
 
-        private async Task ManageNetworkSecurityGroup(Pod newPod)
+        private async Task ManageNetworkSecurityGroup(PodDto newPod)
         {
             var (nsgNameDefault, nsgNameDef2) = GetNSGNameVariants(newPod.networkSecurityGroupName);
 
@@ -129,12 +129,12 @@ namespace Sepes.RestApi.Services
             }
         }
 
-        private async Task RemoveNetworkSecurityGroup(Pod newPod)
+        private async Task RemoveNetworkSecurityGroup(PodDto newPod)
         {
             await _azure.RemoveSecurityGroup(newPod.subnetName, newPod.networkName);
         }
 
-        private Dictionary<ushort, string[]> GenerateRuleDictionary(IEnumerable<Rule> array)
+        private Dictionary<ushort, string[]> GenerateRuleDictionary(IEnumerable<RuleDto> array)
         {
             var g = array.GroupBy(r => r.port, r => r.ip, (port, ips) => new { Key = port, Value = ips });
             var ruleDict = g.ToDictionary(r => r.Key, r => r.Value.ToArray());
