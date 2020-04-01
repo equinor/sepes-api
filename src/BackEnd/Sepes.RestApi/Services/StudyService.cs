@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sepes.RestApi.Model;
+using Sepes.Infrastructure.Model.SepesSqlModels;
 using System.Linq;
 using System;
+using Sepes.Infrastructure.Dto;
 
 namespace Sepes.RestApi.Services
 {
@@ -13,7 +14,7 @@ namespace Sepes.RestApi.Services
     public interface IStudyService
     {
         // Get the list of studies based on a user.
-        IEnumerable<Study> GetStudies(User user, bool archived);
+        IEnumerable<StudyDto> GetStudies(UserDto user, bool archived);
 
         /// <summary>
         /// Makes changes to the meta data of a study.
@@ -23,14 +24,14 @@ namespace Sepes.RestApi.Services
         /// </summary>
         /// <param name="newStudy">The updated or new study</param>
         /// <param name="based">The current study</param>
-        Task<Study> Save(Study newStudy, Study based);
+        Task<StudyDto> Save(StudyDto newStudy, StudyDto based);
     }
 
     public class StudyService : IStudyService
     {
         ISepesDb _db;
         IPodService _podService;
-        HashSet<Study> _studies;
+        HashSet<StudyDto> _studies;
         ushort highestPodId;
 
 
@@ -39,18 +40,18 @@ namespace Sepes.RestApi.Services
             _db = dbService;
             _podService = podService;
 
-            _studies = new HashSet<Study>();
+            _studies = new HashSet<StudyDto>();
             highestPodId = 0;
         }
 
-        public IEnumerable<Study> GetStudies(User user, bool archived)
+        public IEnumerable<StudyDto> GetStudies(UserDto user, bool archived)
         {
             return _studies.Where(study => study.archived == archived);
         }
 
-        public async Task<Study> Save(Study newStudy, Study based)
+        public async Task<StudyDto> Save(StudyDto newStudy, StudyDto based)
         {
-            Study study = newStudy;
+            StudyDto study = newStudy;
 
             if (based == null)
             {
@@ -69,7 +70,7 @@ namespace Sepes.RestApi.Services
             return study;
         }
 
-        private async Task<Study> ManagePods(Study based, Study study)
+        private async Task<StudyDto> ManagePods(StudyDto based, StudyDto study)
         {
             study = await CreateOrUpdatePods(based, study);
 
@@ -81,7 +82,7 @@ namespace Sepes.RestApi.Services
             return study;
         }
 
-        private async Task<Study> CreateOrUpdatePods(Study based, Study study)
+        private async Task<StudyDto> CreateOrUpdatePods(StudyDto based, StudyDto study)
         {
             foreach (var pod in study.pods)
             {
@@ -92,7 +93,7 @@ namespace Sepes.RestApi.Services
                     {
                         // Update list of pod
                         // generate new pod with id
-                        Pod newPod = pod.NewPodId(++highestPodId);
+                        PodDto newPod = pod.NewPodId(++highestPodId);
                         var newPods = study.pods.Remove(pod).Add(newPod);
                         study = study.ReplacePods(newPods);
 
@@ -101,7 +102,7 @@ namespace Sepes.RestApi.Services
                     }
                     else
                     {
-                        Pod basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
+                        PodDto basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
                         await _podService.Set(pod, basePod, study.suppliers, based.suppliers);
                     }
                 }
@@ -110,7 +111,7 @@ namespace Sepes.RestApi.Services
             return study;
         }
 
-        private async Task DeletePods(Study based, Study study)
+        private async Task DeletePods(StudyDto based, StudyDto study)
         {
             List<Task> deletePodTasks = new List<Task>();
             foreach (var pod in based.pods)

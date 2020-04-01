@@ -1,4 +1,4 @@
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
     public class AzTokenClass
     {

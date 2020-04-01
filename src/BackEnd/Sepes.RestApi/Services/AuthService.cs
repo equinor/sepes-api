@@ -2,7 +2,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 using Microsoft.IdentityModel.Tokens;
-using Sepes.RestApi.Model;
+using Sepes.Infrastructure.Dto;
 
 namespace Sepes.RestApi.Services
 {

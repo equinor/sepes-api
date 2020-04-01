@@ -1,15 +1,16 @@
+using Sepes.Infrastructure.Model.SepesSqlModels;
 using System;
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
 
-    public class User
+    public class UserDto
     {
         public string userName { get; }
         public string userEmail { get; }
         public string userGroup { get; }
         
-        public User(string userName, string userEmail, string userGroup)
+        public UserDto(string userName, string userEmail, string userGroup)
         {
             this.userName = userName;
             this.userEmail = userEmail;
@@ -27,7 +28,7 @@ namespace Sepes.RestApi.Model
 
         public override bool Equals(object obj)
         {
-            return obj is User user && userEmail == user.userEmail;
+            return obj is UserDto user && userEmail == user.userEmail;
         }
 
         public override int GetHashCode()

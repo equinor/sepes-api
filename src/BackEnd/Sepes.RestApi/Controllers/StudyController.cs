@@ -1,13 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using Sepes.RestApi.Model;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Dto;
 using Sepes.RestApi.Services;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Authorization;
-using System;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
@@ -27,35 +24,35 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost("save")]
-        public async Task<ActionResult<StudyInput>> SaveStudy([FromBody] StudyInput[] studies)
+        public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
         {
             //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
             
             //If based is null it can be assumed this will be a newly created study
             if (studies[1] == null)
             {
-                Study study = await _studyService.Save(studies[0].ToStudy(), null);
+                StudyDto study = await _studyService.Save(studies[0].ToStudy(), null);
                 return study.ToStudyInput();
             }
             //Otherwise it must be a change.
             else
             {
-                Study study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
+                StudyDto study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
                 return study.ToStudyInput();
             }
         }
 
         //Get list of studies
         [HttpGet("list")]
-        public IEnumerable<StudyInput> GetStudies()
+        public IEnumerable<StudyInputDto> GetStudies()
         {
-            return _studyService.GetStudies(new User("", "", ""), false).Select(study => study.ToStudyInput());
+            return _studyService.GetStudies(new UserDto("", "", ""), false).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("archived")]
-        public IEnumerable<StudyInput> GetArchived()
+        public IEnumerable<StudyInputDto> GetArchived()
         {
-            return _studyService.GetStudies(new User("", "", ""), true).Select(study => study.ToStudyInput());
+            return _studyService.GetStudies(new UserDto("", "", ""), true).Select(study => study.ToStudyInput());
         }
 
         [HttpGet("dataset")]

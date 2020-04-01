@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.RestApi.Services;
 using System.Diagnostics.CodeAnalysis;
+using Sepes.Infrastructure.Model.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sepes.RestApi
 {
@@ -17,6 +19,7 @@ namespace Sepes.RestApi
         public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
             _env = env;
+
             if (_env.EnvironmentName == "Development")
             {
                 ConfigService.LoadDevEnv();
@@ -59,7 +62,19 @@ namespace Sepes.RestApi
             services.AddSingleton<IPodService>(podService);
             services.AddSingleton<IStudyService>(studyService);
 
+            services.AddTransient<Sepes.Infrastructure.Service.StudyService>();
+
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
+            var enableSensitiveDataLogging = true;
+
+            services.AddDbContext<SepesDbContext>(
+              options => options.UseSqlServer(
+                  _config.connectionString,
+                  assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
+              .EnableSensitiveDataLogging(enableSensitiveDataLogging)
+              );
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

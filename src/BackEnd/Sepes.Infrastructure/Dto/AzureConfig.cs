@@ -2,7 +2,7 @@ using System;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
     public class AzureConfig
     {

@@ -1,5 +1,7 @@
 
-namespace Sepes.RestApi.Model
+using Sepes.Infrastructure.Dto;
+
+namespace Sepes.Infrastructure.Model.SepesSqlModels
 {
     public class DataSetDB
     {

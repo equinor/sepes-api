@@ -1,6 +1,7 @@
+using Sepes.Infrastructure.Model.SepesSqlModels;
 using System;
 
-namespace Sepes.RestApi.Model
+namespace Sepes.Infrastructure.Dto
 {
     // Read only view of the current or proposed state of a Pod.
     // Missing technical parameters like Id.
