@@ -14,17 +14,18 @@ namespace Sepes.RestApi
     [ExcludeFromCodeCoverage]
     public class Startup
     {
-        private IWebHostEnvironment _env;
-        private readonly IConfigService _config;
+        IWebHostEnvironment _env;
+        readonly IConfigService _configService;
         public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
-            _env = env;
+            //_env = env;
 
-            if (_env.EnvironmentName == "Development")
-            {
-                ConfigService.LoadDevEnv();
-            }
-                _config = ConfigService.CreateConfig(configuration);
+            //if (_env.EnvironmentName == "Development")
+            //{
+            //    ConfigService.LoadDevEnv();
+            //}
+          var secretFromConfig = configuration["CLIENT_SECRET"];
+                _configService = ConfigService.CreateConfig(configuration);
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -33,10 +34,10 @@ namespace Sepes.RestApi
         {
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
-            services.AddApplicationInsightsTelemetry(_config.instrumentationKey);
+            services.AddApplicationInsightsTelemetry(_configService.InstrumentationKey);
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => options.TokenValidationParameters = _config.tokenValidation);
+            .AddJwtBearer(options => options.TokenValidationParameters = _configService.TokenValidation);
 
             services.AddCors(options =>
             {
@@ -50,14 +51,14 @@ namespace Sepes.RestApi
                 });
             });
 
-            var azureService = new AzureService(_config.azureConfig);
-            var dbService = new SepesDb(_config.connectionString);
+            var azureService = new AzureService(_configService.AzureConfig);
+            var dbService = new SepesDb(_configService.ConnectionString);
             var podService = new PodService(azureService);
             var studyService = new StudyService(dbService, podService);
             studyService.LoadStudies();
 
             services.AddSingleton<ISepesDb>(dbService);
-            services.AddSingleton<IAuthService>(new AuthService(_config.authConfig));
+            services.AddSingleton<IAuthService>(new AuthService(_configService.AuthConfig));
             services.AddSingleton<IAzureService>(azureService);
             services.AddSingleton<IPodService>(podService);
             services.AddSingleton<IStudyService>(studyService);
@@ -70,7 +71,7 @@ namespace Sepes.RestApi
 
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
-                  _config.connectionString,
+                  _configService.ConnectionString,
                   assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
@@ -94,7 +95,7 @@ namespace Sepes.RestApi
             app.UseCors(MyAllowSpecificOrigins);
 
             // UseHttpsRedirection doesn't work well with docker.
-            if(!this._config.httpOnly) {
+            if(!this._configService.HttpOnly) {
                 app.UseHttpsRedirection();
             }
 
