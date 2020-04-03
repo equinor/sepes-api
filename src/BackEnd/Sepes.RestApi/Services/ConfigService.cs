@@ -11,84 +11,100 @@ namespace Sepes.RestApi.Services
 {
     public interface IConfigService
     {
-        string connectionString { get; }
-        AzureConfig azureConfig { get; }
-        string instrumentationKey { get; }
-        TokenValidationParameters tokenValidation { get; }
-        AuthConfig authConfig { get; }
-        bool httpOnly { get; } 
+        string ConnectionString { get; }
+        AzureConfig AzureConfig { get; }
+        string InstrumentationKey { get; }
+        TokenValidationParameters TokenValidation { get; }
+        AuthConfig AuthConfig { get; }
+        bool HttpOnly { get; }
+
     }
 
     public class ConfigService : IConfigService
     {
+
+        public string ConnectionString { get; }
+        public AzureConfig AzureConfig { get; }
+        public string InstrumentationKey { get; }
+        public TokenValidationParameters TokenValidation { get; }
+        public AuthConfig AuthConfig { get; }
+        public bool HttpOnly { get; } = false;
+
         [ExcludeFromCodeCoverage]
-        public static IConfigService CreateConfig(IConfiguration configuration){
-            return new ConfigService(
-                configuration,
-                new ConfigurationBuilder().AddEnvironmentVariables("SEPES_").Build()
-            );
-        }
-        [ExcludeFromCodeCoverage]
-        public static void LoadDevEnv(){
-            var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
-
-            // No standard loop fit.
-            while(true){
-                // We are at root before we found "RestApi"
-                // Bail the function
-                if(currentDirectory == null) return;
-                // Found it bail the loop.
-                if(currentDirectory.Name == "src") break;
-                // Try next parent.
-                currentDirectory = currentDirectory.Parent;
-            }
-            var projectRoot = currentDirectory.Parent;
-            var envPath = projectRoot.FullName + "/.env";
-
-            DotEnv.Config(false, envPath);
-            Console.WriteLine($"Found .env file at: {envPath}");
-        }
-
-        public string connectionString { get; }
-        public AzureConfig azureConfig { get; }
-        public string instrumentationKey { get; }
-        public TokenValidationParameters tokenValidation { get; }
-        public AuthConfig authConfig { get; }
-        public bool httpOnly { get; } = false;
-
-        public ConfigService(IConfiguration asp, IConfiguration sepes)
+        public static IConfigService CreateConfig(IConfiguration configuration)
         {
-            connectionString = sepes["MSSQL_CONNECTION_STRING"];
-            azureConfig = new AzureConfig(
-                sepes["TENANT_ID"],
-                sepes["CLIENT_ID"],
-                sepes["CLIENT_SECRET"],
-                sepes["SUBSCRIPTION_ID"],
-                $"{sepes["name"]}-{asp["Azure:CommonResourceGroupName"]}",
-                sepes["JOIN_NETWORK_ROLE_NAME"]
+            return new ConfigService(
+                configuration
+                //,
+                //new ConfigurationBuilder().AddEnvironmentVariables("SEPES_").Build()
             );
-            instrumentationKey = sepes["INSTRUMENTATION_KEY"];
+        }
+        [ExcludeFromCodeCoverage]
+        public static void LoadDevEnv()
+        {
 
-            tokenValidation = new TokenValidationParameters
+            try
+            {
+                var currentDirectory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+                // No standard loop fit.
+                while (true)
+                {
+                    // We are at root before we found "RestApi"
+                    // Bail the function
+                    if (currentDirectory == null) return;
+                    // Found it bail the loop.
+                    if (currentDirectory.Name == "src") break;
+                    // Try next parent.
+                    currentDirectory = currentDirectory.Parent;
+                }
+                var projectRoot = currentDirectory.Parent;
+                var envPath = projectRoot.FullName + "/.env";
+
+                DotEnv.Config(true, envPath);
+                Console.WriteLine($"Found .env file at: {envPath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No .env file found! Skipping .env file variable fetch. Exception message: {ex.Message}");
+            }
+        }
+
+        public ConfigService(IConfiguration config)
+        {          
+
+            ConnectionString = config["MSSQL_CONNECTION_STRING"];
+            AzureConfig = new AzureConfig(
+                config["TENANT_ID"],
+                config["CLIENT_ID"],
+                config["CLIENT_SECRET"],
+                config["SUBSCRIPTION_ID"],
+                $"{config["name"]}-{config["Azure:CommonResourceGroupName"]}",
+                config["JOIN_NETWORK_ROLE_NAME"]
+            );
+            InstrumentationKey = config["INSTRUMENTATION_KEY"];
+
+            TokenValidation = new TokenValidationParameters
             {
                 ValidateIssuer = false,  //Issue: 39 set to true before MVP
                 ValidateAudience = false,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = asp["Jwt:Issuer"],
-                ValidAudience = asp["Jwt:Issuer"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(asp["Jwt:Key"]))
+                ValidIssuer = config["Jwt:Issuer"],
+                ValidAudience = config["Jwt:Issuer"],
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]))
                 //SaveSigninToken = true  
             };
 
-            authConfig = new AuthConfig
+            AuthConfig = new AuthConfig
             {
-                Key = asp["Jwt:Key"],
-                Issuer = asp["Jwt:Issuer"],
+                Key = config["Jwt:Key"],
+                Issuer = config["Jwt:Issuer"],
             };
 
-            if(sepes["HTTP_ONLY"] == "true"){
-                this.httpOnly = true;
+            if (config["HTTP_ONLY"] == "true")
+            {
+                this.HttpOnly = true;
             }
         }
     }

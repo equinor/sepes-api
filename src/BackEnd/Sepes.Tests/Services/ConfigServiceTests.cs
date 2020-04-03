@@ -30,35 +30,35 @@ namespace Sepes.Tests.Services
         public void DatabaseString()
         {
             var config = GetConfigService();
-            Assert.Equal("Server=db.example.com,1433;Initial Catalog=testdb;Persist Security Info=False;User ID=user;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", config.connectionString);
+            Assert.Equal("Server=db.example.com,1433;Initial Catalog=testdb;Persist Security Info=False;User ID=user;Password=password;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;", config.ConnectionString);
         }
 
         [Fact]
         public void AzureConfig()
         {
             var config = GetConfigService();
-            Assert.Equal("Test-SepesCommon", config.azureConfig.commonGroup);
+            Assert.Equal("Test-SepesCommon", config.AzureConfig.CommonGroup);
         }
 
         [Fact]
         public void instrumentationKey()
         {
             var config = GetConfigService();
-            Assert.Equal("407c7027-9660-471d-9aa8-d1e4125794f2", config.instrumentationKey);
+            Assert.Equal("407c7027-9660-471d-9aa8-d1e4125794f2", config.InstrumentationKey);
         }
 
         [Fact]
         public void TokenValidationParameters()
         {
             var config = GetConfigService();
-            Assert.Equal("SepesUnitTests", config.tokenValidation.ValidIssuer);
+            Assert.Equal("SepesUnitTests", config.TokenValidation.ValidIssuer);
         }
 
         [Fact]
         public void authConfig()
         {
             var config = GetConfigService();
-            Assert.Equal("SepesUnitTests", config.authConfig.Issuer);
+            Assert.Equal("SepesUnitTests", config.AuthConfig.Issuer);
         }
     }
 }

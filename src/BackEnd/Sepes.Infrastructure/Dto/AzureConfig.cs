@@ -6,15 +6,15 @@ namespace Sepes.Infrastructure.Dto
 {
     public class AzureConfig
     {
-        public AzureCredentials credentials { get; }
-        public string commonGroup { get; }
-        public string joinNetworkRoleName { get; }
+        public AzureCredentials Credentials { get; }
+        public string CommonGroup { get; }
+        public string JoinNetworkRoleName { get; }       
 
         public AzureConfig(string tenant, string client, string secret, string subscription, string commonGroup, string joinNetworkRoleName)
         {
-            credentials = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscription);
-            this.commonGroup = commonGroup;
-            this.joinNetworkRoleName = joinNetworkRoleName;
+            Credentials = new AzureCredentialsFactory().FromServicePrincipal(client, secret, tenant, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscription);
+            this.CommonGroup = commonGroup;
+            this.JoinNetworkRoleName = joinNetworkRoleName;
         }
 
 
