@@ -4,12 +4,7 @@ In this document SEPES, with its different components, will be described/ docume
 
 ## SEPES Frontend ##
 
-Frontend allows users to manage sandboxes.
-
-This contains the following roles:
-- Admin: Access to all resources 
-- Sponsors: Responsible for sandbox management 
-- Supplier: External vendors
+The webpage allows users to create and manage azure sandboxes.
 
 Tech Stack: 
   * [React JS](https://reactjs.org/)
@@ -18,16 +13,12 @@ Tech Stack:
 
 Maturity: 3
 
-Protocol: https
+Protocol: HTTPS/JSON
 
 ## Azure Portal ##
 
 Azure Portal is used by vendors to create resources for their experiment. 
 Documentation can be found at [Microsoft homepage.](https://docs.microsoft.com/azure/)
-
-Tech Stack: N/A
-
-Maturity: 
 
 Protocol: https
 
@@ -41,7 +32,7 @@ Maturity:
 
 Protocol: Uses https rest protocol and can be configured to use http. http should only be used for cases that requires it. 
 
-Its only safe its behind a proxy that handle HTTPS terminations. Or in local development setting. 
+Its only safe if its behind a proxy that handle HTTPS terminations. Or in local development setting. 
 
 As an example docker compose is configured to use http, this is still safe as the docker wrapper uses https outside.
 
@@ -53,7 +44,7 @@ Tech Stack:
 
 Maturity:
 
-Protocol: https rest protocol
+Protocol: HTTPS rest protocol
 
 ## Azure Networks ##
 
