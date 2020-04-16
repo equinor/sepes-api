@@ -63,7 +63,7 @@ namespace Sepes.RestApi
             services.AddSingleton<IPodService>(podService);
             services.AddSingleton<IStudyService>(studyService);
 
-            services.AddTransient<Sepes.Infrastructure.Service.StudyService>();
+            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
