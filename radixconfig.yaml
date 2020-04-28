@@ -3,8 +3,6 @@ kind: RadixApplication
 metadata:
   name: sepes
 spec:
-  build:
-    secrets:
   environments:
     - name: dev
       build:
