@@ -19,6 +19,12 @@ spec:
       publicPort: http
       environmentConfig:
         - environment: prod
+          variables: 
+            SEPES_NAME: "radix-sepes-dev"
+            SEPES_TENANT_ID: "3aa4a235-b6e2-48d5-9195-7fcf05b459b0"
+            SEPES_SUBSCRIPTION_ID: "6cfb8f33-6d4b-43bf-9000-91fd6f53ca28"
+            SEPES_HTTP_ONLY: false
+            SEPES_JOIN_NETWORK_ROLE_NAME: hmh
           monitoring: true
           resources:
             requests:
@@ -42,6 +48,8 @@ spec:
         - SEPES_KEYVAULT_URL
         - SEPES_CLIENT_ID
         - SEPES_CLIENT_SECRET
+        - SEPES_INSTRUMENTATION_KEY
+        - SEPES_MSSQL_CONNECTION_STRING
   dnsAppAlias:
     environment: prod
     component: frontend
