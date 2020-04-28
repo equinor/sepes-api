@@ -2,11 +2,13 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers
+# TODO: Copy only csproj
 COPY . .
 RUN dotnet restore Sepes.RestApi/Sepes.RestApi.csproj
 
 # Copy everything else and build
-COPY . ./
+# TODO: Copy rest of files
+# COPY . ./
 RUN dotnet publish Sepes.RestApi -c Release -o Sepes.RestApi/out
 
 # Build runtime image
