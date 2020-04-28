@@ -1,7 +1,7 @@
 apiVersion: radix.equinor.com/v1
 kind: RadixApplication
 metadata:
-  name: sepes-poc
+  name: sepes
 spec:
   build:
     secrets:
@@ -43,7 +43,7 @@ spec:
       secrets:
         - kv_uri
         - kv_sp_id
-        - kv_sp_pw
+        - kv_sp_secret
   dnsAppAlias:
     environment: prod
     component: frontend
