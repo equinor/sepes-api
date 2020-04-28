@@ -39,9 +39,9 @@ spec:
           replicas: 2
           variables:
       secrets:
-        - kv_uri
-        - kv_sp_id
-        - kv_sp_secret
+        - SEPES_KEYVAULT_URL
+        - SEPES_CLIENT_ID
+        - SEPES_CLIENT_SECRET
   dnsAppAlias:
     environment: prod
     component: frontend
