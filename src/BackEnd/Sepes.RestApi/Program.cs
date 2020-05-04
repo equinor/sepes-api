@@ -31,9 +31,8 @@ namespace Sepes.RestApi
 
                  if (!string.IsNullOrWhiteSpace(keyVaultUrl))
                  {
-                     //TODO: ADD BACK IN ONCE ACCESS POLICY ER KLAR
-                    configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
-                 }                
+                     configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
+                 }
 
              })
                 .UseStartup<Startup>();

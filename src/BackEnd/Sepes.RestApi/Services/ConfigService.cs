@@ -11,19 +11,23 @@ namespace Sepes.RestApi.Services
 {
     public interface IConfigService
     {
-        string ConnectionString { get; }
+        string DbOwnerConnectionString { get; }
+        string DbReadWriteConnectionString { get; }
+    
         AzureConfig AzureConfig { get; }
         string InstrumentationKey { get; }
         TokenValidationParameters TokenValidation { get; }
         AuthConfig AuthConfig { get; }
         bool HttpOnly { get; }
-
     }
 
     public class ConfigService : IConfigService
     {
 
-        public string ConnectionString { get; }
+        public string DbOwnerConnectionString { get; }
+
+        public string DbReadWriteConnectionString { get; }
+
         public AzureConfig AzureConfig { get; }
         public string InstrumentationKey { get; }
         public TokenValidationParameters TokenValidation { get; }
@@ -71,9 +75,7 @@ namespace Sepes.RestApi.Services
         }
 
         public ConfigService(IConfiguration config)
-        {          
-
-            ConnectionString = config["MSSQL_CONNECTION_STRING"];
+        { 
             AzureConfig = new AzureConfig(
                 config["TENANT_ID"],
                 config["CLIENT_ID"],
@@ -106,6 +108,23 @@ namespace Sepes.RestApi.Services
             {
                 this.HttpOnly = true;
             }
-        }
+
+            //var getWithKeyVaultKeys
+
+            var ownerConnectionStringFromKeyVault = config["sepesowner-connectionstring"];
+            var rwConnectionStringFromKeyVault = config["sepesrw-connectionstring"];
+
+            //If any of key vault DBs are empty, use from environment
+            if(String.IsNullOrWhiteSpace(ownerConnectionStringFromKeyVault)  || String.IsNullOrWhiteSpace(rwConnectionStringFromKeyVault) )
+            {
+                DbOwnerConnectionString = config["SEPES_DB_OWNER_CONNECTION_STRING"];
+                DbReadWriteConnectionString = config["SEPES_DB_RW_CONNECTION_STRING"];
+            }
+            else
+            {
+                DbOwnerConnectionString = ownerConnectionStringFromKeyVault;
+                DbReadWriteConnectionString = rwConnectionStringFromKeyVault;
+            }          
+        } 
     }
 }
