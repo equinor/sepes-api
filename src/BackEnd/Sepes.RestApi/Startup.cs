@@ -8,6 +8,7 @@ using Sepes.RestApi.Services;
 using System.Diagnostics.CodeAnalysis;
 using Sepes.Infrastructure.Model.Context;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Sepes.RestApi
 {
@@ -52,10 +53,10 @@ namespace Sepes.RestApi
             });
 
             var azureService = new AzureService(_configService.AzureConfig);
-            var dbService = new SepesDb(_configService.ConnectionString);
+            var dbService = new SepesDb(_configService.DbReadWriteConnectionString);
             var podService = new PodService(azureService);
             var studyService = new StudyService(dbService, podService);
-            studyService.LoadStudies();
+            //studyService.LoadStudies();
 
             services.AddSingleton<ISepesDb>(dbService);
             services.AddSingleton<IAuthService>(new AuthService(_configService.AuthConfig));
@@ -65,17 +66,38 @@ namespace Sepes.RestApi
 
             services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
 
+            DoMigration();
+
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             var enableSensitiveDataLogging = true;
 
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
-                  _configService.ConnectionString,
+                  _configService.DbReadWriteConnectionString,
                   assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
+        }
+
+        void DoMigration()
+        {
+            string sqlConnectionStringOwner = _configService.DbOwnerConnectionString;
+
+            if (string.IsNullOrEmpty(sqlConnectionStringOwner))
+            {
+                throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
+            }
+
+            DbContextOptionsBuilder<SepesDbContext> createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
+            createDbOptions.UseSqlServer(sqlConnectionStringOwner);
+
+            using (var ctx = new SepesDbContext(createDbOptions.Options))
+            {
+                ctx.Database.SetCommandTimeout(300);
+                ctx.Database.Migrate();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

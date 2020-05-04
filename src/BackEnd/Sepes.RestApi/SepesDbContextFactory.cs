@@ -30,7 +30,7 @@ namespace Ras.Ui
             var _config = ConfigService.CreateConfig(config);           
 
             var optionsBuilder = new DbContextOptionsBuilder<SepesDbContext>();
-            optionsBuilder.UseSqlServer(_config.ConnectionString);
+            optionsBuilder.UseSqlServer(_config.DbReadWriteConnectionString);
             optionsBuilder.EnableSensitiveDataLogging(true);
             //TODO: Add support for created, createdBy, updated, updatedBy
             return new SepesDbContext(optionsBuilder.Options);

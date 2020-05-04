@@ -48,7 +48,6 @@ spec:
         - SEPES_CLIENT_ID
         - SEPES_CLIENT_SECRET
         - SEPES_INSTRUMENTATION_KEY
-        - SEPES_MSSQL_CONNECTION_STRING
   dnsAppAlias:
     environment: prod
     component: frontend
