@@ -90,11 +90,8 @@ namespace Sepes.RestApi.Services
             {
                 ValidateIssuer = false,  //Issue: 39 set to true before MVP
                 ValidateAudience = false,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = config["Jwt:Issuer"],
-                ValidAudience = config["Jwt:Issuer"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]))
+                ValidateLifetime = false,
+                ValidateIssuerSigningKey = false          
                 //SaveSigninToken = true  
             };
 

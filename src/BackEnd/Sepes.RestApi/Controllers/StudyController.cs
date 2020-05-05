@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto;
 using Sepes.RestApi.Services;
@@ -11,7 +12,7 @@ namespace Sepes.RestApi.Controller
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    //[Authorize]
+    [Authorize]
     public class StudyController : ControllerBase
     {
         private ISepesDb _sepesDb;
