@@ -2,11 +2,10 @@
 {
     public class AzureAdOptions
     {
-        public string ClientId { get; set; }
-        public string ClientSecret { get; set; }
-        public string Instance { get; set; }
-        public string Domain { get; set; }
-        public string TenantId { get; set; }
-        public string Authority { get; set; }
+        public string CLIENT_ID { get; set; }
+        public string CLIENT_SECRET { get; set; }
+        public string INSTANCE { get; set; }
+        public string DOMAIN { get; set; }
+        public string TENANT_ID { get; set; }      
     }
 }

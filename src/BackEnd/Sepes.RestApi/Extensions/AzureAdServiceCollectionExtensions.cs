@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Authentication
 
             public void Configure(string name, JwtBearerOptions options)
             {
-                options.Audience = _azureOptions.ClientId;
-                options.Authority = $"{_azureOptions.Instance}{_azureOptions.TenantId}/v2.0/";
+                options.Audience = _azureOptions.CLIENT_ID;
+                options.Authority = $"{_azureOptions.INSTANCE}{_azureOptions.TENANT_ID}/v2.0/";
                 options.TokenValidationParameters.ValidIssuers = new List<string>
                 {
                     "login.microsoftonline.com",
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authentication
             private string ValidateIssuer(string issuer, SecurityToken securityToken, TokenValidationParameters validationParameters)
             {
                 Uri uri = new Uri(issuer);
-                Uri authorityUri = new Uri(_azureOptions.Instance);
+                Uri authorityUri = new Uri(_azureOptions.INSTANCE);
                 string[] parts = uri.AbsolutePath.Split('/');
                 if (parts.Length >= 2)
                 {
