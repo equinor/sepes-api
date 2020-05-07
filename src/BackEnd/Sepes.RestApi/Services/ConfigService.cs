@@ -77,9 +77,9 @@ namespace Sepes.RestApi.Services
         public ConfigService(IConfiguration config)
         { 
             AzureConfig = new AzureConfig(
-                config["TENANT_ID"],
-                config["CLIENT_ID"],
-                config["CLIENT_SECRET"],
+                config["AZUREAD:TENANT_ID"],
+                config["AZUREAD:CLIENT_ID"],
+                config["AZUREAD:CLIENT_SECRET"],
                 config["SUBSCRIPTION_ID"],
                 $"{config["name"]}-{config["Azure:CommonResourceGroupName"]}",
                 config["JOIN_NETWORK_ROLE_NAME"]
@@ -90,11 +90,8 @@ namespace Sepes.RestApi.Services
             {
                 ValidateIssuer = false,  //Issue: 39 set to true before MVP
                 ValidateAudience = false,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = config["Jwt:Issuer"],
-                ValidAudience = config["Jwt:Issuer"],
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]))
+                ValidateLifetime = false,
+                ValidateIssuerSigningKey = false          
                 //SaveSigninToken = true  
             };
 

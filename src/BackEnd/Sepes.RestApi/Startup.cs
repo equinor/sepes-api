@@ -9,6 +9,9 @@ using System.Diagnostics.CodeAnalysis;
 using Sepes.Infrastructure.Model.Context;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
+using System.Collections.Generic;
 
 namespace Sepes.RestApi
 {
@@ -16,17 +19,21 @@ namespace Sepes.RestApi
     public class Startup
     {
         IWebHostEnvironment _env;
+        readonly IConfiguration _configuration;
         readonly IConfigService _configService;
         public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
+            _configuration = configuration;
             //_env = env;
 
             //if (_env.EnvironmentName == "Development")
             //{
             //    ConfigService.LoadDevEnv();
             //}
-          var secretFromConfig = configuration["CLIENT_SECRET"];
-                _configService = ConfigService.CreateConfig(configuration);
+
+
+            var secretFromConfig = configuration["AZUREAD:CLIENT_SECRET"];
+            _configService = ConfigService.CreateConfig(configuration);
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -36,9 +43,29 @@ namespace Sepes.RestApi
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
             services.AddApplicationInsightsTelemetry(_configService.InstrumentationKey);
+            //var authority = $"https://login.microsoftonline.com/3aa4a235-b6e2-48d5-9195-7fcf05b459b0/v2.0/";
+            //services.AddAuthentication(AzureADDefaults.JwtBearerAuthenticationScheme)
+            //.AddAzureADBearer(
+            //    config =>
+            //    { config.ClientId = _configService.AzureConfig.Credentials.ClientId; config.TenantId = "common"; config.Instance = authority; config.   });
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options => options.TokenValidationParameters = _configService.TokenValidation);
+            DoMigration();
+
+            var enableSensitiveDataLogging = true;
+
+            services.AddDbContext<SepesDbContext>(
+              options => options.UseSqlServer(
+                  _configService.DbReadWriteConnectionString,
+                  assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
+              .EnableSensitiveDataLogging(enableSensitiveDataLogging)
+              );
+
+            services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+             .AddAzureAdBearer(options => _configuration.Bind("AZUREAD", options));          
 
             services.AddCors(options =>
             {
@@ -64,20 +91,7 @@ namespace Sepes.RestApi
             services.AddSingleton<IPodService>(podService);
             services.AddSingleton<IStudyService>(studyService);
 
-            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
-
-            DoMigration();
-
-            services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-
-            var enableSensitiveDataLogging = true;
-
-            services.AddDbContext<SepesDbContext>(
-              options => options.UseSqlServer(
-                  _configService.DbReadWriteConnectionString,
-                  assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
-              .EnableSensitiveDataLogging(enableSensitiveDataLogging)
-              );
+            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();         
 
         }
 
@@ -117,12 +131,14 @@ namespace Sepes.RestApi
             app.UseCors(MyAllowSpecificOrigins);
 
             // UseHttpsRedirection doesn't work well with docker.
-            if(!this._configService.HttpOnly) {
+            if (!this._configService.HttpOnly)
+            {
                 app.UseHttpsRedirection();
             }
 
             app.UseAuthentication();
             app.UseAuthorization();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

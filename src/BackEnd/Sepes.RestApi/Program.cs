@@ -26,11 +26,12 @@ namespace Sepes.RestApi
                  var config = configBuilder.AddEnvironmentVariables("SEPES_").Build();
 
                  var keyVaultUrl = config["KEYVAULT_URL"];
-                 var clientId = config["CLIENT_ID"];
-                 var clientSecret = config["CLIENT_SECRET"];
 
                  if (!string.IsNullOrWhiteSpace(keyVaultUrl))
                  {
+                     var clientId = config["AZUREAD:CLIENT_ID"];
+                     var clientSecret = config["AZUREAD:CLIENT_SECRET"];
+
                      configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
                  }
 
