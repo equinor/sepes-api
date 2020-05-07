@@ -102,7 +102,7 @@ namespace Sepes.RestApi.Services
                     }
                     else
                     {
-                        PodDto basePod = based.pods.ToList().Find(basePod => basePod.id == pod.id);
+                        var basePod = based.pods.ToList().Find(p => p.id == pod.id);
                         await _podService.Set(pod, basePod, study.suppliers, based.suppliers);
                     }
                 }
