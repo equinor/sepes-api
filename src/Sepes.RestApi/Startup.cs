@@ -32,7 +32,7 @@ namespace Sepes.RestApi
             //}
 
 
-            var secretFromConfig = configuration["AZUREAD:CLIENT_SECRET"];
+            var secretFromConfig = configuration["ClientSecret"];
             _configService = ConfigService.CreateConfig(configuration);
         }
 
@@ -65,7 +65,7 @@ namespace Sepes.RestApi
             {
                 sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-             .AddAzureAdBearer(options => _configuration.Bind("AZUREAD", options));          
+             .AddAzureAdBearer(options => _configuration.Bind(options));          
 
             services.AddCors(options =>
             {

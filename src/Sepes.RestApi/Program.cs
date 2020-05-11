@@ -21,18 +21,23 @@ namespace Sepes.RestApi
             WebHost.CreateDefaultBuilder(args)
              .ConfigureAppConfiguration((context, configBuilder) =>
              {
-                 ConfigService.LoadDevEnv();
-
+                 //ConfigService.LoadDevEnv();
+                                 
                  var config = configBuilder.AddEnvironmentVariables("SEPES_").Build();
 
-                 var keyVaultUrl = config["KEYVAULT_URL"];
+                 var keyVaultUrl = config["KeyVault_Url"];
 
                  if (!string.IsNullOrWhiteSpace(keyVaultUrl))
                  {
-                     var clientId = config["AZUREAD:CLIENT_ID"];
-                     var clientSecret = config["AZUREAD:CLIENT_SECRET"];
+                     var clientId = config["ClientId"];
+                     var clientSecret = config["ClientSecret"];
 
                      configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
+
+                     var configWithKv = configBuilder.Build();
+
+
+                     var test = configWithKv["SepesOwnerConnectionString"];
                  }
 
              })
