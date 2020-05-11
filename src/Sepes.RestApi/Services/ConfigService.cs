@@ -77,14 +77,14 @@ namespace Sepes.RestApi.Services
         public ConfigService(IConfiguration config)
         { 
             AzureConfig = new AzureConfig(
-                config["AZUREAD:TENANT_ID"],
-                config["AZUREAD:CLIENT_ID"],
-                config["AZUREAD:CLIENT_SECRET"],
+                config["TenantId"],
+                config["ClientId"],
+                config["ClientSecret"],
                 config["SUBSCRIPTION_ID"],
                 $"{config["name"]}-{config["Azure:CommonResourceGroupName"]}",
                 config["JOIN_NETWORK_ROLE_NAME"]
             );
-            InstrumentationKey = config["INSTRUMENTATION_KEY"];
+            InstrumentationKey = config["SEPES_Appi_Key"];
 
             TokenValidation = new TokenValidationParameters
             {
