@@ -1,0 +1,48 @@
+apiVersion: radix.equinor.com/v1
+kind: RadixApplication
+metadata:
+  name: sepes-api
+spec:
+  environments:
+    - name: prod
+      build:
+        from: master
+    - name: dev
+      build:
+        from: develop
+  components:
+    - name: backend
+      src: src
+      ports:
+        - name: http
+          port: 5001
+      publicPort: http
+      secrets:
+        - ClientId
+        - ClientSecret
+        - KeyVault_Url
+      environmentConfig:
+        - environment: prod
+          variables: 
+            Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
+          replicas: 2
+          monitoring: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "400m"
+        - environment: dev
+          variables: 
+            Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
+          replicas: 2
+          monitoring: true
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
