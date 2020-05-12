@@ -46,7 +46,9 @@ namespace Sepes.RestApi.Services
 
         public IEnumerable<StudyDto> GetStudies(UserDto user, bool archived)
         {
-            return _studies.Where(study => study.archived == archived);
+            var studiesFromDb = _db.GetAllStudies().Result.ToHashSet();
+
+            return studiesFromDb.Where(study => study.archived == archived);
         }
 
         public async Task<StudyDto> Save(StudyDto newStudy, StudyDto based)
