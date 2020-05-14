@@ -13,19 +13,25 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
     public class Startup
     {
-        IWebHostEnvironment _env;
+        readonly IWebHostEnvironment _env;
+        readonly ILogger _logger;
         readonly IConfiguration _configuration;
         readonly IConfigService _configService;
-        public Startup(IWebHostEnvironment env, IConfiguration configuration)
+
+        public Startup(IWebHostEnvironment env, ILogger<Startup> logger, IConfiguration configuration)
         {
+            _logger = logger;
+
             var logMsg = "Sepes Startup Constructor";
-            Trace.WriteLine(logMsg);          
+            Trace.WriteLine(logMsg);
+            _logger.LogWarning(logMsg);
 
             _configuration = configuration;
             //_env = env;
@@ -44,7 +50,9 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            Trace.WriteLine("ConfigureServices starting");            
+            var logMsg = "ConfigureServices starting";
+            Trace.WriteLine(logMsg);
+            _logger.LogWarning(logMsg);
 
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
@@ -94,12 +102,18 @@ namespace Sepes.RestApi
             services.AddSingleton<IStudyService>(studyService);
             services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
 
-
-            Trace.WriteLine("Configuring services done");
+            var logMsgDone = "Configuring services done";
+            Trace.WriteLine(logMsgDone);
+            _logger.LogWarning(logMsgDone);
         }
 
         void DoMigration()
         {
+            var logMsg = "Do migration";
+
+            Trace.WriteLine(logMsg);
+            _logger.LogWarning(logMsg);
+
             string sqlConnectionStringOwner = _configService.DbOwnerConnectionString;
 
             if (string.IsNullOrEmpty(sqlConnectionStringOwner))
@@ -115,12 +129,21 @@ namespace Sepes.RestApi
                 ctx.Database.SetCommandTimeout(300);
                 ctx.Database.Migrate();
             }
+
+            var logMsgDone = "Do migration done";
+
+            Trace.WriteLine(logMsgDone);
+            _logger.LogWarning(logMsgDone);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            Trace.WriteLine("Configure");
+            var logMsg = "Configure";
+
+            Trace.WriteLine(logMsg);
+            _logger.LogWarning(logMsg);
+
 
             if (env.EnvironmentName == "Development")
             {
@@ -148,8 +171,11 @@ namespace Sepes.RestApi
             {
                 endpoints.MapControllers();
             });
+            
+            var logMsgDone = "Configure done";
 
-            Trace.WriteLine("Configure done");
+            Trace.WriteLine(logMsgDone);
+            _logger.LogWarning(logMsgDone);
         }
     }
 }

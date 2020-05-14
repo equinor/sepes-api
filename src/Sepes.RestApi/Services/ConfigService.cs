@@ -84,7 +84,7 @@ namespace Sepes.RestApi.Services
                 $"{config["name"]}-{config["Azure:CommonResourceGroupName"]}",
                 config["JOIN_NETWORK_ROLE_NAME"]
             );
-            InstrumentationKey = config["SEPES_Appi_Key"];
+            InstrumentationKey = config["Appi_Key"];
 
             TokenValidation = new TokenValidationParameters
             {
