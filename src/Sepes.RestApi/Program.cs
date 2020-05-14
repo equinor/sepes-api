@@ -37,7 +37,8 @@ namespace Sepes.RestApi
              })
               .ConfigureLogging((hostingContext, builder) => {
 
-                  var iKey = hostingContext.Configuration["SEPES_Appi_Key"];
+                  var iKey = hostingContext.Configuration["Appi_Key"];                 
+
                   builder.AddApplicationInsights(iKey);
 
                   // Adding the filter below to ensure logs of all severity from Program.cs
