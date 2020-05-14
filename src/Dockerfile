@@ -18,4 +18,4 @@ COPY --from=build-env /app/Sepes.RestApi/out .
 ENTRYPOINT ["dotnet", "Sepes.RestApi.dll", "--environment=Development"]
 
 # Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
-EXPOSE 5001
+EXPOSE 80
