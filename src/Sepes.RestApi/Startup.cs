@@ -12,6 +12,7 @@ using System;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Sepes.RestApi
 {
@@ -23,6 +24,9 @@ namespace Sepes.RestApi
         readonly IConfigService _configService;
         public Startup(IWebHostEnvironment env, IConfiguration configuration)
         {
+            var logMsg = "Sepes Startup Constructor";
+            Trace.WriteLine(logMsg);          
+
             _configuration = configuration;
             //_env = env;
 
@@ -40,8 +44,11 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            Trace.WriteLine("ConfigureServices starting");            
+
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
+            Trace.WriteLine("Configuring app insights. Key: " + _configService.InstrumentationKey);
             services.AddApplicationInsightsTelemetry(_configService.InstrumentationKey);        
 
             DoMigration();
@@ -85,7 +92,10 @@ namespace Sepes.RestApi
             services.AddSingleton<IAzureService>(azureService);
             services.AddSingleton<IPodService>(podService);
             services.AddSingleton<IStudyService>(studyService);
-            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();  
+            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
+
+
+            Trace.WriteLine("Configuring services done");
         }
 
         void DoMigration()
@@ -110,6 +120,8 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            Trace.WriteLine("Configure");
+
             if (env.EnvironmentName == "Development")
             {
                 app.UseDeveloperExceptionPage();
@@ -136,6 +148,8 @@ namespace Sepes.RestApi
             {
                 endpoints.MapControllers();
             });
+
+            Trace.WriteLine("Configure done");
         }
     }
 }

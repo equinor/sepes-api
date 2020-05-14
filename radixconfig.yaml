@@ -24,7 +24,7 @@ spec:
       environmentConfig:
         - environment: prod
           variables: 
-            Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
+            SEPES_Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
           replicas: 2
           monitoring: true
           resources:
@@ -36,7 +36,7 @@ spec:
               cpu: "400m"
         - environment: dev
           variables: 
-            Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
+            SEPES_Appi_Key: "9f36e55c-ef8b-4e68-9b21-3558dea09686"
           replicas: 2
           monitoring: true
           resources:
