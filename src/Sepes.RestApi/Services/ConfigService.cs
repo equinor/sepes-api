@@ -101,7 +101,7 @@ namespace Sepes.RestApi.Services
                 Issuer = config["Jwt:Issuer"],
             };
 
-            if (config["HTTP_ONLY"] == "true")
+            if (config["HttpOnly"] == "true")
             {
                 this.HttpOnly = true;
             }
