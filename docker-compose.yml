@@ -14,6 +14,7 @@ services:
   restapi:
     build: ./src
     # environment:
+      # - SEPES_HTTP_ONLY=true
     #   - SEPES_NAME
     #   - SEPES_TENANT_ID
     #   - SEPES_ClientId
