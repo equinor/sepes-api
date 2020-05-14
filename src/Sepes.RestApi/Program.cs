@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Sepes.RestApi.Services;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace Sepes.RestApi
 {
@@ -34,6 +35,22 @@ namespace Sepes.RestApi
                  }
 
              })
+              .ConfigureLogging((hostingContext, builder) => {
+
+                  var iKey = hostingContext.Configuration["SEPES_Appi_Key"];
+                  builder.AddApplicationInsights(iKey);
+
+                  // Adding the filter below to ensure logs of all severity from Program.cs
+                  // is sent to ApplicationInsights.
+                  builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
+                                   (typeof(Program).FullName, LogLevel.Trace);
+
+                  // Adding the filter below to ensure logs of all severity from Startup.cs
+                  // is sent to ApplicationInsights.
+                  builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
+                                   (typeof(Startup).FullName, LogLevel.Trace);
+
+              })
                 .UseStartup<Startup>();
     }
 }
