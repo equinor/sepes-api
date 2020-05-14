@@ -158,11 +158,19 @@ namespace Sepes.RestApi
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
 
-            // UseHttpsRedirection doesn't work well with docker.
-            //false in config: go in
-            if (!this._configService.HttpOnly)
+            // UseHttpsRedirection doesn't work well with docker.        
+            if (this._configService.HttpOnly)
             {
-                app.UseHttpsRedirection();
+                var logMsgHttps = "Using HTTP only";
+                Trace.WriteLine(logMsgHttps);
+                _logger.LogWarning(logMsgHttps);
+            }
+            else
+            {
+                var logMsgHttps = "Also using HTTPS. Activating https redirection";
+                Trace.WriteLine(logMsgHttps);
+                _logger.LogWarning(logMsgHttps);
+                app.UseHttpsRedirection();              
             }
 
             app.UseAuthentication();

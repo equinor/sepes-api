@@ -22,10 +22,10 @@ namespace Ras.Ui
                 .AddEnvironmentVariables()
                 .Build();
 
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID")))
-            {
-                ConfigService.LoadDevEnv();
-            }
+            //if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID")))
+            //{
+            //    ConfigService.LoadDevEnv();
+            //}
 
             var _config = ConfigService.CreateConfig(config);           
 
