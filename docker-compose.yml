@@ -1,27 +1,27 @@
 version: '3.7'
 services:
-  web:
-    build: ./src/FrontEnd
-    environment:
-      - REACT_APP_INSTRUMENTATION_KEY
-      - REACT_APP_AUTH_CLIENT_ID
-      - REACT_APP_SEPES_BASE_URL
-    ports:
-      - target: 8080
-        published: 8080
-        protocol: tcp
-        mode: host
+  # web:
+  #   build: ./src/FrontEnd
+  #   environment:
+  #     - REACT_APP_INSTRUMENTATION_KEY
+  #     - REACT_APP_AUTH_CLIENT_ID
+  #     - REACT_APP_SEPES_BASE_URL
+  #   ports:
+  #     - target: 8080
+  #       published: 8080
+  #       protocol: tcp
+  #       mode: host
   restapi:
-    build: ./src/BackEnd
-    environment:
-      - SEPES_NAME
-      - SEPES_TENANT_ID
-      - SEPES_CLIENT_ID
-      - SEPES_CLIENT_SECRET
-      - SEPES_INSTRUMENTATION_KEY
-      - SEPES_SUBSCRIPTION_ID
-      - SEPES_MSSQL_CONNECTION_STRING
-      - SEPES_HTTP_ONLY=true
+    build: ./src
+    # environment:
+    #   - SEPES_NAME
+    #   - SEPES_TENANT_ID
+    #   - SEPES_ClientId
+    #   - SEPES_ClientSecret
+    #   - SEPES_INSTRUMENTATION_KEY
+    #   - SEPES_SUBSCRIPTION_ID
+    #   - SEPES_MSSQL_CONNECTION_STRING
+    #   - SEPES_HTTP_ONLY=true
     ports:
       - target: 80
         published: 8081
