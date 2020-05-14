@@ -16,7 +16,9 @@ spec:
       ports:
         - name: http
           port: 80
-      publicPort: http
+        - name: https
+          port: 443
+      publicPort: https
       secrets:
         - ClientId
         - ClientSecret
