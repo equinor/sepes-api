@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Service;
-using Sepes.RestApi.Services;
+using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -12,13 +12,11 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class StudyController : ControllerBase
-    {
-        private ISepesDb _sepesDb;
-        private StudyService _studyService;
+    {     
+        private IStudyService _studyService;
 
-        public StudyController(ISepesDb dbService, StudyService studyService)
+        public StudyController(IStudyService studyService)
         {
-            _sepesDb = dbService;
             _studyService = studyService;
         }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    interface IStudyService
+    public interface IStudyService
     {
         
         Task<IEnumerable<StudyDto>> GetStudiesAsync();

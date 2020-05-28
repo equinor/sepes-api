@@ -13,19 +13,14 @@ services:
   #       mode: host
   restapi:
     build: ./src
-    # environment:
-      # - SEPES_HTTP_ONLY=true
-    #   - SEPES_NAME
-    #   - SEPES_TENANT_ID
-    #   - SEPES_ClientId
-    #   - SEPES_ClientSecret
-    #   - SEPES_INSTRUMENTATION_KEY
-    #   - SEPES_SUBSCRIPTION_ID
-    #   - SEPES_MSSQL_CONNECTION_STRING
-    #   - SEPES_HTTP_ONLY=true
+    environment:
+      - SEPES_Appi_Key=881d305a-4b34-4f3d-8919-dbaad1ab8885
+      - SEPES_HttpOnly=true
+      - ClientId=e90cbb61-896e-4ec7-aa37-23511700e1ed
+      - ClientSecret=WQ-1xb89o~Nv-n6kIJ4vM8O.4~~08cxNAz
+      - KeyVault_Url=https://kv-sepes-dev.vault.azure.net/
     ports:
       - target: 80
-        published: 8081
+        published: 80
         protocol: tcp
         mode: host
-    
