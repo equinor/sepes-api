@@ -1,4 +1,4 @@
-# Development environment setup for Sepes BackEnd
+# Dev environment setup
 
 ## Prerequisites:
 
@@ -6,37 +6,32 @@ To be able to run and develop for this project there are a some runtimes that ne
 
 * [Dotnet Core SDK 3.0](https://dotnet.microsoft.com/download)
 
+* [Node.js](https://nodejs.org/en/)
+
 * [Microsoft SQL Server](https://www.microsoft.com/nb-no/sql-server/sql-server-downloads)
 
 ### Azure
 These services are required
-* Azure AD App Registration (also generate a personal client secret)
+* AD app
 * Subscribtions
 * Application Insight
 
 
-## Setup configuration
-Sepes use various sources for configuration values, depending on what environment you are setting up (local dev without debugging, with debugging, in cloud etc) 
 
-1. appsettings.json
-2. appsettings.Development.json
-3. Environment Variables
-    * Locally: Supplied from docker-compose
-    * In cloud: From the hosting technology
-4. Key vault
+## Add dependencies
 
-### Debugging in Visual Studio
-If you want to run the Backend in Visual Studio, you can get away with appsettings.json and appsettings.Development.json
-appsettings.Development.json is ignored by git, so you'll have to create your own copy
+In both the Sepes.RestApi and Sepes.RestApi.Test folder run the command 
+```
+dotnet restore
+```
 
-
-### Running using docker-compose
-If you want to run the Backend using Docker Compose, you can create a docker-compose.yml file in the root folder of the repository
-docker-compose.yml is ignored by git, so you'll have to create your own copy
-
-###
+In the FrontEnd folder you need to run the command 
+```
+npm install
+```
 
 
+## Setup config:
 
 All values bellow are written in without quotation marks
 ```
@@ -74,7 +69,6 @@ This should only be set to true if you are intending to run SEPES behind some ot
 
     
 ## Setup database
-TODO: Document how to use migrations
 * Option 1: Use SQL Query
     * Create or have an SQL Server
     * Open a connection to SQL Server

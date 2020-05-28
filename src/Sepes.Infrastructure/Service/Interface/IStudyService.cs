@@ -8,8 +8,11 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     interface IStudyService
     {
-        // Get the list of studies based on a user.
-        IEnumerable<StudyDto> GetStudies(UserDto user, bool archived);
+        
+        Task<IEnumerable<StudyDto>> GetStudiesAsync();
+        Task<StudyDto> GetStudyByIdAsync(int id);
+
+        
 
         /// <summary>
         /// Makes changes to the meta data of a study.
@@ -19,6 +22,6 @@ namespace Sepes.Infrastructure.Service.Interface
         /// </summary>
         /// <param name="newStudy">The updated or new study</param>
         /// <param name="based">The current study</param>
-        Task<StudyDto> Save(StudyDto newStudy, StudyDto based);
+        //Task<StudyDto> Save(StudyDto newStudy, StudyDto based);
     }
 }
