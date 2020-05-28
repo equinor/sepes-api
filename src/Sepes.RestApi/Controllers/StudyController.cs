@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyController : ControllerBase
     {     
-        private StudyService _studyService;
+        private IStudyService _studyService;
 
         public StudyController(IStudyService studyService)
         {
