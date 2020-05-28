@@ -32,6 +32,7 @@ jobs:
     - name: docker build
       run: |
         dir
-        dir /src
+        dir /src/
+        dir src/
         docker build /src -t ${{ secrets.ACR_URL }}/sepes-api:latest
         docker push ${{ secrets.ACR_URL }}/sepes-api:latest
