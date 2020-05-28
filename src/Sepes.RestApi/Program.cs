@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi
@@ -25,11 +26,15 @@ namespace Sepes.RestApi
 
                  var keyVaultUrl = config[ConfigConstants.KEY_VAULT];
 
-                 if (!string.IsNullOrWhiteSpace(keyVaultUrl))
+                 if (string.IsNullOrWhiteSpace(keyVaultUrl))
                  {
+                     Trace.WriteLine("Program.cs: Key vault url empty");
+                 }
+                 else
+                 {
+                     Trace.WriteLine("Program.cs: Key vault url found. Initializing key vault");
                      var clientId = config[ConfigConstants.AZ_CLIENT_ID];
                      var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
-
                      configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
                  }
              })
