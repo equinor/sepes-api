@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Model.Config;
+using AutoMapper;
 
 namespace Sepes.RestApi
 {
@@ -23,7 +25,7 @@ namespace Sepes.RestApi
         readonly IWebHostEnvironment _env;
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
-        readonly IConfigService _configService;
+        //readonly IConfigService _configService;
 
         public Startup(IWebHostEnvironment env, ILogger<Startup> logger, IConfiguration configuration)
         {
@@ -33,17 +35,7 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
-            _configuration = configuration;
-            //_env = env;
-
-            //if (_env.EnvironmentName == "Development")
-            //{
-            //    ConfigService.LoadDevEnv();
-            //}
-
-
-            var secretFromConfig = configuration["ClientSecret"];
-            _configService = ConfigService.CreateConfig(configuration);
+            _configuration = configuration;           
         }
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -54,28 +46,37 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
+            var azureAdConfig = new AzureAdOptions();
+            _configuration.GetSection("AzureAd").Bind(azureAdConfig);
+
+            var sepesAzureConfig = new SepesAzureOptions();
+            _configuration.Bind(sepesAzureConfig);
+
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
-            Trace.WriteLine("Configuring app insights. Key: " + _configService.InstrumentationKey);
-            services.AddApplicationInsightsTelemetry(_configService.InstrumentationKey);        
+            Trace.WriteLine("Configuring Application Insights");
+            services.AddApplicationInsightsTelemetry(_configuration[ConfigConstants.APPI_KEY]);
 
             DoMigration();
 
             var enableSensitiveDataLogging = true;
 
+            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
-                  _configService.DbReadWriteConnectionString,
+                  readWriteDbConnectionString,
                   assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
             services.AddMvc(option => option.EnableEndpointRouting = false).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-             .AddAzureAdBearer(options => _configuration.Bind(options));          
+             .AddAzureAdBearer(options => _configuration.Bind(options));
 
             services.AddCors(options =>
             {
@@ -88,19 +89,19 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-
-            var azureService = new AzureService(_configService.AzureConfig);
-            var dbService = new SepesDb(_configService.DbReadWriteConnectionString);
-            var podService = new PodService(azureService);
-            var studyService = new StudyService(dbService, podService);
+            services.AddAutoMapper(typeof(Startup));
+            // var azureService = new AzureService(_configuration);
+            // var dbService = new SepesDb(readWriteDbConnectionString);
+            // var podService = new PodService(azureService);
+            //var studyService = new StudyService(dbService, podService);
             //studyService.LoadStudies();
 
-            services.AddSingleton<ISepesDb>(dbService);
-            services.AddSingleton<IAuthService>(new AuthService(_configService.AuthConfig));
-            services.AddSingleton<IAzureService>(azureService);
-            services.AddSingleton<IPodService>(podService);
-            services.AddSingleton<IStudyService>(studyService);
-            services.AddTransient<Sepes.Infrastructure.Service.StudyService2>();
+            //services.AddSingleton<ISepesDb>(dbService);
+            //services.AddSingleton<IAuthService>(new AuthService(_configService.AuthConfig));
+            //services.AddSingleton<IAzureService>(azureService);
+            //services.AddSingleton<IPodService>(podService);
+            //services.AddSingleton<IStudyService_OLD>(studyService);
+            services.AddTransient<Infrastructure.Service.StudyService>();
 
             var logMsgDone = "Configuring services done";
             Trace.WriteLine(logMsgDone);
@@ -114,7 +115,7 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
-            string sqlConnectionStringOwner = _configService.DbOwnerConnectionString;
+            string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
 
             if (string.IsNullOrEmpty(sqlConnectionStringOwner))
             {
@@ -158,8 +159,10 @@ namespace Sepes.RestApi
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
 
+            var httpOnlyRaw = _configuration["HttpOnly"];
+
             // UseHttpsRedirection doesn't work well with docker.        
-            if (this._configService.HttpOnly)
+            if (!String.IsNullOrWhiteSpace(httpOnlyRaw) && httpOnlyRaw.ToLower() == "true")
             {
                 var logMsgHttps = "Using HTTP only";
                 Trace.WriteLine(logMsgHttps);
@@ -170,7 +173,7 @@ namespace Sepes.RestApi
                 var logMsgHttps = "Also using HTTPS. Activating https redirection";
                 Trace.WriteLine(logMsgHttps);
                 _logger.LogWarning(logMsgHttps);
-                app.UseHttpsRedirection();              
+                app.UseHttpsRedirection();
             }
 
             app.UseAuthentication();
@@ -180,7 +183,7 @@ namespace Sepes.RestApi
             {
                 endpoints.MapControllers();
             });
-            
+
             var logMsgDone = "Configure done";
 
             Trace.WriteLine(logMsgDone);
