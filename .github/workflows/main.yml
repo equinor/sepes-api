@@ -32,5 +32,5 @@ jobs:
         password: ${{ secrets.ACR_PASSWORD }}
     - name: docker build
       run: |
-        docker build -f src/dockerfile -t ${{ secrets.ACR_URL }}/sepes-api:latest
+        docker build src -t ${{ secrets.ACR_URL }}/sepes-api:latest
         docker push ${{ secrets.ACR_URL }}/sepes-api:latest
