@@ -2,9 +2,9 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Sepes.RestApi.Services;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Model.Config;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi
 {
@@ -18,28 +18,26 @@ namespace Sepes.RestApi
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
 
-
             WebHost.CreateDefaultBuilder(args)
              .ConfigureAppConfiguration((context, configBuilder) =>
              {
-                 var config = configBuilder.AddEnvironmentVariables("SEPES_").Build();
+                 var config = configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX).Build();
 
-                 var keyVaultUrl = config["KeyVault_Url"];
+                 var keyVaultUrl = config[ConfigConstants.KEY_VAULT];
 
                  if (!string.IsNullOrWhiteSpace(keyVaultUrl))
                  {
-                     var clientId = config["ClientId"];
-                     var clientSecret = config["ClientSecret"];
+                     var clientId = config[ConfigConstants.AZ_CLIENT_ID];
+                     var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
 
                      configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
                  }
-
              })
               .ConfigureLogging((hostingContext, builder) => {
 
-                  var iKey = hostingContext.Configuration["Appi_Key"];                 
+                  var applicationInsightsInstrumentationKey = hostingContext.Configuration[ConfigConstants.APPI_KEY];                 
 
-                  builder.AddApplicationInsights(iKey);
+                  builder.AddApplicationInsights(applicationInsightsInstrumentationKey);
 
                   // Adding the filter below to ensure logs of all severity from Program.cs
                   // is sent to ApplicationInsights.

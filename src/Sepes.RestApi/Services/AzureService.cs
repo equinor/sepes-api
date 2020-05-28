@@ -2,13 +2,17 @@ using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 
 namespace Sepes.RestApi.Services
 {
@@ -21,11 +25,22 @@ namespace Sepes.RestApi.Services
         private readonly string _commonResourceGroup;
         private readonly string _joinNetworkRoleName;
 
-        public AzureService(AzureConfig config)
+        public AzureService(IConfiguration config)
         {
-            _commonResourceGroup = config.CommonGroup;
-            _azure = Azure.Authenticate(config.Credentials).WithDefaultSubscription();
-            _joinNetworkRoleName = config.JoinNetworkRoleName;
+            _commonResourceGroup = config[ConfigConstants.COMMON_RESOURCE_GROUP_NAME];
+
+            var tenantId = config[ConfigConstants.TENANT_ID];
+            var clientId = config[ConfigConstants.AZ_CLIENT_ID];
+            var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
+
+
+            var subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
+
+            var credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
+
+
+            _azure = Azure.Authenticate(credentials).WithDefaultSubscription();
+            _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
 
             if (!_azure.ResourceGroups.Contain(_commonResourceGroup))
             {
