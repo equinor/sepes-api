@@ -3,11 +3,12 @@ using Sepes.Infrastructure.Dto;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class StudyMapping : Profile
+    public class AutoMappingConfigs : Profile
     {
-        public StudyMapping()
+        public AutoMappingConfigs()
         {
             CreateMap<Study, StudyDto>();
+
         }
     }
 }
