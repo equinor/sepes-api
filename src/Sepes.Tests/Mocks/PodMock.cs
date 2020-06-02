@@ -1,21 +1,21 @@
-using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Sepes.RestApi.Model;
-using Sepes.RestApi.Services;
+//using System;
+//using System.Collections.Generic;
+//using System.Text.Json;
+//using System.Threading.Tasks;
+//using Sepes.RestApi.Model;
+//using Sepes.RestApi.Services;
 
-namespace Sepes.Tests.Mocks
-{
-    internal class PodMock : IPodService
-    {
-        public Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
-        {
-            throw new NotImplementedException();
-        }
-        public Task Delete(Pod pod)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}
+//namespace Sepes.Tests.Mocks
+//{
+//    internal class PodMock : IPodService
+//    {
+//        public Task Set(Pod newPod, Pod based, IEnumerable<User> newUsers, IEnumerable<User> basedUsers)
+//        {
+//            throw new NotImplementedException();
+//        }
+//        public Task Delete(Pod pod)
+//        {
+//            throw new NotImplementedException();
+//        }
+//    }
+//}

@@ -1,8 +1,6 @@
-//using Sepes.Infrastructure.Dto;
-
-//namespace Sepes.Infrastructure.Model.SepesSqlModels
+//namespace Sepes.Infrastructure.Dto
 //{
-//    public class RuleDB
+//    public class RuleInputDto
 //    {
 //        public ushort port { get; set; }
 //        public string ip { get; set; }

@@ -16,6 +16,8 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
 using AutoMapper;
+using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Model.Automapper;
 
 namespace Sepes.RestApi
 {
@@ -89,7 +91,12 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(AutoMappingConfigs));
+
+            //var mappingConfig = new MapperConfiguration(mc =>
+            //{
+            //    mc.AddProfile(new AutoMappingConfigs());
+            //});
             // var azureService = new AzureService(_configuration);
             // var dbService = new SepesDb(readWriteDbConnectionString);
             // var podService = new PodService(azureService);
@@ -101,7 +108,7 @@ namespace Sepes.RestApi
             //services.AddSingleton<IAzureService>(azureService);
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
-            services.AddTransient<Infrastructure.Service.StudyService>();
+            services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
 
             var logMsgDone = "Configuring services done";
             Trace.WriteLine(logMsgDone);

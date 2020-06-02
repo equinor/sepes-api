@@ -33,6 +33,7 @@ namespace Sepes.RestApi
                  else
                  {
                      Trace.WriteLine("Program.cs: Key vault url found. Initializing key vault");
+                     
                      var clientId = config[ConfigConstants.AZ_CLIENT_ID];
                      var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
                      configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
