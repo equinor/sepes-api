@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sepes.Infrastructure.Model.Context;
 
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
-    partial class SepesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200602095825_ReDefiningStudyAwayFromJson")]
+    partial class ReDefiningStudyAwayFromJson
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,8 +34,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -44,8 +45,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -65,8 +65,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -77,8 +76,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -98,12 +96,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -111,12 +107,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("WbsCode")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
