@@ -117,17 +117,29 @@ namespace Sepes.RestApi
 
         void DoMigration()
         {
-            var logMsg = "Do migration";
+            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
+            var logMessage = "";
+
+            if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
+            {
+                logMessage = "Migrations are disabled and will be skipped!";
+            
+            }
+            else
+            {
+                logMessage = "Performing database migrations";
+            }
+           
+            Trace.WriteLine(logMessage);
+            _logger.LogWarning(logMessage);
 
             string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
 
             if (string.IsNullOrEmpty(sqlConnectionStringOwner))
             {
                 throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
-            }
+            }            
 
             DbContextOptionsBuilder<SepesDbContext> createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
