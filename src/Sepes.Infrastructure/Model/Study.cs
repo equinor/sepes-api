@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
@@ -10,7 +12,9 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string WbsCode { get; set; }
 
-        //[MaxLength(4000)]
-        //public string JsonData { get; set; } 
+        public ICollection<DataSet> DataSets { get; set; }
+
+        public ICollection<SandBox> SandBoxes { get; set; }
+
     }
 }
