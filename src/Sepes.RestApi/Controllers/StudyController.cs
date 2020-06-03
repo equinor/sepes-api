@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
@@ -34,6 +34,22 @@ namespace Sepes.RestApi.Controller
             var study = await _studyService.GetStudyByIdAsync(id);
             return new JsonResult(study);        
         }
+
+        [HttpPost()]
+        public async Task<IActionResult> CreateStudy(StudyDto newStudy)
+        {
+            var study = await _studyService.CreateStudyAsync(newStudy);
+            return new JsonResult(study);
+        }
+
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
+        {
+            var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
+            return new JsonResult(updatedStudy);
+        }
+
 
         //[HttpPost]
         //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
