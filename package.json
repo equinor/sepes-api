@@ -6,6 +6,12 @@
     "config": "node tools/config.js"
   },
   "devDependencies": {
+    "cz-conventional-changelog": "^3.2.0",
     "dotenv": "^8.2.0"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
   }
 }

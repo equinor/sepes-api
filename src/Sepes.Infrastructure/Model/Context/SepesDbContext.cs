@@ -19,6 +19,18 @@ namespace Sepes.Infrastructure.Model.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            AddDefaultValues(modelBuilder);
+            AddRelationships(modelBuilder);
+        }
+
+        void AddRelationships(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<SandBox>().HasOne(s => s.Study).WithMany(s => s.SandBoxes).HasForeignKey(s => s.StudyId);
+            modelBuilder.Entity<DataSet>().HasOne(s => s.Study).WithMany(s => s.DataSets).HasForeignKey(s => s.StudyId);
+        }
+
+        void AddDefaultValues(ModelBuilder modelBuilder)
+        {
             modelBuilder.Entity<Study>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("getutcdate()");
@@ -43,8 +55,5 @@ namespace Sepes.Infrastructure.Model.Context
               .Property(b => b.Updated)
               .HasDefaultValueSql("getutcdate()");
         }
-
     }
-
-
 }

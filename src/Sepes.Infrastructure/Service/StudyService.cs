@@ -20,6 +20,16 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
+        public Task<StudyDto> CreateStudyAsync(StudyDto newStudy)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<StudyDto> DeleteStudyAsync(StudyDto newStudy)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public async Task<IEnumerable<StudyDto>> GetStudiesAsync()
         {
             var studiesFromDb = await _db.Studies.ToListAsync();
@@ -36,6 +46,11 @@ namespace Sepes.Infrastructure.Service
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
             return studyDto;
+        }       
+
+        public Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }
