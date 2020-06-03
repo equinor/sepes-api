@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿using System.Collections.Generic;
+
+namespace Sepes.Infrastructure.Dto
 {
     public class StudyDto : UpdateableBaseDto
     {
@@ -6,5 +8,9 @@
         public string Description { get; set; }
 
         public string WbsCode { get; set; }
+
+        public List<DataSetDto> DataSets { get; set; }
+
+        public ICollection<SandBoxDto> SandBoxes { get; set; }
     }
 }
