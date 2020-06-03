@@ -8,7 +8,8 @@ namespace Sepes.Infrastructure.Model.Automapper
         public AutoMappingConfigs()
         {
             CreateMap<Study, StudyDto>();
-
+            CreateMap<SandBox, SandBoxDto>();
+            CreateMap<DataSet, DataSetDto>();
         }
     }
 }
