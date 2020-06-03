@@ -23,6 +23,7 @@ services:
     #   - SEPES_SUBSCRIPTION_ID
     #   - SEPES_MSSQL_CONNECTION_STRING
     #   - SEPES_HTTP_ONLY=true
+     - SEPES_DisableMigrations=true
     ports:
       - target: 80
         published: 8081

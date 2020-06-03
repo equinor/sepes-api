@@ -8,6 +8,8 @@ namespace Sepes.Infrastructure.Model
     {
         [MaxLength(128)]
         public string Name { get; set; }
+        
+        public string Description { get; set; }
 
         [MaxLength(64)]
         public string WbsCode { get; set; }
