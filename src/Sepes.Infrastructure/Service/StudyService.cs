@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
@@ -30,23 +32,34 @@ namespace Sepes.Infrastructure.Service
             throw new System.NotImplementedException();
         }
 
-        public async Task<IEnumerable<StudyDto>> GetStudiesAsync()
+        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync()
         {
             var studiesFromDb = await _db.Studies.ToListAsync();
-
-            var studiesDtos = _mapper.Map<IEnumerable<StudyDto>>(studiesFromDb);
+            var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
             return studiesDtos;  
         }
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {
-            var studyFromDb = await _db.Studies.FirstOrDefaultAsync(s=> s.Id == id);
+            var studyFromDb = GetStudyOrThrowAsync(id);
 
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
             return studyDto;
-        }       
+        } 
+        
+        async Task<Study> GetStudyOrThrowAsync(int id)
+        {
+            var studyFromDb = await _db.Studies.Include(s => s.DataSets).Include(s => s.SandBoxes).FirstOrDefaultAsync(s => s.Id == id);
+
+            if (studyFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Study", id);
+            }
+
+            return studyFromDb;
+        }
 
         public Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy)
         {

@@ -7,6 +7,8 @@ namespace Sepes.Infrastructure.Model.Automapper
     {
         public AutoMappingConfigs()
         {
+            CreateMap<Study, StudyListItemDto>();
+
             CreateMap<Study, StudyDto>();
             CreateMap<SandBox, SandBoxDto>();
             CreateMap<DataSet, DataSetDto>();
