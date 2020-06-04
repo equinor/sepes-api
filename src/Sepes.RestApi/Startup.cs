@@ -18,6 +18,7 @@ using Sepes.Infrastructure.Model.Config;
 using AutoMapper;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Model.Automapper;
+using Sepes.RestApi.Middelware;
 
 namespace Sepes.RestApi
 {
@@ -174,6 +175,8 @@ namespace Sepes.RestApi
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseMiddleware(typeof(ErrorHandlingMiddleware));
 
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
