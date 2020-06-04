@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {
-            var studyFromDb = GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(id);
 
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
