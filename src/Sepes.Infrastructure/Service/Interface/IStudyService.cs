@@ -1,7 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -9,10 +7,12 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {
         
-        Task<IEnumerable<StudyDto>> GetStudiesAsync();
+        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync();
         Task<StudyDto> GetStudyByIdAsync(int id);
 
-        
+        Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
+
+        Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);   
 
         /// <summary>
         /// Makes changes to the meta data of a study.

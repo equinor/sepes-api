@@ -16,6 +16,9 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
 using AutoMapper;
+using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Model.Automapper;
+using Sepes.RestApi.Middelware;
 
 namespace Sepes.RestApi
 {
@@ -89,7 +92,12 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(AutoMappingConfigs));
+
+            //var mappingConfig = new MapperConfiguration(mc =>
+            //{
+            //    mc.AddProfile(new AutoMappingConfigs());
+            //});
             // var azureService = new AzureService(_configuration);
             // var dbService = new SepesDb(readWriteDbConnectionString);
             // var podService = new PodService(azureService);
@@ -101,7 +109,7 @@ namespace Sepes.RestApi
             //services.AddSingleton<IAzureService>(azureService);
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
-            services.AddTransient<Infrastructure.Service.StudyService>();
+            services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
 
             var logMsgDone = "Configuring services done";
             Trace.WriteLine(logMsgDone);
@@ -110,17 +118,29 @@ namespace Sepes.RestApi
 
         void DoMigration()
         {
-            var logMsg = "Do migration";
+            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
+            var logMessage = "";
+
+            if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
+            {
+                logMessage = "Migrations are disabled and will be skipped!";
+            
+            }
+            else
+            {
+                logMessage = "Performing database migrations";
+            }
+           
+            Trace.WriteLine(logMessage);
+            _logger.LogWarning(logMessage);
 
             string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
 
             if (string.IsNullOrEmpty(sqlConnectionStringOwner))
             {
                 throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
-            }
+            }            
 
             DbContextOptionsBuilder<SepesDbContext> createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
@@ -155,6 +175,8 @@ namespace Sepes.RestApi
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseMiddleware(typeof(ErrorHandlingMiddleware));
 
             app.UseRouting();
             app.UseCors(MyAllowSpecificOrigins);
