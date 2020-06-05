@@ -17,6 +17,8 @@
         public const string SUBSCRIPTION_ID = "SubscriptionId";
         public const string COMMON_RESOURCE_GROUP_NAME = "CommonResourceGroupName";
         public const string JOIN_NETWORK_ROLE_NAME = "JoinNetworkRoleName";
+        public const string DISABLE_MIGRATIONS = "DisableMigrations";
+        
 
     }
 }
