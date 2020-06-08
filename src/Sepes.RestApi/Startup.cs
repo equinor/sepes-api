@@ -1,36 +1,34 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sepes.RestApi.Services;
-using System.Diagnostics.CodeAnalysis;
-using Sepes.Infrastructure.Model.Context;
-using Microsoft.EntityFrameworkCore;
-using System;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Model.Config;
-using AutoMapper;
-using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Model.Automapper;
+using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
+using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
     public class Startup
-    {
-        readonly IWebHostEnvironment _env;
+    {     
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
-        //readonly IConfigService _configService;
 
-        public Startup(IWebHostEnvironment env, ILogger<Startup> logger, IConfiguration configuration)
+        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+
+        public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
 
@@ -41,7 +39,7 @@ namespace Sepes.RestApi
             _configuration = configuration;           
         }
 
-        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
