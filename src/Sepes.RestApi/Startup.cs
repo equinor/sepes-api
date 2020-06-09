@@ -8,12 +8,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
@@ -109,6 +111,47 @@ namespace Sepes.RestApi
             //services.AddSingleton<IStudyService_OLD>(studyService);
             services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
 
+            // Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Description =
+                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+                    Name = "Authorization",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.OAuth2,
+                    Scheme = "Bearer",
+                    Flows = new OpenApiOAuthFlows
+                    {
+                        Implicit = new OpenApiOAuthFlow
+                        {
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.TENANT_ID]}/oauth2/authorize")                          
+                        }
+                    }
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Scheme = "oauth2",
+                            Name = "Bearer",
+                            In = ParameterLocation.Header,
+
+                        },
+                        new List<string>()
+                    }
+                });
+            });
+
             var logMsgDone = "Configuring services done";
             Trace.WriteLine(logMsgDone);
             _logger.LogWarning(logMsgDone);
@@ -198,6 +241,18 @@ namespace Sepes.RestApi
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
+                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
+                c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
+                c.OAuthAppName("Sepes Development");
+                c.OAuthScopeSeparator(" ");
+                c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
+            });
 
             app.UseEndpoints(endpoints =>
             {
