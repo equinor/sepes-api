@@ -38,6 +38,7 @@ jobs:
   master:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
+    needs: build
     steps:
       - uses: actions/checkout@v2
 
@@ -56,6 +57,7 @@ jobs:
   PR:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
+    needs: build
     steps:
       - uses: actions/checkout@v2
 
