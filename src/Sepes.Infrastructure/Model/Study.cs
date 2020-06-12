@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
@@ -14,9 +13,26 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string WbsCode { get; set; }
 
-        public ICollection<DataSet> DataSets { get; set; }
+        public bool Restricted { get; set; }
 
-        public ICollection<SandBox> SandBoxes { get; set; }
+        public ICollection<StudyDataset> StudyDatasets { get; set; }
 
+        public ICollection<Sandbox> SandBoxes { get; set; }
+
+        public int? LogoId { get; set; }
+
+        public StudyLogo Logo { get; set; }
+
+    }
+
+    public class StudyDataset
+    {
+        public int StudyId { get; set; }
+
+        public Study Study { get; set; }
+
+        public int DatasetId { get; set; }
+
+        public Dataset Dataset { get; set; }
     }
 }
