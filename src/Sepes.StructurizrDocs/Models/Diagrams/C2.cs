@@ -1,10 +1,6 @@
 ﻿using Sepes.StructurizrDocs.Models.Containers;
 using Sepes.StructurizrDocs.Models.SoftwareSystems.External;
 using Structurizr;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Text;
 
 namespace Sepes.StructurizrDocs.Models.Diagrams
 {
@@ -23,65 +19,49 @@ namespace Sepes.StructurizrDocs.Models.Diagrams
 
 
             //INTERNAL SYSTEMS
-            var sepesSystem = SepesSystemFactory.Sepes(model);
+            var sepesSystem = SepesSystemFactory.Create(model);
             sepesUser.Uses(sepesSystem, "Uses");
 
-            var singlePageApplication = sepesSystem.AddContainer("Single-Page Application", "Provides all of the Sepes functionality to users via their web browser.", "JavaScript and React");
-            singlePageApplication.AddTags(Constants.WebBrowserTag);
-       
-            var apiApplication = sepesSystem.AddContainer("API Application", "Provides Sepes functionality via a JSON/HTTPS API.", "ASP.NET Core");
+            var singlePageApplication = SepesContainerFactory.CreateSepesFrontEnd(sepesSystem);
+            var apiApplication = SepesContainerFactory.CreateSepesApi(sepesSystem);
 
-            var sepesDb = SepesContainerFactory.SepesDb(sepesSystem);
+            var sepesDb = SepesContainerFactory.CreateSepesDb(sepesSystem);
 
             sepesUser.Uses(singlePageApplication, "Uses", "");
 
             //EXTERNAL SYSTEMS
-            var azureAd = AzureSystemFactory.AzureAD(model);
+            var azureAd = AzureSystemFactory.AzureAd(model);
             sepesSystem.Uses(azureAd, "Authenticates");
 
             var azureIaaS = AzureSystemFactory.AzureIaaS(model);
             sepesSystem.Uses(azureIaaS, "Uses");
 
+            var azureAppi = AzureSystemFactory.AzureAppInsight(model);
+            sepesSystem.Uses(azureAppi, "Uses");            
 
-            //SETTING UP INTERNAL RELATIONSHIPS
-
-            
+            //SETTING UP INTERNAL RELATIONSHIPS            
             singlePageApplication.Uses(apiApplication, "Communicates with API", "HTTPS");
             apiApplication.Uses(sepesDb, "Reads from and writes to", "HTTPS");
+          
 
             //SETTING UP EXTERNAL RELATIONSHIPS
-            singlePageApplication.Uses(azureAd, "Authenticates User", "HTTPS");
-            apiApplication.Uses(azureIaaS, "Uses", "HTTPS");           
+            singlePageApplication.Uses(azureAd, "Authenticates", "HTTPS");
+            apiApplication.Uses(azureIaaS, "Uses", "HTTPS");
+            apiApplication.Uses(azureAppi, "Writes logs and usage statistics", "HTTPS");
+
+            //Set up container view
 
             ContainerView containerView = views.CreateContainerView(sepesSystem, "Containers", "The container diagram for Sepes.");
             containerView.Add(sepesUser);
             containerView.AddAllContainers();
             containerView.Add(azureAd);
-            containerView.Add(azureIaaS);        
+            containerView.Add(azureIaaS);
+            containerView.Add(azureAppi);
             containerView.PaperSize = PaperSize.A5_Landscape;
 
-            return workspace;
+            DefaultStyleDecorator.Decorate(views);
 
-
-            //Container singlePageApplication = internetBankingSystem.AddContainer("Single-Page Application", "Provides all of the Internet banking functionality to customers via their web browser.", "JavaScript and Angular");
-            //singlePageApplication.AddTags(WebBrowserTag);
-            //Container mobileApp = internetBankingSystem.AddContainer("Mobile App", "Provides a limited subset of the Internet banking functionality to customers via their mobile device.", "Xamarin");
-            //mobileApp.AddTags(MobileAppTag);
-            //Container webApplication = internetBankingSystem.AddContainer("Web Application", "Delivers the static content and the Internet banking single page application.", "Java and Spring MVC");
-            //Container apiApplication = internetBankingSystem.AddContainer("API Application", "Provides Internet banking functionality via a JSON/HTTPS API.", "Java and Spring MVC");
-            //Container database = internetBankingSystem.AddContainer("Database", "Stores user registration information, hashed authentication credentials, access logs, etc.", "Relational Database Schema");
-            //database.AddTags(DatabaseTag);
-
-            //customer.Uses(webApplication, "Uses", "HTTPS");
-            //customer.Uses(singlePageApplication, "Uses", "");
-            //customer.Uses(mobileApp, "Uses", "");
-            //webApplication.Uses(singlePageApplication, "Delivers to the customer's web browser", "");
-            //apiApplication.Uses(database, "Reads from and writes to", "JDBC");
-            //apiApplication.Uses(mainframeBankingSystem, "Uses", "XML/HTTPS");
-            //apiApplication.Uses(emailSystem, "Sends e-mail using", "SMTP");
-
-
-
+            return workspace;  
         }
     }
 }

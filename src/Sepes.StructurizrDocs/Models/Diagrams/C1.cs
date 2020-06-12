@@ -24,8 +24,6 @@ namespace Sepes.StructurizrDocs.Models.Diagrams
             var user = model.AddPerson("User", "A user of my software system.");
             var softwareSystem = model.AddSoftwareSystem("SEPES", "SEPES Application.");
 
-
-
             var azureIaaS = model.AddSoftwareSystem(Location.External, "Azure IaaS", "VMs, Networking, Storage");
             var azureAppi = model.AddSoftwareSystem(Location.External, "Azure Application Insights", "Logging and usage statistics");
 
