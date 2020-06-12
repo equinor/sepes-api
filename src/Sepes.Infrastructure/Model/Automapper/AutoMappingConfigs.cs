@@ -10,8 +10,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Study, StudyListItemDto>();
 
             CreateMap<Study, StudyDto>();
-            CreateMap<SandBox, SandBoxDto>();
-            CreateMap<DataSet, DataSetDto>();
+            CreateMap<StudyDto, Study>();
+
+            CreateMap<Sandbox, SandBoxDto>();
+            CreateMap<SandBoxDto, Sandbox>();
+
+            CreateMap<Dataset, DataSetDto>();
+            CreateMap<DataSetDto, Dataset>();
         }
     }
 }
