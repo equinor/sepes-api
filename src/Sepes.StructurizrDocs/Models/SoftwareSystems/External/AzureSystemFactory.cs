@@ -7,9 +7,17 @@ namespace Sepes.StructurizrDocs.Models.SoftwareSystems.External
 {
     public static class AzureSystemFactory
     {
-        public static SoftwareSystem AzureIaaS(Model model)
+        public static SoftwareSystem AzureVMs(Model model)
         {
-            var azureIaaS = model.AddSoftwareSystem(Location.External, "Azure IaaS", "Hosts sandboxes (VMs), Storage etc.");
+            var azureIaaS = model.AddSoftwareSystem(Location.External, "Azure VMs", "Hosts Sandboxes (VMs)");
+            azureIaaS.AddTags(Constants.ExistingSystemTag);
+
+            return azureIaaS;
+        }
+
+        public static SoftwareSystem AzureStorage(Model model)
+        {
+            var azureIaaS = model.AddSoftwareSystem(Location.External, "Azure IaaS", "Contains data for Sandboxes");
             azureIaaS.AddTags(Constants.ExistingSystemTag);
 
             return azureIaaS;

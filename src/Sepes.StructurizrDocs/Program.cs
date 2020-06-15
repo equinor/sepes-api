@@ -24,7 +24,6 @@ namespace Sepes.StructurizrDocs
         static void CreateC1()
         {
             var c1 = C1.Create();
-
             ExportDiagram(c1, C1_PATH);
 
         }
@@ -32,7 +31,6 @@ namespace Sepes.StructurizrDocs
         static void CreateC2()
         {
             var c2 = C2.Create();
-
             ExportDiagram(c2, C2_PATH);
 
         }
@@ -45,7 +43,7 @@ namespace Sepes.StructurizrDocs
                 plantUmlWriter.Write(workspace, stringWriter);
                 var plantUmlString = stringWriter.ToString();
                 File.WriteAllText(filePath, plantUmlString);
-                Console.WriteLine("Export diagram to: " + filePath);
+                Console.WriteLine("Exporting diagram to: " + filePath);
                 Console.WriteLine(plantUmlString);
             }
         }

@@ -33,20 +33,24 @@ namespace Sepes.StructurizrDocs.Models.Diagrams
             var azureAd = AzureSystemFactory.AzureAd(model);
             sepesSystem.Uses(azureAd, "Authenticates");
 
-            var azureIaaS = AzureSystemFactory.AzureIaaS(model);
-            sepesSystem.Uses(azureIaaS, "Uses");
+            var azureVMs = AzureSystemFactory.AzureVMs(model);
+            sepesSystem.Uses(azureVMs, "Uses");
+
+            var azureStorage = AzureSystemFactory.AzureStorage(model);
+            sepesSystem.Uses(azureStorage, "Uses");
 
             var azureAppi = AzureSystemFactory.AzureAppInsight(model);
             sepesSystem.Uses(azureAppi, "Uses");            
 
             //SETTING UP INTERNAL RELATIONSHIPS            
-            singlePageApplication.Uses(apiApplication, "Communicates with API", "HTTPS");
+            singlePageApplication.Uses(apiApplication, "Communicates with", "HTTPS");
             apiApplication.Uses(sepesDb, "Reads from and writes to", "HTTPS");
           
 
             //SETTING UP EXTERNAL RELATIONSHIPS
             singlePageApplication.Uses(azureAd, "Authenticates", "HTTPS");
-            apiApplication.Uses(azureIaaS, "Uses", "HTTPS");
+            apiApplication.Uses(azureVMs, "Uses", "HTTPS");
+            apiApplication.Uses(azureStorage, "Uses", "HTTPS");
             apiApplication.Uses(azureAppi, "Writes logs and usage statistics", "HTTPS");
 
             //Set up container view
@@ -55,7 +59,8 @@ namespace Sepes.StructurizrDocs.Models.Diagrams
             containerView.Add(sepesUser);
             containerView.AddAllContainers();
             containerView.Add(azureAd);
-            containerView.Add(azureIaaS);
+            containerView.Add(azureVMs);
+            containerView.Add(azureStorage);
             containerView.Add(azureAppi);
             containerView.PaperSize = PaperSize.A5_Landscape;
 
