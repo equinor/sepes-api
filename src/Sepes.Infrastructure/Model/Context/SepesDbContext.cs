@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 //Add-Migration <migration name> -Context SepesDbContext -StartupProject Sepes.RestApi -Project Sepes.Infrastructure
 
@@ -24,15 +21,13 @@ namespace Sepes.Infrastructure.Model.Context
             AddRelationships(modelBuilder);
         }
 
-
         void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>().HasKey(s=> s.Id);
             modelBuilder.Entity<Dataset>().HasKey(s => s.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
 
-            modelBuilder.Entity<StudyDataset>().HasKey(s => new { s.StudyId, s.DatasetId } );
-          
+            modelBuilder.Entity<StudyDataset>().HasKey(s => new { s.StudyId, s.DatasetId } );          
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -58,16 +53,16 @@ namespace Sepes.Infrastructure.Model.Context
             .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Sandbox>()
-         .Property(b => b.Id)
-         .ValueGeneratedOnAdd();
+            .Property(b => b.Id)
+            .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Dataset>()
-     .Property(b => b.Id)
-     .ValueGeneratedOnAdd();
+            .Property(b => b.Id)
+            .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Study>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("getutcdate()");
+            .Property(b => b.Created)
+            .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Study>()
               .Property(b => b.Updated)

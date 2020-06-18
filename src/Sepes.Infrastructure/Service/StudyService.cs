@@ -17,17 +17,47 @@ namespace Sepes.Infrastructure.Service
         readonly IMapper _mapper;
 
         public StudyService(SepesDbContext db, IMapper mapper)
-        {            
+        {
             _db = db;
             _mapper = mapper;
-        }      
+        }
 
-        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync()
+        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
         {
+            if (includeRestricted.HasValue && includeRestricted.Value)
+            {
+                if (await UserCanSeeRestrictedStudies())
+                {
+
+                }
+                else
+                {
+                    //TODO: THROW EXCEPTION THAT CAUSES 401
+                }
+            }
+
             var studiesFromDb = await _db.Studies.ToListAsync();
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
             return studiesDtos;
+        }
+
+        async Task<bool> UserCanSeeRestrictedStudies()
+        {
+            //TODO: Implement
+            return true;
+        }
+
+        async Task<bool> UserCanCreateStudy()
+        {
+            //TODO: Implement
+            return true;
+        }
+
+        async Task<bool> UserCanDeleteStudy()
+        {
+            //TODO: Implement
+            return true;
         }
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
@@ -40,7 +70,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy)
         {
-            if(newStudy.Id.HasValue)
+            if (newStudy.Id.HasValue)
             {
                 throw new ArgumentException("Id for new Study cannot be specified, it's randomly generated. You tried to specify id:" + newStudy.Id.Value);
             }
@@ -72,21 +102,74 @@ namespace Sepes.Infrastructure.Service
             return String.IsNullOrWhiteSpace(validationErrors);
         }
 
-        public Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy)
+        public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
+            PerformUsualTestsForPostedStudy(id, updatedStudy);
+
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+
+            if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
+            {
+                studyFromDb.Name = updatedStudy.Name;
+            }
+
+            if (updatedStudy.Description != studyFromDb.Description)
+            {
+                studyFromDb.Description = updatedStudy.Description;
+            }
+
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(studyFromDb.Id);
+        }
+
+       
+
+        public async Task<StudyDto> UpdateStudyAsync(int id, StudyDto updatedStudy)
+        {
+            PerformUsualTestsForPostedStudy(id, updatedStudy);
+
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+
+            //Validate
+            //If okay: save, if not: return message
+
+            await _db.SaveChangesAsync();
+
+            //TODO: Handle update
+            //TODO: HANDLE DATA SETS
+            //TODO: HANDLE SANDBOXES
+            //TODO: HANDLE LOCK/UNLOCK         
+
             throw new System.NotImplementedException();
         }
 
-        public Task<StudyDto> DeleteStudyAsync(StudyDto newStudy)
+        void PerformUsualTestsForPostedStudy(int id, StudyDto updatedStudy)
         {
-            throw new System.NotImplementedException();
-        }      
-        
+            if (id <= 0)
+            {
+                throw new ArgumentException("Id was zero or negative:" + id);
+            }
+
+            if (id != updatedStudy.Id)
+            {
+                throw new ArgumentException($"Id in url ({id}) is different from Id in data ({updatedStudy.Id})");
+            }
+        }
+
+        public async Task DeleteStudyAsync(int id)
+        {
+            //TODO: VALIDATION
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            _db.Studies.Remove(studyFromDb);
+            await _db.SaveChangesAsync();
+        }
+
         async Task<Study> GetStudyOrThrowAsync(int id)
         {
             var studyFromDb = await _db.Studies
                 .Include(s => s.StudyDatasets)
-                .ThenInclude(sd=> sd.Dataset)
+                .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.SandBoxes)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
@@ -98,6 +181,6 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
-      
+
     }
 }

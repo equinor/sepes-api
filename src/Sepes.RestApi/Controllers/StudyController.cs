@@ -22,9 +22,9 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet]
-        public async Task<IActionResult> GetStudies()
+        public async Task<IActionResult> GetStudies([FromQuery] bool? includeRestricted)
         {
-            var studies = await _studyService.GetStudiesAsync();
+            var studies = await _studyService.GetStudiesAsync(includeRestricted);
             return new JsonResult(studies);          
         }
 
@@ -41,7 +41,6 @@ namespace Sepes.RestApi.Controller
             var study = await _studyService.CreateStudyAsync(newStudy);
             return new JsonResult(study);
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
