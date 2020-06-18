@@ -46,19 +46,7 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: Implement
             return true;
-        }
-
-        async Task<bool> UserCanCreateStudy()
-        {
-            //TODO: Implement
-            return true;
-        }
-
-        async Task<bool> UserCanDeleteStudy()
-        {
-            //TODO: Implement
-            return true;
-        }
+        }       
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {

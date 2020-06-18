@@ -12,9 +12,13 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
 
+        Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
+
         Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);
 
         Task DeleteStudyAsync(int id);
+        Task<StudyDto> AddDataset(int id, int datasetId);
+        
 
         /// <summary>
         /// Makes changes to the meta data of a study.
