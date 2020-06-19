@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyController : ControllerBase
     {
-        private IStudyService _studyService;
+        readonly IStudyService _studyService;
 
         public StudyController(IStudyService studyService)
         {
@@ -58,15 +58,18 @@ namespace Sepes.RestApi.Controller
         }
 
         //TODO:FIX
-        //[HttpPost("{id}/datasets/studyspecific")]
-        //public async Task<IActionResult> AddDataSet(int id, StudySpecificDatasetDto newDataSet)
-        //{
+        // Should this be addDataset or AddCustomDataSet?
+        [HttpPut("{id}/datasets/studyspecific")]
+        public async Task<IActionResult> AddDataSet(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        {
+            //TODO: Perform checks on dataset?
+            //TODO: Post custom dataset
+            
 
-        //    //var updatedStudy = await _studyService.AddCustomDataset(id, datasetId);
-        //    //return new JsonResult(updatedStudy);
-        //}
+            var updatedStudy = await _studyService.AddCustomDataset(id, datasetId, newDataset);
+            return new JsonResult(updatedStudy);
+        }
 
-        //TODO: Post custom dataset
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStudy(int id, StudyDto study)

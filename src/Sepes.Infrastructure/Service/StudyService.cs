@@ -169,6 +169,16 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
+        public async Task<StudyDto> AddDataset(int id, int datasetId)
+        {
+            //TODO: Implement
+            throw new NotImplementedException();
+        }
 
+        public async Task<StudyDto> AddCustomDataset(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        {
+            //TODO: Implement
+            throw new NotImplementedException();
+        }
     }
 }
