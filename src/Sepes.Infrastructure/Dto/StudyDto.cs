@@ -9,6 +9,10 @@ namespace Sepes.Infrastructure.Dto
 
         public string WbsCode { get; set; }
 
+        public string Vendor { get; set; }
+
+        public bool Restricted { get; set; }
+
         public string LogoUrl { get; set; }
 
         public List<DataSetDto> DataSets { get; set; }

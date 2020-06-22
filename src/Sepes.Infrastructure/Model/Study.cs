@@ -13,6 +13,9 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string WbsCode { get; set; }
 
+        [MaxLength(128)]
+        public string Vendor { get; set; }
+
         public bool Restricted { get; set; }
 
         public ICollection<StudyDataset> StudyDatasets { get; set; }

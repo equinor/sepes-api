@@ -26,19 +26,18 @@ namespace Sepes.Infrastructure.Service
         {
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
-                if (await UserCanSeeRestrictedStudies())
+                if (!(await UserCanSeeRestrictedStudies()))
                 {
-
+                    //TODO: THROW EXCEPTION THAT CAUSES 401
                 }
                 else
                 {
-                    //TODO: THROW EXCEPTION THAT CAUSES 401
+                    // Get restricted studies 
                 }
             }
 
             var studiesFromDb = await _db.Studies.ToListAsync();
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
-
             return studiesDtos;
         }
 
@@ -83,6 +82,12 @@ namespace Sepes.Infrastructure.Service
             if (String.IsNullOrWhiteSpace(studyDto.Name))
             {
                 validationErrors += "name must have value";
+                return false;
+            }
+
+            if (String.IsNullOrWhiteSpace(studyDto.Vendor))
+            {
+                validationErrors += "vendor must have value";
                 return false;
             }
 
