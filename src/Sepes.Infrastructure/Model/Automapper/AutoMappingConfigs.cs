@@ -7,16 +7,17 @@ namespace Sepes.Infrastructure.Model.Automapper
     {
         public AutoMappingConfigs()
         {
+            //STUDY VARIATIONS
             CreateMap<Study, StudyListItemDto>();
-
             CreateMap<Study, StudyDto>();
             CreateMap<StudyDto, Study>();
+            CreateMap<Sandbox, SandboxDto>();
+            CreateMap<SandboxDto, Sandbox>();
 
-            CreateMap<Sandbox, SandBoxDto>();
-            CreateMap<SandBoxDto, Sandbox>();
+            //DATASET VARIATIONS
+            CreateMap<Dataset, DatasetDto>();
+            CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, DataSetDto>();
-            CreateMap<DataSetDto, Dataset>();
         }
     }
 }

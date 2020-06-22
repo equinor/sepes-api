@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await _db.Studies
                 .Include(s => s.StudyDatasets)
                 .ThenInclude(sd => sd.Dataset)
-                .Include(s => s.SandBoxes)
+                .Include(s => s.Sandboxes)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (studyFromDb == null)
