@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sepes.Infrastructure.Model.Context;
 
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
-    partial class SepesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200612114404_StudyModelMoreFields")]
+    partial class StudyModelMoreFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -127,10 +129,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
-
-                    b.Property<string>("Vendor")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
 
                     b.Property<string>("WbsCode")
                         .HasColumnType("nvarchar(64)")

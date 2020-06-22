@@ -7,12 +7,21 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {
         
-        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync();
+        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null);
         Task<StudyDto> GetStudyByIdAsync(int id);
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
 
-        Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);   
+        Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
+
+        Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);
+
+        Task DeleteStudyAsync(int id);
+
+        Task<StudyDto> AddDataset(int id, int datasetId);
+
+        Task<StudyDto> AddCustomDataset(int id, int datasetId, StudySpecificDatasetDto newDataset);
+
 
         /// <summary>
         /// Makes changes to the meta data of a study.
