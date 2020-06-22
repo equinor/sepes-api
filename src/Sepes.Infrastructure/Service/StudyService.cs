@@ -111,12 +111,17 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.Description = updatedStudy.Description;
             }
 
-            if (updatedStudy.Description != studyFromDb.Description)
+            if (!String.IsNullOrWhiteSpace(updatedStudy.Vendor) && updatedStudy.Vendor != studyFromDb.Vendor)
             {
                 studyFromDb.Vendor = updatedStudy.Vendor;
             }
 
-            if (updatedStudy.Description != studyFromDb.Description)
+            if (updatedStudy.Restricted != studyFromDb.Restricted)
+            {
+                studyFromDb.Restricted = updatedStudy.Restricted;
+            }
+
+            if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
