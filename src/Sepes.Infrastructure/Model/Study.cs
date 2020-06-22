@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Model
 
         public ICollection<StudyDataset> StudyDatasets { get; set; }
 
-        public ICollection<Sandbox> SandBoxes { get; set; }
+        public ICollection<Sandbox> Sandboxes { get; set; }
 
         public int? LogoId { get; set; }
 

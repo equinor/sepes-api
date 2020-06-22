@@ -10,9 +10,9 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<Study> Studies { get; set; }
 
-        public virtual DbSet<Sandbox> SandBoxes { get; set; }
+        public virtual DbSet<Sandbox> Sandboxes { get; set; }
 
-        public virtual DbSet<Dataset> DataSets { get; set; }
+        public virtual DbSet<Dataset> Datasets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Model.Context
 
         void AddRelationships(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Sandbox>().HasOne(s => s.Study).WithMany(s => s.SandBoxes).HasForeignKey(s => s.StudyId);
+            modelBuilder.Entity<Sandbox>().HasOne(s => s.Study).WithMany(s => s.Sandboxes).HasForeignKey(s => s.StudyId);
 
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)
