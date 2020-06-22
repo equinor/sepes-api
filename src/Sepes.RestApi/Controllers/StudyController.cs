@@ -12,8 +12,8 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class StudyController : ControllerBase
-    {     
-        private IStudyService _studyService;
+    {
+        readonly IStudyService _studyService;
 
         public StudyController(IStudyService studyService)
         {
@@ -22,17 +22,17 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet]
-        public async Task<IActionResult> GetStudies()
+        public async Task<IActionResult> GetStudies([FromQuery] bool? includeRestricted)
         {
-            var studies = await _studyService.GetStudiesAsync();
-            return new JsonResult(studies);          
+            var studies = await _studyService.GetStudiesAsync(includeRestricted);
+            return new JsonResult(studies);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetStudy(int id)
         {
             var study = await _studyService.GetStudyByIdAsync(id);
-            return new JsonResult(study);        
+            return new JsonResult(study);
         }
 
         [HttpPost()]
@@ -40,6 +40,34 @@ namespace Sepes.RestApi.Controller
         {
             var study = await _studyService.CreateStudyAsync(newStudy);
             return new JsonResult(study);
+        }
+
+        //PUT localhost:8080/api/studies/1/details
+        [HttpPut("{id}/details")]
+        public async Task<IActionResult> UpdateStudyDetails(int id, StudyDto study)
+        {
+            var updatedStudy = await _studyService.UpdateStudyDetailsAsync(id, study);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpPut("{id}/datasets/{dataSetId}")]
+        public async Task<IActionResult> AddDataSet(int id, int dataSetId)
+        {
+            var updatedStudy = await _studyService.AddDataset(id, dataSetId);
+            return new JsonResult(updatedStudy);
+        }
+
+        //TODO:FIX
+        // Should this be addDataset or AddCustomDataSet?
+        [HttpPut("{id}/datasets/studyspecific")]
+        public async Task<IActionResult> AddDataSet(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        {
+            //TODO: Perform checks on dataset?
+            //TODO: Post custom dataset
+            
+
+            var updatedStudy = await _studyService.AddCustomDataset(id, datasetId, newDataset);
+            return new JsonResult(updatedStudy);
         }
 
 

@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 //Add-Migration <migration name> -Context SepesDbContext -StartupProject Sepes.RestApi -Project Sepes.Infrastructure
 
@@ -13,45 +10,77 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<Study> Studies { get; set; }
 
-        public virtual DbSet<SandBox> SandBoxes { get; set; }
+        public virtual DbSet<Sandbox> Sandboxes { get; set; }
 
-        public virtual DbSet<DataSet> DataSets { get; set; }
+        public virtual DbSet<Dataset> Datasets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            AddPrimaryKeys(modelBuilder);
             AddDefaultValues(modelBuilder);
             AddRelationships(modelBuilder);
         }
 
-        void AddRelationships(ModelBuilder modelBuilder)
+        void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<SandBox>().HasOne(s => s.Study).WithMany(s => s.SandBoxes).HasForeignKey(s => s.StudyId);
-            modelBuilder.Entity<DataSet>().HasOne(s => s.Study).WithMany(s => s.DataSets).HasForeignKey(s => s.StudyId);
+            modelBuilder.Entity<Study>().HasKey(s=> s.Id);
+            modelBuilder.Entity<Dataset>().HasKey(s => s.Id);
+            modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
+
+            modelBuilder.Entity<StudyDataset>().HasKey(s => new { s.StudyId, s.DatasetId } );          
         }
 
-        void AddDefaultValues(ModelBuilder modelBuilder)
+        void AddRelationships(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Sandbox>().HasOne(s => s.Study).WithMany(s => s.Sandboxes).HasForeignKey(s => s.StudyId);
+
+            modelBuilder.Entity<StudyDataset>()
+                .HasOne(sd => sd.Study)
+                .WithMany(s => s.StudyDatasets)
+                .HasForeignKey(pt => pt.StudyId);
+
+            modelBuilder.Entity<StudyDataset>()
+                .HasOne(pt => pt.Dataset)
+                .WithMany(t => t.StudyDatasets)
+                .HasForeignKey(pt => pt.DatasetId);
+        }
+
+
+            void AddDefaultValues(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>()
-                .Property(b => b.Created)
-                .HasDefaultValueSql("getutcdate()");
+            .Property(b => b.Id)
+            .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Sandbox>()
+            .Property(b => b.Id)
+            .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Dataset>()
+            .Property(b => b.Id)
+            .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Study>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
-
-            modelBuilder.Entity<DataSet>()
             .Property(b => b.Created)
             .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<DataSet>()
+            modelBuilder.Entity<Study>()
               .Property(b => b.Updated)
               .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandBox>()
+            modelBuilder.Entity<Dataset>()
+            .Property(b => b.Created)
+            .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<Dataset>()
+              .Property(b => b.Updated)
+              .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<Sandbox>()
                .Property(b => b.Created)
                .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandBox>()
+            modelBuilder.Entity<Sandbox>()
               .Property(b => b.Updated)
               .HasDefaultValueSql("getutcdate()");
         }

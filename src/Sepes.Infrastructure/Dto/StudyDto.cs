@@ -9,10 +9,14 @@ namespace Sepes.Infrastructure.Dto
 
         public string WbsCode { get; set; }
 
+        public string Vendor { get; set; }
+
+        public bool Restricted { get; set; }
+
         public string LogoUrl { get; set; }
 
-        public List<DataSetDto> DataSets { get; set; }
+        public List<DatasetDto> Datasets { get; set; }
 
-        public ICollection<SandBoxDto> SandBoxes { get; set; }
+        public ICollection<SandboxDto> Sandboxes { get; set; }
     }
 }

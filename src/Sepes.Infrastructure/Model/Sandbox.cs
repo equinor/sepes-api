@@ -2,7 +2,7 @@
 
 namespace Sepes.Infrastructure.Model
 {
-    public class SandBox : UpdateableBaseModel
+    public class Sandbox : UpdateableBaseModel
     { 
         public string Name { get; set; }
 

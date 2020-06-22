@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Dto
 {
-    public class SandBoxDto : UpdateableBaseDto
+    public class SandboxDto : UpdateableBaseDto
     {
         public string Name { get; set; }
         public int StudyId { get; set; }
