@@ -109,7 +109,9 @@ namespace Sepes.RestApi
             //services.AddSingleton<IAzureService>(azureService);
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
+            services.AddTransient<IDatasetService, Infrastructure.Service.DatasetService>();
             services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
+
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
