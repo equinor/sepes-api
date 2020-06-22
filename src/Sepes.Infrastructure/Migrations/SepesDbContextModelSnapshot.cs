@@ -128,6 +128,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
+                    b.Property<string>("Vendor")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
                     b.Property<string>("WbsCode")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
