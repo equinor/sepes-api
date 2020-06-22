@@ -111,6 +111,16 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.Description = updatedStudy.Description;
             }
 
+            if (updatedStudy.Description != studyFromDb.Description)
+            {
+                studyFromDb.Vendor = updatedStudy.Vendor;
+            }
+
+            if (updatedStudy.Description != studyFromDb.Description)
+            {
+                studyFromDb.WbsCode = updatedStudy.WbsCode;
+            }
+
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyFromDb.Id);
