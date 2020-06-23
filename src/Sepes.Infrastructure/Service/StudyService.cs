@@ -221,7 +221,7 @@ namespace Sepes.Infrastructure.Service
 
         async public Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
         {
-            // Run validations: (Check if both id's are valid)
+            // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
 
             if (studyFromDb == null)
@@ -229,11 +229,33 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Study", id);
             }
 
-            // Do check on Sandbox
+            // TODO: Do check on Sandbox
 
             // Create reference
             var sandbox = _mapper.Map<Sandbox>(newSandbox);
             studyFromDb.Sandboxes.Add(sandbox);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
+        }
+
+        async public Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId)
+        {
+            // Run validations: (Check if ID is valid)
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+
+            if (studyFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Study", id);
+            }
+
+            var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+
+            // TODO: Do check on Sandbox
+
+            // Create reference
+            //var sandbox = _mapper.Map<Sandbox>(sandboxFromDb);
+            studyFromDb.Sandboxes.Remove(sandboxFromDb);
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(id);

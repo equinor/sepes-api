@@ -67,10 +67,17 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-        [HttpPut("{id}/datasets/{dataSetId}")]
-        public async Task<IActionResult> AddDataSet(int id, int dataSetId)
+        [HttpDelete("{id}/sandboxes/{sandboxId}")]
+        public async Task<IActionResult> RemoveSandbox(int id, int sandboxId)
         {
-            var updatedStudy = await _studyService.AddDatasetAsync(id, dataSetId);
+            var updatedStudy = await _studyService.RemoveSandboxAsync(id, sandboxId);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpPut("{id}/datasets/{datasetId}")]
+        public async Task<IActionResult> AddDataSet(int id, int datasetId)
+        {
+            var updatedStudy = await _studyService.AddDatasetAsync(id, datasetId);
             return new JsonResult(updatedStudy);
         }
 
