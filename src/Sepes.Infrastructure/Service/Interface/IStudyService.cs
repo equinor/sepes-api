@@ -18,9 +18,11 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task DeleteStudyAsync(int id);
 
-        Task<StudyDto> AddDataset(int id, int datasetId);
+        Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox);
 
-        Task<StudyDto> AddCustomDataset(int id, int datasetId, StudySpecificDatasetDto newDataset);
+        Task<StudyDto> AddDatasetAsync(int id, int datasetId);
+
+        Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
 
 
         /// <summary>
