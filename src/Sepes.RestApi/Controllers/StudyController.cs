@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api/studies")]
     [ApiController]
+    [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class StudyController : ControllerBase
@@ -42,6 +44,13 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
+        {
+            var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
+            return new JsonResult(updatedStudy);
+        }
+
         //PUT localhost:8080/api/studies/1/details
         [HttpPut("{id}/details")]
         public async Task<IActionResult> UpdateStudyDetails(int id, StudyDto study)
@@ -49,6 +58,7 @@ namespace Sepes.RestApi.Controller
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(id, study);
             return new JsonResult(updatedStudy);
         }
+
 
         [HttpPut("{id}/datasets/{dataSetId}")]
         public async Task<IActionResult> AddDataSet(int id, int dataSetId)
@@ -64,20 +74,9 @@ namespace Sepes.RestApi.Controller
         {
             //TODO: Perform checks on dataset?
             //TODO: Post custom dataset
-            
-
             var updatedStudy = await _studyService.AddCustomDataset(id, datasetId, newDataset);
             return new JsonResult(updatedStudy);
         }
-
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
-        {
-            var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
-            return new JsonResult(updatedStudy);
-        }
-
 
         //[HttpPost]
         //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
