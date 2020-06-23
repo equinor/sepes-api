@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Dto
 
         public string LogoUrl { get; set; }
 
-        public List<DatasetDto> Datasets { get; set; }
+        public ICollection<DatasetDto> Datasets { get; set; }
 
         public ICollection<SandboxDto> Sandboxes { get; set; }
     }

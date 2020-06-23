@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("DataSets");
+                    b.ToTable("Datasets");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
@@ -87,7 +87,7 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("StudyId");
 
-                    b.ToTable("SandBoxes");
+                    b.ToTable("Sandboxes");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
@@ -157,7 +157,7 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("DatasetId");
 
-                    b.ToTable("StudyDataset");
+                    b.ToTable("StudyDatasets");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyLogo", b =>
@@ -192,7 +192,7 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
                 {
                     b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
-                        .WithMany("SandBoxes")
+                        .WithMany("Sandboxes")
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
