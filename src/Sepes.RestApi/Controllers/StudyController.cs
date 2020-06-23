@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
@@ -59,11 +60,17 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpPut("{id}/sandboxes")]
+        public async Task<IActionResult> AddSandbox(int id, SandboxDto newSandbox)
+        {
+            var updatedStudy = await _studyService.AddSandboxAsync(id, newSandbox);
+            return new JsonResult(updatedStudy);
+        }
 
         [HttpPut("{id}/datasets/{dataSetId}")]
         public async Task<IActionResult> AddDataSet(int id, int dataSetId)
         {
-            var updatedStudy = await _studyService.AddDataset(id, dataSetId);
+            var updatedStudy = await _studyService.AddDatasetAsync(id, dataSetId);
             return new JsonResult(updatedStudy);
         }
 
@@ -74,7 +81,7 @@ namespace Sepes.RestApi.Controller
         {
             //TODO: Perform checks on dataset?
             //TODO: Post custom dataset
-            var updatedStudy = await _studyService.AddCustomDataset(id, datasetId, newDataset);
+            var updatedStudy = await _studyService.AddCustomDatasetAsync(id, datasetId, newDataset);
             return new JsonResult(updatedStudy);
         }
 

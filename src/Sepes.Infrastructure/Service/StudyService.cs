@@ -189,7 +189,7 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
-        public async Task<StudyDto> AddDataset(int id, int datasetId)
+        public async Task<StudyDto> AddDatasetAsync(int id, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
@@ -214,10 +214,29 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<StudyDto> AddCustomDataset(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset)
         {
             throw new NotImplementedException();
         }
 
+        async public Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
+        {
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+
+            if (studyFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Study", id);
+            }
+
+            // Do check on Sandbox
+
+            // Create reference
+            var sandbox = _mapper.Map<Sandbox>(newSandbox);
+            studyFromDb.Sandboxes.Add(sandbox);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
+        }
     }
 }
