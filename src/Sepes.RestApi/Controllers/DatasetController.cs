@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class DatasetController : ControllerBase
     {     
-        private IDatasetService _datasetService;
+        readonly IDatasetService _datasetService;
 
         public DatasetController(IDatasetService datasetService)
         {
