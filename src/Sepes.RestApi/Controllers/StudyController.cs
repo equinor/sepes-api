@@ -88,6 +88,13 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpDelete("{id}/datasets/{datasetId}")]
+        public async Task<IActionResult> RemoveDataSet(int id, int datasetId)
+        {
+            var updatedStudy = await _studyService.RemoveDatasetAsync(id, datasetId);
+            return new JsonResult(updatedStudy);
+        }
+
         //TODO:FIX
         // Should this be addDataset or AddCustomDataSet?
         [HttpPut("{id}/datasets/studyspecific")]

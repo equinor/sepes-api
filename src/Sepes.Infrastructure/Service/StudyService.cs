@@ -132,8 +132,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-       
-
         public async Task<StudyDto> UpdateStudyAsync(int id, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(id, updatedStudy);
@@ -215,7 +213,31 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        async public Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
+        public async Task<StudyDto> RemoveDatasetAsync(int id, int datasetId)
+        {
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
+
+            if (datasetFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            var studyDatasetFromDb = await _db.StudyDatasets
+                .FirstOrDefaultAsync(ds => ds.StudyId == id && ds.DatasetId == datasetId);
+
+            if (studyDatasetFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("StudyDataset", datasetId);
+            }
+
+            _db.StudyDatasets.Remove(studyDatasetFromDb);
+            await _db.SaveChangesAsync();
+            var retVal = await GetStudyByIdAsync(id);
+            return retVal;
+        }
+
+        public async Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
         {
             // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
@@ -230,7 +252,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        async public Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId)
+        public async Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId)
         {
             // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
@@ -246,7 +268,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        async public Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
+        public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
         {
             var studyFromDb = await GetStudyOrThrowAsync(id);
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == id).ToListAsync();
