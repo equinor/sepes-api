@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
@@ -59,11 +60,31 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-
-        [HttpPut("{id}/datasets/{dataSetId}")]
-        public async Task<IActionResult> AddDataSet(int id, int dataSetId)
+        [HttpGet("{id}/sandboxes")]
+        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int id)
         {
-            var updatedStudy = await _studyService.AddDataset(id, dataSetId);
+            var sandboxes = await _studyService.GetSandboxesByStudyIdAsync(id);
+            return new JsonResult(sandboxes);
+        }
+
+        [HttpPut("{id}/sandboxes")]
+        public async Task<IActionResult> AddSandbox(int id, SandboxDto newSandbox)
+        {
+            var updatedStudy = await _studyService.AddSandboxAsync(id, newSandbox);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpDelete("{id}/sandboxes/{sandboxId}")]
+        public async Task<IActionResult> RemoveSandbox(int id, int sandboxId)
+        {
+            var updatedStudy = await _studyService.RemoveSandboxAsync(id, sandboxId);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpPut("{id}/datasets/{datasetId}")]
+        public async Task<IActionResult> AddDataSet(int id, int datasetId)
+        {
+            var updatedStudy = await _studyService.AddDatasetAsync(id, datasetId);
             return new JsonResult(updatedStudy);
         }
 
@@ -74,7 +95,7 @@ namespace Sepes.RestApi.Controller
         {
             //TODO: Perform checks on dataset?
             //TODO: Post custom dataset
-            var updatedStudy = await _studyService.AddCustomDataset(id, datasetId, newDataset);
+            var updatedStudy = await _studyService.AddCustomDatasetAsync(id, datasetId, newDataset);
             return new JsonResult(updatedStudy);
         }
 
