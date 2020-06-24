@@ -18,9 +18,9 @@ namespace Sepes.Infrastructure.Model
 
         public bool Restricted { get; set; }
 
-        public ICollection<StudyDataset> StudyDatasets { get; set; }
+        public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
-        public ICollection<Sandbox> Sandboxes { get; set; }
+        public virtual ICollection<Sandbox> Sandboxes { get; set; }
 
         public int? LogoId { get; set; }
 
@@ -31,11 +31,9 @@ namespace Sepes.Infrastructure.Model
     public class StudyDataset
     {
         public int StudyId { get; set; }
-
-        public Study Study { get; set; }
+        public virtual Study Study { get; set; }
 
         public int DatasetId { get; set; }
-
-        public Dataset Dataset { get; set; }
+        public virtual Dataset Dataset { get; set; }
     }
 }

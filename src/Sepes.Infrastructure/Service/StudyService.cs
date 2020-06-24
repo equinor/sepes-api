@@ -191,14 +191,33 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> AddDataset(int id, int datasetId)
         {
-            //TODO: Implement
-            throw new NotImplementedException();
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
+
+            if(studyFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Study", id);
+            }
+
+            if(datasetFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            // Create new linking table
+            StudyDataset studyDataset = new StudyDataset{ Study = studyFromDb, Dataset = datasetFromDb };
+            await _db.StudyDatasets.AddAsync(studyDataset);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
+
         }
 
         public async Task<StudyDto> AddCustomDataset(int id, int datasetId, StudySpecificDatasetDto newDataset)
         {
-            //TODO: Implement
             throw new NotImplementedException();
         }
+
     }
 }
