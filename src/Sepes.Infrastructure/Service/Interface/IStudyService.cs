@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);
 
-        Task DeleteStudyAsync(int id);
+        Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id);
 
         Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id);
 
