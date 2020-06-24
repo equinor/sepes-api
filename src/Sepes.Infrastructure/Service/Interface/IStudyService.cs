@@ -18,6 +18,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task DeleteStudyAsync(int id);
 
+        Task<IEnumerable<SandboxDto>> GetAvailableSandboxesAsync();
+
+        Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id);
+
         Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox);
 
         Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId);

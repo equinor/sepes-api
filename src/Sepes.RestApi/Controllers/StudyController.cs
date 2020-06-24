@@ -60,6 +60,20 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpGet("sandboxes")]
+        public async Task<IActionResult> GetAvailableSandboxesAsync()
+        {
+            var sandboxes = await _studyService.GetAvailableSandboxesAsync();
+            return new JsonResult(sandboxes);
+        }
+
+        [HttpGet("{id}/sandboxes")]
+        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int id)
+        {
+            var sandboxes = await _studyService.GetSandboxesByStudyIdAsync(id);
+            return new JsonResult(sandboxes);
+        }
+
         [HttpPut("{id}/sandboxes")]
         public async Task<IActionResult> AddSandbox(int id, SandboxDto newSandbox)
         {

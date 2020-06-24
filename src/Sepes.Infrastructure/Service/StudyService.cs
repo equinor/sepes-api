@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -195,11 +196,6 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await GetStudyOrThrowAsync(id);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
-            if(studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", id);
-            }
-
             if(datasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
@@ -224,11 +220,6 @@ namespace Sepes.Infrastructure.Service
             // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
 
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", id);
-            }
-
             // TODO: Do check on Sandbox
 
             // Create reference
@@ -243,12 +234,6 @@ namespace Sepes.Infrastructure.Service
         {
             // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
-
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", id);
-            }
-
             var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
 
             // TODO: Do check on Sandbox
@@ -259,6 +244,23 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(id);
+        }
+
+        async public Task<IEnumerable<SandboxDto>> GetAvailableSandboxesAsync()
+        {
+            var sandboxesFromDb = await _db.Sandboxes.ToListAsync();
+            var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
+
+            return sandboxDTOs;
+        }
+
+        async public Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
+        {
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == id).ToListAsync();
+            var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
+
+            return sandboxDTOs;
         }
     }
 }
