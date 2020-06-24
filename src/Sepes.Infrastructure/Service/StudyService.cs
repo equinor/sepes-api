@@ -7,46 +7,42 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class StudyService : IStudyService
+    public class StudyService : ServiceBase<Study>, IStudyService
     {
-        readonly SepesDbContext _db;
-        readonly IMapper _mapper;
+       
 
         public StudyService(SepesDbContext db, IMapper mapper)
+            :base(db, mapper)
+
         {
-            _db = db;
-            _mapper = mapper;
+         
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
         {
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
-                if (!(await UserCanSeeRestrictedStudies()))
-                {
-                    //TODO: THROW EXCEPTION THAT CAUSES 401
-                }
-                else
-                {
-                    // Get restricted studies 
-                }
+                //if (!(await UserCanSeeRestrictedStudies()))
+                //{
+                //    //TODO: THROW EXCEPTION THAT CAUSES 401
+                //}
+                //else
+                //{
+                //    // Get restricted studies 
+                //}
             }
 
             var studiesFromDb = await _db.Studies.ToListAsync();
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
             return studiesDtos;
-        }
-
-        async Task<bool> UserCanSeeRestrictedStudies()
-        {
-            //TODO: Implement
-            return true;
-        }       
+        }            
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {
@@ -58,43 +54,12 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy)
         {
-            if (newStudy.Id.HasValue)
-            {
-                throw new ArgumentException("Id for new Study cannot be specified, it's randomly generated. You tried to specify id:" + newStudy.Id.Value);
-            }
-
-            if (!ValidateStudy(newStudy, out string validationError))
-            {
-                throw new ArgumentException(validationError);
-            }
-
             var newStudyDbModel = _mapper.Map<Study>(newStudy);
 
-            _db.Studies.Add(newStudyDbModel);
-            await _db.SaveChangesAsync();
+            var newStudyId = await Add(newStudyDbModel);       
 
-            return await GetStudyByIdAsync(newStudyDbModel.Id);
-        }
-
-        bool ValidateStudy(StudyDto studyDto, out string validationErrors)
-        {
-            validationErrors = "";
-
-            if (String.IsNullOrWhiteSpace(studyDto.Name))
-            {
-                validationErrors += "name must have value";
-                return false;
-            }
-
-            if (String.IsNullOrWhiteSpace(studyDto.Vendor))
-            {
-                validationErrors += "vendor must have value";
-                return false;
-            }
-
-            //If no errors, return true, false otherwise
-            return String.IsNullOrWhiteSpace(validationErrors);
-        }
+            return await GetStudyByIdAsync(newStudyId);
+        }               
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
@@ -126,6 +91,8 @@ namespace Sepes.Infrastructure.Service
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
+
+            Validate(studyFromDb);
 
             await _db.SaveChangesAsync();
 
@@ -207,7 +174,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(id);
-
         }
 
         public async Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset)
