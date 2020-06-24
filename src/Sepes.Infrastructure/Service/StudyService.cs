@@ -164,12 +164,13 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task DeleteStudyAsync(int id)
+        public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
         {
             //TODO: VALIDATION
             var studyFromDb = await GetStudyOrThrowAsync(id);
             _db.Studies.Remove(studyFromDb);
             await _db.SaveChangesAsync();
+            return await GetStudiesAsync();
         }
 
         async Task<Study> GetStudyOrThrowAsync(int id)
