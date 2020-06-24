@@ -78,7 +78,7 @@ namespace Sepes.RestApi
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .AddNewtonsoftJson(options =>
                 {
-                    options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 })   
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
