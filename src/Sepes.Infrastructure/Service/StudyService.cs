@@ -246,14 +246,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        async public Task<IEnumerable<SandboxDto>> GetAvailableSandboxesAsync()
-        {
-            var sandboxesFromDb = await _db.Sandboxes.ToListAsync();
-            var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
-
-            return sandboxDTOs;
-        }
-
         async public Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
         {
             var studyFromDb = await GetStudyOrThrowAsync(id);
