@@ -26,6 +26,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> AddDatasetAsync(int id, int datasetId);
 
+        Task<StudyDto> RemoveDatasetAsync(int id, int datasetId);
+
         Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
 
 
