@@ -2,17 +2,33 @@
 
 ## Prerequisites:
 
+### Azure Resources
+* Azure AD App Registration (also generate a separate client secret for each developer)
+* Subscriptions for creating resources (Sandbox, Storage etc)
+* Application Insights
+* Key vault (optional for local development) and relevant access policies/FW rules
+
+### Software
+
 To be able to run and develop for this project there are a some runtimes that need to be installed.
 
-* [Dotnet Core SDK 3.0](https://dotnet.microsoft.com/download)
+* [Dotnet Core SDK 3.X](https://dotnet.microsoft.com/download)
 
-* [Microsoft SQL Server](https://www.microsoft.com/nb-no/sql-server/sql-server-downloads)
+### Dev Tools
+Some are optional and some depends on taste
 
-### Azure
-These services are required
-* Azure AD App Registration (also generate a separate client secret for each developer)
-* Subscribtions
-* Application Insight
+* [Visual Studio and/or Visual Studio Code](https://visualstudio.microsoft.com/)
+
+* [Docker for Windows and Docker Compose](docker.com) (Needed for running Sepes in a container locally)
+
+* [Microsoft SQL Server](https://www.microsoft.com/nb-no/sql-server/sql-server-downloads) and SQL Server Management Studio
+
+* [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
+
+* Azure Container Registry (ACR) (Or any other CR)
+    * You can push Sepes as containers here, so that Docker Compose can pull from there when running locally
+
+
 
 
 ## Setup configuration
