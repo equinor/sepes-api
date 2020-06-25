@@ -209,6 +209,11 @@ namespace Sepes.Infrastructure.Service
             // Run validations: (Check if ID is valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
 
+            // Check that study has WbsCode.
+            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
+            {
+                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
+            }
             // TODO: Do check on Sandbox
 
             // Create reference
