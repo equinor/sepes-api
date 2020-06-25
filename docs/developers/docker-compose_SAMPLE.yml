@@ -1,0 +1,26 @@
+version: '3.7'
+services:
+  web:
+    build: ./src/FrontEnd
+    environment:
+      - REACT_APP_SEPES_CLIENTID=<YOUR CLIENT ID>
+      - REACT_APP_SEPES_AUTHORITY=https://login.microsoftonline.com/<TENANT-ID>/
+      - REACT_APP_SEPES_REDIRECT_URI=http://localhost:8080/
+      - REACT_APP_SEPES_BASE_API_URL=http://localhost:8081/
+    ports:
+      - 8080:3000
+  restapi:
+    build: ./src/BackEnd
+    environment:
+      SEPES_Appi_Key: <YOUR APP INSIGHTS KEY>
+      SEPES_HttpOnly: 'true'
+      ClientId: <YOUR CLIENT ID>
+      ClientSecret: 
+      SepesOwner-ConnectionString: Server=<server address>;Uid=<insert user>;Pwd=<insert pw>;Database=sepes;
+      SepesRW-ConnectionString: Server=<server address>;Uid=<insert user>;Pwd=<insert pw>;Database=sepes;
+    ports:
+      - target: 80
+        published: 8081
+        protocol: tcp
+        mode: host
+    
