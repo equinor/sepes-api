@@ -16,6 +16,10 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyDataset> StudyDatasets { get; set; }
 
+        public virtual DbSet<Participant> Participants { get; set; }
+
+        public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             AddPrimaryKeys(modelBuilder);
@@ -28,7 +32,8 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Study>().HasKey(s=> s.Id);
             modelBuilder.Entity<Dataset>().HasKey(s => s.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
-            modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId } );          
+            modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId } );
+            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.Participant });
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -38,6 +43,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(s => s.Sandboxes)
                 .HasForeignKey(s => s.StudyId);
 
+            //STUDY / DATASET RELATION
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)
                 .WithMany(s => s.StudyDatasets)
@@ -47,6 +53,17 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.Dataset)
                 .WithMany(d => d.StudyDatasets)
                 .HasForeignKey(sd => sd.DatasetId);
+
+
+            modelBuilder.Entity<StudyParticipant>()
+          .HasOne(sd => sd.Study)
+          .WithMany(s => s.StudyParticipants)
+          .HasForeignKey(sd => sd.StudyId);
+
+            modelBuilder.Entity<StudyParticipant>()
+                .HasOne(sd => sd.Participant)
+                .WithMany(d => d.StudyParticipants)
+                .HasForeignKey(sd => sd.ParticipantId);
         }
 
 
