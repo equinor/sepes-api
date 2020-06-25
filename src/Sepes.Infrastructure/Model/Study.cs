@@ -6,6 +6,7 @@ namespace Sepes.Infrastructure.Model
     public class Study : UpdateableBaseModel
     {
         [MaxLength(128)]
+        [Required]
         public string Name { get; set; }
         
         public string Description { get; set; }
@@ -14,6 +15,7 @@ namespace Sepes.Infrastructure.Model
         public string WbsCode { get; set; }
 
         [MaxLength(128)]
+        [Required]
         public string Vendor { get; set; }
 
         public bool Restricted { get; set; }
