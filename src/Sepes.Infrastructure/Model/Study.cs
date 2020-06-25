@@ -22,6 +22,8 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
+        public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
+
         public virtual ICollection<Sandbox> Sandboxes { get; set; }
 
         public int? LogoId { get; set; }
@@ -30,12 +32,7 @@ namespace Sepes.Infrastructure.Model
 
     }
 
-    public class StudyDataset
-    {
-        public int StudyId { get; set; }
-        public virtual Study Study { get; set; }
 
-        public int DatasetId { get; set; }
-        public virtual Dataset Dataset { get; set; }
-    }
+
+
 }
