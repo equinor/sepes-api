@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.AspNetCore.Http;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,6 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> GetStudyByIdAsync(int id);
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
+
+        //Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo);
 
         Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
 
@@ -30,6 +34,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
 
+        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo, string connectionString);
+
+        Task<byte[]> GetLogoAsync(int id, string connectionString);
 
         /// <summary>
         /// Makes changes to the meta data of a study.

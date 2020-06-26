@@ -11,18 +11,17 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Http;
+
 
 namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
-    {
-       
-
+    {      
         public StudyService(SepesDbContext db, IMapper mapper)
             :base(db, mapper)
-
         {
-         
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
@@ -59,7 +58,16 @@ namespace Sepes.Infrastructure.Service
             var newStudyId = await Add(newStudyDbModel);       
 
             return await GetStudyByIdAsync(newStudyId);
-        }               
+        }
+
+      //public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo)
+      //{
+      //    var newStudyDbModel = _mapper.Map<Study>(newStudy);
+      // Not Finished!!
+      //    var newStudyId = await Add(newStudyDbModel);
+      //
+      //    return await GetStudyByIdAsync(newStudyId);
+      //}
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
@@ -242,6 +250,39 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
+        }
+
+        public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo, string connectionString)
+        {
+            var blobStorage = new AzureBlobStorageService(connectionString);
+            var fileName = blobStorage.UploadBlob(studyLogo);
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            string oldFileName = studyFromDb.LogoUrl;
+
+            if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
+            {
+                studyFromDb.LogoUrl = fileName;
+            }
+
+            Validate(studyFromDb);
+
+            await _db.SaveChangesAsync();
+
+            if (!String.IsNullOrWhiteSpace(oldFileName))
+            {
+            _ = blobStorage.DeleteBlob(oldFileName);
+            }
+
+            return await GetStudyByIdAsync(studyFromDb.Id);
+        }
+
+        public async Task<byte[]> GetLogoAsync(int id, string connectionString)
+        {
+            var blobStorage = new AzureBlobStorageService(connectionString);
+            var study = await GetStudyOrThrowAsync(id);
+            string logoUrl = study.LogoUrl;
+            var logo = blobStorage.GetImageFromBlobAsync(logoUrl);
+            return await logo;
         }
     }
 }

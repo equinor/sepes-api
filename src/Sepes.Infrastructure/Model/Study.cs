@@ -20,14 +20,11 @@ namespace Sepes.Infrastructure.Model
 
         public bool Restricted { get; set; }
 
+        public string LogoUrl { get; set; }
+
         public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
         public virtual ICollection<Sandbox> Sandboxes { get; set; }
-
-        public int? LogoId { get; set; }
-
-        public StudyLogo Logo { get; set; }
-
     }
 
     public class StudyDataset
