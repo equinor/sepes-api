@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
         private readonly string connectionString;
         private readonly string containerName = "logos";
 
-        // Enum not in use yet..
+        // Enum not in use yet, but could possibly be used to define allowed image formats and dimensions.
         public enum ImageFormat
         {
             bmp,

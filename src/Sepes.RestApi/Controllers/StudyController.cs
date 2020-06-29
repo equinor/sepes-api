@@ -132,6 +132,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{id}/logo")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddLogo(int id, IFormFile studyLogo)
@@ -144,7 +145,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{id}/logo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
-        //[Produces("img/png")]
+        // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int id)
         {
             string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
