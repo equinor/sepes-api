@@ -74,7 +74,6 @@ namespace Sepes.RestApi.Controller
 
         //PUT localhost:8080/api/studies/1/details
         [HttpPut("{id}/details")]
-        [HttpPut("{id}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyDetailsAsync(int id, StudyDto study)
         {
