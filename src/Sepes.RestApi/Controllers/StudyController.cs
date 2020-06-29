@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
+using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -17,6 +20,7 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
+
 
         public StudyController(IStudyService studyService)
         {
@@ -45,7 +49,16 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
+      //[HttpPost()]
+      //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
+      //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
+      //{
+      //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
+      //    return new JsonResult(study);
+      //}
+
         [HttpPut("{id}")]
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyAsync(int id, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
@@ -61,6 +74,8 @@ namespace Sepes.RestApi.Controller
 
         //PUT localhost:8080/api/studies/1/details
         [HttpPut("{id}/details")]
+        [HttpPut("{id}/details")]
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyDetailsAsync(int id, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(id, study);
@@ -75,6 +90,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPut("{id}/sandboxes")]
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddSandboxAsync(int id, SandboxDto newSandbox)
         {
             var updatedStudy = await _studyService.AddSandboxAsync(id, newSandbox);
@@ -107,6 +123,7 @@ namespace Sepes.RestApi.Controller
         //TODO:FIX
         // Should this be addDataset or AddCustomDataSet?
         [HttpPut("{id}/datasets/studyspecific")]
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddDataSetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset)
         {
             //TODO: Perform checks on dataset?
@@ -114,6 +131,52 @@ namespace Sepes.RestApi.Controller
             var updatedStudy = await _studyService.AddCustomDatasetAsync(id, datasetId, newDataset);
             return new JsonResult(updatedStudy);
         }
+
+        // For local development, this method requires a running instance of Azure Storage Emulator
+        [HttpPut("{id}/logo")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> AddLogo(int id, [FromForm(Name = "image")] IFormFile studyLogo)
+        {
+            var updatedStudy = await _studyService.AddLogoAsync(id, studyLogo);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpGet("{id}/logo")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Produces(MediaTypeNames.Application.Octet)]
+        // For local development, this method requires a running instance of Azure Storage Emulator
+        public async Task<IActionResult> GetLogo(int id)
+        {
+            byte[] logo = await _studyService.GetLogoAsync(id);
+            var studyDtoFromDb = await _studyService.GetStudyByIdAsync(id);
+            string fileType = studyDtoFromDb.LogoUrl.Split('.').Last();
+            if (fileType.Equals("jpg"))
+            {
+                fileType = "jpeg";
+            }
+            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{id}.{fileType}");
+            //return new ObjectResult(logo);
+        }
+
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<ActionResult<StudyLogo>> AddStudyLogo(StudyLogo studyLogo)
+        //{
+        //    //var blob = new UploadToBlobStorage();
+        //    //blob.UploadBlob(piece.ImageBlob, Configuration["ConnectionStrings:BlobConnection"]);
+        //    return CreatedAtAction("GetPiece", new { id = piece.Id }, piece);
+        //}
+
+        //// POST: api/Pieces/Blob
+        //[HttpPost("Blob")]
+        //[Authorize]
+        ////[Consumes("multipart/form-data")]
+        //public string PostBlob([FromForm(Name = "image")] IFormFile image)
+        //{
+        //    var uploadToBlobStorage = new UploadToBlobStorage();
+        //    var fileName = uploadToBlobStorage.UploadBlob(image, Configuration["ConnectionStrings:BlobConnection"]);
+        //    return fileName;
+        //}
 
         [HttpPut("{id}/participants")]
         public async Task<IActionResult> AddParticipantAsync(int id, StudyParticipantDto participant)
