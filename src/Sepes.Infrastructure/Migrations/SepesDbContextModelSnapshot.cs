@@ -52,6 +52,46 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("Datasets");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Participant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("EmailAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Participants");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
                 {
                     b.Property<int>("Id")
@@ -191,6 +231,32 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("StudyLogo");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.StudyParticipant", b =>
+                {
+                    b.Property<int>("StudyId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ParticipantId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleName")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("StudyId", "ParticipantId", "RoleName");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("StudyParticipants");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
                 {
                     b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
@@ -217,6 +283,21 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
                         .WithMany("StudyDatasets")
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.StudyParticipant", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Participant", "Participant")
+                        .WithMany("StudyParticipants")
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
+                        .WithMany("StudyParticipants")
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

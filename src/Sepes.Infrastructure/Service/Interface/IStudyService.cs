@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -29,6 +30,10 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> RemoveDatasetAsync(int id, int datasetId);
 
         Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
+
+        Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant);
+
+        Task<StudyDto> RemoveParticipantAsync(int id, int participantId);
 
 
         /// <summary>

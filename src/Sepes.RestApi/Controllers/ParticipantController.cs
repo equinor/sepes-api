@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-    [Route("api/participant")]
+    [Route("api/participants")]
     [ApiController]
-    [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class ParticipantController : ControllerBase
     {     
@@ -19,7 +18,7 @@ namespace Sepes.RestApi.Controller
             _participantService = participantService;
         }
 
-        //Get list of datasets lookup items
+        //Get list of lookup items
         [HttpGet]
         public async Task<IActionResult> GetLookupAsync()
         {
