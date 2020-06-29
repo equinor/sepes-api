@@ -34,9 +34,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
 
-        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo, string connectionString);
+        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
-        Task<byte[]> GetLogoAsync(int id, string connectionString);
+        Task<byte[]> GetLogoAsync(int id);
 
         /// <summary>
         /// Makes changes to the meta data of a study.
