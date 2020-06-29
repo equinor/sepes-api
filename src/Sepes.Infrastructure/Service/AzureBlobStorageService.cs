@@ -22,16 +22,15 @@ namespace Sepes.Infrastructure.Service
         private readonly string connectionString;
         private readonly string containerName = "logos";
 
-        // Enum not in use yet, but could possibly be used to define allowed image formats and dimensions.
         public enum ImageFormat
         {
             bmp,
+            jpg,
             jpeg,
-            gif,
-            tiff,
-            png,
-            unknown
+            png
         }
+
+        string format = ImageFormat.png.ToString();
 
         public AzureBlobStorageService(string connectionString)
         {
@@ -41,7 +40,7 @@ namespace Sepes.Infrastructure.Service
         {
             if (!FileIsCorrectImageFormat(blob))
             {
-                throw new ArgumentException("Blob has invalid filename or is not of type png or jpg.");
+                throw new ArgumentException("Blob has invalid filename or is not of type png, jpg or bmp.");
             }
             string suppliedFileName = blob.FileName;
             BlobContainerClient blobContainerClient = new BlobContainerClient(this.connectionString, containerName);
@@ -71,7 +70,12 @@ namespace Sepes.Infrastructure.Service
         {
             string suppliedFileName = file.FileName;
             string fileType = suppliedFileName.Split('.').Last();
-            if (!String.IsNullOrWhiteSpace(fileType) && (fileType.Equals("png") || fileType.Equals("tiff") || fileType.Equals("jpeg") || fileType.Equals("jpg") || fileType.Equals("bmp")))
+            if (!String.IsNullOrWhiteSpace(fileType) 
+                && (fileType.Equals(ImageFormat.png.ToString()) 
+                || fileType.Equals(ImageFormat.jpeg.ToString()) 
+                || fileType.Equals(ImageFormat.jpg.ToString()) 
+                || fileType.Equals(ImageFormat.bmp.ToString()))
+                )
             {
                 return true;
             }

@@ -29,6 +29,7 @@ namespace Sepes.Infrastructure.Service
             List<Study> studiesFromDb;
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
+                // TODO: Add authorization
                 //if (!(await UserCanSeeRestrictedStudies()))
                 //{
                 //    //TODO: THROW EXCEPTION THAT CAUSES 401
