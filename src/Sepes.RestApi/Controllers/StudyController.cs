@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
-using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
@@ -21,12 +20,11 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
-        private readonly IConfiguration _configuration;
 
-        public StudyController(IStudyService studyService, IConfiguration configuration)
+
+        public StudyController(IStudyService studyService)
         {
             _studyService = studyService;
-            _configuration = configuration;
         }
 
         //Get list of studies
@@ -137,8 +135,7 @@ namespace Sepes.RestApi.Controller
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddLogo(int id, [FromForm(Name = "image")] IFormFile studyLogo)
         {
-            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
-            var updatedStudy = await _studyService.AddLogoAsync(id, studyLogo, storageConnectionString);
+            var updatedStudy = await _studyService.AddLogoAsync(id, studyLogo);
             return new JsonResult(updatedStudy);
         }
 
@@ -148,8 +145,7 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int id)
         {
-            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
-            byte[] logo = await _studyService.GetLogoAsync(id, storageConnectionString);
+            byte[] logo = await _studyService.GetLogoAsync(id);
             var studyDtoFromDb = await _studyService.GetStudyByIdAsync(id);
             string fileType = studyDtoFromDb.LogoUrl.Split('.').Last();
             if (fileType.Equals("jpg"))
