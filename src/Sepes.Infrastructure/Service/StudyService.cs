@@ -26,6 +26,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
         {
+            List<Study> studiesFromDb;
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
                 //if (!(await UserCanSeeRestrictedStudies()))
@@ -36,9 +37,13 @@ namespace Sepes.Infrastructure.Service
                 //{
                 //    // Get restricted studies 
                 //}
+                studiesFromDb = await _db.Studies.ToListAsync();
+            }
+            else
+            {
+                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
 
-            var studiesFromDb = await _db.Studies.ToListAsync();
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
             return studiesDtos;
         }            
