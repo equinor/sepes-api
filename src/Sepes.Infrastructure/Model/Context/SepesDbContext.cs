@@ -29,11 +29,11 @@ namespace Sepes.Infrastructure.Model.Context
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Study>().HasKey(s=> s.Id);
+            modelBuilder.Entity<Study>().HasKey(s => s.Id);
             modelBuilder.Entity<Dataset>().HasKey(s => s.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
-            modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId } );
-            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.Participant });
+            modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
+            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.ParticipantId, sd.RoleName });
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Model.Context
         }
 
 
-            void AddDefaultValues(ModelBuilder modelBuilder)
+        void AddDefaultValues(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>()
             .Property(b => b.Id)
@@ -104,6 +104,18 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Sandbox>()
               .Property(b => b.Updated)
               .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<Participant>()
+            .Property(b => b.Created)
+            .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<Participant>()
+              .Property(b => b.Updated)
+              .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<StudyParticipant>()
+        .Property(b => b.Created)
+        .HasDefaultValueSql("getutcdate()");
         }
     }
 }

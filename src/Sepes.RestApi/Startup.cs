@@ -118,6 +118,7 @@ namespace Sepes.RestApi
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
             services.AddTransient<IDatasetService, Infrastructure.Service.DatasetService>();
+            services.AddTransient<IParticipantService, Infrastructure.Service.ParticipantService>();
             services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
 
 

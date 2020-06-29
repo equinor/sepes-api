@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto
 {
-    public class ParticipantListItemDto : UpdateableBaseDto
+    public class ParticipantListItemDto : LookupBaseDto
     {
-        public string Name { get; set; }
         public string Description { get; set; } 
 
     }

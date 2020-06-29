@@ -34,36 +34,31 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync()
         {
-            var datasetsFromDb = await _db.Part.ToListAsync();
-            var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
+            var participantsFromDb = await _db.Participants.ToListAsync();
+            var participantDtos = _mapper.Map<IEnumerable<ParticipantListItemDto>>(participantsFromDb);
 
-            return dataasetsDtos;  
+            return participantDtos;  
         }
 
         public async Task<ParticipantDto> GetByIdAsync(int id)
         {
-            var datasetFromDb = await GetDatasetOrThrowAsync(id);
+            var participantFromDb = await GetOrThrowAsync(id);
 
-            var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
+            var participantDto = _mapper.Map<ParticipantDto>(participantFromDb);
 
-            return datasetDto;
+            return participantDto;
         } 
         
-        async Task<Dataset> GetParticipantOrThrowAsync(int id)
+        async Task<Participant> GetOrThrowAsync(int id)
         {
-            var datasetFromDb = await _db.Datasets.Include(s => s. StudyDatasets).ThenInclude(sd=> sd.Study).FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.Participants.FirstOrDefaultAsync(s => s.Id == id);
 
-            if (datasetFromDb == null)
+            if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", id);
+                throw NotFoundException.CreateForIdentity("Participant", id);
             }
 
-            return datasetFromDb;
+            return entityFromDb;
         }
-
-        //public Task<StudyDto> UpdateDatasetAsync(int id, DatasetDto datasetToUpdate)
-        //{
-        //    throw new System.NotImplementedException();
-        //}
     }
 }

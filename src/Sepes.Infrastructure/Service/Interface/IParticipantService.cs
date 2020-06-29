@@ -5,11 +5,8 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IParticipantService
-    {
-        
+    {       
         Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync();
-        Task<ParticipantDto> GetByIdAsync(int id);
-
-  
+        Task<ParticipantDto> GetByIdAsync(int id);  
     }
 }
