@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.AspNetCore.Http;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -12,6 +14,8 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> GetStudyByIdAsync(int id);
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
+
+        //Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo);
 
         Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
 
@@ -31,6 +35,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
 
+        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
+
+        Task<byte[]> GetLogoAsync(int id);
         Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant);
 
         Task<StudyDto> RemoveParticipantAsync(int id, int participantId);
