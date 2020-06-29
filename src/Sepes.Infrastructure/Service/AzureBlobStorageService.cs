@@ -30,8 +30,6 @@ namespace Sepes.Infrastructure.Service
             png
         }
 
-        string format = ImageFormat.png.ToString();
-
         public AzureBlobStorageService(string connectionString)
         {
             this.connectionString = connectionString;
