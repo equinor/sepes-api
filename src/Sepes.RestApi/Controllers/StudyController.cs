@@ -135,7 +135,7 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{id}/logo")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AddLogo(int id, IFormFile studyLogo)
+        public async Task<IActionResult> AddLogo(int id, [FromForm(Name = "image")] IFormFile studyLogo)
         {
             string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
             var updatedStudy = await _studyService.AddLogoAsync(id, studyLogo, storageConnectionString);
