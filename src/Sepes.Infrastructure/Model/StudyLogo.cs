@@ -8,6 +8,7 @@ namespace Sepes.Infrastructure.Model
     {
         public byte[] Content { get; set; }
 
-        public Study Study { get; set; }
+        public int StudyId { get; set; }
+        public virtual Study Study { get; set; }
     }
 }

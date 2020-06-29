@@ -1,34 +1,39 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Http;
+
 
 namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-       
-
-        public StudyService(SepesDbContext db, IMapper mapper)
+        private readonly IConfiguration _configuration;
+        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration)
             :base(db, mapper)
-
         {
-         
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
         {
+            List<Study> studiesFromDb;
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
+                // TODO: Add authorization
                 //if (!(await UserCanSeeRestrictedStudies()))
                 //{
                 //    //TODO: THROW EXCEPTION THAT CAUSES 401
@@ -37,9 +42,13 @@ namespace Sepes.Infrastructure.Service
                 //{
                 //    // Get restricted studies 
                 //}
+                studiesFromDb = await _db.Studies.ToListAsync();
+            }
+            else
+            {
+                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
 
-            var studiesFromDb = await _db.Studies.ToListAsync();
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
             return studiesDtos;
         }            
@@ -59,7 +68,16 @@ namespace Sepes.Infrastructure.Service
             var newStudyId = await Add(newStudyDbModel);       
 
             return await GetStudyByIdAsync(newStudyId);
-        }               
+        }
+
+      //public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo)
+      //{
+      //    var newStudyDbModel = _mapper.Map<Study>(newStudy);
+      // Not Finished!!
+      //    var newStudyId = await Add(newStudyDbModel);
+      //
+      //    return await GetStudyByIdAsync(newStudyId);
+      //}
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
@@ -247,6 +265,40 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
+        }
+
+        public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
+        {
+            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+            var blobStorage = new AzureBlobStorageService(storageConnectionString);
+            var fileName = blobStorage.UploadBlob(studyLogo);
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            string oldFileName = studyFromDb.LogoUrl;
+
+            if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
+            {
+                studyFromDb.LogoUrl = fileName;
+            }
+
+            Validate(studyFromDb);
+            await _db.SaveChangesAsync();
+
+            if (!String.IsNullOrWhiteSpace(oldFileName))
+            {
+            _ = blobStorage.DeleteBlob(oldFileName);
+            }
+
+            return await GetStudyByIdAsync(studyFromDb.Id);
+        }
+
+        public async Task<byte[]> GetLogoAsync(int id)
+        {
+            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+            var blobStorage = new AzureBlobStorageService(storageConnectionString);
+            var study = await GetStudyOrThrowAsync(id);
+            string logoUrl = study.LogoUrl;
+            var logo = blobStorage.GetImageFromBlobAsync(logoUrl);
+            return await logo;
         }
     }
 }
