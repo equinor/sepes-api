@@ -56,9 +56,9 @@ namespace Sepes.Infrastructure.Model.Context
 
 
             modelBuilder.Entity<StudyParticipant>()
-          .HasOne(sd => sd.Study)
-          .WithMany(s => s.StudyParticipants)
-          .HasForeignKey(sd => sd.StudyId);
+                .HasOne(sd => sd.Study)
+                .WithMany(s => s.StudyParticipants)
+                .HasForeignKey(sd => sd.StudyId);
 
             modelBuilder.Entity<StudyParticipant>()
                 .HasOne(sd => sd.Participant)

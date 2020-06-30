@@ -10,6 +10,7 @@ namespace Sepes.Infrastructure.Model.Automapper
         {
             //STUDY
             CreateMap<Study, StudyListItemDto>();
+
             CreateMap<Study, StudyDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
@@ -20,20 +21,26 @@ namespace Sepes.Infrastructure.Model.Automapper
             //DATASET
             CreateMap<Dataset, DatasetDto>()
                 .ForMember(dest => dest.Studies,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()));
-            CreateMap<DatasetDto, Dataset>();
+                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()))
+                .ReverseMap();
+
             CreateMap<Dataset, DatasetListItemDto>();
 
+            CreateMap<Dataset, StudySpecificDatasetDto>()
+                .ForMember(dest => dest.StudyId,
+                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
+                .ReverseMap();
+
             //SANDBOX
-            CreateMap<Sandbox, SandboxDto>();
-            CreateMap<SandboxDto, Sandbox>();
+            CreateMap<Sandbox, SandboxDto>()
+                .ReverseMap();
 
             //STUDY PARTICIPANTS
-            CreateMap<Participant, ParticipantDto>();
+            CreateMap<Participant, ParticipantDto>()
+                .ReverseMap();
             CreateMap<Participant, ParticipantListItemDto>();
 
             CreateMap<ParticipantDto, Participant>();
-
         }
     }
 }
