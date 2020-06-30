@@ -6,7 +6,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
-
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -34,7 +34,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
-            var datasetsFromDb = await _db.Datasets.ToListAsync();
+            var datasetsFromDb = await _db.Datasets
+                .Where(ds => ds.StudyID == null)
+                .ToListAsync();
             var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
 
             return dataasetsDtos;  
@@ -51,7 +53,11 @@ namespace Sepes.Infrastructure.Service
         
         async Task<Dataset> GetDatasetOrThrowAsync(int id)
         {
-            var datasetFromDb = await _db.Datasets.Include(s => s. StudyDatasets).ThenInclude(sd=> sd.Study).FirstOrDefaultAsync(s => s.Id == id);
+            var datasetFromDb = await _db.Datasets
+                .Where(ds => ds.StudyID == null)
+                .Include(s => s. StudyDatasets)
+                .ThenInclude(sd=> sd.Study)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (datasetFromDb == null)
             {
