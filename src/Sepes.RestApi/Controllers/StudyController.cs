@@ -57,14 +57,6 @@ namespace Sepes.RestApi.Controller
       //    return new JsonResult(study);
       //}
 
-        [HttpPut("{studyId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyAsync(int studyId, StudyDto study)
-        {
-            var updatedStudy = await _studyService.UpdateStudyAsync(studyId, study);
-            return new JsonResult(updatedStudy);
-        }
-
         [HttpDelete("{studyId}")]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
@@ -117,15 +109,12 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-        //TODO:FIX
-        // Should this be addDataset or AddCustomDataSet?
-        [HttpPut("{studyId}/datasets/studyspecific")]
+        [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
             //TODO: Perform checks on dataset?
-            //TODO: Post custom dataset
-            var updatedStudy = await _studyService.AddCustomDatasetAsync(studyId, datasetId, newDataset);
+            var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
         }
 
