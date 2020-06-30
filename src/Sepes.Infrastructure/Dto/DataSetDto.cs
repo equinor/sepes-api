@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-
-namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto
 {
-    public class DatasetDto : UpdateableBaseDto
+    public class DataSetDto : UpdateableBaseDto
     {
         public string Name { get; set; }
+        public int StudyId { get; set; }
 
-        public ICollection<StudyDto> Studies { get; set; }
+
     }
 }
