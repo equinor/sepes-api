@@ -32,6 +32,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Participant, ParticipantDto>();
             CreateMap<Participant, ParticipantListItemDto>();
 
+            CreateMap<ParticipantDto, Participant>();
+
         }
     }
 }
