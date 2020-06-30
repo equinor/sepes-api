@@ -14,11 +14,6 @@ namespace Sepes.Infrastructure.Service
 {
     class AzureBlobStorageService
     {
-      // protected readonly string devUriSchema = "http://127.0.0.1:10000/<account-name>/<resource-path>";
-      // protected readonly string devUri = "http://127.0.0.1:10000/devstoreaccount1/logos";
-      // protected readonly string devEquinorUri = "http://127.0.0.1:10000/devstoreaccount1/logos/equinor_small.png";
-      // protected readonly string prodUriSchema = "<http|https>://<account-name>.<service-name>.core.windows.net/<resource-path>";
-      // protected readonly string StorageConnectionString = "UseDevelopmentStorage=true";
         private readonly string connectionString;
         private readonly string containerName = "logos";
 
