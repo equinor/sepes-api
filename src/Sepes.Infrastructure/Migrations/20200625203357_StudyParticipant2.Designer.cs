@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sepes.Infrastructure.Model.Context;
 
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
-    partial class SepesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200625203357_StudyParticipant2")]
+    partial class StudyParticipant2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,8 +151,8 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LogoUrl")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("LogoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -179,6 +181,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("LogoId")
+                        .IsUnique()
+                        .HasFilter("[LogoId] IS NOT NULL");
 
                     b.ToTable("Studies");
                 });
@@ -260,6 +266,13 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.StudyLogo", "Logo")
+                        .WithOne("Study")
+                        .HasForeignKey("Sepes.Infrastructure.Model.Study", "LogoId");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyDataset", b =>

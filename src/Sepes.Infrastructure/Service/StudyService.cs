@@ -164,6 +164,8 @@ namespace Sepes.Infrastructure.Service
                 .Include(s => s.StudyDatasets)
                 .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.Sandboxes)
+                .Include(s => s.StudyParticipants)
+                     .ThenInclude(sp => sp.Participant)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (studyFromDb == null)
@@ -265,6 +267,52 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
+        }
+
+        public async Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant)
+        {
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participant.Id);
+
+            if (participantFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Participant", participant.Id);
+            }
+
+            //Check that association does not allready exist
+
+            await VerifyRoleOrThrowAsync(participant.Role);
+
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participant.Id, RoleName = participant.Role };
+            await _db.StudyParticipants.AddAsync(studyParticipant);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
+        }
+
+        public async Task VerifyRoleOrThrowAsync(string roleName)
+        {
+            var roleExists = false;
+
+            var roleIsPermittedForParticipant = false;
+
+        }
+
+        public async Task<StudyDto> RemoveParticipantAsync(int id, int participantId)
+        {          
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
+
+            if (participantFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Participant", participantId);
+            }
+          
+            studyFromDb.StudyParticipants.Remove(participantFromDb);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
         }
 
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
