@@ -124,7 +124,16 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
         {
             //TODO: VALIDATION
+            //Delete logo from Azure Blob Storage before deleting study.
             var studyFromDb = await GetStudyOrThrowAsync(id);
+            string logoUrl = studyFromDb.LogoUrl;
+            if (!String.IsNullOrWhiteSpace(logoUrl))
+            {
+                string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+                var blobStorage = new AzureBlobStorageService(storageConnectionString);
+                _ = blobStorage.DeleteBlob(logoUrl);
+            }
+            //Delete study
             _db.Studies.Remove(studyFromDb);
             await _db.SaveChangesAsync();
             return await GetStudiesAsync();
