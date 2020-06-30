@@ -108,26 +108,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        //TODO: IMPLEMENT!!
-        public async Task<StudyDto> UpdateStudyAsync(int id, StudyDto updatedStudy)
-        {
-            PerformUsualTestsForPostedStudy(id, updatedStudy);
-
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-
-            //Validate
-            //If okay: save, if not: return message
-
-            await _db.SaveChangesAsync();
-
-            //TODO: Handle update
-            //TODO: HANDLE DATA SETS
-            //TODO: HANDLE SANDBOXES
-            //TODO: HANDLE LOCK/UNLOCK         
-
-            throw new System.NotImplementedException();
-        }
-
         void PerformUsualTestsForPostedStudy(int id, StudyDto updatedStudy)
         {
             if (id <= 0)

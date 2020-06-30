@@ -57,14 +57,6 @@ namespace Sepes.RestApi.Controller
       //    return new JsonResult(study);
       //}
 
-        [HttpPut("{studyId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyAsync(int studyId, StudyDto study)
-        {
-            var updatedStudy = await _studyService.UpdateStudyAsync(studyId, study);
-            return new JsonResult(updatedStudy);
-        }
-
         [HttpDelete("{studyId}")]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
