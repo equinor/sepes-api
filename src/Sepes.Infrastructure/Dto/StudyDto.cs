@@ -18,5 +18,8 @@ namespace Sepes.Infrastructure.Dto
         public ICollection<DatasetDto> Datasets { get; set; }
 
         public ICollection<SandboxDto> Sandboxes { get; set; }
+
+        public ICollection<ParticipantDto> Participants { get; set; }
+        
     }
 }

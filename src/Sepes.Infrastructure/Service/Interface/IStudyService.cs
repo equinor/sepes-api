@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -35,6 +36,10 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
         Task<byte[]> GetLogoAsync(int id);
+        Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant);
+
+        Task<StudyDto> RemoveParticipantAsync(int id, int participantId);
+
 
         /// <summary>
         /// Makes changes to the meta data of a study.

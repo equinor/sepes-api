@@ -4,11 +4,12 @@ using System.Text;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class StudyLogo : UpdateableBaseModel
+    public class StudyDataset
     {
-        public byte[] Content { get; set; }
-
         public int StudyId { get; set; }
         public virtual Study Study { get; set; }
+
+        public int DatasetId { get; set; }
+        public virtual Dataset Dataset { get; set; }
     }
 }

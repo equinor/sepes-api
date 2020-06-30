@@ -29,22 +29,21 @@ namespace Sepes.RestApi.Controller
 
         //Get list of studies
         [HttpGet]
-        public async Task<IActionResult> GetStudies([FromQuery] bool? includeRestricted)
+        public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? includeRestricted)
         {
             var studies = await _studyService.GetStudiesAsync(includeRestricted);
             return new JsonResult(studies);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetStudy(int id)
+        public async Task<IActionResult> GetStudyAsync(int id)
         {
             var study = await _studyService.GetStudyByIdAsync(id);
             return new JsonResult(study);
         }
 
         [HttpPost()]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateStudy(StudyDto newStudy)
+        public async Task<IActionResult> CreateStudyAsync(StudyDto newStudy)
         {
             var study = await _studyService.CreateStudyAsync(newStudy);
             return new JsonResult(study);
@@ -52,14 +51,14 @@ namespace Sepes.RestApi.Controller
 
         [HttpPut("{id}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
+        public async Task<IActionResult> UpdateStudyAsync(int id, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStudy(int id)
+        public async Task<IActionResult> DeleteStudyAsync(int id)
         {
             var study = await _studyService.DeleteStudyAsync(id);
             return new JsonResult(study);
@@ -68,7 +67,7 @@ namespace Sepes.RestApi.Controller
         //PUT localhost:8080/api/studies/1/details
         [HttpPut("{id}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyDetails(int id, StudyDto study)
+        public async Task<IActionResult> UpdateStudyDetailsAsync(int id, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(id, study);
             return new JsonResult(updatedStudy);
@@ -83,35 +82,34 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost("{id}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddSandbox(int id, SandboxDto newSandbox)
+        public async Task<IActionResult> AddSandboxAsync(int id, SandboxDto newSandbox)
         {
             var updatedStudy = await _studyService.AddSandboxAsync(id, newSandbox);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{id}/sandboxes/{sandboxId}")]
-        public async Task<IActionResult> RemoveSandbox(int id, int sandboxId)
+        public async Task<IActionResult> RemoveSandboxAsync(int id, int sandboxId)
         {
             var updatedStudy = await _studyService.RemoveSandboxAsync(id, sandboxId);
             return new JsonResult(updatedStudy);
         }
 
         [HttpPut("{id}/datasets/{datasetId}")]
-        public async Task<IActionResult> AddDataSet(int id, int datasetId)
+        public async Task<IActionResult> AddDataSetAsync(int id, int datasetId)
         {
             var updatedStudy = await _studyService.AddDatasetAsync(id, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{id}/datasets/{datasetId}")]
-        public async Task<IActionResult> RemoveDataSet(int id, int datasetId)
+        public async Task<IActionResult> RemoveDataSetAsync(int id, int datasetId)
         {
             var updatedStudy = await _studyService.RemoveDatasetAsync(id, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         //TODO:FIX
-        // Should this be addDataset or AddCustomDataSet?
         [HttpPost("{id}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddStudySpecificDataSet(int id, StudySpecificDatasetDto newDataset)
@@ -146,6 +144,40 @@ namespace Sepes.RestApi.Controller
             }
             return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{id}.{fileType}");
             //return new ObjectResult(logo);
+        }
+
+        //[HttpPost]
+        //[Authorize]
+        //public async Task<ActionResult<StudyLogo>> AddStudyLogo(StudyLogo studyLogo)
+        //{
+        //    //var blob = new UploadToBlobStorage();
+        //    //blob.UploadBlob(piece.ImageBlob, Configuration["ConnectionStrings:BlobConnection"]);
+        //    return CreatedAtAction("GetPiece", new { id = piece.Id }, piece);
+        //}
+
+        //// POST: api/Pieces/Blob
+        //[HttpPost("Blob")]
+        //[Authorize]
+        ////[Consumes("multipart/form-data")]
+        //public string PostBlob([FromForm(Name = "image")] IFormFile image)
+        //{
+        //    var uploadToBlobStorage = new UploadToBlobStorage();
+        //    var fileName = uploadToBlobStorage.UploadBlob(image, Configuration["ConnectionStrings:BlobConnection"]);
+        //    return fileName;
+        //}
+
+        [HttpPut("{id}/participants")]
+        public async Task<IActionResult> AddParticipantAsync(int id, StudyParticipantDto participant)
+        {
+            var updatedStudy = await _studyService.AddParticipantAsync(id, participant);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpDelete("{id}/participants/{participantId}")]
+        public async Task<IActionResult> RemoveParticipantAsync(int id, int participantId)
+        {
+            var updatedStudy = await _studyService.RemoveParticipantAsync(id, participantId);
+            return new JsonResult(updatedStudy);
         }
 
         //[HttpPost]
