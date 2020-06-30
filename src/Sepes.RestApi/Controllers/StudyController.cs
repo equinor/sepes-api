@@ -35,10 +35,10 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(studies);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetStudyAsync(int id)
+        [HttpGet("{studyId}")]
+        public async Task<IActionResult> GetStudyAsync(int studyId)
         {
-            var study = await _studyService.GetStudyByIdAsync(id);
+            var study = await _studyService.GetStudyByIdAsync(studyId);
             return new JsonResult(study);
         }
 
@@ -49,100 +49,108 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
-        [HttpPut("{id}")]
+      //[HttpPost()]
+      //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
+      //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
+      //{
+      //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
+      //    return new JsonResult(study);
+      //}
+
+        [HttpPut("{studyId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyAsync(int id, StudyDto study)
+        public async Task<IActionResult> UpdateStudyAsync(int studyId, StudyDto study)
         {
-            var updatedStudy = await _studyService.UpdateStudyAsync(id, study);
+            var updatedStudy = await _studyService.UpdateStudyAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStudyAsync(int id)
+        [HttpDelete("{studyId}")]
+        public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            var study = await _studyService.DeleteStudyAsync(id);
+            var study = await _studyService.DeleteStudyAsync(studyId);
             return new JsonResult(study);
         }
 
         //PUT localhost:8080/api/studies/1/details
-        [HttpPut("{id}/details")]
+        [HttpPut("{studyId}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyDetailsAsync(int id, StudyDto study)
+        public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
-            var updatedStudy = await _studyService.UpdateStudyDetailsAsync(id, study);
+            var updatedStudy = await _studyService.UpdateStudyDetailsAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpGet("{id}/sandboxes")]
-        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int id)
+        [HttpGet("{studyId}/sandboxes")]
+        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var sandboxes = await _studyService.GetSandboxesByStudyIdAsync(id);
+            var sandboxes = await _studyService.GetSandboxesByStudyIdAsync(studyId);
             return new JsonResult(sandboxes);
         }
 
-        [HttpPost("{id}/sandboxes")]
+        [HttpPut("{studyId}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddSandboxAsync(int id, SandboxDto newSandbox)
+        public async Task<IActionResult> AddSandboxAsync(int studyId, SandboxDto newSandbox)
         {
-            var updatedStudy = await _studyService.AddSandboxAsync(id, newSandbox);
+            var updatedStudy = await _studyService.AddSandboxAsync(studyId, newSandbox);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpDelete("{id}/sandboxes/{sandboxId}")]
-        public async Task<IActionResult> RemoveSandboxAsync(int id, int sandboxId)
+        [HttpDelete("{studyId}/sandboxes/{sandboxId}")]
+        public async Task<IActionResult> RemoveSandboxAsync(int studyId, int sandboxId)
         {
-            var updatedStudy = await _studyService.RemoveSandboxAsync(id, sandboxId);
+            var updatedStudy = await _studyService.RemoveSandboxAsync(studyId, sandboxId);
+            return new JsonResult(updatedStudy);
+        }     
+
+        [HttpPut("{studyId}/datasets/{datasetId}")]
+        public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
+        {
+            var updatedStudy = await _studyService.AddDatasetAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpPut("{id}/datasets/{datasetId}")]
-        public async Task<IActionResult> AddDataSetAsync(int id, int datasetId)
+        [HttpDelete("{studyId}/datasets/{datasetId}")]
+        public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyService.AddDatasetAsync(id, datasetId);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpDelete("{id}/datasets/{datasetId}")]
-        public async Task<IActionResult> RemoveDataSetAsync(int id, int datasetId)
-        {
-            var updatedStudy = await _studyService.RemoveDatasetAsync(id, datasetId);
+            var updatedStudy = await _studyService.RemoveDatasetAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         //TODO:FIX
-        [HttpPost("{id}/datasets/studyspecific")]
+        [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddStudySpecificDataSet(int id, StudySpecificDatasetDto newDataset)
+        public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
             //TODO: Perform checks on dataset?
             //TODO: Post custom dataset
-            var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(id, newDataset);
+            var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
         }
 
         // For local development, this method requires a running instance of Azure Storage Emulator
-        [HttpPut("{id}/logo")]
+        [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> AddLogo(int id, [FromForm(Name = "image")] IFormFile studyLogo)
+        public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
-            var updatedStudy = await _studyService.AddLogoAsync(id, studyLogo);
+            var updatedStudy = await _studyService.AddLogoAsync(studyId, studyLogo);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpGet("{id}/logo")]
+        [HttpGet("{studyId}/logo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
         // For local development, this method requires a running instance of Azure Storage Emulator
-        public async Task<IActionResult> GetLogo(int id)
+        public async Task<IActionResult> GetLogo(int studyId)
         {
-            byte[] logo = await _studyService.GetLogoAsync(id);
-            var studyDtoFromDb = await _studyService.GetStudyByIdAsync(id);
+            byte[] logo = await _studyService.GetLogoAsync(studyId);
+            var studyDtoFromDb = await _studyService.GetStudyByIdAsync(studyId);
             string fileType = studyDtoFromDb.LogoUrl.Split('.').Last();
             if (fileType.Equals("jpg"))
             {
                 fileType = "jpeg";
             }
-            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{id}.{fileType}");
+            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
             //return new ObjectResult(logo);
         }
 
@@ -166,19 +174,7 @@ namespace Sepes.RestApi.Controller
         //    return fileName;
         //}
 
-        [HttpPut("{id}/participants")]
-        public async Task<IActionResult> AddParticipantAsync(int id, StudyParticipantDto participant)
-        {
-            var updatedStudy = await _studyService.AddParticipantAsync(id, participant);
-            return new JsonResult(updatedStudy);
-        }
 
-        [HttpDelete("{id}/participants/{participantId}")]
-        public async Task<IActionResult> RemoveParticipantAsync(int id, int participantId)
-        {
-            var updatedStudy = await _studyService.RemoveParticipantAsync(id, participantId);
-            return new JsonResult(updatedStudy);
-        }
 
         //[HttpPost]
         //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
@@ -199,19 +195,19 @@ namespace Sepes.RestApi.Controller
         //    }
         //}
 
+        [HttpPut("{studyId}/participants/{participantId}/{role}")]
+        public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
+        {
+            var updatedStudy = await _studyService.AddParticipantAsync(studyId, participantId, role);
+            return new JsonResult(updatedStudy);
+        }
 
-
-        //[HttpGet("archived")]
-        //public IEnumerable<StudyInputDto> GetArchived()
-        //{
-        //    return _studyService.GetStudies(new UserDto("", "", ""), true).Select(study => study.ToStudyInput());
-        //}
-
-        //[HttpGet("dataset")]
-        //public async Task<string> GetDataset()
-        //{
-        //    return await _sepesDb.getDatasetList();
-        //}
+        [HttpDelete("{studyId}/participants/{participantId}")]
+        public async Task<IActionResult> RemoveParticipantAsync(int studyId, int participantId)
+        {
+            var updatedStudy = await _studyService.RemoveParticipantAsync(studyId, participantId);
+            return new JsonResult(updatedStudy);
+        }       
     }
 
 }

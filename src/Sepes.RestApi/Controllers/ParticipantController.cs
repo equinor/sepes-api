@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
@@ -9,7 +10,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Authorize]
     public class ParticipantController : ControllerBase
-    {     
+    {
         readonly IParticipantService _participantService;
 
         public ParticipantController(IParticipantService participantService)
@@ -22,15 +23,15 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetLookupAsync()
         {
             var studies = await _participantService.GetLookupAsync();
-            return new JsonResult(studies);          
+            return new JsonResult(studies);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)
         {
             var participant = await _participantService.GetByIdAsync(id);
-            return new JsonResult(participant);        
-        }
+            return new JsonResult(participant);
+        }       
     }
 
 }
