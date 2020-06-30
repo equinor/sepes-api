@@ -14,8 +14,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
 
-        //Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo);
-
         Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
 
         Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);
@@ -32,7 +30,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> RemoveDatasetAsync(int id, int datasetId);
 
-        Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset);
+        Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset);
 
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
