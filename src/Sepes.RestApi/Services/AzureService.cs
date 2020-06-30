@@ -39,8 +39,7 @@ namespace Sepes.RestApi.Services
             var credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
 
 
-            _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
-                .Authenticate(credentials).WithDefaultSubscription();
+            _azure = Azure.Authenticate(credentials).WithDefaultSubscription();
             _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
 
             if (!_azure.ResourceGroups.Contain(_commonResourceGroup))

@@ -23,7 +23,7 @@ namespace Sepes.RestApi
              .ConfigureAppConfiguration((context, configBuilder) =>
              {
                  var config = configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX).Build();
-                 
+
                  var keyVaultUrl = config[ConfigConstants.KEY_VAULT];
 
                  if (string.IsNullOrWhiteSpace(keyVaultUrl))

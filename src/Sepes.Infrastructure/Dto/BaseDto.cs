@@ -4,7 +4,7 @@ namespace Sepes.Infrastructure.Dto
 {
     public class BaseDto
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         public DateTime Created { get; set; }
 
@@ -16,12 +16,5 @@ namespace Sepes.Infrastructure.Dto
         public DateTime Updated { get; set; }
 
         public string UpdatedBy { get; set; }
-    }
-
-    public class LookupBaseDto
-    {
-        public int Id { get; set; }
-
-        public string Name { get; set; }
     }
 }
