@@ -1,11 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class Dataset : UpdateableBaseModel
+    public class DataSet : UpdateableBaseModel
     { 
-        public string Name { get; set; }    
+        public string Name { get; set; }
 
-        public ICollection<StudyDataset> StudyDatasets { get; set; }
+        public int StudyId { get; set; }
+
+        public Study Study { get; set; }
     }
 }
