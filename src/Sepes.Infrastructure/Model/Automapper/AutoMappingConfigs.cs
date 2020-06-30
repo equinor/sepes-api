@@ -40,8 +40,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ReverseMap();
             CreateMap<Participant, ParticipantListItemDto>();
 
-
-
+            CreateMap<ParticipantDto, Participant>();
         }
     }
 }
