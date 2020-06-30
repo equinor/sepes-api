@@ -292,22 +292,22 @@ namespace Sepes.Infrastructure.Service
             return sandboxDTOs;
         }
 
-        public async Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant)
+        public async Task<StudyDto> AddParticipantAsync(int id, int participantId, string role)
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await GetStudyOrThrowAsync(id);
-            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participant.Id);
+            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Participant", participant.Id);
+                throw NotFoundException.CreateForIdentity("Participant", participantId);
             }
 
             //Check that association does not allready exist
 
-            await VerifyRoleOrThrowAsync(participant.Role);
+            await VerifyRoleOrThrowAsync(role);
 
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participant.Id, RoleName = participant.Role };
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participantId, RoleName = role };
             await _db.StudyParticipants.AddAsync(studyParticipant);
             await _db.SaveChangesAsync();
 

@@ -2,7 +2,7 @@
 {
     public class ParticipantListItemDto : LookupBaseDto
     {
-        public string Description { get; set; } 
-
+        public string EmailAddress { get; set; }
+        public string UserName { get; set; }
     }
 }
