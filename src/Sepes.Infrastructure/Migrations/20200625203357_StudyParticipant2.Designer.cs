@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sepes.Infrastructure.Model.Context;
 
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
-    partial class SepesDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200625203357_StudyParticipant2")]
+    partial class StudyParticipant2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,9 +39,6 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("StudyID")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -152,8 +151,8 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LogoUrl")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("LogoId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -183,6 +182,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LogoId")
+                        .IsUnique()
+                        .HasFilter("[LogoId] IS NOT NULL");
+
                     b.ToTable("Studies");
                 });
 
@@ -199,6 +202,35 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasIndex("DatasetId");
 
                     b.ToTable("StudyDatasets");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.StudyLogo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<byte[]>("Content")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StudyLogo");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyParticipant", b =>
@@ -234,6 +266,13 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.StudyLogo", "Logo")
+                        .WithOne("Study")
+                        .HasForeignKey("Sepes.Infrastructure.Model.Study", "LogoId");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyDataset", b =>

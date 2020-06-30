@@ -108,6 +108,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
+        //TODO: IMPLEMENT!!
         public async Task<StudyDto> UpdateStudyAsync(int id, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(id, updatedStudy);
@@ -155,6 +156,8 @@ namespace Sepes.Infrastructure.Service
                 .Include(s => s.StudyDatasets)
                 .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.Sandboxes)
+                .Include(s => s.StudyParticipants)
+                     .ThenInclude(sp => sp.Participant)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (studyFromDb == null)
@@ -176,6 +179,11 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
             }
 
+            if(datasetFromDb.StudyID != null)
+            {
+                throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
+            }
+
             // Create new linking table
             StudyDataset studyDataset = new StudyDataset{ Study = studyFromDb, Dataset = datasetFromDb };
             await _db.StudyDatasets.AddAsync(studyDataset);
@@ -193,7 +201,7 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             var datasetFromDb = await _db.Datasets.Where(ds => ds.StudyID == id).FirstOrDefaultAsync();
-            if(datasetFromDb == null)
+            if (datasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("Dataset", id);
             }
@@ -211,6 +219,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await GetStudyOrThrowAsync(id);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
+            //Does dataset exist?
             if (datasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
@@ -219,12 +228,20 @@ namespace Sepes.Infrastructure.Service
             var studyDatasetFromDb = await _db.StudyDatasets
                 .FirstOrDefaultAsync(ds => ds.StudyId == id && ds.DatasetId == datasetId);
 
+            //Is dataset linked to a study?
             if (studyDatasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("StudyDataset", datasetId);
             }
 
             _db.StudyDatasets.Remove(studyDatasetFromDb);
+
+            //If dataset is studyspecific, remove dataset as well.
+            if (datasetFromDb.StudyID != null)
+            {
+                _db.Datasets.Remove(datasetFromDb);
+            }
+
             await _db.SaveChangesAsync();
             var retVal = await GetStudyByIdAsync(id);
             return retVal;
@@ -273,6 +290,52 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
+        }
+
+        public async Task<StudyDto> AddParticipantAsync(int id, StudyParticipantDto participant)
+        {
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participant.Id);
+
+            if (participantFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Participant", participant.Id);
+            }
+
+            //Check that association does not allready exist
+
+            await VerifyRoleOrThrowAsync(participant.Role);
+
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participant.Id, RoleName = participant.Role };
+            await _db.StudyParticipants.AddAsync(studyParticipant);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
+        }
+
+        public async Task VerifyRoleOrThrowAsync(string roleName)
+        {
+            var roleExists = false;
+
+            var roleIsPermittedForParticipant = false;
+
+        }
+
+        public async Task<StudyDto> RemoveParticipantAsync(int id, int participantId)
+        {          
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
+
+            if (participantFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Participant", participantId);
+            }
+          
+            studyFromDb.StudyParticipants.Remove(participantFromDb);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
         }
 
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)

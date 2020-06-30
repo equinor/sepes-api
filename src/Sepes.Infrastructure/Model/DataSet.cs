@@ -8,6 +8,8 @@ namespace Sepes.Infrastructure.Model
 
         public ICollection<StudyDataset> StudyDatasets { get; set; }
 
+        //StudyID is only populated if dataset is StudySpecific.
+        //This is accounted for in API calls.
         public int? StudyID { get; set; }
     }
 }

@@ -17,4 +17,11 @@ namespace Sepes.Infrastructure.Dto
 
         public string UpdatedBy { get; set; }
     }
+
+    public class LookupBaseDto
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+    }
 }
