@@ -109,13 +109,11 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-        //TODO:FIX
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
             //TODO: Perform checks on dataset?
-            //TODO: Post custom dataset
             var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
         }
