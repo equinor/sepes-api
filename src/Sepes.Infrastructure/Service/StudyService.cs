@@ -70,15 +70,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-      //public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo)
-      //{
-      //    var newStudyDbModel = _mapper.Map<Study>(newStudy);
-      // Not Finished!!
-      //    var newStudyId = await Add(newStudyDbModel);
-      //
-      //    return await GetStudyByIdAsync(newStudyId);
-      //}
-
         public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(id, updatedStudy);
@@ -193,9 +184,26 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        public async Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
         {
-            throw new NotImplementedException();
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var dataset = _mapper.Map<Dataset>(newDataset);
+            dataset.StudyID = id;
+            await _db.Datasets.AddAsync(dataset);
+            await _db.SaveChangesAsync();
+
+            var datasetFromDb = await _db.Datasets.Where(ds => ds.StudyID == id).FirstOrDefaultAsync();
+            if(datasetFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", id);
+            }
+
+            // Create new linking table
+            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = datasetFromDb };
+            await _db.StudyDatasets.AddAsync(studyDataset);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
         }
 
         public async Task<StudyDto> RemoveDatasetAsync(int id, int datasetId)

@@ -50,14 +50,6 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
-      //[HttpPost()]
-      //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
-      //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
-      //{
-      //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
-      //    return new JsonResult(study);
-      //}
-
         [HttpPut("{id}")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudy(int id, StudyDto study)
@@ -89,7 +81,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(sandboxes);
         }
 
-        [HttpPut("{id}/sandboxes")]
+        [HttpPost("{id}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddSandbox(int id, SandboxDto newSandbox)
         {
@@ -120,13 +112,13 @@ namespace Sepes.RestApi.Controller
 
         //TODO:FIX
         // Should this be addDataset or AddCustomDataSet?
-        [HttpPut("{id}/datasets/studyspecific")]
+        [HttpPost("{id}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddDataSet(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<IActionResult> AddStudySpecificDataSet(int id, StudySpecificDatasetDto newDataset)
         {
             //TODO: Perform checks on dataset?
             //TODO: Post custom dataset
-            var updatedStudy = await _studyService.AddCustomDatasetAsync(id, datasetId, newDataset);
+            var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(id, newDataset);
             return new JsonResult(updatedStudy);
         }
 
@@ -155,26 +147,6 @@ namespace Sepes.RestApi.Controller
             return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{id}.{fileType}");
             //return new ObjectResult(logo);
         }
-
-        //[HttpPost]
-        //[Authorize]
-        //public async Task<ActionResult<StudyLogo>> AddStudyLogo(StudyLogo studyLogo)
-        //{
-        //    //var blob = new UploadToBlobStorage();
-        //    //blob.UploadBlob(piece.ImageBlob, Configuration["ConnectionStrings:BlobConnection"]);
-        //    return CreatedAtAction("GetPiece", new { id = piece.Id }, piece);
-        //}
-
-        //// POST: api/Pieces/Blob
-        //[HttpPost("Blob")]
-        //[Authorize]
-        ////[Consumes("multipart/form-data")]
-        //public string PostBlob([FromForm(Name = "image")] IFormFile image)
-        //{
-        //    var uploadToBlobStorage = new UploadToBlobStorage();
-        //    var fileName = uploadToBlobStorage.UploadBlob(image, Configuration["ConnectionStrings:BlobConnection"]);
-        //    return fileName;
-        //}
 
         //[HttpPost]
         //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)

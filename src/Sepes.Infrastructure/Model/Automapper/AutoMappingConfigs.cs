@@ -10,20 +10,28 @@ namespace Sepes.Infrastructure.Model.Automapper
         {
             //STUDY VARIATIONS
             CreateMap<Study, StudyListItemDto>();
+
             CreateMap<Study, StudyDto>()
                 .ForMember(dest => dest.Datasets,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()));
-            CreateMap<StudyDto, Study>();
+                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
+                .ReverseMap();
 
-            CreateMap<Sandbox, SandboxDto>();
-            CreateMap<SandboxDto, Sandbox>();
+            //SANDBOX VARIATIONS
+            CreateMap<Sandbox, SandboxDto>()
+                .ReverseMap();
 
             //DATASET VARIATIONS
             CreateMap<Dataset, DatasetDto>()
                 .ForMember(dest => dest.Studies,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()));
-            CreateMap<DatasetDto, Dataset>();
+                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()))
+                .ReverseMap();
+
             CreateMap<Dataset, DatasetListItemDto>();
+
+            CreateMap<Dataset, StudySpecificDatasetDto>()
+                .ForMember(dest => dest.StudyId,
+                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
+                .ReverseMap();
         }
     }
 }

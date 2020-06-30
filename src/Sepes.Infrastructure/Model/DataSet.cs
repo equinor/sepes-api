@@ -7,5 +7,7 @@ namespace Sepes.Infrastructure.Model
         public string Name { get; set; }    
 
         public ICollection<StudyDataset> StudyDatasets { get; set; }
+
+        public int? StudyID { get; set; }
     }
 }
