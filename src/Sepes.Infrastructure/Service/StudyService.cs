@@ -70,15 +70,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-      //public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy, IFormFile studyLogo)
-      //{
-      //    var newStudyDbModel = _mapper.Map<Study>(newStudy);
-      // Not Finished!!
-      //    var newStudyId = await Add(newStudyDbModel);
-      //
-      //    return await GetStudyByIdAsync(newStudyId);
-      //}
-
         public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(id, updatedStudy);
@@ -117,25 +108,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        public async Task<StudyDto> UpdateStudyAsync(int id, StudyDto updatedStudy)
-        {
-            PerformUsualTestsForPostedStudy(id, updatedStudy);
-
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-
-            //Validate
-            //If okay: save, if not: return message
-
-            await _db.SaveChangesAsync();
-
-            //TODO: Handle update
-            //TODO: HANDLE DATA SETS
-            //TODO: HANDLE SANDBOXES
-            //TODO: HANDLE LOCK/UNLOCK         
-
-            throw new System.NotImplementedException();
-        }
-
         void PerformUsualTestsForPostedStudy(int id, StudyDto updatedStudy)
         {
             if (id <= 0)
@@ -152,7 +124,16 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
         {
             //TODO: VALIDATION
+            //Delete logo from Azure Blob Storage before deleting study.
             var studyFromDb = await GetStudyOrThrowAsync(id);
+            string logoUrl = studyFromDb.LogoUrl;
+            if (!String.IsNullOrWhiteSpace(logoUrl))
+            {
+                string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+                var blobStorage = new AzureBlobStorageService(storageConnectionString);
+                _ = blobStorage.DeleteBlob(logoUrl);
+            }
+            //Delete study
             _db.Studies.Remove(studyFromDb);
             await _db.SaveChangesAsync();
             return await GetStudiesAsync();
@@ -187,6 +168,11 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
             }
 
+            if(datasetFromDb.StudyID != null)
+            {
+                throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
+            }
+
             // Create new linking table
             StudyDataset studyDataset = new StudyDataset{ Study = studyFromDb, Dataset = datasetFromDb };
             await _db.StudyDatasets.AddAsync(studyDataset);
@@ -195,9 +181,26 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        public async Task<StudyDto> AddCustomDatasetAsync(int id, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
         {
-            throw new NotImplementedException();
+            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var dataset = _mapper.Map<Dataset>(newDataset);
+            dataset.StudyID = id;
+            await _db.Datasets.AddAsync(dataset);
+            await _db.SaveChangesAsync();
+
+            var datasetFromDb = await _db.Datasets.Where(ds => ds.StudyID == id).FirstOrDefaultAsync();
+            if (datasetFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", id);
+            }
+
+            // Create new linking table
+            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = datasetFromDb };
+            await _db.StudyDatasets.AddAsync(studyDataset);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(id);
         }
 
         public async Task<StudyDto> RemoveDatasetAsync(int id, int datasetId)
@@ -205,6 +208,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await GetStudyOrThrowAsync(id);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
+            //Does dataset exist?
             if (datasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
@@ -213,12 +217,20 @@ namespace Sepes.Infrastructure.Service
             var studyDatasetFromDb = await _db.StudyDatasets
                 .FirstOrDefaultAsync(ds => ds.StudyId == id && ds.DatasetId == datasetId);
 
+            //Is dataset linked to a study?
             if (studyDatasetFromDb == null)
             {
                 throw NotFoundException.CreateForIdentity("StudyDataset", datasetId);
             }
 
             _db.StudyDatasets.Remove(studyDatasetFromDb);
+
+            //If dataset is studyspecific, remove dataset as well.
+            if (datasetFromDb.StudyID != null)
+            {
+                _db.Datasets.Remove(datasetFromDb);
+            }
+
             await _db.SaveChangesAsync();
             var retVal = await GetStudyByIdAsync(id);
             return retVal;
