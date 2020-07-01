@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
             var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyID == null)
+                .Where(ds => ds.StudyNo == null)
                 .ToListAsync();
             var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
 
@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
         async Task<Dataset> GetDatasetOrThrowAsync(int id)
         {
             var datasetFromDb = await _db.Datasets
-                .Where(ds => ds.StudyID == null)
+                .Where(ds => ds.StudyNo == null)
                 .Include(s => s. StudyDatasets)
                 .ThenInclude(sd=> sd.Study)
                 .FirstOrDefaultAsync(s => s.Id == id);
