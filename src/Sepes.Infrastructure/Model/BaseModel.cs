@@ -5,16 +5,16 @@ namespace Sepes.Infrastructure.Model
 {
     public interface IHasCreatedFields
     {
-        public DateTime Created { get; set; }
+        DateTime Created { get; set; }
 
-        public string CreatedBy { get; set; }
+        string CreatedBy { get; set; }
     }
 
     public interface IHasUpdatedFields
     {
-        public DateTime Updated { get; set; }
+        DateTime Updated { get; set; }
 
-        public string UpdatedBy { get; set; }
+        string UpdatedBy { get; set; }
     }
     public class BaseModel : IHasCreatedFields
     {
