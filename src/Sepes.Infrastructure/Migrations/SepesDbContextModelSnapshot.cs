@@ -26,6 +26,25 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("AreaL1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AreaL2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Asset")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BADataOwner")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Classification")
+                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(32);
+
+                    b.Property<string>("CountryOfOrigin")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -35,11 +54,32 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<string>("Name")
+                    b.Property<int>("DataId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("StudyID")
+                    b.Property<int>("LRAId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Location")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("SourceSystem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudyNo")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
