@@ -121,6 +121,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
+        // TODO: Deletion may be changed later to keep database entry, but remove from listing.
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
         {
             //TODO: VALIDATION
@@ -133,7 +134,22 @@ namespace Sepes.Infrastructure.Service
                 var blobStorage = new AzureBlobStorageService(storageConnectionString);
                 _ = blobStorage.DeleteBlob(logoUrl);
             }
+
+            //Check if study contains studySpecific Datasets
+            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == id).ToListAsync();
+            if (studySpecificDatasets.Any())
+            {
+                foreach (Dataset dataset in studySpecificDatasets)
+                {
+                    // TODO: Possibly keep datasets for archiving/logging purposes.
+                    // Possibly: Datasets.removeWithoutDeleting(dataset)
+                    _db.Datasets.Remove(dataset);
+                }
+            }
+
             //Delete study
+            // TODO: Possibly keep study for archiving/logging purposes.
+            // Possibly: Studies.removeWithoutDeleting(study) Mark as deleted but keep record?
             _db.Studies.Remove(studyFromDb);
             await _db.SaveChangesAsync();
             return await GetStudiesAsync();
@@ -168,7 +184,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
             }
 
-            if(datasetFromDb.StudyID != null)
+            if(datasetFromDb.StudyNo != null)
             {
                 throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
             }
@@ -185,18 +201,11 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await GetStudyOrThrowAsync(id);
             var dataset = _mapper.Map<Dataset>(newDataset);
-            dataset.StudyID = id;
+            dataset.StudyNo = id;
             await _db.Datasets.AddAsync(dataset);
-            await _db.SaveChangesAsync();
-
-            var datasetFromDb = await _db.Datasets.Where(ds => ds.StudyID == id).FirstOrDefaultAsync();
-            if (datasetFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Dataset", id);
-            }
 
             // Create new linking table
-            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = datasetFromDb };
+            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
@@ -226,7 +235,8 @@ namespace Sepes.Infrastructure.Service
             _db.StudyDatasets.Remove(studyDatasetFromDb);
 
             //If dataset is studyspecific, remove dataset as well.
-            if (datasetFromDb.StudyID != null)
+            // Possibly keep database entry, but mark as deleted.
+            if (datasetFromDb.StudyNo != null)
             {
                 _db.Datasets.Remove(datasetFromDb);
             }
