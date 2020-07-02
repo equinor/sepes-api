@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Migrations;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
@@ -27,7 +28,6 @@ namespace Sepes.Tests.Services
         public async void CreatingStudyWithSpecifiedIdShouldBeOk(int id)
         {
             var studyService = ServiceProvider.GetService<IStudyService>();
-
             var studyWithSpecifiedId = new StudyDto()
             {
                 Id = id,
@@ -46,7 +46,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutNameShouldFail(string name)
         {
-            var studyService = ServiceProvider.GetService<IStudyService>();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidName = new StudyDto()
             {
@@ -62,7 +62,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutVendorShouldFail(string vendor)
         {
-            var studyService = ServiceProvider.GetService<IStudyService>();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidVendor = new StudyDto()
             {
@@ -73,7 +73,65 @@ namespace Sepes.Tests.Services
             await Assert.ThrowsAsync<ArgumentException>(() => studyService.CreateStudyAsync(studyWithInvalidVendor));
         }
 
+        [Theory]
+        [InlineData(2)]
+        [InlineData(7)]
+        [InlineData(99999)]
+        [InlineData(123456)]
+        public async void GetStudyByIdWillThrowIfStudyDoesNotExist(int id)
+        {
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
+            await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
+        }
+
+        [Theory]
+        [InlineData(null, "Norway", "Restricted")]
+        [InlineData("TestDataset", null, "Internal")]
+        [InlineData("TestDataset2", "Western Europe", null)]
+        public async void CreatingStudySpecificDatasetWithoutRequiredAttributesShouldFail(string name, string location, string classification)
+        {
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            var study = new StudyDto()
+            {
+                Name = "TestStudy",
+                Vendor = "Bouvet"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(study);
+
+            var datasetWithoutRequiredFields = new StudySpecificDatasetDto()
+            {
+                Name = name,
+                Location = location,
+                Classification = classification
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddStudySpecificDatasetAsync((int)createdStudy.Id, datasetWithoutRequiredFields));
+        }
+
+        [Theory]
+        [InlineData("TestSandbox", "")]
+        [InlineData("TestSandbox", null)]
+        public async void CreatingSandboxWithoutWbsShouldFail(string name, string wbs)
+        {
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            StudyDto study = new StudyDto()
+            {
+                Name = "TestStudy",
+                Vendor = "Bouvet",
+                WbsCode = wbs
+            };
+
+            StudyDto createdStudy = await studyService.CreateStudyAsync(study);
+            int studyID = (int)createdStudy.Id;
+
+            SandboxDto sandbox = new SandboxDto() { Name = name };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddSandboxAsync(studyID, sandbox));
+        }
 
 
         //        [Fact]
