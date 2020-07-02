@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
                     errorBuilder.AppendLine(error.ErrorMessage);
                 }
 
-                throw new Exception(errorBuilder.ToString());
+                throw new ArgumentException(errorBuilder.ToString());
             }
 
             return true;          
