@@ -16,6 +16,7 @@ namespace Sepes.Infrastructure.Service
     {
         private readonly string connectionString;
         private readonly string containerName = "logos";
+        //private readonly string containerName = "studylogos";
 
         public enum ImageFormat
         {
