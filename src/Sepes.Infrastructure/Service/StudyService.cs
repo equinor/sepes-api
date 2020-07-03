@@ -200,6 +200,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
         {
             var studyFromDb = await GetStudyOrThrowAsync(id);
+            performUsualTestForPostedDatasets(newDataset);
             var dataset = _mapper.Map<Dataset>(newDataset);
             dataset.StudyNo = id;
             await _db.Datasets.AddAsync(dataset);
@@ -244,6 +245,22 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
             var retVal = await GetStudyByIdAsync(id);
             return retVal;
+        }
+
+        void performUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
+        {
+            if (String.IsNullOrWhiteSpace(datasetDto.Name))
+            {
+                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Name}");
+            }
+            if (String.IsNullOrWhiteSpace(datasetDto.Classification))
+            {
+                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Classification}");
+            }
+            if (String.IsNullOrWhiteSpace(datasetDto.Location))
+            {
+                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Location}");
+            }
         }
 
         public async Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
