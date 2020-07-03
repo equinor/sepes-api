@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table
             await _resourceService.AddResourceGroup(resourceGroup.Id, resourceGroup.Name, resourceGroup.Type);
 
-            _vNetService.Create(region, )
+            //_vNetService.Create(region, )
 
             //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
                 //Nytt api: Alt i samme OP
