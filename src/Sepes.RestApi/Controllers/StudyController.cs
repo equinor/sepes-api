@@ -20,11 +20,17 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
+        readonly ISandboxService _sandboxService;
+        readonly IDatasetService _datasetService;
+        readonly IParticipantService _participantService;
 
 
-        public StudyController(IStudyService studyService)
+        public StudyController(IStudyService studyService, ISandboxService sandboxService, IDatasetService datasetService, IParticipantService participantService)
         {
             _studyService = studyService;
+            _sandboxService = sandboxService;
+            _datasetService = datasetService;
+            _participantService = participantService;
         }
 
         //Get list of studies
@@ -76,7 +82,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}/sandboxes")]
         public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var sandboxes = await _studyService.GetSandboxesByStudyIdAsync(studyId);
+            var sandboxes = await _sandboxService.GetSandboxesByStudyIdAsync(studyId);
             return new JsonResult(sandboxes);
         }
 
@@ -84,14 +90,14 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddSandboxAsync(int studyId, SandboxDto newSandbox)
         {
-            var updatedStudy = await _studyService.AddSandboxAsync(studyId, newSandbox);
+            var updatedStudy = await _sandboxService.AddSandboxToStudyAsync(studyId, newSandbox);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/sandboxes/{sandboxId}")]
         public async Task<IActionResult> RemoveSandboxAsync(int studyId, int sandboxId)
         {
-            var updatedStudy = await _studyService.RemoveSandboxAsync(studyId, sandboxId);
+            var updatedStudy = await _sandboxService.RemoveSandboxFromStudyAsync(studyId, sandboxId);
             return new JsonResult(updatedStudy);
         }     
 

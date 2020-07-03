@@ -14,6 +14,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         //Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);   
 
-  
+
+        // ------------------Does actions against study--------------
+        Task<StudyDto> AddDatasetToStudyAsync(int id, int datasetId);
+        Task<StudyDto> RemoveDatasetFromStudyAsync(int id, int datasetId);
+        Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset);
     }
 }

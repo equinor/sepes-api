@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Migrations;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;

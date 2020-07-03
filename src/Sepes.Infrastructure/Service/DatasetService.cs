@@ -67,6 +67,21 @@ namespace Sepes.Infrastructure.Service
             return datasetFromDb;
         }
 
+        public Task<StudyDto> AddDatasetToStudyAsync(int id, int datasetId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<StudyDto> RemoveDatasetFromStudyAsync(int id, int datasetId)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
+        {
+            throw new System.NotImplementedException();
+        }
+
         //public Task<StudyDto> UpdateDatasetAsync(int id, DatasetDto datasetToUpdate)
         //{
         //    throw new System.NotImplementedException();
