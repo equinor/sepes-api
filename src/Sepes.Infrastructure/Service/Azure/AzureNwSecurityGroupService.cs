@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureNwSecurityGroupService
+    public class AzureNwSecurityGroupService : IAzureNwSecurityGroupService
     {
         private readonly IAzure _azure;
 
