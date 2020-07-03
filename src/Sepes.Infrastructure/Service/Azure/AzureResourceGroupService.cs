@@ -1,48 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using System.Collections.Generic;
 using System.Threading;
-using Microsoft.Azure.Management.Fluent;
-using Sepes.Infrastructure.Model;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureResourceGroupService
+    public class AzureResourceGroupService : IAzureResourceGroupService
     {
-        private readonly IAzure _azure;
-        //TODO: Check old code, might be sometgoing here
+        private readonly IAzure _azure;        
 
-        //Parameters to include
-        //Region, Name (study + sandbox ++) //rg-study
-        //Tags
-
-
-        public string CreateResourceGroupName(string studyName, string sandboxName)
+        public string CreateResourceGroupNameForStudy(string studyName, string sandboxName)
         {
             return $"rg-study-{studyName}-{sandboxName}";
         }
 
-        public async Task<string> CreateResourceGroup(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
+        public async Task<IResourceGroup> CreateResourceGroupForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
         {
-            var resourceGroupName = CreateResourceGroupName(studyName, sandboxName);
+            var resourceGroupName = CreateResourceGroupNameForStudy(studyName, sandboxName);
 
             //TODO: Add tags, where to get?
             //TechnicalContact (Specified per sandbox?)
             //TechnicalContactEmail (Specified per sandbox?)
             //Sponsor
             //SponsorEmail
+
+            return await CreateResourceGroup(resourceGroupName, region, tags);
+
+           
             var resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
                     .WithRegion(region)
                     .WithTags(tags)
                     .CreateAsync();
 
-            //return resource id from iresource objects
-            return resourceGroup.Id;
+            return resourceGroup;
         }
+
+        public async Task<IResourceGroup> CreateResourceGroup(string resourceGroupName, Region region, Dictionary<string, string> tags)
+        {           
+            var resourceGroup = await _azure.ResourceGroups
+                    .Define(resourceGroupName)
+                    .WithRegion(region)
+                    .WithTags(tags)
+                    .CreateAsync();
+
+            
+
+            //return resource id from iresource objects
+            return resourceGroup;
+        }
+
+        public async Task<bool> Exists(string resourceGroupName)
+        {
+            return await _azure.ResourceGroups.ContainAsync(resourceGroupName);
+        }      
 
         public async Task DeleteResourceGroup(string resourceGroupName)
         {
