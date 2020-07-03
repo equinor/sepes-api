@@ -13,11 +13,11 @@ namespace Sepes.Infrastructure.Service
         public static IQueryable<Study> GetQueryableForStudiesLookup(SepesDbContext db)
         {
             return db.Studies
-              .Include(s => s.StudyDatasets)
-              .ThenInclude(sd => sd.Dataset)
-              .Include(s => s.Sandboxes)
-              .Include(s => s.StudyParticipants)
-                   .ThenInclude(sp => sp.Participant);
+            .Include(s => s.StudyDatasets)
+                .ThenInclude(sd => sd.Dataset)
+            .Include(s => s.Sandboxes)
+            .Include(s => s.StudyParticipants)
+                .ThenInclude(sp => sp.Participant);
         }
     }
 }

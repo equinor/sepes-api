@@ -34,6 +34,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
         Task<byte[]> GetLogoAsync(int id);
+
         Task<StudyDto> AddParticipantAsync(int id, int participantId, string role);
 
         Task<StudyDto> RemoveParticipantAsync(int id, int participantId);

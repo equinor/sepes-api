@@ -120,6 +120,7 @@ namespace Sepes.RestApi
             services.AddTransient<IDatasetService, Infrastructure.Service.DatasetService>();
             services.AddTransient<IParticipantService, Infrastructure.Service.ParticipantService>();
             services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
+            services.AddTransient<ISandboxService, Infrastructure.Service.SandboxService>();
 
 
             // Register the Swagger generator, defining 1 or more Swagger documents

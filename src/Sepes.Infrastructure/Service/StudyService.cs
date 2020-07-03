@@ -6,14 +6,11 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Http;
 
 
@@ -157,12 +154,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<Study> GetStudyOrThrowAsync(int id)
         {
-            var studyFromDb = await _db.Studies
-                .Include(s => s.StudyDatasets)
-                .ThenInclude(sd => sd.Dataset)
-                .Include(s => s.Sandboxes)
-                .Include(s => s.StudyParticipants)
-                     .ThenInclude(sp => sp.Participant)
+            var studyFromDb = await StudyQueries.GetQueryableForStudiesLookup(_db)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (studyFromDb == null)
@@ -200,7 +192,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
         {
             var studyFromDb = await GetStudyOrThrowAsync(id);
-            performUsualTestForPostedDatasets(newDataset);
+            PerformUsualTestForPostedDatasets(newDataset);
             var dataset = _mapper.Map<Dataset>(newDataset);
             dataset.StudyNo = id;
             await _db.Datasets.AddAsync(dataset);
@@ -247,7 +239,7 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-        void performUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
+        void PerformUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
         {
             if (String.IsNullOrWhiteSpace(datasetDto.Name))
             {
