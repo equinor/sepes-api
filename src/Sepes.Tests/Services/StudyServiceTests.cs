@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Migrations;
+using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
@@ -21,12 +22,20 @@ namespace Sepes.Tests.Services
             ServiceProvider = Services.BuildServiceProvider();
         }
 
+        void Seed()
+        {
+            var db = ServiceProvider.GetService<SepesDbContext>();
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(5)]
         [InlineData(12351324)]
         public async void CreatingStudyWithSpecifiedIdShouldBeOk(int id)
         {
+            Seed();
             var studyService = ServiceProvider.GetService<IStudyService>();
             var studyWithSpecifiedId = new StudyDto()
             {
@@ -38,7 +47,6 @@ namespace Sepes.Tests.Services
             var result = await studyService.CreateStudyAsync(studyWithSpecifiedId);
 
             Assert.IsType<int>(result.Id);
-            Assert.NotEqual<int>(id, (int)result.Id);
         }
 
         [Theory]
@@ -46,6 +54,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutNameShouldFail(string name)
         {
+            Seed();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidName = new StudyDto()
@@ -62,6 +71,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutVendorShouldFail(string vendor)
         {
+            Seed();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidVendor = new StudyDto()
@@ -74,12 +84,44 @@ namespace Sepes.Tests.Services
         }
 
         [Theory]
+        [InlineData(null, "Bouvet")]
+        [InlineData("", "Bouvet")]
+        [InlineData("TestStudy", null)]
+        [InlineData("TestStudy", "")]
+        public async void UpdatingStudyDetailsWithoutRequiredFieldsShouldBeWellHandled(string name, string vendor)
+        {
+            Seed();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            var initialStudy = new StudyDto()
+            {
+                Name = "TestStudy12345",
+                Vendor = "Equinor"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(initialStudy);
+            int studyId = (int)createdStudy.Id;
+
+            var studyWithoutReqFields = new StudyDto()
+            {
+                Id = studyId,
+                Name = name,
+                Vendor = vendor
+            };
+
+            var updatedStudy = await studyService.UpdateStudyDetailsAsync(studyId,studyWithoutReqFields);
+
+            Assert.NotEqual<StudyDto>(createdStudy, updatedStudy);
+        }
+
+        [Theory]
         [InlineData(2)]
         [InlineData(7)]
         [InlineData(99999)]
         [InlineData(123456)]
-        public async void GetStudyByIdWillThrowIfStudyDoesNotExist(int id)
+        public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
+            Seed();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
@@ -89,8 +131,9 @@ namespace Sepes.Tests.Services
         [InlineData(null, "Norway", "Restricted")]
         [InlineData("TestDataset", null, "Internal")]
         [InlineData("TestDataset2", "Western Europe", null)]
-        public async void CreatingStudySpecificDatasetWithoutRequiredAttributesShouldFail(string name, string location, string classification)
+        public async void AddStudySpecificDatasetAsync_WithoutRequiredAttributes_ShouldFail(string name, string location, string classification)
         {
+            Seed();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var study = new StudyDto()
@@ -114,8 +157,9 @@ namespace Sepes.Tests.Services
         [Theory]
         [InlineData("TestSandbox", "")]
         [InlineData("TestSandbox", null)]
-        public async void CreatingSandboxWithoutWbsShouldFail(string name, string wbs)
+        public async void AddSandboxAsync_WithoutWbs_ShouldFail(string name, string wbs)
         {
+            Seed();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             StudyDto study = new StudyDto()
