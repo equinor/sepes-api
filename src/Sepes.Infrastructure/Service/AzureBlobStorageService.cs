@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Service
     class AzureBlobStorageService
     {
         private readonly string connectionString;
-        private readonly string containerName = "logos";
+        private readonly string containerName = "studylogos";
 
         public enum ImageFormat
         {
