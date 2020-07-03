@@ -130,7 +130,7 @@ namespace Sepes.Infrastructure.Service
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
             {
-                string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+                string storageConnectionString = _configuration["AzureStorageConnectionString"];
                 var blobStorage = new AzureBlobStorageService(storageConnectionString);
                 _ = blobStorage.DeleteBlob(logoUrl);
             }
@@ -339,7 +339,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
         {
-            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+            string storageConnectionString = _configuration["AzureStorageConnectionString"];
             var blobStorage = new AzureBlobStorageService(storageConnectionString);
             var fileName = blobStorage.UploadBlob(studyLogo);
             var studyFromDb = await GetStudyOrThrowAsync(id);
@@ -363,7 +363,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<byte[]> GetLogoAsync(int id)
         {
-            string storageConnectionString = _configuration["ConnectionStrings:AzureStorageConnectionString"];
+            string storageConnectionString = _configuration["AzureStorageConnectionString"];
             var blobStorage = new AzureBlobStorageService(storageConnectionString);
             var study = await GetStudyOrThrowAsync(id);
             string logoUrl = study.LogoUrl;
