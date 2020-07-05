@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto;
@@ -6,26 +7,24 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Azure.Storage.Blobs;
-using Microsoft.AspNetCore.Http;
 
 
 namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-        private readonly IConfiguration _configuration;
-        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration)
+        readonly IConfiguration _configuration;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
+
+        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration, IAzureBlobStorageService azureBlobStorageService)
             :base(db, mapper)
         {
             _configuration = configuration;
+            _azureBlobStorageService = azureBlobStorageService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
@@ -50,8 +49,12 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
+
+            studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
-        }            
+        }   
+        
+     
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {
@@ -131,8 +134,8 @@ namespace Sepes.Infrastructure.Service
             if (!String.IsNullOrWhiteSpace(logoUrl))
             {
                 string storageConnectionString = _configuration["AzureStorageConnectionString"];
-                var blobStorage = new AzureBlobStorageService(storageConnectionString);
-                _ = blobStorage.DeleteBlob(logoUrl);
+            
+                _ = _azureBlobStorageService.DeleteBlob(logoUrl);
             }
 
             //Check if study contains studySpecific Datasets
@@ -357,8 +360,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
         {
             string storageConnectionString = _configuration["AzureStorageConnectionString"];
-            var blobStorage = new AzureBlobStorageService(storageConnectionString);
-            var fileName = blobStorage.UploadBlob(studyLogo);
+        
+            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
             var studyFromDb = await GetStudyOrThrowAsync(id);
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -372,7 +375,7 @@ namespace Sepes.Infrastructure.Service
 
             if (!String.IsNullOrWhiteSpace(oldFileName))
             {
-            _ = blobStorage.DeleteBlob(oldFileName);
+            _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
             return await GetStudyByIdAsync(studyFromDb.Id);
@@ -380,11 +383,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<byte[]> GetLogoAsync(int id)
         {
-            string storageConnectionString = _configuration["AzureStorageConnectionString"];
-            var blobStorage = new AzureBlobStorageService(storageConnectionString);
+            string storageConnectionString = _configuration["AzureStorageConnectionString"];          
             var study = await GetStudyOrThrowAsync(id);
             string logoUrl = study.LogoUrl;
-            var logo = blobStorage.GetImageFromBlobAsync(logoUrl);
+            var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
     }

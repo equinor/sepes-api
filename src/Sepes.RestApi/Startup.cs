@@ -14,6 +14,7 @@ using Newtonsoft.Json.Serialization;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
 using System;
@@ -117,6 +118,7 @@ namespace Sepes.RestApi
             //services.AddSingleton<IAzureService>(azureService);
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
+            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, Infrastructure.Service.DatasetService>();
             services.AddTransient<IParticipantService, Infrastructure.Service.ParticipantService>();
             services.AddTransient<IStudyService, Infrastructure.Service.StudyService>();
