@@ -122,6 +122,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IParticipantService, ParticipantService>();
+            services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<IStudyService, StudyService>();
 
 

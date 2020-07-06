@@ -17,13 +17,11 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-        readonly IConfiguration _configuration;
         readonly IAzureBlobStorageService _azureBlobStorageService;
 
-        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
             :base(db, mapper)
         {
-            _configuration = configuration;
             _azureBlobStorageService = azureBlobStorageService;
         }
 
@@ -53,12 +51,10 @@ namespace Sepes.Infrastructure.Service
             studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }   
-        
-     
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
             return studyDto;
@@ -77,7 +73,7 @@ namespace Sepes.Infrastructure.Service
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -129,12 +125,10 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
-            {
-                string storageConnectionString = _configuration["AzureStorageConnectionString"];
-            
+            {            
                 _ = _azureBlobStorageService.DeleteBlob(logoUrl);
             }
 
@@ -158,12 +152,10 @@ namespace Sepes.Infrastructure.Service
             return await GetStudiesAsync();
         }
 
-        public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
-        {
-            string storageConnectionString = _configuration["AzureStorageConnectionString"];
-        
+        public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
+        {        
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
@@ -182,13 +174,29 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        public async Task<byte[]> GetLogoAsync(int id)
-        {
-            string storageConnectionString = _configuration["AzureStorageConnectionString"];          
-            var study = await GetStudyOrThrowAsync(id);
+        public async Task<byte[]> GetLogoAsync(int studyId)
+        {      
+            var study = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             string logoUrl = study.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
+
+        public async Task<DatasetDto> GetDatasetByIdAsync(int studyId, int datasetId)
+        {
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
+
+            if (studyDatasetRelation == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
+
+            return datasetDto;
+        }
+
     }
 }
