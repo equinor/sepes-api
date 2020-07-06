@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> GetStudyByIdAsync(int id)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
             return studyDto;
@@ -71,7 +71,7 @@ namespace Sepes.Infrastructure.Service
         {
             PerformUsualTestsForPostedStudy(id, updatedStudy);
 
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -123,7 +123,7 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
             {
@@ -152,206 +152,12 @@ namespace Sepes.Infrastructure.Service
             return await GetStudiesAsync();
         }
 
-        async Task<Study> GetStudyOrThrowAsync(int id)
-        {
-            var studyFromDb = await StudyQueries.GetQueryableForStudiesLookup(_db)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", id);
-            }
-
-            return studyFromDb;
-        }
-
-        public async Task<StudyDto> AddDatasetAsync(int id, int datasetId)
-        {
-            // Run validations: (Check if both id's are valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
-
-            if(datasetFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
-            }
-
-            if(datasetFromDb.StudyNo != null)
-            {
-                throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
-            }
-
-            // Create new linking table
-            StudyDataset studyDataset = new StudyDataset{ Study = studyFromDb, Dataset = datasetFromDb };
-            await _db.StudyDatasets.AddAsync(studyDataset);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
-        public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
-        {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            PerformUsualTestForPostedDatasets(newDataset);
-            var dataset = _mapper.Map<Dataset>(newDataset);
-            dataset.StudyNo = id;
-            await _db.Datasets.AddAsync(dataset);
-
-            // Create new linking table
-            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
-            await _db.StudyDatasets.AddAsync(studyDataset);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
-        public async Task<StudyDto> RemoveDatasetAsync(int id, int datasetId)
-        {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
-
-            //Does dataset exist?
-            if (datasetFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
-            }
-
-            var studyDatasetFromDb = await _db.StudyDatasets
-                .FirstOrDefaultAsync(ds => ds.StudyId == id && ds.DatasetId == datasetId);
-
-            //Is dataset linked to a study?
-            if (studyDatasetFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("StudyDataset", datasetId);
-            }
-
-            _db.StudyDatasets.Remove(studyDatasetFromDb);
-
-            //If dataset is studyspecific, remove dataset as well.
-            // Possibly keep database entry, but mark as deleted.
-            if (datasetFromDb.StudyNo != null)
-            {
-                _db.Datasets.Remove(datasetFromDb);
-            }
-
-            await _db.SaveChangesAsync();
-            var retVal = await GetStudyByIdAsync(id);
-            return retVal;
-        }
-
-        void PerformUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
-        {
-            if (String.IsNullOrWhiteSpace(datasetDto.Name))
-            {
-                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Name}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Classification))
-            {
-                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Classification}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Location))
-            {
-                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Location}");
-            }
-        }
-
-        public async Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
-        {
-            // Run validations: (Check if ID is valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-
-            // Check that study has WbsCode.
-            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
-            {
-                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
-            }
-            // TODO: Do check on Sandbox
-
-            // Create reference
-            var sandbox = _mapper.Map<Sandbox>(newSandbox);
-            studyFromDb.Sandboxes.Add(sandbox);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
-        public async Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId)
-        {
-            // Run validations: (Check if ID is valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
-
-            // TODO: Do check on Sandbox
-
-            // Create reference
-            //var sandbox = _mapper.Map<Sandbox>(sandboxFromDb);
-            studyFromDb.Sandboxes.Remove(sandboxFromDb);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
-        public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
-        {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == id).ToListAsync();
-            var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
-
-            return sandboxDTOs;
-        }
-
-        public async Task<StudyDto> AddParticipantAsync(int id, int participantId, string role)
-        {
-            // Run validations: (Check if both id's are valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
-
-            if (participantFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
-            }
-
-            //Check that association does not allready exist
-
-            await VerifyRoleOrThrowAsync(role);
-
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participantId, RoleName = role };
-            await _db.StudyParticipants.AddAsync(studyParticipant);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
-        public async Task VerifyRoleOrThrowAsync(string roleName)
-        {
-            var roleExists = false;
-
-            var roleIsPermittedForParticipant = false;
-
-        }
-
-        public async Task<StudyDto> RemoveParticipantAsync(int id, int participantId)
-        {          
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
-
-            if (participantFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
-            }
-          
-            studyFromDb.StudyParticipants.Remove(participantFromDb);
-            await _db.SaveChangesAsync();
-
-            return await GetStudyByIdAsync(id);
-        }
-
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
         {
             string storageConnectionString = _configuration["AzureStorageConnectionString"];
             var blobStorage = new AzureBlobStorageService(storageConnectionString);
             var fileName = blobStorage.UploadBlob(studyLogo);
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
@@ -374,7 +180,7 @@ namespace Sepes.Infrastructure.Service
         {
             string storageConnectionString = _configuration["AzureStorageConnectionString"];
             var blobStorage = new AzureBlobStorageService(storageConnectionString);
-            var study = await GetStudyOrThrowAsync(id);
+            var study = await StudyQueries.GetStudyOrThrowAsync(id, _db);
             string logoUrl = study.LogoUrl;
             var logo = blobStorage.GetImageFromBlobAsync(logoUrl);
             return await logo;

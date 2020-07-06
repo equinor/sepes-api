@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddSandboxToStudyAsync(int studyId, SandboxDto newSandbox)
         {
             // Run validations: (Check if ID is valid)
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -58,7 +58,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> RemoveSandboxFromStudyAsync(int studyId, int sandboxId)
         {
             // Run validations: (Check if ID is valid)
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
 
             // TODO: Do check on Sandbox
@@ -69,19 +69,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await _studyService.GetStudyByIdAsync(studyId);
-        }
-
-        async Task<Study> GetStudyOrThrowAsync(int studyId)
-        {
-            var studyFromDb = await StudyQueries.GetQueryableForStudiesLookup(_db)
-                .FirstOrDefaultAsync(s => s.Id == studyId);
-
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", studyId);
-            }
-
-            return studyFromDb;
         }
     }
 }

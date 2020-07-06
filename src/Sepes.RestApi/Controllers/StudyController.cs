@@ -104,14 +104,14 @@ namespace Sepes.RestApi.Controller
         [HttpPut("{studyId}/datasets/{datasetId}")]
         public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyService.AddDatasetAsync(studyId, datasetId);
+            var updatedStudy = await _datasetService.AddDatasetToStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyService.RemoveDatasetAsync(studyId, datasetId);
+            var updatedStudy = await _datasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
@@ -119,8 +119,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
-            //TODO: Perform checks on dataset?
-            var updatedStudy = await _studyService.AddStudySpecificDatasetAsync(studyId, newDataset);
+            var updatedStudy = await _datasetService.AddStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
         }
 
@@ -151,28 +150,6 @@ namespace Sepes.RestApi.Controller
         }
 
         //[HttpPost]
-        //[Authorize]
-        //public async Task<ActionResult<StudyLogo>> AddStudyLogo(StudyLogo studyLogo)
-        //{
-        //    //var blob = new UploadToBlobStorage();
-        //    //blob.UploadBlob(piece.ImageBlob, Configuration["ConnectionStrings:BlobConnection"]);
-        //    return CreatedAtAction("GetPiece", new { id = piece.Id }, piece);
-        //}
-
-        //// POST: api/Pieces/Blob
-        //[HttpPost("Blob")]
-        //[Authorize]
-        ////[Consumes("multipart/form-data")]
-        //public string PostBlob([FromForm(Name = "image")] IFormFile image)
-        //{
-        //    var uploadToBlobStorage = new UploadToBlobStorage();
-        //    var fileName = uploadToBlobStorage.UploadBlob(image, Configuration["ConnectionStrings:BlobConnection"]);
-        //    return fileName;
-        //}
-
-
-
-        //[HttpPost]
         //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
         //{
         //    //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
@@ -194,14 +171,14 @@ namespace Sepes.RestApi.Controller
         [HttpPut("{studyId}/participants/{participantId}/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
         {
-            var updatedStudy = await _studyService.AddParticipantAsync(studyId, participantId, role);
+            var updatedStudy = await _participantService.AddParticipantToStudyAsync(studyId, participantId, role);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/participants/{participantId}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int participantId)
         {
-            var updatedStudy = await _studyService.RemoveParticipantAsync(studyId, participantId);
+            var updatedStudy = await _participantService.RemoveParticipantFromStudyAsync(studyId, participantId);
             return new JsonResult(updatedStudy);
         }       
     }

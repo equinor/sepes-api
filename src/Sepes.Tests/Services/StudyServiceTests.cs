@@ -126,57 +126,6 @@ namespace Sepes.Tests.Services
             await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
         }
 
-        [Theory]
-        [InlineData(null, "Norway", "Restricted")]
-        [InlineData("TestDataset", null, "Internal")]
-        [InlineData("TestDataset2", "Western Europe", null)]
-        public async void AddStudySpecificDatasetAsync_WithoutRequiredAttributes_ShouldFail(string name, string location, string classification)
-        {
-            Seed();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
-
-            var study = new StudyDto()
-            {
-                Name = "TestStudy",
-                Vendor = "Bouvet"
-            };
-
-            var createdStudy = await studyService.CreateStudyAsync(study);
-
-            var datasetWithoutRequiredFields = new StudySpecificDatasetDto()
-            {
-                Name = name,
-                Location = location,
-                Classification = classification
-            };
-
-            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddStudySpecificDatasetAsync((int)createdStudy.Id, datasetWithoutRequiredFields));
-        }
-
-        [Theory]
-        [InlineData("TestSandbox", "")]
-        [InlineData("TestSandbox", null)]
-        public async void AddSandboxAsync_WithoutWbs_ShouldFail(string name, string wbs)
-        {
-            Seed();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
-
-            StudyDto study = new StudyDto()
-            {
-                Name = "TestStudy",
-                Vendor = "Bouvet",
-                WbsCode = wbs
-            };
-
-            StudyDto createdStudy = await studyService.CreateStudyAsync(study);
-            int studyID = (int)createdStudy.Id;
-
-            SandboxDto sandbox = new SandboxDto() { Name = name };
-
-            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddSandboxAsync(studyID, sandbox));
-        }
-
-
         //        [Fact]
         //        public async void TestSave()
         //        {
