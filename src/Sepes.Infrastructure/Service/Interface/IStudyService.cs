@@ -11,32 +11,34 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         
         Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null);
-        Task<StudyDto> GetStudyByIdAsync(int id);
+        Task<StudyDto> GetStudyByIdAsync(int studyId);
 
         Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
 
-        Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto newStudy);
+        Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
 
-        Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id);
+        Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId);
 
-        Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id);
+        Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId);
 
-        Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox);
+        Task<StudyDto> AddSandboxAsync(int studyId, SandboxDto newSandbox);
 
-        Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId);
+        Task<StudyDto> RemoveSandboxAsync(int studyId, int sandboxId);
 
-        Task<StudyDto> AddDatasetAsync(int id, int datasetId);
+        Task<StudyDto> AddDatasetAsync(int studyId, int datasetId);
 
-        Task<StudyDto> RemoveDatasetAsync(int id, int datasetId);
+        Task<DatasetDto> GetDatasetByIdAsync(int studyId, int datasetId);
 
-        Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset);
+        Task<StudyDto> RemoveDatasetAsync(int studyId, int datasetId);
 
-        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
+        Task<StudyDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset);
 
-        Task<byte[]> GetLogoAsync(int id);
-        Task<StudyDto> AddParticipantAsync(int id, int participantId, string role);
+        Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo);
 
-        Task<StudyDto> RemoveParticipantAsync(int id, int participantId);
+        Task<byte[]> GetLogoAsync(int studyId);
+        Task<StudyDto> AddParticipantAsync(int studyId, int participantId, string role);
+
+        Task<StudyDto> RemoveParticipantAsync(int studyId, int participantId);
 
 
         /// <summary>
