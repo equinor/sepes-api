@@ -4,6 +4,7 @@
     {
         public const string ENV_VARIABLE_PREFIX = "SEPES_";
 
+        public const string INSTANCE = "Instance";
         public const string TENANT_ID = "TenantId";
         public const string AZ_CLIENT_ID = "ClientId";
         public const string AZ_CLIENT_SECRET = "ClientSecret";
