@@ -1,5 +1,6 @@
 ﻿
 using Azure.Core;
+using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
@@ -24,7 +25,7 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly string _connectionString;
         readonly string _containerName = "studylogos";
-        readonly AzureSasTokenService _sasTokenService;
+        //readonly AzureSasTokenService _sasTokenService;
 
         public enum ImageFormat
         {
@@ -34,11 +35,11 @@ namespace Sepes.Infrastructure.Service
             png
         }
 
-        public AzureBlobStorageService(IConfiguration config, AzureSasTokenService sasTokenService)
+        public AzureBlobStorageService(IConfiguration config)
         {
             this._config = config;
             this._connectionString = config["AzureStorageConnectionString"];
-            _sasTokenService = sasTokenService;
+
         }
 
         BlobContainerClient CreateBlobContainerClient()
@@ -88,8 +89,11 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDto in studyDtos)
             {
-                uriBuilder.Path = string.Format("{0}/{1}", _containerName, curDto.LogoUrl);
-                curDto.LogoUrl = uriBuilder.Uri.ToString();
+                if (!String.IsNullOrWhiteSpace(uriBuilder.Path))
+                {
+                    uriBuilder.Path = string.Format("{0}/{1}", _containerName, curDto.LogoUrl);
+                    curDto.LogoUrl = uriBuilder.Uri.ToString();
+                }
             }
 
             return studyDtos;
@@ -116,47 +120,41 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                var bajs = await _sasTokenService.CreateAdAuthenticatedClient();
-
-                var tenantId = _config[ConfigConstants.TENANT_ID];
-                var clientId = _config[ConfigConstants.AZ_CLIENT_ID];
-                var clientSecret = _config[ConfigConstants.AZ_CLIENT_SECRET];
-                var subscriptionId = _config[ConfigConstants.SUBSCRIPTION_ID];
-
-
-
-                //var _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
-
-                //blobServiceClient = new BlobServiceClient(blobServiceClient.Uri, credential: _credentials);
-
-
-             
-
-                    var delegationKey = await bajs.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
-
                 var sasBuilder = new BlobSasBuilder()
                 {
                     BlobContainerName = _containerName,
                     Resource = "c",
-                    StartsOn = DateTimeOffset.UtcNow,
-                    ExpiresOn = DateTimeOffset.UtcNow.AddSeconds(30)
-                    
+                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-1),
+                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10)
+                  
                 };
 
-                sasBuilder.SetPermissions(BlobSasPermissions.Read);
+                sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
 
-                var sasQueryParams = sasBuilder.ToSasQueryParameters(delegationKey, blobServiceClient.AccountName).ToString();
+                var credential = new StorageSharedKeyCredential(GetKeyValueFromConnectionString("AccountName"), GetKeyValueFromConnectionString("AccountKey"));
 
-                uriBuilder.Query = sasQueryParams;
+               var sasToken = sasBuilder.ToSasQueryParameters(credential);           
+
+                uriBuilder.Query = sasToken.ToString();
 
                 return uriBuilder;
             }
-
         }
 
+        private string GetKeyValueFromConnectionString(string key)
+        {
+            var settings = new Dictionary<string, string>();
+            var splitted = _connectionString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
+            foreach (var nameValue in splitted)
+            {
+                var splittedNameValue = nameValue.Split(new char[] { '=' }, 2);
+                settings.Add(splittedNameValue[0], splittedNameValue[1]);
+            }
 
-       
+            return settings[key];
+        }
+
 
         bool FileIsCorrectImageFormat(IFormFile file)
         {

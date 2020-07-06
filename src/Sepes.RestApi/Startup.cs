@@ -118,7 +118,7 @@ namespace Sepes.RestApi
             //services.AddSingleton<IAzureService>(azureService);
             //services.AddSingleton<IPodService>(podService);
             //services.AddSingleton<IStudyService_OLD>(studyService);
-            services.AddTransient<AzureSasTokenService>();
+     
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IParticipantService, ParticipantService>();
