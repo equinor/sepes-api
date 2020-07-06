@@ -56,9 +56,9 @@ namespace Sepes.Infrastructure.Service
         
      
 
-        public async Task<StudyDto> GetStudyByIdAsync(int id)
+        public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
             return studyDto;
@@ -73,11 +73,11 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-        public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
+        public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
-            PerformUsualTestsForPostedStudy(id, updatedStudy);
+            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -111,25 +111,25 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        void PerformUsualTestsForPostedStudy(int id, StudyDto updatedStudy)
+        void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {
-            if (id <= 0)
+            if (studyId <= 0)
             {
-                throw new ArgumentException("Id was zero or negative:" + id);
+                throw new ArgumentException("Id was zero or negative:" + studyId);
             }
 
-            if (id != updatedStudy.Id)
+            if (studyId != updatedStudy.Id)
             {
-                throw new ArgumentException($"Id in url ({id}) is different from Id in data ({updatedStudy.Id})");
+                throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
             }
         }
 
         // TODO: Deletion may be changed later to keep database entry, but remove from listing.
-        public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
+        public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId)
         {
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
             {
@@ -139,7 +139,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check if study contains studySpecific Datasets
-            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == id).ToListAsync();
+            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == studyId).ToListAsync();
             if (studySpecificDatasets.Any())
             {
                 foreach (Dataset dataset in studySpecificDatasets)
@@ -158,7 +158,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudiesAsync();
         }
 
-        async Task<Study> GetStudyOrThrowAsync(int id)
+        async Task<Study> GetStudyOrThrowAsync(int studyId)
         {
             var studyFromDb = await _db.Studies
                 .Include(s => s.StudyDatasets)
@@ -166,20 +166,20 @@ namespace Sepes.Infrastructure.Service
                 .Include(s => s.Sandboxes)
                 .Include(s => s.StudyParticipants)
                      .ThenInclude(sp => sp.Participant)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                .FirstOrDefaultAsync(s => s.Id == studyId);
 
             if (studyFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Study", id);
+                throw NotFoundException.CreateForIdentity("Study", studyId);
             }
 
             return studyFromDb;
         }
 
-        public async Task<StudyDto> AddDatasetAsync(int id, int datasetId)
+        public async Task<StudyDto> AddDatasetAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             if(datasetFromDb == null)
@@ -197,15 +197,15 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(id);
+            return await GetStudyByIdAsync(studyId);
         }
 
-        public async Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset)
+        public async Task<StudyDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             performUsualTestForPostedDatasets(newDataset);
             var dataset = _mapper.Map<Dataset>(newDataset);
-            dataset.StudyNo = id;
+            dataset.StudyNo = studyId;
             await _db.Datasets.AddAsync(dataset);
 
             // Create new linking table
@@ -213,12 +213,30 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(id);
+            return await GetStudyByIdAsync(studyId);
         }
 
-        public async Task<StudyDto> RemoveDatasetAsync(int id, int datasetId)
+        public async Task<DatasetDto> GetDatasetByIdAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+
+            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd=> sd.DatasetId == datasetId);
+
+            if (studyDatasetRelation == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
+
+            return datasetDto;
+        }
+
+
+        public async Task<StudyDto> RemoveDatasetAsync(int studyId, int datasetId)
+        {
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             //Does dataset exist?
@@ -228,7 +246,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studyDatasetFromDb = await _db.StudyDatasets
-                .FirstOrDefaultAsync(ds => ds.StudyId == id && ds.DatasetId == datasetId);
+                .FirstOrDefaultAsync(ds => ds.StudyId == studyId && ds.DatasetId == datasetId);
 
             //Is dataset linked to a study?
             if (studyDatasetFromDb == null)
@@ -246,7 +264,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             await _db.SaveChangesAsync();
-            var retVal = await GetStudyByIdAsync(id);
+            var retVal = await GetStudyByIdAsync(studyId);
             return retVal;
         }
 
@@ -266,10 +284,10 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox)
+        public async Task<StudyDto> AddSandboxAsync(int studyId, SandboxDto newSandbox)
         {
             // Run validations: (Check if ID is valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -283,7 +301,7 @@ namespace Sepes.Infrastructure.Service
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(id);
+            return await GetStudyByIdAsync(studyId);
         }
 
         public async Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId)
@@ -302,19 +320,19 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(id);
         }
 
-        public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id)
+        public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(id);
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == id).ToListAsync();
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
         }
 
-        public async Task<StudyDto> AddParticipantAsync(int id, int participantId, string role)
+        public async Task<StudyDto> AddParticipantAsync(int studyId, int participantId, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
@@ -330,7 +348,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyParticipants.AddAsync(studyParticipant);
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(id);
+            return await GetStudyByIdAsync(studyId);
         }
 
         public async Task VerifyRoleOrThrowAsync(string roleName)
@@ -341,9 +359,9 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<StudyDto> RemoveParticipantAsync(int id, int participantId)
+        public async Task<StudyDto> RemoveParticipantAsync(int studyId, int participantId)
         {          
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
 
             if (participantFromDb == null)
@@ -354,15 +372,15 @@ namespace Sepes.Infrastructure.Service
             studyFromDb.StudyParticipants.Remove(participantFromDb);
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(id);
+            return await GetStudyByIdAsync(studyId);
         }
 
-        public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
+        public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             string storageConnectionString = _configuration["AzureStorageConnectionString"];
         
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await GetStudyOrThrowAsync(id);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
