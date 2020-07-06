@@ -1,10 +1,16 @@
 ﻿
+using Azure.Core;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
+using Microsoft.Azure.Storage.Auth;
 using Microsoft.Extensions.Configuration;
+using Microsoft.WindowsAzure.Storage.Blob;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,8 +21,10 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureBlobStorageService : IAzureBlobStorageService
     {
+        readonly IConfiguration _config;
         readonly string _connectionString;
-        public readonly string _containerName = "studylogos";
+        readonly string _containerName = "studylogos";
+        readonly AzureSasTokenService _sasTokenService;
 
         public enum ImageFormat
         {
@@ -26,9 +34,11 @@ namespace Sepes.Infrastructure.Service
             png
         }
 
-        public AzureBlobStorageService(IConfiguration config)
+        public AzureBlobStorageService(IConfiguration config, AzureSasTokenService sasTokenService)
         {
+            this._config = config;
             this._connectionString = config["AzureStorageConnectionString"];
+            _sasTokenService = sasTokenService;
         }
 
         BlobContainerClient CreateBlobContainerClient()
@@ -106,8 +116,23 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
+                var bajs = await _sasTokenService.CreateAdAuthenticatedClient();
 
-                var delegationKey = await blobServiceClient.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
+                var tenantId = _config[ConfigConstants.TENANT_ID];
+                var clientId = _config[ConfigConstants.AZ_CLIENT_ID];
+                var clientSecret = _config[ConfigConstants.AZ_CLIENT_SECRET];
+                var subscriptionId = _config[ConfigConstants.SUBSCRIPTION_ID];
+
+
+
+                //var _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
+
+                //blobServiceClient = new BlobServiceClient(blobServiceClient.Uri, credential: _credentials);
+
+
+             
+
+                    var delegationKey = await bajs.GetUserDelegationKeyAsync(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddDays(7));
 
                 var sasBuilder = new BlobSasBuilder()
                 {
@@ -115,6 +140,7 @@ namespace Sepes.Infrastructure.Service
                     Resource = "c",
                     StartsOn = DateTimeOffset.UtcNow,
                     ExpiresOn = DateTimeOffset.UtcNow.AddSeconds(30)
+                    
                 };
 
                 sasBuilder.SetPermissions(BlobSasPermissions.Read);
@@ -127,6 +153,10 @@ namespace Sepes.Infrastructure.Service
             }
 
         }
+
+
+
+       
 
         bool FileIsCorrectImageFormat(IFormFile file)
         {
