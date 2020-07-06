@@ -117,9 +117,9 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet("{studyId}/datasets/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> GetDataSetByIdAsync(int studyId, int datasetId)
+        public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
         {
-            var dataset = await _studyService.GetDatasetByIdAsync(studyId, datasetId);
+            var dataset = await _datasetService.GetSpecificDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
             return new JsonResult(dataset);
         }
 
