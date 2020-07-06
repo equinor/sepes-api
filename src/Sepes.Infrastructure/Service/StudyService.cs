@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto;
@@ -9,20 +10,21 @@ using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 
 namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-        private readonly IConfiguration _configuration;
-        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration)
+        readonly IConfiguration _configuration;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
+
+        public StudyService(SepesDbContext db, IMapper mapper, IConfiguration configuration, IAzureBlobStorageService azureBlobStorageService)
             :base(db, mapper)
         {
             _configuration = configuration;
+            _azureBlobStorageService = azureBlobStorageService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
@@ -47,10 +49,14 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
-            return studiesDtos;
-        }            
 
-        public async Task<StudyDto> GetStudyByIdAsync(int id)
+            studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
+            return studiesDtos;
+        }   
+        
+     
+
+        public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
@@ -67,9 +73,9 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-        public async Task<StudyDto> UpdateStudyDetailsAsync(int id, StudyDto updatedStudy)
+        public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
-            PerformUsualTestsForPostedStudy(id, updatedStudy);
+            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
 
@@ -105,21 +111,21 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        void PerformUsualTestsForPostedStudy(int id, StudyDto updatedStudy)
+        void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {
-            if (id <= 0)
+            if (studyId <= 0)
             {
-                throw new ArgumentException("Id was zero or negative:" + id);
+                throw new ArgumentException("Id was zero or negative:" + studyId);
             }
 
-            if (id != updatedStudy.Id)
+            if (studyId != updatedStudy.Id)
             {
-                throw new ArgumentException($"Id in url ({id}) is different from Id in data ({updatedStudy.Id})");
+                throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
             }
         }
 
         // TODO: Deletion may be changed later to keep database entry, but remove from listing.
-        public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id)
+        public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId)
         {
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.
@@ -128,12 +134,12 @@ namespace Sepes.Infrastructure.Service
             if (!String.IsNullOrWhiteSpace(logoUrl))
             {
                 string storageConnectionString = _configuration["AzureStorageConnectionString"];
-                var blobStorage = new AzureBlobStorageService(storageConnectionString);
-                _ = blobStorage.DeleteBlob(logoUrl);
+            
+                _ = _azureBlobStorageService.DeleteBlob(logoUrl);
             }
 
             //Check if study contains studySpecific Datasets
-            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == id).ToListAsync();
+            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == studyId).ToListAsync();
             if (studySpecificDatasets.Any())
             {
                 foreach (Dataset dataset in studySpecificDatasets)
@@ -155,9 +161,9 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo)
         {
             string storageConnectionString = _configuration["AzureStorageConnectionString"];
-            var blobStorage = new AzureBlobStorageService(storageConnectionString);
-            var fileName = blobStorage.UploadBlob(studyLogo);
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(id, _db);
+        
+            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
+            var studyFromDb = await GetStudyOrThrowAsync(studyId);
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
@@ -170,7 +176,7 @@ namespace Sepes.Infrastructure.Service
 
             if (!String.IsNullOrWhiteSpace(oldFileName))
             {
-            _ = blobStorage.DeleteBlob(oldFileName);
+            _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
             return await GetStudyByIdAsync(studyFromDb.Id);
@@ -178,11 +184,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<byte[]> GetLogoAsync(int id)
         {
-            string storageConnectionString = _configuration["AzureStorageConnectionString"];
-            var blobStorage = new AzureBlobStorageService(storageConnectionString);
-            var study = await StudyQueries.GetStudyOrThrowAsync(id, _db);
+            string storageConnectionString = _configuration["AzureStorageConnectionString"];          
+            var study = await GetStudyOrThrowAsync(id);
             string logoUrl = study.LogoUrl;
-            var logo = blobStorage.GetImageFromBlobAsync(logoUrl);
+            var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
     }
