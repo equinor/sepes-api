@@ -19,26 +19,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int id);
 
-        Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int id);
-
-        Task<StudyDto> AddSandboxAsync(int id, SandboxDto newSandbox);
-
-        Task<StudyDto> RemoveSandboxAsync(int id, int sandboxId);
-
-        Task<StudyDto> AddDatasetAsync(int id, int datasetId);
-
-        Task<StudyDto> RemoveDatasetAsync(int id, int datasetId);
-
-        Task<StudyDto> AddStudySpecificDatasetAsync(int id, StudySpecificDatasetDto newDataset);
-
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
         Task<byte[]> GetLogoAsync(int id);
-
-        Task<StudyDto> AddParticipantAsync(int id, int participantId, string role);
-
-        Task<StudyDto> RemoveParticipantAsync(int id, int participantId);
-
 
         /// <summary>
         /// Makes changes to the meta data of a study.

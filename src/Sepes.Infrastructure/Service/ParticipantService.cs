@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
@@ -87,7 +87,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
         {
-            var studyFromDb = await GetStudyOrThrowAsync(studyId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
 
             if (participantFromDb == null)
@@ -107,19 +107,6 @@ namespace Sepes.Infrastructure.Service
 
             var roleIsPermittedForParticipant = false;
 
-        }
-
-        async Task<Study> GetStudyOrThrowAsync(int id)
-        {
-            var studyFromDb = await StudyQueries.GetQueryableForStudiesLookup(_db)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Study", id);
-            }
-
-            return studyFromDb;
         }
     }
 }
