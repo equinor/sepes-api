@@ -23,6 +23,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<byte[]> GetLogoAsync(int id);
 
+        Task<DatasetDto> GetDatasetByIdAsync(int studyId, int datasetId);
+
         /// <summary>
         /// Makes changes to the meta data of a study.
         /// If based is null it means its a new study.
