@@ -181,22 +181,5 @@ namespace Sepes.Infrastructure.Service
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
-
-        public async Task<DatasetDto> GetDatasetByIdAsync(int studyId, int datasetId)
-        {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-
-            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
-
-            if (studyDatasetRelation == null)
-            {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
-            }
-
-            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
-
-            return datasetDto;
-        }
-
     }
 }

@@ -35,15 +35,31 @@ namespace Sepes.Infrastructure.Service
             return dataasetsDtos;  
         }
 
-        public async Task<DatasetDto> GetDatasetByIdAsync(int id)
+        public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int id)
         {
             var datasetFromDb = await GetDatasetOrThrowAsync(id);
 
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
             return datasetDto;
-        } 
-        
+        }
+
+        public async Task<DatasetDto> GetSpecificDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
+        {
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
+
+            if (studyDatasetRelation == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
+
+            return datasetDto;
+        }
+
         async Task<Dataset> GetDatasetOrThrowAsync(int id)
         {
             var datasetFromDb = await _db.Datasets

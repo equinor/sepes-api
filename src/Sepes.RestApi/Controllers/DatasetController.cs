@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDataset(int id)
         {
-            var dataset = await _datasetService.GetDatasetByIdAsync(id);
+            var dataset = await _datasetService.GetDatasetByDatasetIdAsync(id);
             return new JsonResult(dataset);        
         }
 

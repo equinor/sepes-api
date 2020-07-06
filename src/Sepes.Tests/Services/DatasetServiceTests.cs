@@ -72,7 +72,7 @@ namespace Sepes.Tests.Services
             SeedTestDatabase(10);
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
-            DatasetDto result = await datasetService.GetDatasetByIdAsync(10);
+            DatasetDto result = await datasetService.GetDatasetByDatasetIdAsync(10);
             Assert.NotNull(result);
         }
 
@@ -86,7 +86,7 @@ namespace Sepes.Tests.Services
             SeedTestDatabase(1);
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
-            System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByIdAsync(id);
+            System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByDatasetIdAsync(id);
             await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(async () => await result);
         }
 
