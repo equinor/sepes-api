@@ -9,6 +9,7 @@ using Microsoft.Azure.Management.Network.Fluent.Models;
 using Azure.ResourceManager.Network.Models;
 using System.Collections.Generic;
 using static Microsoft.Azure.Management.ResourceManager.Fluent.Core.RestClient;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -23,41 +24,36 @@ namespace Sepes.Infrastructure.Service
 
         //TODO: Add Constructor
 
-        public string CreateName(string studyName, string sandboxName)
-        {
-            return $"vnet-study-{studyName}-{sandboxName}";
-        }
+      
 
-        public async Task<string> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string nsgName)
+        public async Task<BastionHostInner> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string nsgName)
         {
+
+            var publicIpName = AzureResourceNameUtil.BastionPublicIp(studyName, sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
+
             var ipConfigs = new List<BastionHostIPConfigurationInner> { new BastionHostIPConfigurationInner()
-        {
-            Name = $"pip-{studyName}-{sandboxName}-bastion",
+                {
+                Name = publicIpName,
                 //Subnet = ,
-
-            PrivateIPAllocationMethod = Microsoft.Azure.Management.Network.Fluent.Models.IPAllocationMethod.Static
-            } };
+                PrivateIPAllocationMethod = Microsoft.Azure.Management.Network.Fluent.Models.IPAllocationMethod.Static
+                } };
 
             var restClientBuilder = RestClient.Configure().WithEnvironment(Microsoft.Azure.Management.ResourceManager.Fluent.AzureEnvironment.AzureGlobalCloud).WithCredentials(_credentials);
-
 
             using (var client = new NetworkManagementClient(restClientBuilder.Build()))
             {
 
                 var bastion = new BastionHostInner()
                 {
-                    
                     Location = region.Name,
                     IpConfigurations = ipConfigs,
                 };
 
-                var bastionName = $"bastion-{studyName}-{sandboxName}";
+                var bastionName = AzureResourceNameUtil.Bastion(studyName, sandboxName);
                 var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
 
-                return createdBastion.Id;
+                return createdBastion;
             }
-
-
         }
     }
 

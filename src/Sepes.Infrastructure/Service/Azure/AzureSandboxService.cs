@@ -1,5 +1,8 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Migrations;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -22,16 +25,18 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task CreateSandbox(string studyName, Region region)
-        {            
-            var sandboxName = studyName + "-sandbox";
+        public async Task<string> CreateSandboxAsync(string studyName, Region region)
+        {
+            var sandboxName = AzureResourceNameUtil.Sandbox(studyName);
 
+            //TODO: CREATE SANDBOX IN SEPES DB
+            //var sandbox = new Sandbox() {;
 
             //var region = Region.EuropeWest;
 
             _logger.LogInformation($"Creating sandbox for study {studyName}. Sandbox name: {sandboxName}");
 
-            //TODO: CREATE SANDBOX IN SEPES DB
+         
 
             _logger.LogInformation($"Creating resource group");
 
@@ -44,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table
             await _resourceService.AddResourceGroup(resourceGroup.Id, resourceGroup.Name, resourceGroup.Type);
 
-            //_vNetService.Create(region, )
+            _vNetService.Create(region, resourceGroup)
 
             //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
                 //Nytt api: Alt i samme OP
@@ -57,6 +62,9 @@ namespace Sepes.Infrastructure.Service
 
 
             _logger.LogInformation($"Sandbox created: {sandboxName}");
+
+            //TODO: FIX RETURN
+            return "";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Sepes.Infrastructure.Util;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -11,14 +12,11 @@ namespace Sepes.Infrastructure.Service
 
         //TODO: Add Constructor
 
-        public string CreateName(string studyName, string sandboxName)
-        {
-            return $"vnet-study-{studyName}-{sandboxName}";
-        }
+     
 
         public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName)
         {
-            var nsgName = $"nsg-snet-{sandboxName}";
+            var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(sandboxName);
 
             return await CreateSecurityGroup(region, resourceGroupName, nsgName);
         }
