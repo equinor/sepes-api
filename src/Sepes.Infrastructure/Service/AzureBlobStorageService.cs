@@ -11,6 +11,7 @@ using Microsoft.Azure.Storage.Auth;
 using Microsoft.Extensions.Configuration;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
@@ -83,26 +84,41 @@ namespace Sepes.Infrastructure.Service
             return memStream.ToArray();
         }
 
+        public async Task<StudyDto> DecorateLogoUrlWithSAS(StudyDto studyDto)
+        {
+            var uriBuilder = await CreateUriBuilderWithSasToken();
+
+            DecorateLogoUrlsWithSAS(uriBuilder, studyDto);
+
+            return studyDto;
+        }
+
         public async Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
         {
             var uriBuilder = await CreateUriBuilderWithSasToken();
 
             foreach (var curDto in studyDtos)
             {
-                if (!String.IsNullOrWhiteSpace(curDto.LogoUrl))
-                {
-                    uriBuilder.Path = string.Format("{0}/{1}", _containerName, curDto.LogoUrl);
-                    curDto.LogoUrl = uriBuilder.Uri.ToString();
-                }
-                else
-                {
-                    curDto.LogoUrl = null;
-                }
+                DecorateLogoUrlsWithSAS(uriBuilder, curDto);             
             }
 
             return studyDtos;
-
         }
+
+
+        void DecorateLogoUrlsWithSAS(UriBuilder uriBuilder, IHasLogoUrl studyDto)
+        {
+            if (!String.IsNullOrWhiteSpace(studyDto.LogoUrl))
+            {
+                uriBuilder.Path = string.Format("{0}/{1}", _containerName, studyDto.LogoUrl);
+                studyDto.LogoUrl = uriBuilder.Uri.ToString();
+            }
+            else
+            {
+                studyDto.LogoUrl = null;
+            }            
+        }
+
 
 
         public async Task<UriBuilder> CreateUriBuilderWithSasToken()

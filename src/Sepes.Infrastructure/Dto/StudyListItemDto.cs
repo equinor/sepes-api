@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Interface;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class StudyListItemDto : LookupBaseDto
+    public class StudyListItemDto : LookupBaseDto, IHasLogoUrl
     {
         public string Description { get; set; }
         public string Vendor { get; set; }

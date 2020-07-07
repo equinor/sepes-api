@@ -57,6 +57,8 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
 
+            studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
+
             return studyDto;
         }
 

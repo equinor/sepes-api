@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Interface;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class StudyDto : UpdateableBaseDto
+    public class StudyDto : UpdateableBaseDto, IHasLogoUrl
     {
         public string Name { get; set; }
 
