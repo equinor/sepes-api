@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using Castle.Core.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
@@ -16,7 +19,7 @@ namespace Sepes.Tests.Setup
         {
             var services = new ServiceCollection();
 
-
+            services.AddLogging();
             services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
             IConfiguration config = new ConfigurationBuilder()
              .AddJsonFile("appsettings.json", optional: true)
@@ -25,10 +28,11 @@ namespace Sepes.Tests.Setup
 
 
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
-            services.AddTransient<IConfiguration, TestConfig>();
+            services.AddSingleton<IConfiguration>(config);
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
-            services.AddTransient<IConfiguration, TestConfig>();
-
+            //services.AddTransient<ILoggerFactory, NullLoggerFactory>();
+            //services.AddTransient<ILogger, NullLogger>();
+            //services.AddTransient<ILogger<T>, XunitLogger<T>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
             return services;

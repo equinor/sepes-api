@@ -10,19 +10,18 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureSandboxService
+    public class AzureService
     {
         readonly ILogger _logger;
-        readonly IAzureResourceService _resourceService;
+        readonly ICloudResourceService _resourceService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly IAzureVNetService _vNetService;
 
-        public AzureSandboxService(ILogger logger, AzureResourceService resourceService, AzureResourceGroupService resourceGroupService)
+        public AzureService(ILogger logger, CloudResourceService resourceService, AzureResourceGroupService resourceGroupService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
-
         }
 
         public async Task<string> CreateSandboxAsync(string studyName, Region region)
@@ -36,12 +35,12 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Creating sandbox for study {studyName}. Sandbox name: {sandboxName}");
 
-         
-
             _logger.LogInformation($"Creating resource group");
 
-            var tags = new Dictionary<string, string>();
-            var resourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, sandboxName, region, tags);
+            //TODO: ADD TAGS
+            var resourceGroupTags = new Dictionary<string, string>();
+
+            var resourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, sandboxName, region, resourceGroupTags);
 
             //HOW TO REALLY KNOW IT'S CREATED FINE?           
             _logger.LogInformation($"Resource group created! Id: {resourceGroup.Id}, name: {resourceGroup.Name}");
@@ -49,7 +48,7 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table
             await _resourceService.AddResourceGroup(resourceGroup.Id, resourceGroup.Name, resourceGroup.Type);
 
-            _vNetService.Create(region, resourceGroup)
+           // _vNetService.Create(region, resourceGroup)
 
             //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
                 //Nytt api: Alt i samme OP
@@ -66,5 +65,19 @@ namespace Sepes.Infrastructure.Service
             //TODO: FIX RETURN
             return "";
         }
+
+        public async Task TerminateSandbox(string studyName, string sandboxName, string resourceGroupName)
+        {
+            //Delete ResourceGroup (and hence all its contents)
+            _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}");
+
+            _logger.LogInformation($"Deleting resource group {resourceGroupName}");
+            await _resourceGroupService.DeleteResourceGroup(resourceGroupName);
+
+
+            //Update sepes db
+        }
+
+
     }
 }
