@@ -14,11 +14,17 @@ namespace Sepes.Tests.Setup
         public static ServiceCollection GetServiceCollectionWithInMemory()
         {
             var services = new ServiceCollection();
-            services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"),
-             ServiceLifetime.Scoped,
-             ServiceLifetime.Scoped);
-            //IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true).AddEnvironmentVariables().Build();
+
+
+            services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
+            IConfiguration config = new ConfigurationBuilder()
+             .AddJsonFile("appsettings.json", optional: true)
+             .AddJsonFile("appsettings.Development.json", optional: true)
+             .AddEnvironmentVariables().Build();
+
+
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
+            services.AddTransient<IConfiguration, TestConfig>();
             services.AddTransient<IConfiguration, TestConfig>();
 
             services.AddAutoMapper(typeof(AutoMappingConfigs));
