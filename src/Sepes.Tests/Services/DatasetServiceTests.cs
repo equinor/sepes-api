@@ -20,18 +20,26 @@ namespace Sepes.Tests.Services
         public DatasetServiceTests()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
+            Services.AddTransient<IStudyService, StudyService>();
             Services.AddTransient<IDatasetService, DatasetService>();
             ServiceProvider = Services.BuildServiceProvider();
         }
 
-        async void AddTestDataset(int id)
+        void RefreshTestDatabase()
+        {
+            var db = ServiceProvider.GetService<SepesDbContext>();
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
+
+        async void SeedTestDatabase(int datasetId)
         {
             var db = ServiceProvider.GetService<SepesDbContext>();
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
             Dataset dataset = new Dataset()
             {
-                Id = id,
+                Id = datasetId,
                 Name = "TestDataset",
                 Description = "For Testing",
                 Location = "Norway West",
@@ -51,7 +59,7 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void GetDatasetsLookupAsync_ShouldReturnDatasets_IfExists()
         {
-            AddTestDataset(5);
+            SeedTestDatabase(5);
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
             IEnumerable<DatasetListItemDto> result = await datasetService.GetDatasetsLookupAsync();
@@ -61,10 +69,10 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void GetDatasetByIdAsync_ShouldReturnDataset_IfExists()
         {
-            AddTestDataset(10);
+            SeedTestDatabase(10);
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
-            DatasetDto result = await datasetService.GetDatasetByIdAsync(10);
+            DatasetDto result = await datasetService.GetDatasetByDatasetIdAsync(10);
             Assert.NotNull(result);
         }
 
@@ -75,12 +83,39 @@ namespace Sepes.Tests.Services
         [InlineData(1337)]
         public async void GetDatasetByIdAsync_ShouldThrow_IfDoesNotExist(int id)
         {
-            AddTestDataset(1);
+            SeedTestDatabase(1);
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
-            System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByIdAsync(id);
+            System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByDatasetIdAsync(id);
             await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(async () => await result);
         }
 
+        [Theory]
+        [InlineData(null, "Norway", "Restricted")]
+        [InlineData("TestDataset", null, "Internal")]
+        [InlineData("TestDataset2", "Western Europe", null)]
+        public async void AddStudySpecificDatasetAsync_WithoutRequiredAttributes_ShouldFail(string name, string location, string classification)
+        {
+            RefreshTestDatabase();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+
+            var study = new StudyDto()
+            {
+                Name = "TestStudy",
+                Vendor = "Bouvet"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(study);
+
+            var datasetWithoutRequiredFields = new StudySpecificDatasetDto()
+            {
+                Name = name,
+                Location = location,
+                Classification = classification
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => datasetService.AddStudySpecificDatasetAsync((int)createdStudy.Id, datasetWithoutRequiredFields));
+        }
     }
 }
