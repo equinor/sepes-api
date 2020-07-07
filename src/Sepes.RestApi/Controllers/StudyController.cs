@@ -119,7 +119,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
         {
-            var dataset = await _datasetService.GetSpecificDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
+            var dataset = await _datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
             return new JsonResult(dataset);
         }
 

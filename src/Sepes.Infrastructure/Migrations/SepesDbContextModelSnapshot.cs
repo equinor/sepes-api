@@ -39,6 +39,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<DateTime>("DeletedFromAzure")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ResourceGroupId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ResourceGroupName")
                         .HasColumnType("nvarchar(max)");
 
@@ -254,6 +257,9 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<bool>("Restricted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ResultsAndLearnings")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
