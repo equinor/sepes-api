@@ -89,10 +89,14 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDto in studyDtos)
             {
-                if (!String.IsNullOrWhiteSpace(uriBuilder.Path))
+                if (!String.IsNullOrWhiteSpace(curDto.LogoUrl))
                 {
                     uriBuilder.Path = string.Format("{0}/{1}", _containerName, curDto.LogoUrl);
                     curDto.LogoUrl = uriBuilder.Uri.ToString();
+                }
+                else
+                {
+                    curDto.LogoUrl = null;
                 }
             }
 
