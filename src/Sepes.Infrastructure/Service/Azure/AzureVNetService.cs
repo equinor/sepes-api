@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
                 .CreateAsync();
 
 
-            var bastion = _bastionService.Create(region, resourceGroupName)
+            //var bastion = _bastionService.Create(region, resourceGroupName)
 
 
 

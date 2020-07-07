@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
-        public virtual DbSet<AzureResource> AzureResources { get; set; }
+        public virtual DbSet<CloudResource> CloudResources { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

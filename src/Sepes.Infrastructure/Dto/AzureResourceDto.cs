@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class AzureResourceDto : UpdateableBaseDto
+    public class CloudResourceDto : UpdateableBaseDto
     {
         public string ResourceType { get; set; }
     }

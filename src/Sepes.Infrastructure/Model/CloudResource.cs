@@ -2,7 +2,7 @@
 
 namespace Sepes.Infrastructure.Model
 {
-    public class AzureResource : UpdateableBaseModel
+    public class CloudResource : UpdateableBaseModel
     {  
         public string ResourceId { get; set; }
 

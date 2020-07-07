@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<Sandbox> Sandboxes { get; set; }
 
-        public virtual ICollection<AzureResource> AzureResources { get; set; }
+        public virtual ICollection<CloudResource> CloudResources { get; set; }
     }
 
 
