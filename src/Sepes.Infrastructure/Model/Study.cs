@@ -11,6 +11,8 @@ namespace Sepes.Infrastructure.Model
         
         public string Description { get; set; }
 
+        public string ResultsAndLearnings { get; set; }
+
         [MaxLength(64)]
         public string WbsCode { get; set; }
 
