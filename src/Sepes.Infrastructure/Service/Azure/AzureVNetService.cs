@@ -9,31 +9,27 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
 using Azure.ResourceManager.Network.Models;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
     {       
         readonly IAzureNwSecurityGroupService _nsgService;
+        readonly IAzureBastionService _bastionService;
 
-        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger, IAzureNwSecurityGroupService nsgService)
+        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger, IAzureNwSecurityGroupService nsgService, IAzureBastionService bastionService)
             :base (config, logger)
-        {
-          
+        {          
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
+            _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
+        }   
 
-        }
-
-        //TODO: Add Constructor
-
-        public string CreateVNetName(string studyName, string sandboxName)
-        {
-            return $"vnet-study-{studyName}-{sandboxName}";
-        }
+      
 
         public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         {
-            var networkName = CreateVNetName(studyName, sandboxName);
+            var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
 
             var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
 
@@ -52,15 +48,18 @@ namespace Sepes.Infrastructure.Service
                 
                 .CreateAsync();
 
-     
 
-            
+            var bastion = _bastionService.Create(region, resourceGroupName)
 
-                
 
-               
 
-        
+
+
+
+
+
+
+
 
             return network;
         }
