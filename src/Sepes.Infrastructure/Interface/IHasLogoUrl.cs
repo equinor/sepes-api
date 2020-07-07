@@ -2,6 +2,6 @@
 {
     public interface IHasLogoUrl
     {
-        public string LogoUrl { get; set; }
+        string LogoUrl { get; set; }
     }
 }
