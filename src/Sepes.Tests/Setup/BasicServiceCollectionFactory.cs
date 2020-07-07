@@ -19,7 +19,7 @@ namespace Sepes.Tests.Setup
         {
             var services = new ServiceCollection();
 
-            services.AddLogging();
+
             services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
             IConfiguration config = new ConfigurationBuilder()
              .AddJsonFile("appsettings.json", optional: true)
