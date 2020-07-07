@@ -7,12 +7,12 @@ using Xunit;
 
 namespace Sepes.Tests.Services.Azure
 {
-    public class AzureSandboxServiceTest
+    public class AzureServiceTest
     {
         public ServiceCollection Services { get; private set; }
         public ServiceProvider ServiceProvider { get; protected set; }
 
-        public AzureSandboxServiceTest()
+        public AzureServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
             Services.AddTransient<AzureService>();

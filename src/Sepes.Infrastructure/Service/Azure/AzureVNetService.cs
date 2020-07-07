@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
 
         public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger, IAzureNwSecurityGroupService nsgService, IAzureBastionService bastionService)
             :base (config, logger)
-        {          
+        {         
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
             _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
         }   
