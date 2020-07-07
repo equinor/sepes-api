@@ -1,11 +1,8 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Migrations;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -26,29 +23,29 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<string> CreateSandboxAsync(string studyName, Region region)
         {
-            var sandboxName = AzureResourceNameUtil.Sandbox(studyName);
+            //STILL UNCERTAIN
+            //WHAT TYPE SHOULD THIS METHOD RETURN?
 
-            //TODO: CREATE SANDBOX IN SEPES DB
-            //var sandbox = new Sandbox() {;
 
-            //var region = Region.EuropeWest;
+            var sandboxName = AzureResourceNameUtil.Sandbox(studyName);         
 
             _logger.LogInformation($"Creating sandbox for study {studyName}. Sandbox name: {sandboxName}");
 
             _logger.LogInformation($"Creating resource group");
 
-            //TODO: ADD TAGS
+            //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST 
             var resourceGroupTags = new Dictionary<string, string>();
 
             var resourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, sandboxName, region, resourceGroupTags);
 
-            //HOW TO REALLY KNOW IT'S CREATED FINE?           
+            //TODO: DO WE NEED TO VERIFY A RESOURCE IS CREATED FINE?           
             _logger.LogInformation($"Resource group created! Id: {resourceGroup.Id}, name: {resourceGroup.Name}");
 
-            //Add RG to resource table
+            //Add RG to resource table in SEPES DB
             await _resourceService.AddResourceGroup(resourceGroup.Id, resourceGroup.Name, resourceGroup.Type);
 
            // _vNetService.Create(region, resourceGroup)
+           //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
 
             //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
                 //Nytt api: Alt i samme OP

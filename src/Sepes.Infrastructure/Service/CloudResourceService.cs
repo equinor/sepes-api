@@ -58,7 +58,7 @@ namespace Sepes.Infrastructure.Service
         {
             var entityFromDb = await GetOrThrowAsync(id);
 
-            var dto = MapEntityToDto(entityFromDb);// _mapper.Map<AzureResourceDto>(entityFromDb);
+            var dto = MapEntityToDto(entityFromDb);
 
             return dto;
         }
@@ -88,6 +88,8 @@ namespace Sepes.Infrastructure.Service
 
         async Task<CloudResource> MarkAsDeletedByIdInternalAsync(int id)
         {
+            //WE DON*T REALLY DELETE FROM THIS TABLE, WE "MARK AS DELETED" AND KEEP THE RECORDS FOR FUTURE REFERENCE
+
             var entityFromDb = await _db.CloudResources.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
