@@ -102,6 +102,11 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
 
+            if (updatedStudy.ResultsAndLearnings != studyFromDb.ResultsAndLearnings)
+            {
+                studyFromDb.ResultsAndLearnings = updatedStudy.ResultsAndLearnings;
+            }
+
             Validate(studyFromDb);
 
             await _db.SaveChangesAsync();
