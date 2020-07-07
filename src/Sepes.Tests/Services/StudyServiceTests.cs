@@ -21,7 +21,7 @@ namespace Sepes.Tests.Services
             ServiceProvider = Services.BuildServiceProvider();
         }
 
-        void Seed()
+        void RefreshTestDb()
         {
             var db = ServiceProvider.GetService<SepesDbContext>();
             db.Database.EnsureDeleted();
@@ -34,7 +34,7 @@ namespace Sepes.Tests.Services
         [InlineData(12351324)]
         public async void CreatingStudyWithSpecifiedIdShouldBeOk(int id)
         {
-            Seed();
+            RefreshTestDb();
             var studyService = ServiceProvider.GetService<IStudyService>();
             var studyWithSpecifiedId = new StudyDto()
             {
@@ -53,7 +53,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutNameShouldFail(string name)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidName = new StudyDto()
@@ -70,7 +70,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutVendorShouldFail(string vendor)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidVendor = new StudyDto()
@@ -89,7 +89,7 @@ namespace Sepes.Tests.Services
         [InlineData("TestStudy", "")]
         public async void UpdatingStudyDetailsWithoutRequiredFieldsShouldBeWellHandled(string name, string vendor)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var initialStudy = new StudyDto()
@@ -120,12 +120,45 @@ namespace Sepes.Tests.Services
         [InlineData(123456)]
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
+            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
         }
 
+        [Theory]
+        [InlineData(2)]
+        [InlineData(7)]
+        [InlineData(99999)]
+        [InlineData(123456)]
+        public async void DeleteStudyAsync_ShouldThrow_IfStudyDoesNotExist(int id)
+        {
+            RefreshTestDb();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.DeleteStudyAsync(id));
+        }
+
+        [Fact]
+        public async void DeleteStudyAsync_ShouldDelete_IfStudyExists()
+        {
+            RefreshTestDb();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            var initialStudy = new StudyDto()
+            {
+                Id = 1,
+                Name = "TestStudy12345",
+                Vendor = "Equinor"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(initialStudy);
+            int studyId = (int)createdStudy.Id;
+            _ = await studyService.DeleteStudyAsync(1);
+
+            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(1));
+
+        }
         //        [Fact]
         //        public async void TestSave()
         //        {
