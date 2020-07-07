@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Migrations;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
@@ -22,7 +21,7 @@ namespace Sepes.Tests.Services
             ServiceProvider = Services.BuildServiceProvider();
         }
 
-        void Seed()
+        void RefreshTestDb()
         {
             var db = ServiceProvider.GetService<SepesDbContext>();
             db.Database.EnsureDeleted();
@@ -35,7 +34,7 @@ namespace Sepes.Tests.Services
         [InlineData(12351324)]
         public async void CreatingStudyWithSpecifiedIdShouldBeOk(int id)
         {
-            Seed();
+            RefreshTestDb();
             var studyService = ServiceProvider.GetService<IStudyService>();
             var studyWithSpecifiedId = new StudyDto()
             {
@@ -54,7 +53,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutNameShouldFail(string name)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidName = new StudyDto()
@@ -71,7 +70,7 @@ namespace Sepes.Tests.Services
         [InlineData("")]
         public async void CreatingStudyWithoutVendorShouldFail(string vendor)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var studyWithInvalidVendor = new StudyDto()
@@ -90,7 +89,7 @@ namespace Sepes.Tests.Services
         [InlineData("TestStudy", "")]
         public async void UpdatingStudyDetailsWithoutRequiredFieldsShouldBeWellHandled(string name, string vendor)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
             var initialStudy = new StudyDto()
@@ -121,63 +120,45 @@ namespace Sepes.Tests.Services
         [InlineData(123456)]
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
+            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(id));
         }
 
         [Theory]
-        [InlineData(null, "Norway", "Restricted")]
-        [InlineData("TestDataset", null, "Internal")]
-        [InlineData("TestDataset2", "Western Europe", null)]
-        public async void AddStudySpecificDatasetAsync_WithoutRequiredAttributes_ShouldFail(string name, string location, string classification)
+        [InlineData(2)]
+        [InlineData(7)]
+        [InlineData(99999)]
+        [InlineData(123456)]
+        public async void DeleteStudyAsync_ShouldThrow_IfStudyDoesNotExist(int id)
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            var study = new StudyDto()
-            {
-                Name = "TestStudy",
-                Vendor = "Bouvet"
-            };
-
-            var createdStudy = await studyService.CreateStudyAsync(study);
-
-            var datasetWithoutRequiredFields = new StudySpecificDatasetDto()
-            {
-                Name = name,
-                Location = location,
-                Classification = classification
-            };
-
-            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddStudySpecificDatasetAsync((int)createdStudy.Id, datasetWithoutRequiredFields));
+            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.DeleteStudyAsync(id));
         }
 
-        [Theory]
-        [InlineData("TestSandbox", "")]
-        [InlineData("TestSandbox", null)]
-        public async void AddSandboxAsync_WithoutWbs_ShouldFail(string name, string wbs)
+        [Fact]
+        public async void DeleteStudyAsync_ShouldDelete_IfStudyExists()
         {
-            Seed();
+            RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            StudyDto study = new StudyDto()
+            var initialStudy = new StudyDto()
             {
-                Name = "TestStudy",
-                Vendor = "Bouvet",
-                WbsCode = wbs
+                Id = 1,
+                Name = "TestStudy12345",
+                Vendor = "Equinor"
             };
 
-            StudyDto createdStudy = await studyService.CreateStudyAsync(study);
-            int studyID = (int)createdStudy.Id;
+            var createdStudy = await studyService.CreateStudyAsync(initialStudy);
+            int studyId = (int)createdStudy.Id;
+            _ = await studyService.DeleteStudyAsync(1);
 
-            SandboxDto sandbox = new SandboxDto() { Name = name };
+            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(1));
 
-            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddSandboxAsync(studyID, sandbox));
         }
-
-
         //        [Fact]
         //        public async void TestSave()
         //        {

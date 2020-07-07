@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service;
 using System.Collections.Generic;
 
 namespace Sepes.Tests.Setup
@@ -20,6 +21,7 @@ namespace Sepes.Tests.Setup
             //IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true).AddEnvironmentVariables().Build();
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
             services.AddTransient<IConfiguration, TestConfig>();
+            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
 
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
@@ -38,7 +40,7 @@ namespace Sepes.Tests.Setup
 
         public TestConfig()
         {
-            this["ConnectionStrings:AzureStorageConnectionString"] = "UseDevelopmentStorage=true";
+            this["AzureStorageConnectionString"] = "UseDevelopmentStorage=true";
         }
         public string this[string key] { get { return configKeys[key]; }  set { configKeys[key] = value; }  } 
 
