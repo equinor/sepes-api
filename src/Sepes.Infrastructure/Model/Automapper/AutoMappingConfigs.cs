@@ -41,6 +41,10 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Participant, ParticipantListItemDto>();
 
             CreateMap<ParticipantDto, Participant>();
+
+            //CLOUD RESOURCE
+            CreateMap<CloudResource, CloudResourceDto>()
+                .ReverseMap();
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Castle.Core.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +29,7 @@ namespace Sepes.Tests.Setup
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
             services.AddSingleton<IConfiguration>(config);
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+            services.AddTransient<ILogger, NullLogger<string>>();
             //services.AddTransient<ILoggerFactory, NullLoggerFactory>();
             //services.AddTransient<ILogger, NullLogger>();
             //services.AddTransient<ILogger<T>, XunitLogger<T>>();

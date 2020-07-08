@@ -9,6 +9,7 @@
   <ItemGroup>
     <None Remove="appsettings.Development.json" />
     <None Remove="appsettings.json" />
+    <None Remove="Setup\appsettings.Development.json" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,15 +1,21 @@
 ﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureResourceGroupService : IAzureResourceGroupService
-    {
-        private readonly IAzure _azure;        
+    public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
+    { 
+        
+        public AzureResourceGroupService(IConfiguration config, ILogger logger)
+            :base(config, logger)
+        {
+        }
 
         public string CreateResourceGroupNameForStudy(string studyName, string sandboxName)
         {
@@ -18,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IResourceGroup> CreateResourceGroupForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
         {
-            var resourceGroupName = CreateResourceGroupNameForStudy(studyName, sandboxName);
+            string resourceGroupName = CreateResourceGroupNameForStudy(studyName, sandboxName);
 
             //TODO: Add tags, where to get?
             //TechnicalContact (Specified per sandbox?)
@@ -29,18 +35,18 @@ namespace Sepes.Infrastructure.Service
             return await CreateResourceGroup(resourceGroupName, region, tags);
 
            
-            var resourceGroup = await _azure.ResourceGroups
-                    .Define(resourceGroupName)
-                    .WithRegion(region)
-                    .WithTags(tags)
-                    .CreateAsync();
+            //var resourceGroup = await _azure.ResourceGroups
+            //        .Define(resourceGroupName)
+            //        .WithRegion(region)
+            //        .WithTags(tags)
+            //        .CreateAsync();
 
-            return resourceGroup;
+            //return resourceGroup;
         }
 
         public async Task<IResourceGroup> CreateResourceGroup(string resourceGroupName, Region region, Dictionary<string, string> tags)
-        {           
-            var resourceGroup = await _azure.ResourceGroups
+        {
+            IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
                     .WithRegion(region)
                     .WithTags(tags)
