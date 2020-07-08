@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Service;
 using Sepes.Tests.Setup;
@@ -15,6 +16,9 @@ namespace Sepes.Tests.Services.Azure
         public AzureServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
+            //Services.AddTransient<IAzure>();
+            Services.AddTransient<CloudResourceService>();
+            Services.AddTransient<AzureResourceGroupService>();
             Services.AddTransient<AzureService>();
             ServiceProvider = Services.BuildServiceProvider();
         }

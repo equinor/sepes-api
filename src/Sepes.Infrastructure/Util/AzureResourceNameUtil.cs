@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Util
 
         public static string Sandbox(string studyName)
         {
-            return studyName + "-sandbox";
+            return $"{studyName}-sandbox";
         }
 
         public static string NetworkSecGroup(string sandboxName)

@@ -180,16 +180,12 @@ namespace Sepes.Infrastructure.Service
         {
             string suppliedFileName = file.FileName;
             string fileType = suppliedFileName.Split('.').Last();
-            if (!String.IsNullOrWhiteSpace(fileType)
-                && (fileType.Equals(ImageFormat.png.ToString())
+            return !String.IsNullOrWhiteSpace(fileType) &&
+                (  fileType.Equals(ImageFormat.png.ToString())
                 || fileType.Equals(ImageFormat.jpeg.ToString())
                 || fileType.Equals(ImageFormat.jpg.ToString())
-                || fileType.Equals(ImageFormat.bmp.ToString()))
-                )
-            {
-                return true;
-            }
-            return false;
+                || fileType.Equals(ImageFormat.bmp.ToString())
+                );
         }
     }
 }
