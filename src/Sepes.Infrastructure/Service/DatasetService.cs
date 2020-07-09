@@ -203,10 +203,10 @@ namespace Sepes.Infrastructure.Service
             {
                 datasetFromDb.Classification = updatedDataset.Classification;
             }
-            //if (!String.IsNullOrWhiteSpace(updatedDataset.StorageAccountName) && updatedDataset.StorageAccountName != datasetFromDb.StorageAccountName)
-            //{
-            //    datasetFromDb.StorageAccountName = updatedDataset.StorageAccountName;
-            //}
+            if (!String.IsNullOrWhiteSpace(updatedDataset.StorageAccountName) && updatedDataset.StorageAccountName != datasetFromDb.StorageAccountName)
+            {
+                datasetFromDb.StorageAccountName = updatedDataset.StorageAccountName;
+            }
             if (updatedDataset.LRAId != datasetFromDb.LRAId)
             {
                 datasetFromDb.LRAId = updatedDataset.LRAId;
