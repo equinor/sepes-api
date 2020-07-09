@@ -10,11 +10,15 @@ namespace Sepes.Infrastructure.Model
         public string Name { get; set; }
 
         [MaxLength(64)]
-        //[Required]
+        [Required]
+        public string StorageAccountName { get; set; }
+
+        [MaxLength(64)]
+        [Required]
         public string Location { get; set; }
 
         [MaxLength(32)]
-        //[Required]
+        [Required]
         public string Classification { get; set; }
 
         public int LRAId { get; set; }
