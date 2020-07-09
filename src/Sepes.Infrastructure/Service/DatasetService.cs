@@ -161,6 +161,10 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
+            if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
+            {
+                throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
+            }
         }
 
         void PerformUsualTestForPostedDatasets(DatasetDto datasetDto)
