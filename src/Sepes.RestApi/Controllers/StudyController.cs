@@ -131,7 +131,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-        [HttpPut("{studyId}/datasets/studyspecific{datasetId}")]
+        [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
         {
