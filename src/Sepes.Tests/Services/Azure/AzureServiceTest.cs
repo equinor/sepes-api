@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Tests.Setup;
 using System;
@@ -24,7 +25,7 @@ namespace Sepes.Tests.Services.Azure
         }
 
         [Fact]    
-        public async void CreatingSandboxShouldBeOk()
+        public async void CreatingAndDeletingSandboxShouldBeOk()
         {
             var sandboxService = ServiceProvider.GetService<AzureService>();
 
@@ -33,7 +34,16 @@ namespace Sepes.Tests.Services.Azure
 
             var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.EuropeWest);
 
-            Assert.IsType<string>(sandbox);
+            Assert.NotNull(sandbox);
+            Assert.IsType<AzureSandboxDto>(sandbox);
+
+            Assert.NotNull(sandbox.StudyName);
+            Assert.NotNull(sandbox.SandboxName);
+            Assert.NotNull(sandbox.ResourceGroupName);
+
+            await sandboxService.NukeSandbox(studyName, sandbox.SandboxName, sandbox.ResourceGroupName);
+
+           
         }
 
     }
