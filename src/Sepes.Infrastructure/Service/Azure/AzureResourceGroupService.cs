@@ -3,6 +3,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,14 +18,11 @@ namespace Sepes.Infrastructure.Service
         {
         }
 
-        public string CreateResourceGroupNameForStudy(string studyName, string sandboxName)
-        {
-            return $"rg-study-{studyName}-{sandboxName}";
-        }
+      
 
         public async Task<IResourceGroup> CreateResourceGroupForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
         {
-            string resourceGroupName = CreateResourceGroupNameForStudy(studyName, sandboxName);
+            string resourceGroupName = AzureResourceNameUtil.ResourceGroupForStudy(sandboxName);
 
             //TODO: Add tags, where to get?
             //TechnicalContact (Specified per sandbox?)

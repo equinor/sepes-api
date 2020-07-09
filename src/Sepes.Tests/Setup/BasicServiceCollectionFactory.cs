@@ -30,9 +30,6 @@ namespace Sepes.Tests.Setup
             services.AddSingleton<IConfiguration>(config);
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<ILogger, NullLogger<string>>();
-            //services.AddTransient<ILoggerFactory, NullLoggerFactory>();
-            //services.AddTransient<ILogger, NullLogger>();
-            //services.AddTransient<ILogger<T>, XunitLogger<T>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
             return services;
@@ -44,30 +41,7 @@ namespace Sepes.Tests.Setup
         public string AzureStorageConnectionString { get; set; }
     }
 
-    public class TestConfig : IConfiguration
-    {
-        readonly Dictionary<string, string> configKeys = new Dictionary<string, string>();
-
-        public TestConfig()
-        {
-            this["AzureStorageConnectionString"] = "UseDevelopmentStorage=true";
-        }
-        public string this[string key] { get { return configKeys[key]; }  set { configKeys[key] = value; }  } 
-
-        public IEnumerable<IConfigurationSection> GetChildren()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IChangeToken GetReloadToken()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IConfigurationSection GetSection(string key)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
+   
+    
 
 }

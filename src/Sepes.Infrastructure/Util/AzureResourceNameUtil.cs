@@ -6,6 +6,11 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceNameUtil
     {
+
+        public static string ResourceGroupForStudy(string sandboxName)
+        {
+            return $"rg-study-{sandboxName}";
+        }
         public static string VNet(string studyName, string sandboxName)
         {
             return $"vnet-study-{studyName}-{sandboxName}";
