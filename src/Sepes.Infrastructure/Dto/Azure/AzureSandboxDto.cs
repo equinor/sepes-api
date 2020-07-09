@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -10,8 +9,12 @@ namespace Sepes.Infrastructure.Dto
 
         public string SandboxName { get; set; }
 
-      
+        public string ResourceGroupId { get { return ResourceGroup.Id; } }
 
-        public string ResourceGroupName { get; set; }
+        public string ResourceGroupName { get { return ResourceGroup.Name; } }
+
+        public IResourceGroup ResourceGroup { get; set; }
+
+        public INetwork VNet { get; set; }
     }
 }
