@@ -60,6 +60,7 @@ namespace Sepes.Tests.Services
                 Description = "For Testing",
                 Location = "Norway West",
                 Classification = "Internal",
+                StorageAccountName = "testdataset",
                 LRAId = 1337,
                 DataId = 420,
                 SourceSystem = "SAP",
@@ -79,6 +80,16 @@ namespace Sepes.Tests.Services
             IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
 
             IEnumerable<DatasetListItemDto> result = await datasetService.GetDatasetsLookupAsync();
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public async void GetDatasetsAsync_ShouldReturnDatasets_IfExists()
+        {
+            SeedTestDatabase(5);
+            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+
+            IEnumerable<DatasetDto> result = await datasetService.GetDatasetsAsync();
             Assert.NotNull(result);
         }
 
