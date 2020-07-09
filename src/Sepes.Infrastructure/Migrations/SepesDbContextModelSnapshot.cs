@@ -94,6 +94,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Classification")
+                        .IsRequired()
                         .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
@@ -119,6 +120,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Location")
+                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
@@ -129,6 +131,11 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("SourceSystem")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StorageAccountName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<int?>("StudyNo")
                         .HasColumnType("int");

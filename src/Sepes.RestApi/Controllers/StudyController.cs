@@ -131,6 +131,14 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
+        {
+            var updatedStudy = await _datasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, newDataset);
+            return new JsonResult(updatedStudy);
+        }
+
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]

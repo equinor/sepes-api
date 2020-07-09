@@ -12,16 +12,13 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class DatasetService : IDatasetService
+    public class DatasetService : ServiceBase<Dataset>, IDatasetService
     {
-        readonly SepesDbContext _db;
-        readonly IMapper _mapper;
         readonly IStudyService _studyService;
 
         public DatasetService(SepesDbContext db, IMapper mapper, IStudyService studyService)
+            :base(db, mapper)
         {            
-            _db = db;
-            _mapper = mapper;
             _studyService = studyService;
         }
 
@@ -35,9 +32,9 @@ namespace Sepes.Infrastructure.Service
             return dataasetsDtos;  
         }
 
-        public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int id)
+        public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId)
         {
-            var datasetFromDb = await GetDatasetOrThrowAsync(id);
+            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId);
 
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
@@ -164,11 +161,178 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
+            if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
+            {
+                throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
+            }
         }
 
-        //public Task<StudyDto> UpdateDatasetAsync(int id, DatasetDto datasetToUpdate)
-        //{
-        //    throw new System.NotImplementedException();
-        //}
+        void PerformUsualTestForPostedDatasets(DatasetDto datasetDto)
+        {
+            if (String.IsNullOrWhiteSpace(datasetDto.Name))
+            {
+                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Name}");
+            }
+            if (String.IsNullOrWhiteSpace(datasetDto.Classification))
+            {
+                throw new ArgumentException($"Field Dataset.Classification is required. Current value: {datasetDto.Classification}");
+            }
+            if (String.IsNullOrWhiteSpace(datasetDto.Location))
+            {
+                throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
+            }
+        }
+
+        public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
+        {
+            var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
+            var newDatasetId = await Add(newDatasetDbModel);
+            return await GetDatasetByDatasetIdAsync(newDatasetId);
+
+        }
+
+        public async Task<DatasetDto> UpdateDatasetAsync(int datasetId, DatasetDto updatedDataset)
+        {
+            PerformUsualTestForPostedDatasets(updatedDataset);
+            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId);
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
+            {
+                datasetFromDb.Name = updatedDataset.Name;
+            }
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Location) && updatedDataset.Location != datasetFromDb.Location)
+            {
+                datasetFromDb.Location = updatedDataset.Location;
+            }
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Classification) && updatedDataset.Classification != datasetFromDb.Classification)
+            {
+                datasetFromDb.Classification = updatedDataset.Classification;
+            }
+            if (!String.IsNullOrWhiteSpace(updatedDataset.StorageAccountName) && updatedDataset.StorageAccountName != datasetFromDb.StorageAccountName)
+            {
+                datasetFromDb.StorageAccountName = updatedDataset.StorageAccountName;
+            }
+            if (updatedDataset.LRAId != datasetFromDb.LRAId)
+            {
+                datasetFromDb.LRAId = updatedDataset.LRAId;
+            }
+            if (updatedDataset.DataId != datasetFromDb.DataId)
+            {
+                datasetFromDb.DataId = updatedDataset.DataId;
+            }
+            if (updatedDataset.SourceSystem != datasetFromDb.SourceSystem)
+            {
+                datasetFromDb.SourceSystem = updatedDataset.SourceSystem;
+            }
+            if (updatedDataset.BADataOwner != datasetFromDb.BADataOwner)
+            {
+                datasetFromDb.BADataOwner = updatedDataset.BADataOwner;
+            }
+            if (updatedDataset.Asset != datasetFromDb.Asset)
+            {
+                datasetFromDb.Asset = updatedDataset.Asset;
+            }
+            if (updatedDataset.CountryOfOrigin != datasetFromDb.CountryOfOrigin)
+            {
+                datasetFromDb.CountryOfOrigin = updatedDataset.CountryOfOrigin;
+            }
+            if (updatedDataset.AreaL1 != datasetFromDb.AreaL1)
+            {
+                datasetFromDb.AreaL1 = updatedDataset.AreaL1;
+            }
+            if (updatedDataset.AreaL2 != datasetFromDb.AreaL2)
+            {
+                datasetFromDb.AreaL2 = updatedDataset.AreaL2;
+            }
+            if (updatedDataset.Tags != datasetFromDb.Tags)
+            {
+                datasetFromDb.Tags = updatedDataset.Tags;
+            }
+            if (updatedDataset.Description != datasetFromDb.Description)
+            {
+                datasetFromDb.Description = updatedDataset.Description;
+            }
+            Validate(datasetFromDb);
+            await _db.SaveChangesAsync();
+            return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
+        }
+
+        public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
+        {
+            PerformUsualTestForPostedDatasets(updatedDataset);
+            var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId);
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
+            {
+                datasetFromDb.Name = updatedDataset.Name;
+            }
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Location) && updatedDataset.Location != datasetFromDb.Location)
+            {
+                datasetFromDb.Location = updatedDataset.Location;
+            }
+            if (!String.IsNullOrWhiteSpace(updatedDataset.Classification) && updatedDataset.Classification != datasetFromDb.Classification)
+            {
+                datasetFromDb.Classification = updatedDataset.Classification;
+            }
+            //if (!String.IsNullOrWhiteSpace(updatedDataset.StorageAccountName) && updatedDataset.StorageAccountName != datasetFromDb.StorageAccountName)
+            //{
+            //    datasetFromDb.StorageAccountName = updatedDataset.StorageAccountName;
+            //}
+            if (updatedDataset.LRAId != datasetFromDb.LRAId)
+            {
+                datasetFromDb.LRAId = updatedDataset.LRAId;
+            }
+            if (updatedDataset.DataId != datasetFromDb.DataId)
+            {
+                datasetFromDb.DataId = updatedDataset.DataId;
+            }
+            if (updatedDataset.SourceSystem != datasetFromDb.SourceSystem)
+            {
+                datasetFromDb.SourceSystem = updatedDataset.SourceSystem;
+            }
+            if (updatedDataset.BADataOwner != datasetFromDb.BADataOwner)
+            {
+                datasetFromDb.BADataOwner = updatedDataset.BADataOwner;
+            }
+            if (updatedDataset.Asset != datasetFromDb.Asset)
+            {
+                datasetFromDb.Asset = updatedDataset.Asset;
+            }
+            if (updatedDataset.CountryOfOrigin != datasetFromDb.CountryOfOrigin)
+            {
+                datasetFromDb.CountryOfOrigin = updatedDataset.CountryOfOrigin;
+            }
+            if (updatedDataset.AreaL1 != datasetFromDb.AreaL1)
+            {
+                datasetFromDb.AreaL1 = updatedDataset.AreaL1;
+            }
+            if (updatedDataset.AreaL2 != datasetFromDb.AreaL2)
+            {
+                datasetFromDb.AreaL2 = updatedDataset.AreaL2;
+            }
+            if (updatedDataset.Tags != datasetFromDb.Tags)
+            {
+                datasetFromDb.Tags = updatedDataset.Tags;
+            }
+            if (updatedDataset.Description != datasetFromDb.Description)
+            {
+                datasetFromDb.Description = updatedDataset.Description;
+            }
+            Validate(datasetFromDb);
+            await _db.SaveChangesAsync();
+            return await GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetFromDb.Id);
+        }
+
+        async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId)
+        {
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
+
+            if (studyDatasetRelation == null)
+            {
+                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+            }
+
+            return studyDatasetRelation.Dataset;
+        }
     }
 }
