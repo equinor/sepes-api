@@ -15,6 +15,6 @@ namespace Sepes.Infrastructure.Dto
 
         public IResourceGroup ResourceGroup { get; set; }
 
-        public INetwork VNet { get; set; }
+        public AzureVNetDto VNet { get; set; }
     }
 }

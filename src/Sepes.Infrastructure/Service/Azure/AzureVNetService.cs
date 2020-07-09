@@ -9,57 +9,65 @@ using System;
 using System.Threading.Tasks;
 using Azure.ResourceManager.Network.Models;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Dto;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
     {       
-        readonly IAzureNwSecurityGroupService _nsgService;
-        readonly IAzureBastionService _bastionService;
+        
+       
 
-        public AzureVNetService(IConfiguration config, ILogger logger, IAzureNwSecurityGroupService nsgService, IAzureBastionService bastionService)
+        public AzureVNetService(IConfiguration config, ILogger logger)
             :base (config, logger)
         {         
-            _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
-            _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
+           
+          
         }       
 
-        public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
+        public async Task<AzureVNetDto> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         {
+            var networkDto = new AzureVNetDto();
             var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
 
-            var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
+            var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
-            //var bastionSubnetName = "AzureBastionSubnet";
-            //var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
+            var bastionSubnetName = "AzureBastionSubnet";
+            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
 
             var sandboxSubnetName = $"snet-{sandboxName}";
             var sandboxSubnetAddress = "10.100.1.0/24";
 
-            var network = await _azure.Networks.Define(networkName)
+            networkDto.Network = await _azure.Networks.Define(networkName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
+                
                 .WithAddressSpace(addressSpace)
-                //.WithSubnet(bastionSubnetName, bastionSubnetAddress)
+                .WithSubnet(bastionSubnetName, bastionSubnetAddress)
                 .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)  
                 
                 .CreateAsync();
 
-
-            //var bastion = _bastionService.Create(region, resourceGroupName)
-
+            
 
 
-
-
-
-
-
-
-
-
-            return network;
+            return networkDto;
         }
+
+        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        {
+            //Add the security group to a subnet.
+            var nsg = _azure.NetworkSecurityGroups.GetByResourceGroup(resourceGroupName, securityGroupName);
+            var network = _azure.Networks.GetByResourceGroup(resourceGroupName, networkName);
+            await network.Update()
+                .UpdateSubnet(subnetName)
+                .WithExistingNetworkSecurityGroup(nsg)
+                .Parent()
+                .ApplyAsync();
+        }
+
+
+
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         //{

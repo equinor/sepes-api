@@ -1,18 +1,25 @@
 ﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Util;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureNwSecurityGroupService : IAzureNwSecurityGroupService
+    public class AzureNwSecurityGroupService : AzureServiceBase, IAzureNwSecurityGroupService
     {
-        private readonly IAzure _azure;
 
-        //TODO: Add Constructor
 
-     
+        public AzureNwSecurityGroupService(IConfiguration config, ILogger logger)
+             : base(config, logger)
+        {
+
+
+        }
+
+
 
         public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName)
         {
