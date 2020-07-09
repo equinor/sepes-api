@@ -15,11 +15,14 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly IAzureVNetService _vNetService;
 
-        public AzureService(ILogger logger, CloudResourceService resourceService, AzureResourceGroupService resourceGroupService)
+        public AzureService(ILogger logger, CloudResourceService resourceService, IAzureResourceGroupService resourceGroupService
+            , IAzureVNetService vNetService
+            )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
+            _vNetService = vNetService ?? throw new ArgumentNullException(nameof(vNetService));
         }
 
         public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
@@ -42,11 +45,12 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table in SEPES DB
             await _resourceService.AddResourceGroup(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.ResourceGroup.Type);
 
-           // _vNetService.Create(region, resourceGroup)
+            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);         
+
            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
 
             //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
-                //Nytt api: Alt i samme OP
+            //Nytt api: Alt i samme OP
             //TODO; CREATE SECURITYGROUP (VNetService or NsgService)
             //TODO: ASSIGN NSG TO SUBNET (VNetService or NsgService)
 

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sepes.Infrastructure.Util
+﻿namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceNameUtil
     {
@@ -11,15 +7,15 @@ namespace Sepes.Infrastructure.Util
         {
             return $"rg-study-{sandboxName}";
         }
-        public static string VNet(string studyName, string sandboxName)
-        {
-            return $"vnet-study-{studyName}-{sandboxName}";
-        }
-
         public static string Sandbox(string studyName)
         {
             return $"{studyName}-sandbox";
         }
+
+        public static string VNet(string studyName, string sandboxName)
+        {
+            return $"vnet-study-{sandboxName}";
+        }    
 
         public static string NetworkSecGroup(string sandboxName)
         {

@@ -17,14 +17,12 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureNwSecurityGroupService _nsgService;
         readonly IAzureBastionService _bastionService;
 
-        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger, IAzureNwSecurityGroupService nsgService, IAzureBastionService bastionService)
+        public AzureVNetService(IConfiguration config, ILogger logger, IAzureNwSecurityGroupService nsgService, IAzureBastionService bastionService)
             :base (config, logger)
         {         
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
             _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
-        }   
-
-      
+        }       
 
         public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         {
@@ -32,8 +30,8 @@ namespace Sepes.Infrastructure.Service
 
             var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
 
-            var bastionSubnetName = "AzureBastionSubnet";
-            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
+            //var bastionSubnetName = "AzureBastionSubnet";
+            //var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
 
             var sandboxSubnetName = $"snet-{sandboxName}";
             var sandboxSubnetAddress = "10.100.1.0/24";
@@ -42,7 +40,7 @@ namespace Sepes.Infrastructure.Service
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithAddressSpace(addressSpace)
-                .WithSubnet(bastionSubnetName, bastionSubnetAddress)
+                //.WithSubnet(bastionSubnetName, bastionSubnetAddress)
                 .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)  
                 
                 .CreateAsync();
