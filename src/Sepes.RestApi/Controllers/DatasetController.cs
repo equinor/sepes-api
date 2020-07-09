@@ -20,8 +20,15 @@ namespace Sepes.RestApi.Controller
             _datasetService = datasetService;
         }
 
-        //Get list of datasets lookup items
         [HttpGet]
+        public async Task<IActionResult> GetDatasetsAsync()
+        {
+            var studies = await _datasetService.GetDatasetsAsync();
+            return new JsonResult(studies);
+        }
+
+        //Get list of datasets lookup items
+        [HttpGet("lookup")]
         public async Task<IActionResult> GetDatasetsLookupAsync()
         {
             var studies = await _datasetService.GetDatasetsLookupAsync();

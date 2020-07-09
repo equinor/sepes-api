@@ -32,6 +32,16 @@ namespace Sepes.Infrastructure.Service
             return dataasetsDtos;  
         }
 
+        public async Task<IEnumerable<DatasetDto>> GetDatasetsAsync()
+        {
+            var datasetsFromDb = await _db.Datasets
+                .Where(ds => ds.StudyNo == null)
+                .ToListAsync();
+            var dataasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(datasetsFromDb);
+
+            return dataasetDtos;
+        }
+
         public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId)
         {
             var datasetFromDb = await GetDatasetOrThrowAsync(datasetId);

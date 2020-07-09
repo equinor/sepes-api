@@ -8,6 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         
         Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync();
+        Task<IEnumerable<DatasetDto>> GetDatasetsAsync();
         Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId);
         Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId);
         Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset);
