@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.Fluent;
+﻿using Azure.ResourceManager.Network.Models;
+using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
@@ -19,7 +20,10 @@ namespace Sepes.Tests.Services.Azure
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
             //Services.AddTransient<IAzure>();
             Services.AddTransient<CloudResourceService>();
-            Services.AddTransient<AzureResourceGroupService>();
+            Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+            Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            Services.AddTransient<IAzureBastionService, AzureBastionService>();
+            Services.AddTransient<IAzureVNetService, AzureVNetService>();
             Services.AddTransient<AzureService>();
             ServiceProvider = Services.BuildServiceProvider();
         }
@@ -32,16 +36,40 @@ namespace Sepes.Tests.Services.Azure
             var uniqueName = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
             var studyName = $"utest-{uniqueName}";
 
-            var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.EuropeWest);
+            string sandboxName = null;
+            string resourceGroupName = null;
+       
 
-            Assert.NotNull(sandbox);
-            Assert.IsType<AzureSandboxDto>(sandbox);
+            try
+            {
+                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.EuropeWest);
 
-            Assert.NotNull(sandbox.StudyName);
-            Assert.NotNull(sandbox.SandboxName);
-            Assert.NotNull(sandbox.ResourceGroupName);
+                sandboxName = sandbox.SandboxName;
+                resourceGroupName = sandbox.ResourceGroupName;
 
-            await sandboxService.NukeSandbox(studyName, sandbox.SandboxName, sandbox.ResourceGroupName);
+                Assert.NotNull(sandbox);
+                Assert.IsType<AzureSandboxDto>(sandbox);
+
+                Assert.NotNull(sandbox.StudyName);
+                Assert.NotNull(sandbox.SandboxName);
+                Assert.NotNull(sandbox.ResourceGroupName);
+
+                Assert.NotNull(sandbox.VNet);
+            }
+            catch (Exception ex)
+            {
+
+                int i = 0;
+            }
+            finally
+            {
+                await sandboxService.NukeSandbox(studyName, sandboxName, resourceGroupName);
+            }
+
+
+          
+
+          
 
            
         }
