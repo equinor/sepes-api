@@ -61,10 +61,11 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
 
-            // TODO: Do check on Sandbox
+            if (sandboxFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+            }
 
-            // Create reference
-            //var sandbox = _mapper.Map<Sandbox>(sandboxFromDb);
             studyFromDb.Sandboxes.Remove(sandboxFromDb);
             await _db.SaveChangesAsync();
 

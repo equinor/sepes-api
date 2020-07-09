@@ -127,6 +127,7 @@ namespace Sepes.Tests.Services
 
         [Theory]
         [InlineData(1, 420)]
+        [InlineData(420, 1)]
         public async void RemoveSandboxFromStudyAsync_ShouldThrow_IfSandboxOrStudyDoesNotExist(int providedStudyId, int providedSandboxId)
         {
             RefreshTestDb();
@@ -136,13 +137,8 @@ namespace Sepes.Tests.Services
 
             SandboxDto sandbox = new SandboxDto() { Name = "TestSandbox" };
             _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox);
-            var sandboxFromDb = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
-            var sandboxId = (int)sandboxFromDb.First().Id;
-            _ = await sandboxService.RemoveSandboxFromStudyAsync(studyId, sandboxId);
 
-            var sandboxes = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
-
-            Assert.Empty(sandboxes);
+            await Assert.ThrowsAsync<NotFoundException>(() => sandboxService.RemoveSandboxFromStudyAsync(providedStudyId, providedSandboxId));
         }
     }
 }
