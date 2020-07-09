@@ -32,9 +32,9 @@
             return $"bastion-{studyName}-{sandboxName}";
         }
 
-        public static string BastionPublicIp(string studyName, string sandboxName)
+        public static string BastionPublicIp(string sandboxName)
         {
-            return $"pip-{studyName}-{sandboxName}-bastion";
+            return $"pip-{sandboxName}-bastion";
         }
     }
 }

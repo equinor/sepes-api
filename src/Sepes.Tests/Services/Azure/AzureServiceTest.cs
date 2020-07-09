@@ -64,14 +64,7 @@ namespace Sepes.Tests.Services.Azure
             finally
             {
                 await sandboxService.NukeSandbox(studyName, sandboxName, resourceGroupName);
-            }
-
-
-          
-
-          
-
-           
+            }          
         }
 
     }

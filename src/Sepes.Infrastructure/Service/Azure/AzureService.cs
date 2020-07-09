@@ -14,15 +14,19 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceService _resourceService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly IAzureVNetService _vNetService;
+        readonly IAzureBastionService _bastionService;
+        readonly IAzureNwSecurityGroupService _nsgService;
 
         public AzureService(ILogger logger, CloudResourceService resourceService, IAzureResourceGroupService resourceGroupService
-            , IAzureVNetService vNetService
+            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _resourceService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
             _vNetService = vNetService ?? throw new ArgumentNullException(nameof(vNetService));
+            _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
+            _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
         }
 
         public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
@@ -45,7 +49,15 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table in SEPES DB
             await _resourceService.AddResourceGroup(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.ResourceGroup.Type);
 
-            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);         
+            var nsgForSandboxSubnet = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName);
+
+            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);
+            var subnetName = $"snet-{azureSandbox.SandboxName}"; //TODO: RETURN FROM METHOD ABOVE IN DTO
+            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Name);
+
+
+            var bastion = _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
+
 
            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
 
