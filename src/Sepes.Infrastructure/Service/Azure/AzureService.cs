@@ -24,28 +24,23 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
         {
-            //STILL UNCERTAIN
-            //WHAT TYPE SHOULD THIS METHOD RETURN?
+            var azureSandbox = new AzureSandboxDto() { StudyName = studyName };
 
-            var dto = new AzureSandboxDto() { StudyName = studyName };
+            azureSandbox.SandboxName = AzureResourceNameUtil.Sandbox(studyName);         
 
-            dto.SandboxName= AzureResourceNameUtil.Sandbox(studyName);         
-
-            _logger.LogInformation($"Creating sandbox for study {studyName}. Sandbox name: {dto.SandboxName}");
+            _logger.LogInformation($"Creating sandbox for study {studyName}. Sandbox name: {azureSandbox.SandboxName}");
 
             _logger.LogInformation($"Creating resource group");
 
             //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST 
             var resourceGroupTags = new Dictionary<string, string>();
-
-            var resourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, dto.SandboxName, region, resourceGroupTags);
-            dto.ResourceGroupName = resourceGroup.Name;
-
-            //TODO: DO WE NEED TO VERIFY A RESOURCE IS CREATED FINE?           
-            _logger.LogInformation($"Resource group created! Id: {resourceGroup.Id}, name: {resourceGroup.Name}");
+                    
+            azureSandbox.ResourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, azureSandbox.SandboxName, region, resourceGroupTags);
+                                  
+            _logger.LogInformation($"Resource group created! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
 
             //Add RG to resource table in SEPES DB
-            await _resourceService.AddResourceGroup(resourceGroup.Id, resourceGroup.Name, resourceGroup.Type);
+            await _resourceService.AddResourceGroup(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.ResourceGroup.Type);
 
            // _vNetService.Create(region, resourceGroup)
            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
@@ -60,10 +55,10 @@ namespace Sepes.Infrastructure.Service
             //TODO: CREATE VMs (VmService)
 
 
-            _logger.LogInformation($"Sandbox created: {dto.SandboxName}");
+            _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
             //TODO: FIX RETURN
-            return dto;
+            return azureSandbox;
         }
 
         public async Task NukeSandbox(string studyName, string sandboxName, string resourceGroupName)
