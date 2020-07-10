@@ -43,7 +43,7 @@ namespace Sepes.Tests.Services.Azure
 
             try
             {
-                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.EuropeWest);
+                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.NorwayWest);
 
                 sandboxName = sandbox.SandboxName;
                 resourceGroupName = sandbox.ResourceGroupName;

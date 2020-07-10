@@ -1,5 +1,5 @@
 ﻿
-using Azure.Core;
+using Azure;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public Azure.Response<bool> DeleteBlob(string fileName)
+        public Response<bool> DeleteBlob(string fileName)
         {
             var blobContainerClient = CreateBlobContainerClient();
             return blobContainerClient.DeleteBlobIfExists(fileName);
