@@ -22,50 +22,47 @@ namespace Sepes.Infrastructure.Service
 
         //TODO: Add Constructor
 
-      
+
 
         public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId)
         {
-            
+
 
             try
             {
+                var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
 
-         
-            var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
-
-                var pip  = await _azure.PublicIPAddresses.Define(publicIpName)
+                var pip = await _azure.PublicIPAddresses.Define(publicIpName)
                  .WithRegion(region)                 
-                 .WithExistingResourceGroup(resourceGroupName)   
-                 .WithStaticIP()
+                 .WithExistingResourceGroup(resourceGroupName)
+                 .WithStaticIP()                 
                  .CreateAsync();
-
-                var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
-                {
-                Name = publicIpName,
-                Subnet =  new SubResource(subnetId),
-                PrivateIPAllocationMethod = "Static",
-                PublicIPAddress = new SubResource(pip.Id)
-                } };
-
-                
-
-                //var restClientBuilder = RestClient.Configure().WithEnvironment(Microsoft.Azure.Management.ResourceManager.Fluent.AzureEnvironment.AzureGlobalCloud).WithCredentials(_credentials);
 
                 using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
                 {
                     client.SubscriptionId = _subscriptionId;
 
-                    var bastion = new BastionHost()
-                    {
-                        Location = region.Name,
-                        IpConfigurations = ipConfigs                        
+                    var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
 
+                    var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
+                    {
+                    Name = $"{bastionName}-ip-config",
+                    Subnet =  new SubResource(subnetId), 
+                    
+                    PublicIPAddress = new SubResource(pip.Id),
+                    }
                     };
 
-                    var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
-                    var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
+                    var bastion = new BastionHost()
+                    {
+                        Location = region.Name,                        
+                        IpConfigurations = ipConfigs
+                    };
+                 
 
+                  
+                    var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
+                    
                     var provState = createdBastion.ProvisioningState;
 
                     var test = await client.BastionHosts.GetAsync(resourceGroupName, bastionName);
