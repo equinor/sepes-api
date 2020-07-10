@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
             await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Name);
 
 
-            var bastion = _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
+            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
 
 
            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB

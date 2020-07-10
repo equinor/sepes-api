@@ -27,9 +27,9 @@
             return $"nsg-snet-{sandboxName}";
         }
 
-        public static string Bastion(string studyName, string sandboxName)
+        public static string Bastion(string sandboxName)
         {
-            return $"bastion-{studyName}-{sandboxName}";
+            return $"bastion-{sandboxName}";
         }
 
         public static string BastionPublicIp(string sandboxName)

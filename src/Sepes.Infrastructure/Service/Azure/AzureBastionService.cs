@@ -5,7 +5,6 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
-using Microsoft.Azure.Management.Network.Fluent.Models;
 using System.Collections.Generic;
 using Sepes.Infrastructure.Util;
 using Microsoft.Azure.Management.Network.Models;
@@ -49,21 +48,27 @@ namespace Sepes.Infrastructure.Service
                 PublicIPAddress = new SubResource(pip.Id)
                 } };
 
+                
+
                 //var restClientBuilder = RestClient.Configure().WithEnvironment(Microsoft.Azure.Management.ResourceManager.Fluent.AzureEnvironment.AzureGlobalCloud).WithCredentials(_credentials);
 
                 using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
                 {
+                    client.SubscriptionId = _subscriptionId;
 
                     var bastion = new BastionHost()
                     {
                         Location = region.Name,
-                        IpConfigurations = ipConfigs
+                        IpConfigurations = ipConfigs                        
 
                     };
 
-                    var bastionName = AzureResourceNameUtil.Bastion(studyName, sandboxName);
+                    var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
                     var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
 
+                    var provState = createdBastion.ProvisioningState;
+
+                    var test = await client.BastionHosts.GetAsync(resourceGroupName, bastionName);
 
 
                     //using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(restClientBuilder.Build()))

@@ -33,8 +33,9 @@ namespace Sepes.Tests.Services.Azure
         {
             var sandboxService = ServiceProvider.GetService<AzureService>();
 
-            var uniqueName = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
-            var studyName = $"utest-{uniqueName}";
+            var dateString = DateTime.UtcNow.ToString("yyyyMMddHHmm");
+            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
+            var studyName = $"utest-{dateString}-{shortGuid}";
 
             string sandboxName = null;
             string resourceGroupName = null;

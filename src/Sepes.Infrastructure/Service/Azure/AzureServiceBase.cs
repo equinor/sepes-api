@@ -18,6 +18,8 @@ namespace Sepes.Infrastructure.Service
         protected readonly IAzure _azure;
         protected readonly AzureCredentials _credentials;
 
+        protected string _subscriptionId { get; set; }
+
 
         public AzureServiceBase(IConfiguration config, ILogger logger)
           
@@ -29,13 +31,13 @@ namespace Sepes.Infrastructure.Service
             var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
 
 
-            var subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
 
-            _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
+            _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 
 
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
-                .Authenticate(_credentials).WithDefaultSubscription();
+                .Authenticate(_credentials).WithSubscription(_subscriptionId);
 
 
            // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
