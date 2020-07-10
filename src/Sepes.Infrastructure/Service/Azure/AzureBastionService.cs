@@ -8,26 +8,19 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Sepes.Infrastructure.Util;
 using Microsoft.Azure.Management.Network.Models;
+using Microsoft.Azure.Management.Network.Fluent.Models;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureBastionService : AzureServiceBase, IAzureBastionService
     {
-
-
         public AzureBastionService(IConfiguration config, ILogger logger) : base(config, logger)
         {
 
         }
 
-        //TODO: Add Constructor
-
-
-
         public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId)
         {
-
-
             try
             {
                 var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
@@ -35,7 +28,8 @@ namespace Sepes.Infrastructure.Service
                 var pip = await _azure.PublicIPAddresses.Define(publicIpName)
                  .WithRegion(region)                 
                  .WithExistingResourceGroup(resourceGroupName)
-                 .WithStaticIP()                 
+                 .WithStaticIP()      
+                 .WithSku(PublicIPSkuType.Standard)
                  .CreateAsync();
 
                 using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
@@ -44,48 +38,31 @@ namespace Sepes.Infrastructure.Service
 
                     var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
 
+                    // Kan hende PrivateIPAllocationMethod bør settes til "Static"? Vet ikke hva som er ønsket her...
                     var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
-                    {
-                    Name = $"{bastionName}-ip-config",
-                    Subnet =  new SubResource(subnetId), 
-                    
-                    PublicIPAddress = new SubResource(pip.Id),
-                    }
+                        {
+                            Name = $"{bastionName}-ip-config",
+                            Subnet =  new SubResource(subnetId),
+                            PrivateIPAllocationMethod = "Dynamic",
+                            PublicIPAddress = new SubResource(pip.Inner.Id),
+                        }
                     };
 
                     var bastion = new BastionHost()
                     {
                         Location = region.Name,                        
-                        IpConfigurations = ipConfigs
+                        IpConfigurations = ipConfigs,
+                        
                     };
-                 
-
-                  
+             
                     var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
                     
                     var provState = createdBastion.ProvisioningState;
 
                     var test = await client.BastionHosts.GetAsync(resourceGroupName, bastionName);
 
-
-                    //using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(restClientBuilder.Build()))
-                    //{
-
-                    //    var bastion = new BastionHostInner()
-                    //    {
-                    //        Location = region.Name,
-                    //        IpConfigurations = ipConfigs
-
-                    //        //IpConfigurations = ipConfigs
-
-                    //    };
-
-                    //    var bastionName = AzureResourceNameUtil.Bastion(studyName, sandboxName);
-                    //    var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
-
                     return createdBastion;
                 }
-
             }
             catch (System.Exception ex)
             {
