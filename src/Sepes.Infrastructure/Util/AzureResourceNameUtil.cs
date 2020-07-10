@@ -36,5 +36,10 @@
         {
             return $"pip-{sandboxName}-bastion";
         }
+
+        public static string StorageAccount(string sandboxName)
+        {
+            return $"{sandboxName}-storage";
+        }
     }
 }
