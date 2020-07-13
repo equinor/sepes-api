@@ -1,11 +1,9 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -20,7 +18,7 @@ namespace Sepes.Infrastructure.Service
 
       
 
-        public async Task<IResourceGroup> CreateResourceGroupForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
+        public async Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
         {
             string resourceGroupName = AzureResourceNameUtil.ResourceGroupForStudy(sandboxName);
 
@@ -30,44 +28,28 @@ namespace Sepes.Infrastructure.Service
             //Sponsor
             //SponsorEmail
 
-            return await CreateResourceGroup(resourceGroupName, region, tags);
-
-           
-            //var resourceGroup = await _azure.ResourceGroups
-            //        .Define(resourceGroupName)
-            //        .WithRegion(region)
-            //        .WithTags(tags)
-            //        .CreateAsync();
-
-            //return resourceGroup;
+            return await Create(resourceGroupName, region, tags);         
         }
 
-        public async Task<IResourceGroup> CreateResourceGroup(string resourceGroupName, Region region, Dictionary<string, string> tags)
+        public async Task<IResourceGroup> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
                     .WithRegion(region)
                     .WithTags(tags)
-                    .CreateAsync();
-
+                    .CreateAsync();     
             
-
-            //return resource id from iresource objects
             return resourceGroup;
-        }
+        }       
 
         public async Task<bool> Exists(string resourceGroupName)
         {
             return await _azure.ResourceGroups.ContainAsync(resourceGroupName);
         }      
 
-        public async Task DeleteResourceGroup(string resourceGroupName)
+        public async Task Delete(string resourceGroupName)
         {
-            //Cancelation token can be saved so the azure delete can be aborted. But has not been done in this use case.
-            CancellationTokenSource source = new CancellationTokenSource();
-            CancellationToken token = source.Token;
-
-            await _azure.ResourceGroups.BeginDeleteByNameAsync(resourceGroupName, token);
+            await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
         }
 
     }

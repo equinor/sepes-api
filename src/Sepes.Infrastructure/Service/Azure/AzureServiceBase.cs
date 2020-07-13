@@ -1,9 +1,7 @@
 ﻿
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
@@ -42,8 +40,9 @@ namespace Sepes.Infrastructure.Service
 
            // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
 
-;
-        }
+
+
+        }      
 
     
 
