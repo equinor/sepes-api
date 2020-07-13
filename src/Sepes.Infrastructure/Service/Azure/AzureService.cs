@@ -64,15 +64,13 @@ namespace Sepes.Infrastructure.Service
             var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
 
 
-           //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
+            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
 
             //Nytt api: Alt i samme OP
-
             //TODO: CREATE VMs (VmService)
+            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345");
 
-
-
-            _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
+                _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
             return azureSandbox;
         }

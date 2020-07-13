@@ -12,7 +12,9 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureVMService
     {
-        Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, string os, INetwork primaryNetwork, string subnetName, string privateIp, string userName, string password, string vmPerformanceProfile);
+        Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, 
+                                    string subnetName, string userName, string password, string vmPerformanceProfile = "Cheap", 
+                                    string os = "Windows Server 2012");
         Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName);
         Task Delete(string resourceGroupName, string virtualMachineName);
     }
