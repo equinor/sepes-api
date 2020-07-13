@@ -1,6 +1,4 @@
-﻿using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Azure.Management.Network.Models;
+﻿using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System.Threading.Tasks;
 
@@ -10,7 +8,6 @@ namespace Sepes.Infrastructure.Service
     {
       
         Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId);
-     
-        //Task Delete(string resourceGroupName, string securityGroupName);
+        Task Delete(string resourceGroupName, string bastionHostName);      
     }
 }

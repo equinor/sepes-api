@@ -1,14 +1,13 @@
-﻿
-using Microsoft.Azure.Management.Network;
+﻿using Microsoft.Azure.Management.Network;
 using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.Network.Fluent.Models;
+using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using Sepes.Infrastructure.Util;
-using Microsoft.Azure.Management.Network.Models;
-using Microsoft.Azure.Management.Network.Fluent.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -21,22 +20,20 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId)
         {
-            try
+            var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
+
+            var pip = await _azure.PublicIPAddresses.Define(publicIpName)
+             .WithRegion(region)
+             .WithExistingResourceGroup(resourceGroupName)
+             .WithStaticIP()
+             .WithSku(PublicIPSkuType.Standard)
+             .CreateAsync();
+
+            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
-                var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
+                client.SubscriptionId = _subscriptionId;
 
-                var pip = await _azure.PublicIPAddresses.Define(publicIpName)
-                 .WithRegion(region)                 
-                 .WithExistingResourceGroup(resourceGroupName)
-                 .WithStaticIP()      
-                 .WithSku(PublicIPSkuType.Standard)
-                 .CreateAsync();
-
-                using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
-                {
-                    client.SubscriptionId = _subscriptionId;
-
-                    var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
+                var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
 
                     var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
                         {
@@ -47,39 +44,28 @@ namespace Sepes.Infrastructure.Service
                         }
                     };
 
-                    var bastion = new BastionHost()
-                    {
-                        Location = region.Name,                        
-                        IpConfigurations = ipConfigs,
-                        
-                    };
-             
-                    var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
-                    
-                    var provState = createdBastion.ProvisioningState;
+                var bastion = new BastionHost()
+                {
+                    Location = region.Name,
+                    IpConfigurations = ipConfigs,
 
-                    return createdBastion;
-                }
+                };
+
+                var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);   
+                
+                return createdBastion;
             }
-            catch (System.Exception ex)
-            {
+        }
 
-                var polse = 1;
-                throw;
+        public async Task Delete(string resourceGroupName, string bastionHostName)
+        {
+            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+                await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
             }
         }
     }
-
-
-
-    //public async Task Delete(string resourceGroupName, string securityGroupName)
-    //{
-    //    await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
-    //}
-
-
-
-
 
 }
 

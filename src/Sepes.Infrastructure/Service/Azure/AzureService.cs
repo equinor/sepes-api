@@ -19,6 +19,8 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureNwSecurityGroupService _nsgService;
         readonly IAzureVMService _vmService;
 
+        public static readonly string UnitTestPrefix = "unit-test";
+
         public AzureService(ILogger logger, CloudResourceService resourceService, IAzureResourceGroupService resourceGroupService
             , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService, IAzureVMService vmService
             )
@@ -45,7 +47,7 @@ namespace Sepes.Infrastructure.Service
             //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST 
             var resourceGroupTags = new Dictionary<string, string>();
                     
-            azureSandbox.ResourceGroup = await _resourceGroupService.CreateResourceGroupForStudy(studyName, azureSandbox.SandboxName, region, resourceGroupTags);
+            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(studyName, azureSandbox.SandboxName, region, resourceGroupTags);
                                   
             _logger.LogInformation($"Resource group created! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
 
@@ -81,10 +83,17 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}");
 
             _logger.LogInformation($"Deleting resource group {resourceGroupName}");
-            await _resourceGroupService.DeleteResourceGroup(resourceGroupName);
+            await _resourceGroupService.Delete(resourceGroupName);
 
 
             //Update sepes db? NO, ONE LEVEL ABOVE SHOULD DO THAT
+        }
+
+        public async Task NukeUnitTestSandboxes()
+        {
+            //TODO: Get list of resource groups
+            //If resource group has prefix, nuke it
+
         }
 
 
