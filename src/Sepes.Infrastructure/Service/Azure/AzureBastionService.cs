@@ -38,12 +38,11 @@ namespace Sepes.Infrastructure.Service
 
                     var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
 
-                    // Kan hende PrivateIPAllocationMethod bør settes til "Static"? Vet ikke hva som er ønsket her...
                     var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
                         {
                             Name = $"{bastionName}-ip-config",
                             Subnet =  new SubResource(subnetId),
-                            PrivateIPAllocationMethod = "Dynamic",
+                            PrivateIPAllocationMethod = "Static",
                             PublicIPAddress = new SubResource(pip.Inner.Id),
                         }
                     };
@@ -58,8 +57,6 @@ namespace Sepes.Infrastructure.Service
                     var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
                     
                     var provState = createdBastion.ProvisioningState;
-
-                    var test = await client.BastionHosts.GetAsync(resourceGroupName, bastionName);
 
                     return createdBastion;
                 }

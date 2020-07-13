@@ -21,7 +21,6 @@ namespace Sepes.Infrastructure.Service
         public AzureVNetService(IConfiguration config, ILogger logger)
             :base (config, logger)
         {         
-           
           
         }       
 
@@ -35,7 +34,7 @@ namespace Sepes.Infrastructure.Service
             var bastionSubnetName = "AzureBastionSubnet";
             var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
 
-            var sandboxSubnetName = $"snet-{sandboxName}";
+            var sandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
             var sandboxSubnetAddress = "10.100.1.0/24";
 
             networkDto.Network = await _azure.Networks.Define(networkName)
@@ -47,9 +46,6 @@ namespace Sepes.Infrastructure.Service
                 .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)  
                 
                 .CreateAsync();
-
-            
-
 
             return networkDto;
         }

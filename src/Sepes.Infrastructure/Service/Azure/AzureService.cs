@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -16,9 +17,10 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureVNetService _vNetService;
         readonly IAzureBastionService _bastionService;
         readonly IAzureNwSecurityGroupService _nsgService;
+        readonly IAzureVMService _vmService;
 
         public AzureService(ILogger logger, CloudResourceService resourceService, IAzureResourceGroupService resourceGroupService
-            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService
+            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService, IAzureVMService vmService
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -27,6 +29,7 @@ namespace Sepes.Infrastructure.Service
             _vNetService = vNetService ?? throw new ArgumentNullException(nameof(vNetService));
             _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
+            _vmService = vmService ?? throw new ArgumentNullException(nameof(vmService));
         }
 
         public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
@@ -61,19 +64,14 @@ namespace Sepes.Infrastructure.Service
 
            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
 
-            //TODO: CREATE VNET, SUBNET AND BASTION (VNetService)
             //Nytt api: Alt i samme OP
-            //TODO; CREATE SECURITYGROUP (VNetService or NsgService)
-            //TODO: ASSIGN NSG TO SUBNET (VNetService or NsgService)
-
-
 
             //TODO: CREATE VMs (VmService)
 
 
+
             _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
-            //TODO: FIX RETURN
             return azureSandbox;
         }
 

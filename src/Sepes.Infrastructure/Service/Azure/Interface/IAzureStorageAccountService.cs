@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    interface IAzureStorageAccountService
+    public interface IAzureStorageAccountService
     {
         Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName);
         Task DeleteStorageAccount(string resourceGroupName, string storageAccountName);

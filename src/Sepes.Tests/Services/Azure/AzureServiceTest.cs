@@ -4,6 +4,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Tests.Setup;
 using System;
 using Xunit;
@@ -24,6 +25,7 @@ namespace Sepes.Tests.Services.Azure
             Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
             Services.AddTransient<IAzureBastionService, AzureBastionService>();
             Services.AddTransient<IAzureVNetService, AzureVNetService>();
+            Services.AddTransient<IAzureVMService, AzureVMService>();
             Services.AddTransient<AzureService>();
             ServiceProvider = Services.BuildServiceProvider();
         }
