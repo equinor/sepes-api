@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.Network.Models;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -43,6 +44,16 @@ namespace Sepes.Infrastructure.Service
         {
             return await Add(resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
         }
+
+        public async Task<CloudResourceDto> Add(string resourceGroupId, string resourceGroupName, Resource resource)
+        {
+            return await Add(resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
+        }
+
+        //ResourceGroup
+        //Nsg
+        //VNet
+        //Bastion
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
@@ -104,5 +115,7 @@ namespace Sepes.Infrastructure.Service
 
             return entityFromDb;
         }
+
+      
     }
 }

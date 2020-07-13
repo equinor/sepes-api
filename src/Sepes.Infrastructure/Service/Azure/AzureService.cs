@@ -56,17 +56,20 @@ namespace Sepes.Infrastructure.Service
 
             var nsgForSandboxSubnet = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName);
 
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Type, nsgForSandboxSubnet.Key, nsgForSandboxSubnet.Name);
+
             azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.VNet.Network.Type, azureSandbox.VNet.Key, azureSandbox.VNet.Name);
+
             var subnetName = $"snet-{azureSandbox.SandboxName}"; //TODO: RETURN FROM METHOD ABOVE IN DTO
-            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Name);
+            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Network.Name);
+
+            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);        
+         
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);          
 
 
-            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
 
-
-            //TODO: Add VNET, Subnet and Bastion to resource table in SEPES DB
-
-            //Nytt api: Alt i samme OP
             //TODO: CREATE VMs (VmService)
             var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345");
 
@@ -79,6 +82,8 @@ namespace Sepes.Infrastructure.Service
         {
             //Delete ResourceGroup (and hence all its contents)
             _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}");
+
+            //TODO: Get list of relevant resources and mark as deleted in our db
 
             _logger.LogInformation($"Deleting resource group {resourceGroupName}");
             await _resourceGroupService.Delete(resourceGroupName);
