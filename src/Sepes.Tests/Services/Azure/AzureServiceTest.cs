@@ -37,7 +37,7 @@ namespace Sepes.Tests.Services.Azure
 
             var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm");
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
-            var studyName = $"utest-{dateString}-{shortGuid}";
+            var studyName = $"{AzureService.UnitTestPrefix}-{dateString}-{shortGuid}";
 
             string sandboxName = null;
             string resourceGroupName = null;
