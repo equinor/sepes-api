@@ -15,7 +15,12 @@
         public static string VNet(string studyName, string sandboxName)
         {
             return $"vnet-study-{sandboxName}";
-        }    
+        }
+
+        public static string SubNet(string sandboxName)
+        {
+            return $"snet-{sandboxName}";
+        }
 
         public static string NetworkSecGroup(string sandboxName)
         {
@@ -39,7 +44,12 @@
 
         public static string StorageAccount(string sandboxName)
         {
-            return $"{sandboxName}-storage";
+            return $"{sandboxName.ToLower()}-storage";
+        }
+
+        public static string VirtualMachine(string sandboxName)
+        {
+            return $"VM-{sandboxName}";
         }
     }
 }

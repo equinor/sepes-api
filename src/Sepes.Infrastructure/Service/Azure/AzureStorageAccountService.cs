@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service.Azure
             // Get keys to build connectionstring with
             var keys = await account.GetKeysAsync();
 
-            // Build connection string Maybe return this? Or should access happen through SAS-key?
+            // Build connection string. Maybe return this? Or should access happen through SAS-key?
             string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
 
             // Connect
