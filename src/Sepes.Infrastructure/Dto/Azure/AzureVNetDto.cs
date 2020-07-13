@@ -21,6 +21,23 @@ namespace Sepes.Infrastructure.Dto
             }
         }
 
+        public string Key
+        {
+            get
+            {
+                return Network.Key;
+            }
+        }
+
+        public string Id
+        {
+            get
+            {
+                return Network.Id;
+            }
+        }
+      
+
         public INetwork Network{ get; set; }
     }
 }
