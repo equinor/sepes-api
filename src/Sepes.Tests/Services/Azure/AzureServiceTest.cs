@@ -1,6 +1,4 @@
-﻿using Azure.ResourceManager.Network.Models;
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
@@ -18,8 +16,7 @@ namespace Sepes.Tests.Services.Azure
 
         public AzureServiceTest()
         {
-            Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            //Services.AddTransient<IAzure>();
+            Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();        
             Services.AddTransient<CloudResourceService>();
             Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
@@ -62,7 +59,7 @@ namespace Sepes.Tests.Services.Azure
             catch (Exception ex)
             {
 
-                int i = 0;
+               
             }
             finally
             {
