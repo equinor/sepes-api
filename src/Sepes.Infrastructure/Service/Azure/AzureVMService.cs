@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
           
         }       
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, string os, INetwork primaryNetwork, string subnetName, string privateIp, string userName, string password, string vmPerformanceProfile)
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, string subnetName, string userName, string password, string vmPerformanceProfile = "Cheap", string os = "Windows Server 2012")
         {
             var machineType = VirtualMachineSizeTypes.StandardD3V2;
             switch (vmPerformanceProfile)
@@ -59,7 +59,7 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithExistingPrimaryNetwork(primaryNetwork)
                 .WithSubnet(subnetName)
-                .WithPrimaryPrivateIPAddressStatic(privateIp)
+                .WithPrimaryPrivateIPAddressDynamic()
                 .WithoutPrimaryPublicIPAddress()
                 .WithPopularWindowsImage(operatingSystem)
                 .WithAdminUsername(userName)

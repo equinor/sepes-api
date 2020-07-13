@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
                         {
                             Name = $"{bastionName}-ip-config",
                             Subnet =  new SubResource(subnetId),
-                            PrivateIPAllocationMethod = "Static",
+                            PrivateIPAllocationMethod = "Dynamic",
                             PublicIPAddress = new SubResource(pip.Inner.Id),
                         }
                     };
