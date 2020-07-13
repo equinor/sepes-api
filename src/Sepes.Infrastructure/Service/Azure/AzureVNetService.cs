@@ -1,23 +1,14 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Fluent.Models;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Azure.ResourceManager.Network;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Azure.ResourceManager.Network.Models;
-using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Util;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
-    {       
-        
-       
-
+    { 
         public AzureVNetService(IConfiguration config, ILogger logger)
             :base (config, logger)
         {         
@@ -66,7 +57,17 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }
 
+        public async Task<bool> Exists(string resourceGroupName, string networkName)
+        {
+           var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
 
+            if(network == null)
+            {
+                return false;
+            }
+
+            return !string.IsNullOrWhiteSpace(network.Id);
+        }
 
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
@@ -126,9 +127,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task Delete(string resourceGroup, string vNetName)
         {
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroup, vNetName);
-            return;
+            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroup, vNetName);           
         }
-
     }
 }
