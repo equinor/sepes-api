@@ -58,12 +58,11 @@ namespace Sepes.Tests.Services.Azure
             }
             catch (Exception ex)
             {
-
-               
+                throw; 
             }
             finally
             {
-                await sandboxService.NukeSandbox(studyName, sandboxName, resourceGroupName);
+                await sandboxService.NukeUnitTestSandboxes();
             }          
         }
 

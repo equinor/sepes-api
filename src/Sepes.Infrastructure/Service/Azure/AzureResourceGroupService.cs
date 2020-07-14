@@ -52,5 +52,11 @@ namespace Sepes.Infrastructure.Service
             await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
         }
 
+        public async Task<IPagedCollection<IResourceGroup>> GetResourceGroupsAsList()
+        {
+            var rg = await _azure.ResourceGroups.ListAsync();
+            return rg;
+        }
+
     }
 }

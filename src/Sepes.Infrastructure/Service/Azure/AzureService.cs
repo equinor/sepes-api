@@ -68,8 +68,6 @@ namespace Sepes.Infrastructure.Service
          
             await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);          
 
-
-
             //TODO: CREATE VMs (VmService)
             var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345");
 
@@ -94,9 +92,21 @@ namespace Sepes.Infrastructure.Service
 
         public async Task NukeUnitTestSandboxes()
         {
-            //TODO: Get list of resource groups
-            //If resource group has prefix, nuke it
+            var deleteTasks = new List<Task>();
 
+            //Get list of resource groups
+            var resourceGroups = await _resourceGroupService.GetResourceGroupsAsList();
+            foreach (var resourceGroup in resourceGroups)
+            {
+                //If resource group has unit-test prefix, nuke it
+                if (resourceGroup.Name.Contains(AzureService.UnitTestPrefix))
+                {
+                    deleteTasks.Add(_resourceGroupService.Delete(resourceGroup.Name));
+                }
+            }
+
+            await Task.WhenAll(deleteTasks);
+            return;
         }
 
 
