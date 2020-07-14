@@ -14,5 +14,7 @@ namespace Sepes.Infrastructure.Service
         Task Delete(string resourceGroupName);
 
         Task<bool> Exists(string resourceGroupName);
+
+        Task<IPagedCollection<IResourceGroup>> GetResourceGroupsAsList();
     }
 }
