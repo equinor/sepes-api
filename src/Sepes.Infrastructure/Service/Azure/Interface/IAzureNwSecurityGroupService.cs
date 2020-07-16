@@ -10,5 +10,6 @@ namespace Sepes.Infrastructure.Service
         Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName);
         Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName);
         Task DeleteSecurityGroup(string resourceGroupName, string securityGroupName);
+        Task<bool> Exists(string resourceGroupName, string nsgName);
     }
 }

@@ -65,6 +65,23 @@ namespace Sepes.Infrastructure.Service
                 await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
             }
         }
+
+        public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
+        {
+            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+                var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
+
+                if (bastion == null)
+                {
+                    return false;
+                }
+
+                return !string.IsNullOrWhiteSpace(bastion.Id);
+            }
+
+        }
     }
 
 }
