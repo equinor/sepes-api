@@ -47,9 +47,16 @@ namespace Sepes.Infrastructure.Service
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
 
+        public async Task<bool> Exists(string resourceGroupName, string nsgName)
+        {
+            var nsg = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, nsgName);
 
+            if (nsg == null)
+            {
+                return false;
+            }
 
-
-
+            return !string.IsNullOrWhiteSpace(nsg.Id);
+        }
     }
 }

@@ -38,10 +38,10 @@ namespace Sepes.Infrastructure.Service.Azure
                 .CreateAsync();
 
             // Get keys to build connectionstring with
-            var keys = await account.GetKeysAsync();
+            //var keys = await account.GetKeysAsync();
 
             // Build connection string. Maybe return this? Or should access happen through SAS-key?
-            string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
+            //string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
 
             // Connect
             //var connectedAccount = CloudStorageAccount.Parse(connectionString);
@@ -52,7 +52,12 @@ namespace Sepes.Infrastructure.Service.Azure
         public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName)
         {
             string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName);
-
+            var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
+            if (!(bool)nameIsAvailable.IsAvailable)
+            {
+                _logger.LogError($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+                throw new ArgumentException($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+            }
             // Create storage account
             var account = await _azure.StorageAccounts.Define(storageAccountName)
                 .WithRegion(region)
@@ -71,5 +76,16 @@ namespace Sepes.Infrastructure.Service.Azure
             await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName);
         }
 
+        public async Task<bool> Exists(string resourceGroupName, string storageAccountName)
+        {
+            var stgAcc = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, storageAccountName);
+
+            if (stgAcc == null)
+            {
+                return false;
+            }
+
+            return !string.IsNullOrWhiteSpace(stgAcc.Id);
+        }
     }
 }

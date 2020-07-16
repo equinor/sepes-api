@@ -64,11 +64,11 @@ namespace Sepes.Infrastructure.Service
             IWithCreate vmWithOS;
             if (os.ToLower().Equals("windows"))
             {
-                vmWithOS = CreateWindowsVm(vmCreatable, distro, userName, password, machineSize);
+                vmWithOS = CreateWindowsVm(vmCreatable, distro, userName, password);
             }
             else if (os.ToLower().Equals("linux"))
             {
-                vmWithOS = CreateLinuxVm(vmCreatable, distro, userName, password, machineSize);
+                vmWithOS = CreateLinuxVm(vmCreatable, distro, userName, password);
             }
             else
             {
@@ -84,7 +84,7 @@ namespace Sepes.Infrastructure.Service
             return vm;
         }
 
-        private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password, VirtualMachineSizeTypes machineSize)
+        private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
             IWithWindowsAdminUsernameManagedOrUnmanaged withOS;
             switch (distro.ToLower())
@@ -109,9 +109,8 @@ namespace Sepes.Infrastructure.Service
             return vm;
         }
 
-        private IWithLinuxCreateManagedOrUnmanaged CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password, VirtualMachineSizeTypes machineSize)
+        private IWithLinuxCreateManagedOrUnmanaged CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
-            KnownLinuxVirtualMachineImage operatingSystem;
             IWithLinuxRootUsernameManagedOrUnmanaged withOS;
             switch (distro.ToLower())
             {
@@ -160,5 +159,16 @@ namespace Sepes.Infrastructure.Service
             return;
         }
 
+        public async Task<bool> Exists(string resourceGroupName, string virtualMachineName)
+        {
+            var vm = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, virtualMachineName);
+
+            if (vm == null)
+            {
+                return false;
+            }
+
+            return !string.IsNullOrWhiteSpace(vm.Id);
+        }
     }
 }

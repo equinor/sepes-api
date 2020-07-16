@@ -8,6 +8,7 @@ namespace Sepes.Infrastructure.Service
     {
       
         Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId);
-        Task Delete(string resourceGroupName, string bastionHostName);      
+        Task Delete(string resourceGroupName, string bastionHostName);
+        Task<bool> Exists(string resourceGroupName, string bastionHostName);
     }
 }

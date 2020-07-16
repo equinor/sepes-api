@@ -65,6 +65,18 @@ namespace Sepes.Infrastructure.Service
             return !string.IsNullOrWhiteSpace(network.Id);
         }
 
+        public async Task Delete(string resourceGroupName, string vNetName)
+        {
+            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, vNetName);
+        }
+
+        public async Task<string> Status(string resourceGroupName, string vNetName)
+        {
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, vNetName);
+            var status = nsg.Inner.ProvisioningState.ToString();
+            return status;
+        }
+
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         //{
@@ -120,10 +132,5 @@ namespace Sepes.Infrastructure.Service
         //    }
         //    return network;
         //}
-
-        public async Task Delete(string resourceGroup, string vNetName)
-        {
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroup, vNetName);           
-        }
     }
 }

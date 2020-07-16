@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
                                     string os, string distro, IDictionary<string, string> tags);
         Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int size, string type);
         Task Delete(string resourceGroupName, string virtualMachineName);
+        Task<bool> Exists(string resourceGroupName, string virtualMachineName);
     }
 }
 
