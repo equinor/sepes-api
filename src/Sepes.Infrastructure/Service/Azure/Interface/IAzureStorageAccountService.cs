@@ -17,11 +17,12 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
     public interface IAzureStorageAccountService
     {
         Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName);
+        Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName);
         Task DeleteStorageAccount(string resourceGroupName, string storageAccountName);
 
         // CreateStorageContainer(type);
         // DeleteStoragecontainer(type);
-        
+
         // Methods for accessing storageContainers:
     }
 }

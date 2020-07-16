@@ -18,11 +18,13 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureBastionService _bastionService;
         readonly IAzureNwSecurityGroupService _nsgService;
         readonly IAzureVMService _vmService;
+        readonly IAzureStorageAccountService _storageService;
 
         public static readonly string UnitTestPrefix = "unit-test";
 
         public AzureService(ILogger logger, CloudResourceService resourceService, IAzureResourceGroupService resourceGroupService
-            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService, IAzureVMService vmService
+            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService
+            , IAzureVMService vmService, IAzureStorageAccountService storageService
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -32,6 +34,7 @@ namespace Sepes.Infrastructure.Service
             _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
             _vmService = vmService ?? throw new ArgumentNullException(nameof(vmService));
+            _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
         }
 
         public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
@@ -66,10 +69,13 @@ namespace Sepes.Infrastructure.Service
 
             var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);        
          
-            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);          
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
 
-            //TODO: CREATE VMs (VmService)
-            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345");
+
+            // Create storage account for diagnostics logging of vms.
+            var diagStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName);
+            // CREATE VMs (VmService) 
+            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", resourceGroupTags);
 
                 _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
