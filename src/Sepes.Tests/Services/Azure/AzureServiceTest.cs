@@ -4,8 +4,10 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Sepes.Tests.Services.Azure
@@ -44,7 +46,8 @@ namespace Sepes.Tests.Services.Azure
 
             try
             {
-                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.NorwayEast);
+                var tags = AzureResourceTagsFactory.CreateUnitTestTags(studyName);             
+                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.NorwayEast, tags);       
 
                 sandboxName = sandbox.SandboxName;
                 resourceGroupName = sandbox.ResourceGroupName;
