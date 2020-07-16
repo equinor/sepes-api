@@ -80,7 +80,7 @@ namespace Sepes.Infrastructure.Service
             // Create storage account for diagnostics logging of vms.
             var diagStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName);
             // CREATE VMs (VmService) 
-            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", resourceGroupTags);
+            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags);
 
                 _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
