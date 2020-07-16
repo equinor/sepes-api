@@ -112,6 +112,7 @@ namespace Sepes.Infrastructure.Service
                 //If resource group has unit-test prefix, nuke it
                 if (resourceGroup.Name.Contains(AzureService.UnitTestPrefix))
                 {
+                    // TODO: Mark as deleted in SEPES DB
                     deleteTasks.Add(_resourceGroupService.Delete(resourceGroup.Name));
                 }
             }

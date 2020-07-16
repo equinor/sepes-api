@@ -176,7 +176,7 @@ namespace Sepes.RestApi
         {
             var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
-            var logMessage = "";
+            string logMessage;
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {
