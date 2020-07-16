@@ -62,27 +62,32 @@ namespace Sepes.Infrastructure.Service
             //Add RG to resource table in SEPES DB
             await _resourceService.AddResourceGroup(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.ResourceGroup.Type);
 
+            //NSG creation
             var nsgForSandboxSubnet = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName);
-
             await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Type, nsgForSandboxSubnet.Key, nsgForSandboxSubnet.Name);
 
+            //VNet creation
             azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);
             await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.VNet.Network.Type, azureSandbox.VNet.Key, azureSandbox.VNet.Name);
 
-            var subnetName = $"snet-{azureSandbox.SandboxName}"; //TODO: RETURN FROM METHOD ABOVE IN DTO
+            //Applying nsg to subnet
+            var subnetName = AzureResourceNameUtil.SubNet(azureSandbox.SandboxName); //TODO: RETURN FROM METHOD ABOVE IN DTO
             await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Network.Name);
 
-            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);        
-         
+            //Bastion creation
+            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
             await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
 
 
             // Create storage account for diagnostics logging of vms.
             var diagStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName);
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, diagStorage.Type, diagStorage.Key, diagStorage.Name);
+
             // CREATE VMs (VmService) 
             var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags);
+            await _resourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
 
-                _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
+            _logger.LogInformation($"Sandbox created: {azureSandbox.SandboxName}");
 
             return azureSandbox;
         }
