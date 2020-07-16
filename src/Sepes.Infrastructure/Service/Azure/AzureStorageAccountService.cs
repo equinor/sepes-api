@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
-    class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
+    public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
         public AzureStorageAccountService(IConfiguration config, ILogger logger) : base(config, logger)
         {
@@ -45,6 +45,23 @@ namespace Sepes.Infrastructure.Service.Azure
 
             // Connect
             //var connectedAccount = CloudStorageAccount.Parse(connectionString);
+
+            return account;
+        }
+
+        public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName)
+        {
+            string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName);
+
+            // Create storage account
+            var account = await _azure.StorageAccounts.Define(storageAccountName)
+                .WithRegion(region)
+                .WithExistingResourceGroup(resourceGroupName)
+                .WithAccessFromAllNetworks()
+                .WithGeneralPurposeAccountKindV2()
+                .WithOnlyHttpsTraffic()
+                .WithSku(StorageAccountSkuType.Standard_LRS)
+                .CreateAsync();
 
             return account;
         }

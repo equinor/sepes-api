@@ -7,15 +7,16 @@ using System;
 using System.Threading.Tasks;
 using Sepes.Infrastructure.Util;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureVMService
     {
         Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, 
-                                    string subnetName, string userName, string password, string vmPerformanceProfile = "Cheap", 
-                                    string os = "Windows Server 2012");
-        Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName);
+                                    string subnetName, string userName, string password, string vmPerformanceProfile, 
+                                    string os, string distro, IDictionary<string, string> tags);
+        Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int size, string type);
         Task Delete(string resourceGroupName, string virtualMachineName);
     }
 }

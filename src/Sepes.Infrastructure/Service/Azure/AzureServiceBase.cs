@@ -35,6 +35,7 @@ namespace Sepes.Infrastructure.Service
 
 
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
+                .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
                 .Authenticate(_credentials).WithSubscription(_subscriptionId);
 
 
