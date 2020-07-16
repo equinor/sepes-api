@@ -19,6 +19,9 @@ namespace Sepes.Infrastructure.Dto
 
         public string LogoUrl { get; set; }
 
+        public string OwnerName { get; set; }
+        public string OwnerEmail { get; set; }
+
         public ICollection<DatasetDto> Datasets { get; set; }
 
         public ICollection<SandboxDto> Sandboxes { get; set; }

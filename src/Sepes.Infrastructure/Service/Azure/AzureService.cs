@@ -37,8 +37,14 @@ namespace Sepes.Infrastructure.Service
             _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
         }
 
-        public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region)
+        public async Task<AzureSandboxDto> CreateSandboxAsync(string studyName, Region region, Dictionary<string, string> tags)
         {
+            //At what point do SEPES know enough to start creating a sandbox?
+                //Sandbox exists -> ResourceGroup, Diag Storage Account
+
+                //Network config -> Network, NSG, Bastion
+
+
             var azureSandbox = new AzureSandboxDto() { StudyName = studyName };
 
             azureSandbox.SandboxName = AzureResourceNameUtil.Sandbox(studyName);         
@@ -47,10 +53,9 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Creating resource group");
 
-            //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST 
-            var resourceGroupTags = new Dictionary<string, string>();
+            //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST            
                     
-            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(studyName, azureSandbox.SandboxName, region, resourceGroupTags);
+            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(studyName, azureSandbox.SandboxName, region, tags);
                                   
             _logger.LogInformation($"Resource group created! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
 
