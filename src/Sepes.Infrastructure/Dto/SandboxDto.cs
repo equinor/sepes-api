@@ -8,7 +8,5 @@
         public string TechnicalContactName { get; set; }
 
         public string TechnicalContactEmail { get; set; }
-
-
     }
 }

@@ -109,7 +109,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             entityFromDb.DeletedBy = "TODO:AddUsernameHere";
-            entityFromDb.DeletedFromAzure = DateTime.UtcNow;
+            entityFromDb.Deleted = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
 
