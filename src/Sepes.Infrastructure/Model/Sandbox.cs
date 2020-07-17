@@ -18,6 +18,6 @@ namespace Sepes.Infrastructure.Model
 
         public int StudyId { get; set; }
 
-        public List<CloudResource> Resources{ get; set; }
+        public List<SandboxResource> Resources{ get; set; }
     }
 }

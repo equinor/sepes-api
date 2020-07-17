@@ -20,7 +20,9 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
-        public virtual DbSet<CloudResource> CloudResources { get; set; }
+        public virtual DbSet<SandboxResource> SandboxResources { get; set; }
+
+        public virtual DbSet<SandboxResource> SandboxResourceOperations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,8 +38,8 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
             modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.ParticipantId, sd.RoleName });
-            modelBuilder.Entity<CloudResource>().HasKey(cr => cr.Id);
-            modelBuilder.Entity<CloudResourceOperation>().HasKey(cro => cro.Id);
+            modelBuilder.Entity<SandboxResource>().HasKey(cr => cr.Id);
+            modelBuilder.Entity<SandboxResourceOperation>().HasKey(cro => cro.Id);
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -72,12 +74,12 @@ namespace Sepes.Infrastructure.Model.Context
 
 
             //CLOUD RESOURCE / SANDBOX RELATION
-            modelBuilder.Entity<CloudResource>()
+            modelBuilder.Entity<SandboxResource>()
          .HasOne(cr => cr.Sandbox)
          .WithMany(d => d.Resources)
          .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CloudResourceOperation>()
+            modelBuilder.Entity<SandboxResourceOperation>()
     .HasOne(cr => cr.Resource)
     .WithMany(d => d.Operations)
     .HasForeignKey(sd => sd.CloudResourceId).OnDelete(DeleteBehavior.Restrict);

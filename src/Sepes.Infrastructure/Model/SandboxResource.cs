@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class CloudResource : UpdateableBaseModel
+    public class SandboxResource : UpdateableBaseModel
     {
         public int SandboxId { get; set; }
 
@@ -25,6 +25,6 @@ namespace Sepes.Infrastructure.Model
 
         public Sandbox Sandbox { get; set; }
 
-        public List<CloudResourceOperation> Operations{ get; set; }
+        public List<SandboxResourceOperation> Operations{ get; set; }
     }    
 }
