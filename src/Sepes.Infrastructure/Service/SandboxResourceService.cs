@@ -12,20 +12,20 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class CloudResourceService : ICloudResourceService
+    public class SandboxResourceService : ISandboxResourceService
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
 
-        public CloudResourceService(SepesDbContext db, IMapper mapper)
+        public SandboxResourceService(SepesDbContext db, IMapper mapper)
         {
             _db = db;
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceDto> Add(string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
+        public async Task<SandboxResourceDto> Add(string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
         {
-            var newResource = new CloudResource()
+            var newResource = new SandboxResource()
             {
                 ResourceGroupId = resourceGroupId,
                 ResourceGroupName = resourceGroupName,
@@ -34,18 +34,18 @@ namespace Sepes.Infrastructure.Service
                 Status = ""
             };
 
-            _db.CloudResources.Add(newResource);
+            _db.SandboxResources.Add(newResource);
             await _db.SaveChangesAsync();
 
             return await GetByIdAsync(newResource.Id);
         }
 
-        public async Task<CloudResourceDto> AddResourceGroup(string resourceGroupId, string resourceGroupName, string type)
+        public async Task<SandboxResourceDto> AddResourceGroup(string resourceGroupId, string resourceGroupName, string type)
         {
             return await Add(resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
         }
 
-        public async Task<CloudResourceDto> Add(string resourceGroupId, string resourceGroupName, Resource resource)
+        public async Task<SandboxResourceDto> Add(string resourceGroupId, string resourceGroupName, Resource resource)
         {
             return await Add(resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
         }
@@ -65,7 +65,7 @@ namespace Sepes.Infrastructure.Service
             return dataasetsDtos;
         }
 
-        public async Task<CloudResourceDto> GetByIdAsync(int id)
+        public async Task<SandboxResourceDto> GetByIdAsync(int id)
         {
             var entityFromDb = await GetOrThrowAsync(id);
 
@@ -74,14 +74,14 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        CloudResourceDto MapEntityToDto(CloudResource entity)
+        SandboxResourceDto MapEntityToDto(SandboxResource entity)
         {
-            return _mapper.Map<CloudResourceDto>(entity);
+            return _mapper.Map<SandboxResourceDto>(entity);
         }
 
-        async Task<CloudResource> GetOrThrowAsync(int id)
+        async Task<SandboxResource> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.CloudResources.FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
@@ -91,17 +91,17 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<CloudResourceDto> MarkAsDeletedByIdAsync(int id)
+        public async Task<SandboxResourceDto> MarkAsDeletedByIdAsync(int id)
         {
             var resourceFromDb = await MarkAsDeletedByIdInternalAsync(id);
             return MapEntityToDto(resourceFromDb);
         }
 
-        async Task<CloudResource> MarkAsDeletedByIdInternalAsync(int id)
+        async Task<SandboxResource> MarkAsDeletedByIdInternalAsync(int id)
         {
             //WE DON*T REALLY DELETE FROM THIS TABLE, WE "MARK AS DELETED" AND KEEP THE RECORDS FOR FUTURE REFERENCE
 
-            var entityFromDb = await _db.CloudResources.FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {

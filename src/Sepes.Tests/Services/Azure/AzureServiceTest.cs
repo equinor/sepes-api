@@ -20,7 +20,7 @@ namespace Sepes.Tests.Services.Azure
         public AzureServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();        
-            Services.AddTransient<CloudResourceService>();
+            Services.AddTransient<SandboxResourceService>();
             Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
             Services.AddTransient<IAzureBastionService, AzureBastionService>();
