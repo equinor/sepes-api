@@ -18,12 +18,14 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IStudyService _studyService;
+        readonly AzureService _azureService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService)
+        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, AzureService azureService)
         {
             _db = db;
             _mapper = mapper;
             _studyService = studyService;
+            _azureService = azureService;
         }
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId)
@@ -33,6 +35,18 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
+        }
+
+        public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
+        {
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            return await ValidateSandboxAsync(studyFromDb, newSandbox);
+      
+        }
+
+        Task<StudyDto> ValidateSandboxAsync(Study study, SandboxDto newSandbox)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<StudyDto> AddSandboxToStudyAsync(int studyId, SandboxDto newSandbox)
@@ -51,6 +65,9 @@ namespace Sepes.Infrastructure.Service
             var sandbox = _mapper.Map<Sandbox>(newSandbox);
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
+
+            //TODO: Start sandbox creation (setting up jobs)
+           // await _azureService.CreateSandboxAsync();
 
             return await _studyService.GetStudyByIdAsync(studyId);
         }
@@ -71,5 +88,7 @@ namespace Sepes.Infrastructure.Service
 
             return await _studyService.GetStudyByIdAsync(studyId);
         }
+
+      
     }
 }
