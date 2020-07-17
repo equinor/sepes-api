@@ -4,14 +4,14 @@ namespace Sepes.Infrastructure.Model
 {
     public class SandboxResourceOperation : UpdateableBaseModel
     {
-        public int CloudResourceId { get; set; }
+        public int SandboxResourceId { get; set; }
 
-        public string JobType { get; set; }
+        public string Status { get; set; }
 
-        public string InProgressWith { get; set; }
+        public int TryCount { get; set; }
 
-        public SandboxResource Resource {get;set;}
+        public string SessionId { get; set; }
 
-        //Remember to check rowversion
-    }    
+        public SandboxResource Resource { get; set; }
+    }
 }

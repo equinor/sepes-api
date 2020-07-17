@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<SandboxResourceOperation>()
     .HasOne(cr => cr.Resource)
     .WithMany(d => d.Operations)
-    .HasForeignKey(sd => sd.CloudResourceId).OnDelete(DeleteBehavior.Restrict);
+    .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
         }
 
 
