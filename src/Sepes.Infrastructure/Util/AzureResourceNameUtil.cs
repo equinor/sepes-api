@@ -45,7 +45,6 @@ namespace Sepes.Infrastructure.Util
             return $"pip-{sandboxName}-bastion";
         }
 
-        // Name gets to long. Need to think of something smarter...
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure.No two storage accounts can have the same name.
         // Current solution might possibly allow for duplicate names.

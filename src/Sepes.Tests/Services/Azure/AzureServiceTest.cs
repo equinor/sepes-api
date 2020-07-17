@@ -7,7 +7,6 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Sepes.Tests.Services.Azure
@@ -20,7 +19,7 @@ namespace Sepes.Tests.Services.Azure
         public AzureServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();        
-            Services.AddTransient<SandboxResourceService>();
+            Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
             Services.AddTransient<IAzureBastionService, AzureBastionService>();
@@ -61,7 +60,7 @@ namespace Sepes.Tests.Services.Azure
 
                 Assert.NotNull(sandbox.VNet);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw; 
             }

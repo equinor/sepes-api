@@ -45,6 +45,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             //CLOUD RESOURCE
             CreateMap<SandboxResource, SandboxResourceDto>()
                 .ReverseMap();
+
+            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>()
+                .ReverseMap();
         }
     }
 }

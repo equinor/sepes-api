@@ -48,13 +48,13 @@ namespace Sepes.Infrastructure.Service
                     machineSize = VirtualMachineSizeTypes.StandardB1s;
                     break;
                 case "high_compute":
-                    machineSize = VirtualMachineSizeTypes.StandardH16m;
+                    machineSize = VirtualMachineSizeTypes.StandardH8;
                     break;
                 case "high_memory":
-                    machineSize = VirtualMachineSizeTypes.StandardM128s;
+                    machineSize = VirtualMachineSizeTypes.StandardM64s;
                     break;
                 case "gpu":
-                    machineSize = VirtualMachineSizeTypes.StandardND24rs;
+                    machineSize = VirtualMachineSizeTypes.StandardND6s;
                     break;
                 default:
                     machineSize = VirtualMachineSizeTypes.StandardB1s;
