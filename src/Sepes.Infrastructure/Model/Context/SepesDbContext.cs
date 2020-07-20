@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<SandboxResource> SandboxResources { get; set; }
 
-        public virtual DbSet<SandboxResource> SandboxResourceOperations { get; set; }
+        public virtual DbSet<SandboxResourceOperation> SandboxResourceOperations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
