@@ -14,5 +14,10 @@ namespace Sepes.Infrastructure.Exceptions
         {
             return new NotFoundException($"{entityName} with id {id} not found!", inner);
         }
+
+        public static NotFoundException CreateForIdentityByName(string entityName, string name, Exception inner = null)
+        {
+            return new NotFoundException($"{entityName} with name {name} not found!", inner);
+        }
     }
 }

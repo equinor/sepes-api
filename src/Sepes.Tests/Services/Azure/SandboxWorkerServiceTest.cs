@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
@@ -26,6 +25,7 @@ namespace Sepes.Tests.Services.Azure
             Services.AddTransient<IAzureVNetService, AzureVNetService>();
             Services.AddTransient<IAzureVMService, AzureVMService>();
             Services.AddTransient<IAzureQueueService, AzureQueueService>();
+            Services.AddTransient<IVariableService, VariableService>();
             Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             Services.AddTransient<SandboxWorkerService>();
             ServiceProvider = Services.BuildServiceProvider();

@@ -1,15 +1,10 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Sepes.Infrastructure.Util;
-using Microsoft.Azure.Management.Compute.Fluent.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Infrastructure.Service
 {
     public interface IAzureVMService
     {
