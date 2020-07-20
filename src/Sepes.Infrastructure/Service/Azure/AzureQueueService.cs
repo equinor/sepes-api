@@ -1,7 +1,5 @@
 ﻿using System; // Namespace for Console output
-using System.Collections;
 using System.Collections.Generic;
-using System.Configuration; // Namespace for ConfigurationManager
 using System.Threading.Tasks; // Namespace for Task
 using Azure.Storage.Queues; // Namespace for Queue storage types
 using Azure.Storage.Queues.Models; // Namespace for PeekedMessage
