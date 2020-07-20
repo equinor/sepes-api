@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Service.Azure.Interface;
 
 namespace Sepes.Infrastructure.Service
 {
