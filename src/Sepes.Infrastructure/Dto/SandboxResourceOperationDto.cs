@@ -12,6 +12,8 @@ namespace Sepes.Infrastructure.Dto
 
         public int TryCount { get; set; }
 
+        public int DependsOn { get; set; }
+
         public string SessionId { get; set; }
     }
 }
