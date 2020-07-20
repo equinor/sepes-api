@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.Storage.Fluent;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -14,6 +15,10 @@ namespace Sepes.Infrastructure.Dto
         public string ResourceGroupName { get { return ResourceGroup.Name; } }
 
         public IResourceGroup ResourceGroup { get; set; }
+
+        public IStorageAccount DiagnosticsStorage { get; set; }
+
+        public INetworkSecurityGroup NetworkSecurityGroup { get; set; }
 
         public AzureVNetDto VNet { get; set; }
     }

@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId)
+        public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags)
         {
             var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
 
@@ -27,6 +27,7 @@ namespace Sepes.Infrastructure.Service
              .WithExistingResourceGroup(resourceGroupName)
              .WithStaticIP()
              .WithSku(PublicIPSkuType.Standard)
+             .WithTags(tags)
              .CreateAsync();
 
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))

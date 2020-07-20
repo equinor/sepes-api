@@ -1,17 +1,11 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
-using Microsoft.Azure.Management.Storage.Fluent.Models;
-using Microsoft.Azure.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure
@@ -23,7 +17,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
         }
 
-        public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName)
+        public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
         {
             string storageAccountName = AzureResourceNameUtil.StorageAccount(sandboxName);
 
@@ -35,6 +29,7 @@ namespace Sepes.Infrastructure.Service.Azure
                 .WithGeneralPurposeAccountKindV2()
                 .WithOnlyHttpsTraffic()
                 .WithSku(StorageAccountSkuType.Standard_LRS)
+                 .WithTags(tags)
                 .CreateAsync();
 
             // Get keys to build connectionstring with
@@ -49,7 +44,7 @@ namespace Sepes.Infrastructure.Service.Azure
             return account;
         }
 
-        public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName)
+        public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
         {
             string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName);
             var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
@@ -66,6 +61,7 @@ namespace Sepes.Infrastructure.Service.Azure
                 .WithGeneralPurposeAccountKindV2()
                 .WithOnlyHttpsTraffic()
                 .WithSku(StorageAccountSkuType.Standard_LRS)
+                .WithTags(tags)
                 .CreateAsync();
 
             return account;
