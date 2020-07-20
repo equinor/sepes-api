@@ -1,7 +1,5 @@
 ﻿using System; // Namespace for Console output
-using System.Collections;
 using System.Collections.Generic;
-using System.Configuration; // Namespace for ConfigurationManager
 using System.Threading.Tasks; // Namespace for Task
 using Azure.Storage.Queues; // Namespace for Queue storage types
 using Azure.Storage.Queues.Models; // Namespace for PeekedMessage
@@ -47,7 +45,7 @@ namespace Sepes.Infrastructure.Service.Azure
         public async Task DeleteMessage(QueueMessage message)
         {
             var client = await CreateQueueClient();
-            await client.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+            _ = await client.DeleteMessageAsync(message.MessageId, message.PopReceipt);
         }
 
         // Returns approximate number of messages in queue.
@@ -89,10 +87,12 @@ namespace Sepes.Infrastructure.Service.Azure
             return queueMessages;
         }
 
+        // Updates the message in-place in the queue.
+        // The message parameter is a message that has been fetched with RecieveMessage() or RecieveMessages()
         public async Task UpdateMessage(QueueMessage message, string updatedMessage, int timespan = 30)
         {
             var client = await CreateQueueClient();
-            await client.UpdateMessageAsync(message.MessageId, message.PopReceipt, updatedMessage, TimeSpan.FromSeconds(timespan));
+            _ = await client.UpdateMessageAsync(message.MessageId, message.PopReceipt, updatedMessage, TimeSpan.FromSeconds(timespan));
         }
     }
 }
