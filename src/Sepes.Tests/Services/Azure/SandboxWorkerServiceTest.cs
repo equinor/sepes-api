@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
