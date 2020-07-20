@@ -1,4 +1,6 @@
 ﻿using System; // Namespace for Console output
+using System.Collections;
+using System.Collections.Generic;
 using System.Configuration; // Namespace for ConfigurationManager
 using System.Threading.Tasks; // Namespace for Task
 using Azure.Storage.Queues; // Namespace for Queue storage types
@@ -41,19 +43,28 @@ namespace Sepes.Infrastructure.Service.Azure
             return queueClient;
         }
 
-        public Task DeleteMessage()
+        // Message needs to be retrieved with recieveMessage() to be able to be deleted.
+        public async Task DeleteMessage(QueueMessage message)
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            await client.DeleteMessageAsync(message.MessageId, message.PopReceipt);
         }
 
-        public Task<int> GetNumberOfMessengesInQueue()
+        // Returns approximate number of messages in queue.
+        // The number is not lower than the actual number of messages in the queue, but could be higher.
+        public async Task<int> GetNumberOfMessengesInQueue()
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            QueueProperties props = await client.GetPropertiesAsync();
+            return props.ApproximateMessagesCount;
         }
 
-        public Task PeekMessage()
+        // Gets messages from queue without making them invisible.
+        public async Task<IEnumerable<PeekedMessage>> PeekMessages(int numberOfMessages)
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            PeekedMessage[] peekedMessages = await client.PeekMessagesAsync(numberOfMessages);
+            return peekedMessages;
         }
 
         public async Task SendMessage(string message)
@@ -62,19 +73,26 @@ namespace Sepes.Infrastructure.Service.Azure
             _ = await client.SendMessageAsync(message);
         }
 
-        public Task RecieveMessage()
+        // Gets first message without removing from queue, but makes it invisible for 30 seconds.
+        public async Task<QueueMessage> RecieveMessage()
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            QueueMessage[] messages = await client.ReceiveMessagesAsync();
+            return messages[0];           
         }
 
-        public Task RecieveMessages(int numberOfMessages)
+        // Gets message without removing from queue, but makes it invisible for 30 seconds.
+        public async Task<IEnumerable<QueueMessage>> RecieveMessages(int numberOfMessages)
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            QueueMessage[] queueMessages = await client.ReceiveMessagesAsync(numberOfMessages);
+            return queueMessages;
         }
 
-        public Task UpdateMessage(string MessageId, string updatedMessage, int timespan = 30)
+        public async Task UpdateMessage(QueueMessage message, string updatedMessage, int timespan = 30)
         {
-            throw new NotImplementedException();
+            var client = await CreateQueueClient();
+            await client.UpdateMessageAsync(message.MessageId, message.PopReceipt, updatedMessage, TimeSpan.FromSeconds(timespan));
         }
     }
 }

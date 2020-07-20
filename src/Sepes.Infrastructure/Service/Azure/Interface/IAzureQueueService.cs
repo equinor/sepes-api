@@ -13,8 +13,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<QueueMessage> RecieveMessage();
         Task<IEnumerable<QueueMessage>> RecieveMessages(int numberOfMessages);
         Task UpdateMessage(QueueMessage message, string updatedMessage, int timespan = 30);
-        Task DeleteMessage();
-        Task<IEnumerable<PeekedMessage>> PeekMessages();
+        Task DeleteMessage(QueueMessage message);
+        Task<IEnumerable<PeekedMessage>> PeekMessages(int numberOfMessages);
         Task<int> GetNumberOfMessengesInQueue();
     }
 }
