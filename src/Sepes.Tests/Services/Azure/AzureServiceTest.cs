@@ -26,18 +26,18 @@ namespace Sepes.Tests.Services.Azure
             Services.AddTransient<IAzureVNetService, AzureVNetService>();
             Services.AddTransient<IAzureVMService, AzureVMService>();
             Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            Services.AddTransient<AzureService>();
+            Services.AddTransient<SandboxWorkerService>();
             ServiceProvider = Services.BuildServiceProvider();
         }
 
         [Fact]    
         public async void CreatingAndDeletingSandboxShouldBeOk()
         {
-            var sandboxService = ServiceProvider.GetService<AzureService>();
+            var sandboxService = ServiceProvider.GetService<SandboxWorkerService>();
 
             var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm");
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
-            var studyName = $"{AzureService.UnitTestPrefix}-{dateString}-{shortGuid}";
+            var studyName = $"{SandboxWorkerService.UnitTestPrefix}-{dateString}-{shortGuid}";
 
             string sandboxName = null;
             string resourceGroupName = null;
