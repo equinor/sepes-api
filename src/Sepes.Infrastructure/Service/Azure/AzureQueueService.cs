@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Azure.Interface;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Infrastructure.Service
 {
     public class AzureQueueService : IAzureQueueService
     {

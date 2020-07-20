@@ -3,7 +3,7 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Infrastructure.Service
 {
     public interface IAzureStorageAccountService
     {

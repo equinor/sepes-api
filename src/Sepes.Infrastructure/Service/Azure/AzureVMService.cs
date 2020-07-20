@@ -7,7 +7,6 @@ using System;
 using System.Threading.Tasks;
 using Sepes.Infrastructure.Util;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using System.Collections.Generic;
 using Microsoft.Azure.Management.Storage.Fluent;

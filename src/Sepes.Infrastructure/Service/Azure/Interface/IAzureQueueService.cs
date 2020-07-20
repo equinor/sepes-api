@@ -6,7 +6,7 @@ using Azure.Storage.Queues.Models; // Namespace for PeekedMessage
 using Sepes.Infrastructure.Dto;
 using Newtonsoft.Json;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Infrastructure.Service
 {
     public interface IAzureQueueService
     {

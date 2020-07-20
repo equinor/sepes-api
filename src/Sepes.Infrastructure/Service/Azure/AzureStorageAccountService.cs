@@ -2,13 +2,12 @@
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {

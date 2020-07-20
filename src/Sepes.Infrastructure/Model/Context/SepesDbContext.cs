@@ -24,6 +24,8 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<SandboxResourceOperation> SandboxResourceOperations { get; set; }
 
+        public virtual DbSet<Variable> Variables { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             AddPrimaryKeys(modelBuilder);
@@ -33,6 +35,7 @@ namespace Sepes.Infrastructure.Model.Context
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Variable>().HasKey(v => v.Id);
             modelBuilder.Entity<Study>().HasKey(s => s.Id);
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
