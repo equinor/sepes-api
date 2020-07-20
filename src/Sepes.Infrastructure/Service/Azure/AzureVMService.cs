@@ -22,12 +22,12 @@ namespace Sepes.Infrastructure.Service
           
         }       
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags)
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
         {
             IVirtualMachine vm;
             string virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandboxName);
             // Get diagnostic storage account reference for boot diagnostics
-            IStorageAccount diagStorage = _azure.StorageAccounts.GetByResourceGroup(resourceGroupName, AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName));
+            IStorageAccount diagStorage = _azure.StorageAccounts.GetByResourceGroup(resourceGroupName, diagStorageAccountName);
 
 
             var vmCreatable = _azure.VirtualMachines.Define(virtualMachineName)
