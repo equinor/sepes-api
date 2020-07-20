@@ -1,8 +1,6 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -21,13 +19,13 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureStorageAccountService _storageService;
         readonly IAzureBastionService _bastionService;
         readonly IAzureVMService _vmService;
-        readonly AzureQueueService _azureQueueService;
+        readonly IAzureQueueService _azureQueueService;
 
         public static readonly string UnitTestPrefix = "unit-test";
 
         public SandboxWorkerService(ILogger logger, ISandboxResourceService sandboxResourceService, IAzureResourceGroupService resourceGroupService
             , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService
-            , IAzureVMService vmService, IAzureStorageAccountService storageService, AzureQueueService azureQueueService
+            , IAzureVMService vmService, IAzureStorageAccountService storageService, IAzureQueueService azureQueueService
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -99,13 +97,15 @@ namespace Sepes.Infrastructure.Service
         public async Task CreateVirtualNetwork(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
             _logger.LogInformation($"Creating VNet for sandbox: {azureSandbox.SandboxName}");
-            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, tags);
+            azureSandbox.VNet = await _vNetService.CreateAsync(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, tags);
             await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.VNet.Network.Type, azureSandbox.VNet.Key, azureSandbox.VNet.Name);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {azureSandbox.SandboxName}");
+
+
             //Applying nsg to subnet
             var subnetName = AzureResourceNameUtil.SubNet(azureSandbox.SandboxName); //TODO: RETURN FROM METHOD ABOVE IN DTO
-            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.VNet.SandboxSubnetName, subnetName, azureSandbox.VNet.Network.Name);
+            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.NetworkSecurityGroup.Name, azureSandbox.VNet.SandboxSubnetName, azureSandbox.VNet.Network.Name);
         }
 
         public async Task CreateBastion(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
         public async Task CreateVM(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {azureSandbox.SandboxName}");
-            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags);
+            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags, azureSandbox.DiagnosticsStorage.Name);
             await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
 
         }

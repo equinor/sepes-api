@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
     {
         Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, 
                                     string subnetName, string userName, string password, string vmPerformanceProfile, 
-                                    string os, string distro, IDictionary<string, string> tags);
+                                    string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName);
         Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int size, string type);
         Task Delete(string resourceGroupName, string virtualMachineName);
         Task<bool> Exists(string resourceGroupName, string virtualMachineName);

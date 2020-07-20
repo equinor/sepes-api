@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service
           
         }       
 
-        public async Task<AzureVNetDto> Create(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags)
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags)
         {
             var networkDto = new AzureVNetDto();
             var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
@@ -45,8 +45,8 @@ namespace Sepes.Infrastructure.Service
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
-            var nsg = _azure.NetworkSecurityGroups.GetByResourceGroup(resourceGroupName, securityGroupName);
-            var network = _azure.Networks.GetByResourceGroup(resourceGroupName, networkName);
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
             await network.Update()
                 .UpdateSubnet(subnetName)
                 .WithExistingNetworkSecurityGroup(nsg)
