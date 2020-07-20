@@ -11,12 +11,12 @@ using Xunit;
 
 namespace Sepes.Tests.Services.Azure
 {
-    public class AzureServiceTest
+    public class SandboxWorkerServiceTest
     {
         public ServiceCollection Services { get; private set; }
         public ServiceProvider ServiceProvider { get; protected set; }
 
-        public AzureServiceTest()
+        public SandboxWorkerServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();        
             Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
@@ -25,6 +25,7 @@ namespace Sepes.Tests.Services.Azure
             Services.AddTransient<IAzureBastionService, AzureBastionService>();
             Services.AddTransient<IAzureVNetService, AzureVNetService>();
             Services.AddTransient<IAzureVMService, AzureVMService>();
+            Services.AddTransient<IAzureQueueService, AzureQueueService>();
             Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             Services.AddTransient<SandboxWorkerService>();
             ServiceProvider = Services.BuildServiceProvider();
@@ -35,33 +36,28 @@ namespace Sepes.Tests.Services.Azure
         {
             var sandboxService = ServiceProvider.GetService<SandboxWorkerService>();
 
-            var dateString = DateTime.UtcNow.ToString("yyyy-MM-dd-HH-mm");
-            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
+            var dateString = DateTime.UtcNow.ToString("HH-mm");
+            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
             var studyName = $"{SandboxWorkerService.UnitTestPrefix}-{dateString}-{shortGuid}";
-
-            string sandboxName = null;
-            string resourceGroupName = null;
-       
-
+            
             try
             {
                 var tags = AzureResourceTagsFactory.CreateUnitTestTags(studyName);             
-                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.NorwayEast, tags);       
-
-                sandboxName = sandbox.SandboxName;
-                resourceGroupName = sandbox.ResourceGroupName;
+                var sandbox = await sandboxService.CreateBasicSandboxResourcesAsync(Region.NorwayEast, studyName, tags);  
 
                 Assert.NotNull(sandbox);
                 Assert.IsType<AzureSandboxDto>(sandbox);
 
                 Assert.NotNull(sandbox.StudyName);
+                Assert.NotNull(sandbox.ResourceGroupId);
                 Assert.NotNull(sandbox.SandboxName);
                 Assert.NotNull(sandbox.ResourceGroupName);
-
+                Assert.NotNull(sandbox.DiagnosticsStorage);
+                Assert.NotNull(sandbox.NetworkSecurityGroup);                
                 Assert.NotNull(sandbox.VNet);
             }
-            catch (Exception)
-            {
+            catch (Exception ex)
+            {            
                 throw; 
             }
             finally
