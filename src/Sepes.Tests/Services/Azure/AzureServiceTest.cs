@@ -46,7 +46,7 @@ namespace Sepes.Tests.Services.Azure
             try
             {
                 var tags = AzureResourceTagsFactory.CreateUnitTestTags(studyName);             
-                var sandbox = await sandboxService.CreateSandboxAsync(studyName, Region.NorwayEast, tags);       
+                var sandbox = await sandboxService.CreateBasicSandboxResourcesAsync(Region.NorwayEast, studyName, tags);       
 
                 sandboxName = sandbox.SandboxName;
                 resourceGroupName = sandbox.ResourceGroupName;
