@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Util;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -15,7 +16,7 @@ namespace Sepes.Infrastructure.Service
           
         }       
 
-        public async Task<AzureVNetDto> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
+        public async Task<AzureVNetDto> Create(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags)
         {
             var networkDto = new AzureVNetDto();
             var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
@@ -23,9 +24,9 @@ namespace Sepes.Infrastructure.Service
             var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
             var bastionSubnetName = "AzureBastionSubnet";
-            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
+            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255         
 
-            var sandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
+            networkDto.SandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
             var sandboxSubnetAddress = "10.100.1.0/24";
 
             networkDto.Network = await _azure.Networks.Define(networkName)
@@ -34,8 +35,8 @@ namespace Sepes.Infrastructure.Service
                 
                 .WithAddressSpace(addressSpace)
                 .WithSubnet(bastionSubnetName, bastionSubnetAddress)
-                .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)  
-                
+                .WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  
+                .WithTags(tags)
                 .CreateAsync();
 
             return networkDto;

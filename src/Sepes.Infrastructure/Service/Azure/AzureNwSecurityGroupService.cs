@@ -1,9 +1,9 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
+﻿using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Util;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -21,20 +21,20 @@ namespace Sepes.Infrastructure.Service
 
 
 
-        public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName)
+        public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
         {
             var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(sandboxName);
 
-            return await CreateSecurityGroup(region, resourceGroupName, nsgName);
+            return await CreateSecurityGroup(region, resourceGroupName, nsgName, tags);
         }
 
-        public async Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName)
+        public async Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags)
         {
             var nsg = await _azure.NetworkSecurityGroups
                 .Define(nsgName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
-                /*.WithTag()*/
+                .WithTags(tags)
                 .CreateAsync();
             return nsg;
 

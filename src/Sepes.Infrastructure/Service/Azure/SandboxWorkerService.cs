@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Azure;
@@ -37,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
             _vmService = vmService ?? throw new ArgumentNullException(nameof(vmService));
             _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
-            _azureQueueService = azureQueueService ?? throw new ArgumentNullException(nameof(azureQueueService));            
+            _azureQueueService = azureQueueService ?? throw new ArgumentNullException(nameof(azureQueueService));
         }
 
         public async Task DoWork()
@@ -45,66 +46,87 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<AzureSandboxDto> CreateBasicSandboxResourcesAsync(string studyName, Region region, Dictionary<string, string> tags)
+        public async Task<AzureSandboxDto> CreateBasicSandboxResourcesAsync(Region region, string studyName, Dictionary<string, string> tags)
         {
             //At what point do SEPES know enough to start creating a sandbox?
-                //Sandbox exists -> ResourceGroup, Diag Storage Account
+            //Sandbox exists -> ResourceGroup, Diag Storage Account
 
-                //Network config -> Network, NSG, Bastion
+            //Network config -> Network, NSG, Bastion
 
 
-            var azureSandbox = new AzureSandboxDto() { StudyName = studyName };
-
-            azureSandbox.SandboxName = AzureResourceNameUtil.Sandbox(studyName);         
+            var azureSandbox = new AzureSandboxDto() { StudyName = studyName, SandboxName = AzureResourceNameUtil.Sandbox(studyName) };          
 
             _logger.LogInformation($"Creating basic sandbox resources for sandbox: {azureSandbox.SandboxName}");
 
-            _logger.LogInformation($"Creating resource group");
+            await CreateResourceGroup(azureSandbox, region, tags);
 
-            //TODO: ADD RELEVANT TAGS, SEE AzureResourceGroupService FOR A PARTIAL LIST            
-                    
-           await CreateResourceGroup(studyName)
+            await CreateDiagStorageAccount(azureSandbox, region, tags);
+
+            await CreateNetworkSecurityGroup(azureSandbox, region, tags);
           
-
-            // Create storage account for diagnostics logging of vms.
-            var diagStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName);
-            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, diagStorage.Type, diagStorage.Key, diagStorage.Name);
-
-            //NSG creation
-            var nsgForSandboxSubnet = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName);
-            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Type, nsgForSandboxSubnet.Key, nsgForSandboxSubnet.Name);
-
-            //VNet creation
-            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName);
-            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.VNet.Network.Type, azureSandbox.VNet.Key, azureSandbox.VNet.Name);
-
-            //Applying nsg to subnet
-            var subnetName = AzureResourceNameUtil.SubNet(azureSandbox.SandboxName); //TODO: RETURN FROM METHOD ABOVE IN DTO
-            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, nsgForSandboxSubnet.Name, subnetName, azureSandbox.VNet.Network.Name);
-
-            //Bastion creation
-            //var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, studyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId);
-            //await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
-
-            //// CREATE VMs (VmService) 
-            //var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, subnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags);
-            //await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
-
-            _logger.LogInformation($"Done creating basic resources for Sandbox: {azureSandbox.SandboxName}");
+            await CreateVirtualNetwork(azureSandbox, region, tags);        
+     
+           
+            _logger.LogInformation($"Done creating basic resources for sandbox: {azureSandbox.SandboxName}");
 
             return azureSandbox;
         }
 
-        public async Task CreateResourceGroup(Region region, AzureSandboxDto azureSandbox, string studyName)
+        public async Task CreateResourceGroup(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
-            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(studyName, azureSandbox.SandboxName, region, tags);
+            _logger.LogInformation($"Creating resource group for sandbox: {azureSandbox.SandboxName}");
+            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(azureSandbox.StudyName, azureSandbox.SandboxName, region, tags);
             await _sandboxResourceService.AddResourceGroup(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.ResourceGroup.Type);
-        _logger.LogInformation($"Resource group created! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
+            _logger.LogInformation($"Resource group created! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
+        }
+
+        public async Task CreateDiagStorageAccount(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
+        {
+            _logger.LogInformation($"Creating diagnostics storage account for sandbox: {azureSandbox.SandboxName}");
+            // Create storage account for diagnostics logging of vms.
+            azureSandbox.DiagnosticsStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName, tags);
+            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.DiagnosticsStorage.Type, azureSandbox.DiagnosticsStorage.Key, azureSandbox.DiagnosticsStorage.Name);
+        }
+
+        public async Task CreateNetworkSecurityGroup(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
+        {
+            _logger.LogInformation($"Creating network security group for sandbox: {azureSandbox.SandboxName}");
+            //NSG creation
+            azureSandbox.NetworkSecurityGroup = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, tags);
+            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.NetworkSecurityGroup.Type, azureSandbox.NetworkSecurityGroup.Key, azureSandbox.NetworkSecurityGroup.Name);
+        }
+
+        public async Task CreateVirtualNetwork(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
+        {
+            _logger.LogInformation($"Creating VNet for sandbox: {azureSandbox.SandboxName}");
+            azureSandbox.VNet = await _vNetService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, tags);
+            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, azureSandbox.VNet.Network.Type, azureSandbox.VNet.Key, azureSandbox.VNet.Name);
+
+            _logger.LogInformation($"Applying NSG to subnet for sandbox: {azureSandbox.SandboxName}");
+            //Applying nsg to subnet
+            var subnetName = AzureResourceNameUtil.SubNet(azureSandbox.SandboxName); //TODO: RETURN FROM METHOD ABOVE IN DTO
+            await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.VNet.SandboxSubnetName, subnetName, azureSandbox.VNet.Network.Name);
+        }
+
+        public async Task CreateBastion(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
+        {
+            _logger.LogInformation($"Creating Bastion for sandbox: {azureSandbox.SandboxName}");
+            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId, tags);
+            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
+
+        }
+
+        public async Task CreateVM(AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
+        {
+            _logger.LogInformation($"Creating Virtual Machine for sandbox: {azureSandbox.SandboxName}");
+            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags);
+            await _sandboxResourceService.Add(azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
+
         }
 
         public async Task NukeSandbox(string studyName, string sandboxName, string resourceGroupName)
         {
-            
+
             _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}");
 
             //TODO: Get list of relevant resources and mark as deleted in our db

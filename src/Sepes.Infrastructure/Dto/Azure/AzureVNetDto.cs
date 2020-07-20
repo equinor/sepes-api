@@ -1,7 +1,4 @@
 ﻿using Microsoft.Azure.Management.Network.Fluent;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -12,6 +9,11 @@ namespace Sepes.Infrastructure.Dto
                 var subnet = Network.Subnets["AzureBastionSubnet"];
                 return subnet.Inner.Id;
             }
+        }
+
+        public string SandboxSubnetName
+        {
+            get;set;
         }
 
         public string Name {
