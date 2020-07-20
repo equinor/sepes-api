@@ -18,9 +18,9 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IStudyService _studyService;
-        readonly AzureService _azureService;
+        readonly SandboxWorkerService _azureService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, AzureService azureService)
+        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, SandboxWorkerService azureService)
         {
             _db = db;
             _mapper = mapper;
@@ -71,6 +71,7 @@ namespace Sepes.Infrastructure.Service
 
             return await _studyService.GetStudyByIdAsync(studyId);
         }
+    
 
         public async Task<StudyDto> RemoveSandboxFromStudyAsync(int studyId, int sandboxId)
         {
