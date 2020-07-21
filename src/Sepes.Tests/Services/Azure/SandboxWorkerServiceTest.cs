@@ -33,7 +33,12 @@ namespace Sepes.Tests.Services.Azure
         [Fact]    
         public async void CreatingAndDeletingSandboxShouldBeOk()
         {
-            var sandboxService = ServiceProvider.GetService<SandboxWorkerService>();
+            var sandboxWorkerService = ServiceProvider.GetService<SandboxWorkerService>();
+            var resourceGroupService = ServiceProvider.GetService<IAzureResourceGroupService>();
+            var diagStorageAccountService = ServiceProvider.GetService<IAzureStorageAccountService>();
+            var networkService = ServiceProvider.GetService<IAzureVNetService>();
+            var nsgService = ServiceProvider.GetService<IAzureNwSecurityGroupService>();
+          
 
             var dateString = DateTime.UtcNow.ToString("HH-mm");
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
@@ -42,7 +47,7 @@ namespace Sepes.Tests.Services.Azure
             try
             {
                 var tags = AzureResourceTagsFactory.CreateUnitTestTags(studyName);             
-                var sandbox = await sandboxService.CreateBasicSandboxResourcesAsync(Region.NorwayEast, studyName, tags);  
+                var sandbox = await sandboxWorkerService.CreateBasicSandboxResourcesAsync(Region.NorwayEast, studyName, tags);  
 
                 Assert.NotNull(sandbox);
                 Assert.IsType<AzureSandboxDto>(sandbox);
@@ -54,6 +59,22 @@ namespace Sepes.Tests.Services.Azure
                 Assert.NotNull(sandbox.DiagnosticsStorage);
                 Assert.NotNull(sandbox.NetworkSecurityGroup);                
                 Assert.NotNull(sandbox.VNet);
+
+                var resourceGroupProvisioningState = await resourceGroupService.GetProvisioningState(sandbox.ResourceGroupName);
+                Assert.NotNull(resourceGroupProvisioningState);
+                Assert.Equal("Succeeded", resourceGroupProvisioningState);
+
+                var diagStorageAccountState = await diagStorageAccountService.GetProvisioningState(sandbox.ResourceGroupName, sandbox.DiagnosticsStorage.Name);
+                Assert.NotNull(diagStorageAccountState);
+                Assert.Equal("Succeeded", diagStorageAccountState);
+
+                var networkProvisioningState = await networkService.GetProvisioningState(sandbox.ResourceGroupName, sandbox.VNet.Name);
+                Assert.NotNull(networkProvisioningState);
+                Assert.Equal("Succeeded", networkProvisioningState);
+
+                var nsgProvisioningState = await nsgService.GetProvisioningState(sandbox.ResourceGroupName, sandbox.NetworkSecurityGroup.Name);
+                Assert.NotNull(nsgProvisioningState);
+                Assert.Equal("Succeeded", nsgProvisioningState);            
             }
             catch (Exception ex)
             {            
@@ -61,7 +82,7 @@ namespace Sepes.Tests.Services.Azure
             }
             finally
             {
-                await sandboxService.NukeUnitTestSandboxes();
+                await sandboxWorkerService.NukeUnitTestSandboxes();
             }          
         }
 
