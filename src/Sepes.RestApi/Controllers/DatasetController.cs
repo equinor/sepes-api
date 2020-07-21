@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
@@ -19,8 +20,15 @@ namespace Sepes.RestApi.Controller
             _datasetService = datasetService;
         }
 
-        //Get list of datasets lookup items
         [HttpGet]
+        public async Task<IActionResult> GetDatasetsAsync()
+        {
+            var studies = await _datasetService.GetDatasetsAsync();
+            return new JsonResult(studies);
+        }
+
+        //Get list of datasets lookup items
+        [HttpGet("lookup")]
         public async Task<IActionResult> GetDatasetsLookupAsync()
         {
             var studies = await _datasetService.GetDatasetsLookupAsync();
@@ -34,23 +42,23 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(dataset);        
         }
 
-        //[HttpPost()]
-        //public async Task<IActionResult> CreateDataset(DatasetDto newDataset)
-        //{
-        //    var study = await _studyService.CreateDatasetAsync(newDataset);
-        //    return new JsonResult(dataset);
-        //}
+        [HttpPost()]
+        public async Task<IActionResult> CreateDataset(DatasetDto newDataset)
+        {
+            var dataset = await _datasetService.CreateDatasetAsync(newDataset);
+            return new JsonResult(dataset);
+        }
 
 
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateDataset(int id, DatasetDto dataset)
-        //{
-        //    var updatedDataset = await _studyService.UpdateDatasetAsync(id, dataset);
-        //    return new JsonResult(updatedDataset);
-        //}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateDataset(int id, DatasetDto dataset)
+        {
+            var updatedDataset = await _datasetService.UpdateDatasetAsync(id, dataset);
+            return new JsonResult(updatedDataset);
+        }
 
 
-      
+
 
 
     }
