@@ -1,11 +1,8 @@
-﻿using Azure.Storage.Queues.Models;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service;
 using Sepes.Tests.Setup;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
