@@ -12,6 +12,8 @@ namespace Sepes.Infrastructure.Service
         Task DeleteStorageAccount(string resourceGroupName, string storageAccountName);
         Task<bool> Exists(string resourceGroupName, string storageAccountName);
 
+        Task<string> GetProvisioningState(string resourceGroupName, string resourceName);
+
         // CreateStorageContainer(type);
         // DeleteStoragecontainer(type);
 

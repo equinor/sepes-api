@@ -15,6 +15,8 @@ namespace Sepes.Infrastructure.Service
 
         Task<bool> Exists(string resourceGroupName);
 
+        Task<string> GetProvisioningState(string resourceGroupName);
+
         Task<IPagedCollection<IResourceGroup>> GetResourceGroupsAsList();
     }
 }

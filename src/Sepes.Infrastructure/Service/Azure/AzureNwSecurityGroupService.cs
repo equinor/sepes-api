@@ -2,6 +2,7 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -47,16 +48,34 @@ namespace Sepes.Infrastructure.Service
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string nsgName)
+        public async Task<INetworkSecurityGroup> GetResourceAsync(string resourceGroupName, string resourceName)
         {
-            var nsg = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, nsgName);
+            var resource = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
+        }
 
-            if (nsg == null)
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
             {
                 return false;
             }
 
-            return !string.IsNullOrWhiteSpace(nsg.Id);
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.Inner.ProvisioningState.ToString();
         }
     }
 }

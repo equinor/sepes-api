@@ -1,7 +1,9 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -52,31 +54,42 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
-        }
-
-        public async Task<bool> Exists(string resourceGroupName, string networkName)
-        {
-           var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
-
-            if(network == null)
-            {
-                return false;
-            }
-
-            return !string.IsNullOrWhiteSpace(network.Id);
-        }
+        }      
 
         public async Task Delete(string resourceGroupName, string vNetName)
         {
             await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, vNetName);
         }
 
-        public async Task<string> Status(string resourceGroupName, string vNetName)
+        public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
         {
-            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, vNetName);
-            var status = nsg.Inner.ProvisioningState.ToString();
-            return status;
+            var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
         }
+
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.Inner.ProvisioningState.ToString();
+        }  
 
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
