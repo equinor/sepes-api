@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Service
         Task Delete(string resourceGroupName, string vNetName);
         Task<bool> Exists(string resourceGroupName, string networkName);
 
-        Task<string> Status(string resourceGroupName, string vNetName);
+        Task<string> GetProvisioningState(string resourceGroupName, string vNetName);
         Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
     }
 }

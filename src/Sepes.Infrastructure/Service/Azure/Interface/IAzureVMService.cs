@@ -14,6 +14,8 @@ namespace Sepes.Infrastructure.Service
         Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int size, string type);
         Task Delete(string resourceGroupName, string virtualMachineName);
         Task<bool> Exists(string resourceGroupName, string virtualMachineName);
+
+        Task<string> GetProvisioningState(string resourceGroupName, string resourceName);
     }
 }
 

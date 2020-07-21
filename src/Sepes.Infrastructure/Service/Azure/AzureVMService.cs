@@ -10,6 +10,7 @@ using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using System.Collections.Generic;
 using Microsoft.Azure.Management.Storage.Fluent;
+using Sepes.Infrastructure.Exceptions;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -158,16 +159,34 @@ namespace Sepes.Infrastructure.Service
             return;
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string virtualMachineName)
+        public async Task<IVirtualMachine> GetResourceAsync(string resourceGroupName, string resourceName)
         {
-            var vm = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, virtualMachineName);
+            var resource = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
+        }
 
-            if (vm == null)
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
             {
                 return false;
             }
 
-            return !string.IsNullOrWhiteSpace(vm.Id);
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.ProvisioningState;
         }
     }
 }

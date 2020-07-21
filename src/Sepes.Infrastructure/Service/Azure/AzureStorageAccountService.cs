@@ -2,6 +2,7 @@
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -71,16 +72,34 @@ namespace Sepes.Infrastructure.Service
             await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName);
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string storageAccountName)
+        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName)
         {
-            var stgAcc = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, storageAccountName);
+            var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
+        }
 
-            if (stgAcc == null)
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
             {
                 return false;
             }
 
-            return !string.IsNullOrWhiteSpace(stgAcc.Id);
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.ProvisioningState.ToString();
         }
     }
 }

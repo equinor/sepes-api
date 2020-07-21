@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace Sepes.Infrastructure.Service
 
                 var bastionName = AzureResourceNameUtil.Bastion(sandboxName);
 
-                    var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
+                var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
                         {
                             Name = $"{bastionName}-ip-config",
                             Subnet =  new SubResource(subnetId),
@@ -52,8 +53,8 @@ namespace Sepes.Infrastructure.Service
 
                 };
 
-                var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);   
-                
+                var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
+
                 return createdBastion;
             }
         }
@@ -67,21 +68,38 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
+        public async Task<BastionHost> GetResourceAsync(string resourceGroupName, string bastionHostName)
         {
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
                 var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
+                return bastion;
+            }
+        }
 
-                if (bastion == null)
-                {
-                    return false;
-                }
+        public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
+        {
+            var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
 
-                return !string.IsNullOrWhiteSpace(bastion.Id);
+            if (bastion == null)
+            {
+                return false;
             }
 
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
+        {
+            var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
+
+            if (bastion == null)
+            {
+                throw NotFoundException.CreateForAzureResource(bastionHostName, resourceGroupName);
+            }
+
+            return bastion.ProvisioningState;
         }
     }
 
