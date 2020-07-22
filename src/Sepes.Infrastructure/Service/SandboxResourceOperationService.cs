@@ -53,7 +53,6 @@ namespace Sepes.Infrastructure.Service
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.Status = status;
             itemFromDb.Updated = DateTime.UtcNow;
-            itemFromDb.TryCount++;
             await _db.SaveChangesAsync();
 
             return await GetByIdAsync(itemFromDb.Id);
