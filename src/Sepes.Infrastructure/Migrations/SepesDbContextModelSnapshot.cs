@@ -201,7 +201,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(64)")
@@ -241,7 +243,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Updated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(64)")
@@ -264,7 +268,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(64)")
@@ -286,7 +292,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Updated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(64)")

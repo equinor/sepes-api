@@ -92,52 +92,66 @@ namespace Sepes.Infrastructure.Model.Context
         void AddDefaultValues(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Sandbox>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Dataset>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Study>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Study>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Dataset>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Dataset>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Sandbox>()
                .Property(b => b.Created)
                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Sandbox>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Participant>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Participant>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<StudyParticipant>()
-        .Property(b => b.Created)
-        .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<SandboxResource>()
+                .Property(sr => sr.Created)
+                .HasDefaultValueSql("getutcdate()");
+            modelBuilder.Entity<SandboxResource>()
+                .Property(sr => sr.Updated)
+                .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .Property(sro => sro.Created)
+                .HasDefaultValueSql("getutcdate()");
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .Property(sro => sro.Updated)
+                .HasDefaultValueSql("getutcdate()");
         }
     }
 }
