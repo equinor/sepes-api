@@ -2,6 +2,8 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -16,5 +18,11 @@ namespace Sepes.Infrastructure.Service
         Task<SandboxResourceDto> MarkAsDeletedByIdAsync(int id);
         Task<SandboxResourceDto> Update(int resourceId, IResourceGroup updated);
         Task<SandboxResourceDto> Update(int resourceId, IResource updated);
+
+      
+
+        Task<List<SandboxResource>> GetActiveResources();
+
+        Task UpdateProvisioningState(int resourceId, string newProvisioningState);
     }
 }
