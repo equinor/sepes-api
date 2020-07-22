@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using System;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -51,6 +52,7 @@ namespace Sepes.Infrastructure.Service
         {
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.Status = status;
+            itemFromDb.Updated = DateTime.UtcNow;
             itemFromDb.TryCount++;
             await _db.SaveChangesAsync();
 
