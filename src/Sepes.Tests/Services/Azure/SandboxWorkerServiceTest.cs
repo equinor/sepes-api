@@ -2,7 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
+using Sepes.Tests.Mocks;
 using Sepes.Tests.Setup;
 using System;
 using Xunit;
@@ -26,14 +28,14 @@ namespace Sepes.Tests.Services.Azure
             Services.AddTransient<IAzureQueueService, AzureQueueService>();
             Services.AddTransient<IVariableService, VariableService>();
             Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            Services.AddTransient<SandboxWorkerService>();
+            Services.AddTransient<ISandboxWorkerService, SandboxWorkerServiceMock>();
             ServiceProvider = Services.BuildServiceProvider();
         }
 
         [Fact]    
         public async void CreatingAndDeletingSandboxShouldBeOk()
         {
-            var sandboxWorkerService = ServiceProvider.GetService<SandboxWorkerService>();
+            var sandboxWorkerService = ServiceProvider.GetService<ISandboxWorkerService>();
             var resourceGroupService = ServiceProvider.GetService<IAzureResourceGroupService>();
             var diagStorageAccountService = ServiceProvider.GetService<IAzureStorageAccountService>();
             var networkService = ServiceProvider.GetService<IAzureVNetService>();
@@ -47,7 +49,7 @@ namespace Sepes.Tests.Services.Azure
             try
             {
                 var tags = AzureResourceTagsFactory.CreateUnitTestTags(studyName);             
-                var sandbox = await sandboxWorkerService.CreateBasicSandboxResourcesAsync(Region.NorwayEast, studyName, tags);  
+                var sandbox = await sandboxWorkerService.CreateBasicSandboxResourcesAsync(1, Region.NorwayEast, studyName, tags);  
 
                 Assert.NotNull(sandbox);
                 Assert.IsType<AzureSandboxDto>(sandbox);
