@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Tests.Setup;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
