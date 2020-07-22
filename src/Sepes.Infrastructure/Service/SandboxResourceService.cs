@@ -154,14 +154,22 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public Task<List<SandboxResource>> GetActiveResources()
+        public async Task<List<SandboxResource>> GetActiveResources()
         {
-            throw new NotImplementedException();
+            return await _db.SandboxResources.Where(sr => !sr.Deleted.HasValue).ToListAsync();            
         }
 
-        public Task UpdateProvisioningState(int resourceId, string newProvisioningState)
-        {
-            throw new NotImplementedException();
+        public async Task UpdateProvisioningState(int resourceId, string newProvisioningState)
+        { 
+            var resource = await GetOrThrowAsync(resourceId);
+            
+            if(resource.LastKnownProvisioningState != newProvisioningState)
+            {
+                resource.LastKnownProvisioningState = newProvisioningState;
+                resource.Updated = DateTime.UtcNow;
+                await _db.SaveChangesAsync();
+            }
+           
         }
         private async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
         {

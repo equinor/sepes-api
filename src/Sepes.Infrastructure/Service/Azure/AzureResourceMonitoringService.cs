@@ -68,7 +68,6 @@ namespace Sepes.Infrastructure.Service.Azure
             }
             catch (Exception ex)
             {
-
                 _logger.LogCritical(ex, $"Checking provisioning state failed for resource id: {resource.Id}");
             }
 
