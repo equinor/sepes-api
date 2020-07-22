@@ -12,6 +12,8 @@ namespace Sepes.Infrastructure.Model
 
         public string SessionId { get; set; }
 
+        public string Description { get; set; }
+
         public SandboxResource Resource { get; set; }
     }
 }

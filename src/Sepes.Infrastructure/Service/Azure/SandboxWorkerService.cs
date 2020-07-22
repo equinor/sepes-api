@@ -1,8 +1,6 @@
-﻿using Microsoft.Azure.Management.Network.Models;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -43,6 +41,18 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
         }
 
+        private SandboxResourceOperationDto CreateInitialResourceOperation(string description, int dependsOn = 0)
+        {
+            return new SandboxResourceOperationDto
+            {
+                DependsOn = dependsOn,
+                Status = "Initial",
+                TryCount = 0,
+                SessionId = "",
+                Description = description
+            };
+        }
+
         public async Task DoWork()
         {
             // This method should take orders from queue, check for dependencies and execute.
@@ -78,13 +88,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Creating resource group for sandbox: {azureSandbox.SandboxName}");
 
             // Create entry in SandboxResourceOperations-table
-            SandboxResourceOperationDto sandboxOperation = new SandboxResourceOperationDto
-            {
-                DependsOn = 0,
-                Status = "Initial",
-                TryCount = 0,
-                SessionId = ""
-            };
+            var sandboxOperation = CreateInitialResourceOperation("Create Resource Group.");
             var operation = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
 
             // Create actual resource group in Azure.
@@ -105,13 +109,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxResourceEntry = await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, "StorageAccount", "Not Yet Available", "Not Yet Available");
 
             // Create resource-operation-entry
-            SandboxResourceOperationDto sandboxOperation = new SandboxResourceOperationDto
-            {
-                DependsOn = 0,
-                Status = "Initial",
-                TryCount = 0,
-                SessionId = ""
-            };
+            var sandboxOperation = CreateInitialResourceOperation("Create Diagnostic Storage Account.");
             var operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
 
             // Create storage account for diagnostics logging of vms.
@@ -130,13 +128,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxResourceEntry = await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, "NetworkSecurityGroup", "Not Yet Available", AzureResourceNameUtil.NetworkSecGroup(azureSandbox.SandboxName));
 
             // Create resource-operation-entry
-            SandboxResourceOperationDto sandboxOperation = new SandboxResourceOperationDto
-            {
-                DependsOn = 0,
-                Status = "Initial",
-                TryCount = 0,
-                SessionId = ""
-            };
+            var sandboxOperation = CreateInitialResourceOperation("Create Network Security Group.");
             var operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
 
             //NSG creation
@@ -155,13 +147,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxResourceEntry = await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, "VirtualNetwork", "Not Yet Available", AzureResourceNameUtil.VNet(azureSandbox.StudyName, azureSandbox.SandboxName));
 
             // Create resource-operation-entry
-            SandboxResourceOperationDto sandboxOperation = new SandboxResourceOperationDto
-            {
-                DependsOn = 0,
-                Status = "Initial",
-                TryCount = 0,
-                SessionId = ""
-            };
+            var sandboxOperation = CreateInitialResourceOperation("Create Virtual Network.");
             var operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
 
             // Create actual VNET in Azure
@@ -172,9 +158,10 @@ namespace Sepes.Infrastructure.Service
             var operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.VNet.Network.Inner.ProvisioningState.ToString());
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {azureSandbox.SandboxName}");
-            operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, "Applying NSG");
 
             //Applying nsg to subnet
+            sandboxOperation = CreateInitialResourceOperation($"Apply Network Security Group: {azureSandbox.NetworkSecurityGroup.Name} to Subnet.");
+            operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
             await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.NetworkSecurityGroup.Name, azureSandbox.VNet.SandboxSubnetName, azureSandbox.VNet.Network.Name);
             operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, "Succeeded");
             return azureSandbox;
@@ -182,6 +169,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureSandboxDto> CreateBastion(int sandboxId, AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
+            //TODO: How to make this ready for execution after picking up queue message?
             _logger.LogInformation($"Creating Bastion for sandbox: {azureSandbox.SandboxName}");
             var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId, tags);
             await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
@@ -190,6 +178,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureSandboxDto> CreateVM(int sandboxId, AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
+            //TODO: How to make this ready for execution after picking up queue message?
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {azureSandbox.SandboxName}");
             var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags, azureSandbox.DiagnosticsStorage.Name);
             await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);

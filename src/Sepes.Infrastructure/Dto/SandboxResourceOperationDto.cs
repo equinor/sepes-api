@@ -14,6 +14,8 @@ namespace Sepes.Infrastructure.Dto
 
         public int DependsOn { get; set; }
 
+        public string Description { get; set; }
+
         public string SessionId { get; set; }
     }
 }
