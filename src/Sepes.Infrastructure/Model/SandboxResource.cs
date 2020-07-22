@@ -21,7 +21,9 @@ namespace Sepes.Infrastructure.Model
 
         public string Status { get; set; }
 
-        public DateTime Deleted { get; set; }
+        public string LastKnownProvisioningState { get; set; }
+
+        public DateTime? Deleted { get; set; }
 
         public string DeletedBy { get; set; }
 
