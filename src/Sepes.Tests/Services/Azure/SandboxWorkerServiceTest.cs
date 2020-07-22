@@ -19,16 +19,7 @@ namespace Sepes.Tests.Services.Azure
         public SandboxWorkerServiceTest()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();        
-            Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
-            Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            Services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
-            Services.AddTransient<IAzureBastionService, AzureBastionService>();
-            Services.AddTransient<IAzureVNetService, AzureVNetService>();
-            Services.AddTransient<IAzureVMService, AzureVMService>();
-            Services.AddTransient<IAzureQueueService, AzureQueueService>();
-            Services.AddTransient<IVariableService, VariableService>();
-            Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            Services.AddTransient<ISandboxWorkerService, SandboxWorkerServiceMock>();
+           
             ServiceProvider = Services.BuildServiceProvider();
         }
 

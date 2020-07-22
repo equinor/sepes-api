@@ -84,5 +84,9 @@ namespace Sepes.Infrastructure.Service
             return rg;
         }
 
+        public Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            return GetProvisioningState(resourceGroupName);
+        }
     }
 }

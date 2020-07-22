@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -156,6 +152,15 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
+        public Task<List<SandboxResource>> GetActiveResources()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task UpdateProvisioningState(int resourceId, string newProvisioningState)
+        {
+            throw new NotImplementedException();
+        }
         private async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
         {
             var sandboxFromDb = await _db.Sandboxes
