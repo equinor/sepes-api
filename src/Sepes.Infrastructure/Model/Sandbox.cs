@@ -14,6 +14,9 @@ namespace Sepes.Infrastructure.Model
         [Required]
         public string TechnicalContactEmail { get; set; }
 
+        [Required]
+        public string Region { get; set; }
+
         public Study Study { get; set; }
 
         public int StudyId { get; set; }
