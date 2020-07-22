@@ -162,6 +162,10 @@ namespace Sepes.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("StudyId")
                         .HasColumnType("int");
 
@@ -216,6 +220,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceKey")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResourceName")

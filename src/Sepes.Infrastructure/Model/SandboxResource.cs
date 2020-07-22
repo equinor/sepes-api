@@ -9,6 +9,8 @@ namespace Sepes.Infrastructure.Model
 
         public string ResourceId { get; set; }
 
+        public string ResourceKey { get; set; }
+
         public string ResourceName { get; set; }
 
         public string ResourceType { get; set; }

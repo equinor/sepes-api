@@ -78,14 +78,14 @@ namespace Sepes.Infrastructure.Model.Context
 
             //CLOUD RESOURCE / SANDBOX RELATION
             modelBuilder.Entity<SandboxResource>()
-         .HasOne(cr => cr.Sandbox)
-         .WithMany(d => d.Resources)
-         .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
+                .HasOne(cr => cr.Sandbox)
+                .WithMany(d => d.Resources)
+                .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<SandboxResourceOperation>()
-    .HasOne(cr => cr.Resource)
-    .WithMany(d => d.Operations)
-    .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
+                .HasOne(cr => cr.Resource)
+                .WithMany(d => d.Operations)
+                .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
         }
 
 

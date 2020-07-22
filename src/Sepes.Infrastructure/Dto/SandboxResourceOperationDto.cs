@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class SandboxResourceOperationDto
+    public class SandboxResourceOperationDto : UpdateableBaseDto
     {
         public int SandboxResourceId { get; set; }
 
