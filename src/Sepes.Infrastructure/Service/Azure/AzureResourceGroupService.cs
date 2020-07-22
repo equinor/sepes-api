@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Service
     public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
     { 
         
-        public AzureResourceGroupService(IConfiguration config, ILogger logger)
+        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
             :base(config, logger)
         {
         }
@@ -21,7 +21,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
         {
-            string resourceGroupName = AzureResourceNameUtil.ResourceGroupForStudy(sandboxName);
+            string resourceGroupName = AzureResourceNameUtil.ResourceGroup(sandboxName);
 
             //TODO: Add tags, where to get?
             //TechnicalContact (Specified per sandbox?)

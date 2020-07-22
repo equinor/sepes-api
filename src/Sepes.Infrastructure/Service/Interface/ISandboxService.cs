@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;

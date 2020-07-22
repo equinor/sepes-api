@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Service
     {
 
 
-        public AzureNwSecurityGroupService(IConfiguration config, ILogger logger)
+        public AzureNwSecurityGroupService(IConfiguration config, ILogger<AzureNwSecurityGroupService> logger)
              : base(config, logger)
         {
 

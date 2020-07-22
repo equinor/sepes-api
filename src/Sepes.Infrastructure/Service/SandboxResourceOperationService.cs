@@ -19,11 +19,13 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task Add(SandboxResourceOperationDto operationDto)
+        public async Task<SandboxResourceOperationDto> Add(int sandboxResourceId, SandboxResourceOperationDto operationDto)
         {
+            var sandboxResourceFromDb = await GetSandboxResourceOrThrowAsync(sandboxResourceId);
             var newOperation = _mapper.Map<SandboxResourceOperation>(operationDto);
-            _db.SandboxResourceOperations.Add(newOperation);
+            sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
+            return await GetByIdAsync(newOperation.Id);
         }
 
         public async Task<SandboxResourceOperationDto> GetByIdAsync(int id)
@@ -49,11 +51,24 @@ namespace Sepes.Infrastructure.Service
         {
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.Status = status;
+            itemFromDb.TryCount++;
             await _db.SaveChangesAsync();
 
             return await GetByIdAsync(itemFromDb.Id);
         }
 
+        private async Task<SandboxResource> GetSandboxResourceOrThrowAsync(int id)
+        {
+            var entityFromDb = await _db.SandboxResources
+                .Include(sr => sr.Operations)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
+            if (entityFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("AzureResource", id);
+            }
+
+            return entityFromDb;
+        }
     }
 }

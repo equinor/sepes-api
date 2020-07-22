@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,14 +20,14 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IStudyService _studyService;
-        readonly SandboxWorkerService _azureService;
+        readonly ISandboxWorkerService _sandboxWorkerService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, SandboxWorkerService azureService)
+        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
         {
             _db = db;
             _mapper = mapper;
             _studyService = studyService;
-            _azureService = azureService;
+            _sandboxWorkerService = sandboxWorkerService;
         }
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId)
@@ -37,6 +39,21 @@ namespace Sepes.Infrastructure.Service
             return sandboxDTOs;
         }
 
+        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
+        {
+            var sandboxFromDb = await _db.Sandboxes
+                .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations)
+                .FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+
+            if (sandboxFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+            }
+            return sandboxFromDb;
+        }
+
+        // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
@@ -61,18 +78,26 @@ namespace Sepes.Infrastructure.Service
             }
             // TODO: Do check on Sandbox
 
-            // Create reference
+            // Create reference to study
             var sandbox = _mapper.Map<Sandbox>(newSandbox);
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
+            int sandboxId = sandbox.Id;
+            // Get Dtos for arguments to sandboxWorkerService
+            var studyDto = await _studyService.GetStudyByIdAsync(studyId);
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
+            // Create Tags
+            var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
 
-            //TODO: Start sandbox creation (setting up jobs)
-           // await _azureService.CreateSandboxAsync();
+            //TODO: Start sandbox creation (setting up jobs in Azure and creating table entries)
+            Region region = RegionStringConverter.Convert(newSandbox.Region);
+            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandboxId, region, studyFromDb.Name, tags);
 
             return await _studyService.GetStudyByIdAsync(studyId);
         }
     
-
+        // TODO: DO stuff inn azure
         public async Task<StudyDto> RemoveSandboxFromStudyAsync(int studyId, int sandboxId)
         {
             // Run validations: (Check if ID is valid)

@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service
         protected readonly IConfiguration _config;
         protected readonly ILogger _logger;
 
-        public AzureQueueService(IConfiguration config, ILogger logger)
+        public AzureQueueService(IConfiguration config, ILogger<AzureQueueService> logger)
         {
             _config = config;
             _connectionString = config["AzureQueueConnectionString"];

@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureBastionService : AzureServiceBase, IAzureBastionService
     {
-        public AzureBastionService(IConfiguration config, ILogger logger) : base(config, logger)
+        public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger) : base(config, logger)
         {
 
         }

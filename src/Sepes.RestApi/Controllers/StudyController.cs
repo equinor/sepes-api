@@ -86,7 +86,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(sandboxes);
         }
 
-        [HttpPut("{studyId}/sandboxes")]
+        [HttpPost("{studyId}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddSandboxAsync(int studyId, SandboxDto newSandbox)
         {

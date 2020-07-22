@@ -10,8 +10,9 @@ namespace Sepes.Infrastructure.Util
         {
             var tags = CreateBaseTags(studyName);
             tags.Add("WBS", study.WbsCode);
-            tags.Add("StudyOwnerName", study.OwnerName);
-            tags.Add("StudyOwnerEmail", study.OwnerEmail);
+            // TODO: Get Owner Name and Email from Roles!
+            //tags.Add("StudyOwnerName", study.OwnerName);
+            //tags.Add("StudyOwnerEmail", study.OwnerEmail);
             tags.Add("SandboxName", sandbox.Name);
             tags.Add("TechnicalContactName", sandbox.TechnicalContactName);
             tags.Add("TechnicalContactEmail", sandbox.TechnicalContactEmail);
