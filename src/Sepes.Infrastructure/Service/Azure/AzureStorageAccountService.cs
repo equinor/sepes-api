@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
-        public AzureStorageAccountService(IConfiguration config, ILogger logger) : base(config, logger)
+        public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger) : base(config, logger)
         {
 
         }

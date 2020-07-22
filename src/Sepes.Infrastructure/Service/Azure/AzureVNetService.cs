@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
     { 
-        public AzureVNetService(IConfiguration config, ILogger logger)
+        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger)
             :base (config, logger)
         {         
           

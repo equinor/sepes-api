@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureVMService : AzureServiceBase, IAzureVMService
     {
-        public AzureVMService(IConfiguration config, ILogger logger)
+        public AzureVMService(IConfiguration config, ILogger<AzureVMService> logger)
             :base (config, logger)
         {         
           

@@ -1,5 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.Compute.Fluent;
+using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.Network.Models;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -23,8 +28,9 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<SandboxResourceDto> Add(string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
+        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
         {
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
             var newResource = new SandboxResource()
             {
                 ResourceGroupId = resourceGroupId,
@@ -34,26 +40,60 @@ namespace Sepes.Infrastructure.Service
                 Status = ""
             };
 
-            _db.SandboxResources.Add(newResource);
+            sandboxFromDb.Resources.Add(newResource);
             await _db.SaveChangesAsync();
 
             return await GetByIdAsync(newResource.Id);
         }
 
-        public async Task<SandboxResourceDto> AddResourceGroup(string resourceGroupId, string resourceGroupName, string type)
+        public async Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type)
         {
-            return await Add(resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
+            return await Add(sandboxId, resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
         }
 
-        public async Task<SandboxResourceDto> Add(string resourceGroupId, string resourceGroupName, Resource resource)
+        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, Microsoft.Azure.Management.Network.Models.Resource resource)
         {
-            return await Add(resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
+            return await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
+        }
+
+        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, IResource resource)
+        {
+            return await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
         }
 
         //ResourceGroup
         //Nsg
         //VNet
         //Bastion
+
+        public async Task<SandboxResourceDto> Update(int resourceId, IResourceGroup updated)
+        {
+            var resource = await GetOrThrowAsync(resourceId);
+            resource.ResourceGroupId = updated.Id;
+            resource.ResourceGroupName = updated.Name;
+            resource.ResourceId = updated.Id;
+            resource.ResourceKey = updated.Key;
+            resource.ResourceName = updated.Name;
+            resource.Status = updated.ProvisioningState;
+            await _db.SaveChangesAsync();
+
+            var retVal = await GetByIdAsync(resourceId);
+            return retVal;
+        }
+
+        public async Task<SandboxResourceDto> Update(int resourceId, IResource updated)
+        {
+            var resource = await GetOrThrowAsync(resourceId);
+            resource.ResourceId = updated.Id;
+            resource.ResourceKey = updated.Key;
+            resource.ResourceName = updated.Name;
+            resource.ResourceType = updated.Type;
+            await _db.SaveChangesAsync();
+
+            var retVal = await GetByIdAsync(resourceId);
+            return retVal;
+        }
+
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
@@ -79,7 +119,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxResourceDto>(entity);
         }
 
-        async Task<SandboxResource> GetOrThrowAsync(int id)
+        public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
@@ -116,6 +156,18 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-      
+        private async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
+        {
+            var sandboxFromDb = await _db.Sandboxes
+                .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations)
+                .FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+
+            if (sandboxFromDb == null)
+            {
+                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+            }
+            return sandboxFromDb;
+        }
     }
 }

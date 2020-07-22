@@ -134,7 +134,8 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IVariableService, VariableService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            services.AddTransient<SandboxWorkerService>();
+            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+            services.AddTransient<SandboxResourceOperationService>();
 
 
             // Register the Swagger generator, defining 1 or more Swagger documents
