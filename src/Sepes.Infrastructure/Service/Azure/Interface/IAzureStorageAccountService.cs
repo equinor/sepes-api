@@ -5,14 +5,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureStorageAccountService
+    public interface IAzureStorageAccountService : IHasProvisioningState
     {
         Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags);
         Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags);
         Task DeleteStorageAccount(string resourceGroupName, string storageAccountName);
         Task<bool> Exists(string resourceGroupName, string storageAccountName);
-
-        Task<string> GetProvisioningState(string resourceGroupName, string resourceName);
 
         // CreateStorageContainer(type);
         // DeleteStoragecontainer(type);
