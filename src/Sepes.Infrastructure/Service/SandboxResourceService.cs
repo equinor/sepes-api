@@ -71,6 +71,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceKey = updated.Key;
             resource.ResourceName = updated.Name;
             resource.Status = updated.ProvisioningState;
+            resource.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
             var retVal = await GetByIdAsync(resourceId);
@@ -84,6 +85,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceKey = updated.Key;
             resource.ResourceName = updated.Name;
             resource.ResourceType = updated.Type;
+            resource.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
             var retVal = await GetByIdAsync(resourceId);

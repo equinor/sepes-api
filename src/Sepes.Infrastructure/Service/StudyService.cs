@@ -107,6 +107,8 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.ResultsAndLearnings = updatedStudy.ResultsAndLearnings;
             }
 
+            studyFromDb.Updated = DateTime.UtcNow;
+
             Validate(studyFromDb);
 
             await _db.SaveChangesAsync();

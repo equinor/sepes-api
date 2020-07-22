@@ -261,6 +261,7 @@ namespace Sepes.Infrastructure.Service
             {
                 datasetFromDb.Description = updatedDataset.Description;
             }
+            datasetFromDb.Updated = DateTime.UtcNow;
             Validate(datasetFromDb);
             await _db.SaveChangesAsync();
             return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
