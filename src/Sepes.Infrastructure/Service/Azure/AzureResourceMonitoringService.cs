@@ -85,40 +85,48 @@ namespace Sepes.Infrastructure.Service
         {    
             try
             {
-                // Read info used to create tags from resourceGroup in DB
-                // These tags should be checked with the ones in Azure.
-                var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
-                var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
-                var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
-
                 var serviceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, resource.ResourceType);
-                var tagsFromAzure = await serviceForResource.GetTags(resource.ResourceGroupName, resource.ResourceName);
 
-                // Check against tags from resource in Azure.
-                // If different => update Tags and report difference to Study Owner?
-                foreach (var tag in tagsFromAzure)
+                if (serviceForResource == null)
                 {
-                    //Do not check CreatedByMachine-tag, as this will be different from original.
-                    if (!tag.Key.Equals("CreatedByMachine"))
+                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}");
+                }
+                else
+                {
+                    // Read info used to create tags from resourceGroup in DB
+                    // These tags should be checked with the ones in Azure.
+                    var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
+                    var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
+                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
+
+                    var tagsFromAzure = await serviceForResource.GetTags(resource.ResourceGroupName, resource.ResourceName);
+
+                    // Check against tags from resource in Azure.
+                    // If different => update Tags and report difference to Study Owner?
+                    foreach (var tag in tagsFromAzure)
                     {
-                        if (!tagsFromDb.TryGetValue(tag.Key, out string dbValue))
+                        //Do not check CreatedByMachine-tag, as this will be different from original.
+                        if (!tag.Key.Equals("CreatedByMachine"))
                         {
-                            // If Tag exists in Azure but not in tags generated from DB-data, report.
-                            // Means that user has added tags themselves in Azure.
-                            _logger.LogWarning($"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
-                            //TODO: Proper report!
-                        }
-                        else
-                        {
-                            // If Tag exists in Azure and Db but has different value in Azure
-                            if (!tag.Value.Equals(dbValue))
+                            if (!tagsFromDb.TryGetValue(tag.Key, out string dbValue))
                             {
-                                //Report
-                                _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info {tag.Key} : {dbValue}");
-                                //Update tag in Azure to match DB-information.
-                                await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
-                                _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
+                                // If Tag exists in Azure but not in tags generated from DB-data, report.
+                                // Means that user has added tags themselves in Azure.
+                                _logger.LogWarning($"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
                                 //TODO: Proper report!
+                            }
+                            else
+                            {
+                                // If Tag exists in Azure and Db but has different value in Azure
+                                if (!tag.Value.Equals(dbValue))
+                                {
+                                    //Report
+                                    _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info {tag.Key} : {dbValue}");
+                                    //Update tag in Azure to match DB-information.
+                                    await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
+                                    _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
+                                    //TODO: Proper report!
+                                }
                             }
                         }
                     }
