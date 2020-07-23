@@ -88,5 +88,18 @@ namespace Sepes.Infrastructure.Service
         {
             return GetProvisioningState(resourceGroupName);
         }
+
+        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        {
+            var rg = await GetResourceAsync(resourceGroupName);
+            return rg.Tags;
+        }
+
+        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        {
+            var rg = await GetResourceAsync(resourceGroupName);
+                _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
+                _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+        }
     }
 }

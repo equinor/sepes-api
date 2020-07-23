@@ -1,23 +1,28 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Microsoft.Rest;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Infrastructure.Service
 {
     public class AzureResourceMonitoringService
     {
         readonly IServiceProvider _serviceProvider;
         readonly ILogger _logger;
         readonly ISandboxResourceService _sandboxResourceService;
+        readonly IMapper _mapper;
 
-        public AzureResourceMonitoringService(ILogger logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService)
+        public AzureResourceMonitoringService(ILogger logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
             _sandboxResourceService = sandboxResourceService;
+            _mapper = mapper;
         }
 
         public async Task StartMonitoringSession()
@@ -34,6 +39,7 @@ namespace Sepes.Infrastructure.Service.Azure
                     }
 
                     await GetAndLogProvisioningState(curRes);
+                    await CheckAndUpdateTags(curRes);
                 }
                 catch (Exception ex)
                 {
@@ -73,10 +79,55 @@ namespace Sepes.Infrastructure.Service.Azure
 
         }
 
+        // Checks Tags from Resource in Azure with information from db. 
+        // Makes sure they are equal.
         async Task CheckAndUpdateTags(SandboxResource resource)
-        {
+        {    
+            try
+            {
+                // Read info used to create tags from resourceGroup in DB
+                // These tags should be checked with the ones in Azure.
+                var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
+                var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
+                var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
 
+                var serviceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, resource.ResourceType);
+                var tagsFromAzure = await serviceForResource.GetTags(resource.ResourceGroupName, resource.ResourceName);
 
+                // Check against tags from resource in Azure.
+                // If different => update Tags and report difference to Study Owner?
+                foreach (var tag in tagsFromAzure)
+                {
+                    //Do not check CreatedByMachine-tag, as this will be different from original.
+                    if (!tag.Key.Equals("CreatedByMachine"))
+                    {
+                        if (!tagsFromDb.TryGetValue(tag.Key, out string dbValue))
+                        {
+                            // If Tag exists in Azure but not in tags generated from DB-data, report.
+                            // Means that user has added tags themselves in Azure.
+                            _logger.LogWarning($"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
+                            //TODO: Proper report!
+                        }
+                        else
+                        {
+                            // If Tag exists in Azure and Db but has different value in Azure
+                            if (!tag.Value.Equals(dbValue))
+                            {
+                                //Report
+                                _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info {tag.Key} : {dbValue}");
+                                //Update tag in Azure to match DB-information.
+                                await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
+                                _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
+                                //TODO: Proper report!
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, $"Tag check/update failed for resource id: {resource.Id}");
+            }
         }
     }
 }

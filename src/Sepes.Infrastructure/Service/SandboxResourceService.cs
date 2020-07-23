@@ -156,7 +156,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResource>> GetActiveResources()
         {
-            return await _db.SandboxResources.Where(sr => !sr.Deleted.HasValue).ToListAsync();            
+            return await _db.SandboxResources
+                .Include(sr => sr.Sandbox)
+                    .ThenInclude(sb => sb.Study)
+                .Where(sr => !sr.Deleted.HasValue).ToListAsync();            
         }
 
         public async Task UpdateProvisioningState(int resourceId, string newProvisioningState)

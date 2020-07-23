@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureBastionService : IHasProvisioningState
+    public interface IAzureBastionService : IHasProvisioningState, IHasTags
     {      
         Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags);
         Task Delete(string resourceGroupName, string bastionHostName);
