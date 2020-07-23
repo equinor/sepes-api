@@ -82,9 +82,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureSandboxDto> CreateResourceGroup(int sandboxId, AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags)
         {
-
             // Create entry in SandboxResource-table,
-            var sandboxResourceEntry = await _sandboxResourceService.AddResourceGroup(sandboxId, "NotYetAvailable", AzureResourceNameUtil.ResourceGroup(azureSandbox.SandboxName), "ResourceGroup");
+            var resourceGroupName = AzureResourceNameUtil.ResourceGroup(azureSandbox.SandboxName);
+            var sandboxResourceEntry = await _sandboxResourceService.AddResourceGroup(sandboxId, "NotYetAvailable", resourceGroupName, "ResourceGroup");
             _logger.LogInformation($"Creating resource group for sandbox: {azureSandbox.SandboxName}");
 
             // Create entry in SandboxResourceOperations-table
@@ -92,7 +92,7 @@ namespace Sepes.Infrastructure.Service
             var operation = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
 
             // Create actual resource group in Azure.
-            azureSandbox.ResourceGroup = await _resourceGroupService.CreateForStudy(azureSandbox.StudyName, azureSandbox.SandboxName, region, tags);
+            azureSandbox.ResourceGroup = await _resourceGroupService.Create(resourceGroupName, region, tags);
 
             // After Resource is created, mark entry in SandboxResourceOperations-table as "created/successful" and update Id in resource-table.
             var resourceDto = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.ResourceGroup);

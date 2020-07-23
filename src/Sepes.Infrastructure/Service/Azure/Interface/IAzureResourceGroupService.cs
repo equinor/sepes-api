@@ -7,7 +7,7 @@ namespace Sepes.Infrastructure.Service
 {
     public interface IAzureResourceGroupService : IHasProvisioningState
     {
-        Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags);
+        //Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags);
 
         Task<IResourceGroup> Create(string resourceGroupName, Region region, Dictionary<string, string> tags);
 
