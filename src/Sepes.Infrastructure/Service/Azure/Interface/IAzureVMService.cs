@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureVMService : IHasProvisioningState
+    public interface IAzureVMService : IHasProvisioningState, IHasTags
     {
         Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, 
                                     string subnetName, string userName, string password, string vmPerformanceProfile, 

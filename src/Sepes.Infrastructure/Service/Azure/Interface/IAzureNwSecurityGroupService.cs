@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureNwSecurityGroupService : IHasProvisioningState
+    public interface IAzureNwSecurityGroupService : IHasProvisioningState, IHasTags
     {
        
         Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags);

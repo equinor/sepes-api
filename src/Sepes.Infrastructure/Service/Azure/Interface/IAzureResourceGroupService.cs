@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureResourceGroupService : IHasProvisioningState
+    public interface IAzureResourceGroupService : IHasProvisioningState, IHasTags
     {
         //Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags);
 
