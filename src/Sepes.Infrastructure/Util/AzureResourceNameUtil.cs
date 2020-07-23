@@ -8,7 +8,8 @@ namespace Sepes.Infrastructure.Util
     {
         public static string ResourceGroup(string sandboxName)
         {
-            return StripWhitespace($"rg-study-{sandboxName}");
+            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
+            return StripWhitespace($"rg-study-{sandboxName}{shortGuid}");
         }
         public static string Sandbox(string studyName)
         {
@@ -72,7 +73,7 @@ namespace Sepes.Infrastructure.Util
 
         public static string VirtualMachine(string sandboxName)
         {
-            return $"vm-{sandboxName}";
+            return StripWhitespace($"vm-{sandboxName}");
         }
 
         static string MakeStringAlphanumeric(string str)
