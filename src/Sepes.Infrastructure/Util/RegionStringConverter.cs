@@ -9,38 +9,18 @@ namespace Sepes.Infrastructure.Util
     {
         public static Region Convert(string regionString)
         {
-            Region region;
-            switch (regionString)
+            return regionString switch
             {
-                case "NorwayEast":
-                    region = Region.NorwayEast;
-                    break;
-                case "USWest":
-                    region = Region.USWest;
-                    break;
-                case "USEast":
-                    region = Region.USEast;
-                    break;
-                case "BrazilSouth":
-                    region = Region.BrazilSouth;
-                    break;
-                case "GermanyCentral":
-                    region = Region.GermanyCentral;
-                    break;
-                case "USCentral":
-                    region = Region.USCentral;
-                    break;
-                case "EuropeWest":
-                    region = Region.EuropeWest;
-                    break;
-                case "EuropeNorth":
-                    region = Region.EuropeNorth;
-                    break;
-                default:
-                    region = Region.NorwayEast;
-                    break;
-            }
-            return region;
+                "NorwayEast" => Region.NorwayEast,
+                "USWest" => Region.USWest,
+                "USEast" => Region.USEast,
+                "BrazilSouth" => Region.BrazilSouth,
+                "GermanyCentral" => Region.GermanyCentral,
+                "USCentral" => Region.USCentral,
+                "EuropeWest" => Region.EuropeWest,
+                "EuropeNorth" => Region.EuropeNorth,
+                _ => Region.NorwayEast,
+            };
         }
     }
 }

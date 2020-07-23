@@ -9,24 +9,18 @@ namespace Sepes.Infrastructure.Util
     {
         //List<IHasProvisioningState> services
         public static IHasProvisioningState GetServiceWithProvisioningState(IServiceProvider serviceProvider, string resourceType)
-        {         
+        {
 
-            switch (resourceType)
+            return resourceType switch
             {
-                case "ResourceGroup":
-                    return serviceProvider.GetRequiredService<IAzureResourceGroupService>();
-                case "Network":
-                    return serviceProvider.GetRequiredService<IAzureVNetService>();
-                case "NetworkSecurityGroup":
-                    return serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>();
-                case "StorageAccount":
-                    return serviceProvider.GetRequiredService<IAzureStorageAccountService>();
-                case "Virtualmachine":
-                    return serviceProvider.GetRequiredService<IAzureVMService>();                          
-                case "Bastion":
-                    return serviceProvider.GetRequiredService<IAzureBastionService>();
-                default: return null;
-            }
+                "ResourceGroup" => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
+                "Network" => serviceProvider.GetRequiredService<IAzureVNetService>(),
+                "NetworkSecurityGroup" => serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>(),
+                "StorageAccount" => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
+                "Virtualmachine" => serviceProvider.GetRequiredService<IAzureVMService>(),
+                "Bastion" => serviceProvider.GetRequiredService<IAzureBastionService>(),
+                _ => null,
+            };
         }
     }
 }
