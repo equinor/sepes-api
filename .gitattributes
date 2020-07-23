@@ -1,0 +1,5 @@
+# This file ensures line endings are properly handled across Windows/Linux
+# See https://docs.github.com/en/github/using-git/configuring-git-to-handle-line-endings
+
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
