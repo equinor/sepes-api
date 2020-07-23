@@ -19,18 +19,18 @@ namespace Sepes.Infrastructure.Service
 
       
 
-        public async Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
-        {
-            string resourceGroupName = AzureResourceNameUtil.ResourceGroup(sandboxName);
+        //public async Task<IResourceGroup> CreateForStudy(string studyName, string sandboxName, Region region, Dictionary<string, string> tags)
+        //{
+        //    string resourceGroupName = AzureResourceNameUtil.ResourceGroup(sandboxName);
 
-            //TODO: Add tags, where to get?
-            //TechnicalContact (Specified per sandbox?)
-            //TechnicalContactEmail (Specified per sandbox?)
-            //Sponsor
-            //SponsorEmail
+        //    //TODO: Add tags, where to get?
+        //    //TechnicalContact (Specified per sandbox?)
+        //    //TechnicalContactEmail (Specified per sandbox?)
+        //    //Sponsor
+        //    //SponsorEmail
 
-            return await Create(resourceGroupName, region, tags);         
-        }
+        //    return await Create(resourceGroupName, region, tags);         
+        //}
 
         public async Task<IResourceGroup> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
         {
