@@ -57,6 +57,7 @@ namespace Sepes.Infrastructure.Service
         {
             // This method should take orders from queue, check for dependencies and execute.
             // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
+            throw new NotImplementedException();
         }
 
         public async Task<AzureSandboxDto> CreateBasicSandboxResourcesAsync(int sandboxId, Region region, string studyName, Dictionary<string, string> tags)
@@ -95,8 +96,8 @@ namespace Sepes.Infrastructure.Service
             azureSandbox.ResourceGroup = await _resourceGroupService.Create(resourceGroupName, region, tags);
 
             // After Resource is created, mark entry in SandboxResourceOperations-table as "created/successful" and update Id in resource-table.
-            var resourceDto = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.ResourceGroup);
-            var operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operation.Id, azureSandbox.ResourceGroup.ProvisioningState);
+            _ = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.ResourceGroup);
+            _ = await _sandboxResourceOperationService.UpdateStatus((int)operation.Id, azureSandbox.ResourceGroup.ProvisioningState);
             _logger.LogInformation($"Resource group created for sandbox with Id: {sandboxId}! Id: {azureSandbox.ResourceGroupId}, name: {azureSandbox.ResourceGroupName}");
 
             return azureSandbox;
@@ -116,8 +117,8 @@ namespace Sepes.Infrastructure.Service
             azureSandbox.DiagnosticsStorage = await _storageService.CreateDiagnosticsStorageAccount(region, azureSandbox.SandboxName, azureSandbox.ResourceGroupName, tags);
 
             // Update entries
-            var resourceDto = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.DiagnosticsStorage);
-            var resourceOperationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.DiagnosticsStorage.ProvisioningState.ToString());
+            _ = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.DiagnosticsStorage);
+            _ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.DiagnosticsStorage.ProvisioningState.ToString());
             return azureSandbox;
         }
 
@@ -135,8 +136,8 @@ namespace Sepes.Infrastructure.Service
             azureSandbox.NetworkSecurityGroup = await _nsgService.CreateSecurityGroupForSubnet(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, tags);
 
             // Update entries
-            var resourceDto = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.NetworkSecurityGroup);
-            var resourceOperationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.NetworkSecurityGroup.Inner.ProvisioningState.ToString());
+            _ = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.NetworkSecurityGroup);
+            _ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.NetworkSecurityGroup.Inner.ProvisioningState.ToString());
             return azureSandbox;
         }
 
@@ -152,10 +153,10 @@ namespace Sepes.Infrastructure.Service
 
             // Create actual VNET in Azure
             azureSandbox.VNet = await _vNetService.CreateAsync(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, tags);
-            
+
             // Update Entries
-            var resourceDto = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.VNet.Network);
-            var operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.VNet.Network.Inner.ProvisioningState.ToString());
+            _ = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.VNet.Network);
+            _ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.VNet.Network.Inner.ProvisioningState.ToString());
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {azureSandbox.SandboxName}");
 
@@ -163,7 +164,7 @@ namespace Sepes.Infrastructure.Service
             sandboxOperation = CreateInitialResourceOperation($"Apply Network Security Group: {azureSandbox.NetworkSecurityGroup.Name} to Subnet.");
             operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
             await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.NetworkSecurityGroup.Name, azureSandbox.VNet.SandboxSubnetName, azureSandbox.VNet.Network.Name);
-            operationDto = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, "Succeeded");
+            _ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, "Succeeded");
             return azureSandbox;
         }
 
