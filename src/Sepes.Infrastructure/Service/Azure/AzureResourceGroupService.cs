@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
-        public async Task<bool> Exists(string resourceGroupName)
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
         {
             var resource = await GetResourceAsync(resourceGroupName);
 
@@ -60,6 +60,8 @@ namespace Sepes.Infrastructure.Service
 
             return true;
         }
+
+        public async Task<bool> Exists(string resourceGroupName) => await Exists(resourceGroupName, resourceGroupName);
 
         public async Task<string> GetProvisioningState(string resourceGroupName)
         {

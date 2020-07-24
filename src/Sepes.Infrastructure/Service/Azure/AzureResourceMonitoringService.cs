@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
@@ -33,10 +32,7 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
-                    if (String.IsNullOrWhiteSpace(curRes.ResourceType))
-                    {
-                        _logger.LogCritical($"Resource type field empty in DB for resource id: {curRes.Id}");
-                    }
+                    if (String.IsNullOrWhiteSpace(curRes.ResourceType)) _logger.LogCritical($"Resource type field empty in DB for resource id: {curRes.Id}");
 
                     await GetAndLogProvisioningState(curRes);
                     await CheckAndUpdateTags(curRes);
@@ -47,6 +43,8 @@ namespace Sepes.Infrastructure.Service
 
                 }
             }
+            //TODO: Check for orphan resources in Azure (Tag and report). (Resources that Exists in Azure, but are marked as deleted in DB.)
+            //await CheckForOrphanResources();
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
@@ -58,16 +56,13 @@ namespace Sepes.Infrastructure.Service
 
                 if (serviceForResource == null)
                 {
-                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}");
+                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
                 }
                 else
                 {
                     var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
 
-                    if (String.IsNullOrWhiteSpace(provisioningState))
-                    {
-                        provisioningState = "Provisioning state was empty";
-                    }
+                    if (String.IsNullOrWhiteSpace(provisioningState)) provisioningState = "Provisioning state was empty";
 
                     await _sandboxResourceService.UpdateProvisioningState(resource.Id, provisioningState);
                 }
@@ -89,7 +84,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (serviceForResource == null)
                 {
-                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}");
+                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
                 }
                 else
                 {
@@ -121,7 +116,7 @@ namespace Sepes.Infrastructure.Service
                                 if (!tag.Value.Equals(dbValue))
                                 {
                                     //Report
-                                    _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info {tag.Key} : {dbValue}");
+                                    _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info: {tag.Key} : {dbValue}");
                                     //Update tag in Azure to match DB-information.
                                     await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
                                     _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
@@ -135,6 +130,37 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, $"Tag check/update failed for resource id: {resource.Id}");
+            }
+        }
+        
+        public async Task CheckForOrphanResources()
+        {
+            // Check that resources marked as deleted in db does not exist in Azure.
+            var deletedResources = await _sandboxResourceService.GetDeletedResourcesAsync();
+            foreach (var resource in deletedResources)
+            {
+                try
+                {
+                    var serviceForResource = AzureResourceServiceResolver.GetServiceWithExistance(_serviceProvider, resource.ResourceType);
+                    if (serviceForResource == null)
+                    {
+                        _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
+                    }
+                    else
+                    {
+                        var resourceExists = await serviceForResource.Exists(resource.ResourceGroupName, resource.ResourceName);
+                        if (resourceExists)
+                        {
+                            // Do stuff.
+                            // TODO: Either remove Deleted tag in db or delete from Azure.
+                            _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, $"Orphan check failed for resource: {resource.Id}");
+                }
             }
         }
     }
