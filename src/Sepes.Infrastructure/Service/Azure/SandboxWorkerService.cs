@@ -56,6 +56,36 @@ namespace Sepes.Infrastructure.Service
         public async Task DoWork()
         {
             // This method should take orders from queue, check for dependencies and execute.
+            var queueMessage = await _azureQueueService.RecieveMessage();
+            var workOrder = _azureQueueService.MessageToSandboxResourceOperation(queueMessage);
+            if(workOrder.DependsOn > 0)
+            {
+                // Skip queue item
+                return;
+            }
+            else // No dependencies => Execute workOrder
+            {
+                if (workOrder.TryCount > 2)
+                {
+                    // Report that order has failed too many times.
+                    _logger.LogCritical($"Workorder {workOrder.Id} : {workOrder.Description} exceeded max retry count!");
+                    return;
+                }
+                else
+                {
+                    // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
+                    // Possibly implement an ActionResolver...
+                    // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
+
+                    //Possible actions steps:
+                    // var service = resolveService(workOrder)
+                    // var action = resolveAction(workOrder)
+                    // var result = await service.doAction(action)
+                    // await sandboxResourceOperationService.RemoveDependencies(workOrder);
+                    // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
+                    // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
+                }
+            }
             // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
             throw new NotImplementedException();
         }
