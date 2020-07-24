@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureVNetService : IHasProvisioningState, IHasTags
+    public interface IAzureVNetService : IHasProvisioningState, IHasTags, IHasExists
     {
         Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags);
       
         Task Delete(string resourceGroupName, string vNetName);
-        Task<bool> Exists(string resourceGroupName, string networkName);   
         Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
     }
 }
