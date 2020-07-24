@@ -1,8 +1,6 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Dto;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -19,9 +17,5 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<AzureSandboxDto> CreateVM(int sandboxId, AzureSandboxDto azureSandbox, Region region, Dictionary<string, string> tags);
         Task NukeSandbox(string studyName, string sandboxName, string resourceGroupName);
         Task NukeUnitTestSandboxes();
-
-
-
-
     }
 }
