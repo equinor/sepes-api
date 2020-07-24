@@ -61,6 +61,7 @@ namespace Sepes.Infrastructure.Service
             if(workOrder.DependsOn > 0)
             {
                 // Skip queue item
+                // Possibly after checking if dependent resources already exists.
                 return;
             }
             else // No dependencies => Execute workOrder
