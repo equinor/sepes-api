@@ -1,10 +1,12 @@
 # sepes-api
 
-A platform that allows vendors prove their solutions on your data in a sandbox.
+A platform that allows vendors prove their solutions on your data in a sandbox
 
 ## Making commits
 
-We use commitizen to make our commits. To make a commit, run "npm run commi" to start the questionare. We use these rules to say if a change is MAJOR, MINOR or a PATCH:
+We use [commitizen](http://commitizen.github.io/cz-cli) (and [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)) to make our commits. Tip:  run "npx git-cz" to make commits. 
+
+We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a PATCH:
 
 - MAJOR version when you make incompatible API changes,
 - MINOR version when you add functionality in a backwards compatible manner, and
@@ -19,4 +21,4 @@ We use commitizen to make our commits. To make a commit, run "npm run commi" to 
 - [Developers](./docs/developers/)
 - [Platform](./docs/platform/)
 
-
+[![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
