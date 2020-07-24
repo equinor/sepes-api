@@ -42,20 +42,14 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(newResource.Id);
         }
 
-        public async Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type)
-        {
-            return await Add(sandboxId, resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
-        }
+        public async Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type) => 
+            await Add(sandboxId, resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
 
-        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, Microsoft.Azure.Management.Network.Models.Resource resource)
-        {
-            return await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
-        }
+        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, Microsoft.Azure.Management.Network.Models.Resource resource) => 
+            await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
 
-        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, IResource resource)
-        {
-            return await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
-        }
+        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, IResource resource) => 
+            await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
 
         //ResourceGroup
         //Nsg
@@ -92,17 +86,6 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-
-        public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
-        {
-            var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyNo == null)
-                .ToListAsync();
-            var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
-
-            return dataasetsDtos;
-        }
-
         public async Task<SandboxResourceDto> GetByIdAsync(int id)
         {
             var entityFromDb = await GetOrThrowAsync(id);
@@ -112,10 +95,7 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        SandboxResourceDto MapEntityToDto(SandboxResource entity)
-        {
-            return _mapper.Map<SandboxResourceDto>(entity);
-        }
+        SandboxResourceDto MapEntityToDto(SandboxResource entity) => _mapper.Map<SandboxResourceDto>(entity);
 
         public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
@@ -154,13 +134,10 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<List<SandboxResource>> GetActiveResources()
-        {
-            return await _db.SandboxResources
-                .Include(sr => sr.Sandbox)
-                    .ThenInclude(sb => sb.Study)
-                .Where(sr => !sr.Deleted.HasValue).ToListAsync();            
-        }
+        public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+                                                                                                   .ThenInclude(sb => sb.Study)
+                                                                                                   .Where(sr => !sr.Deleted.HasValue)
+                                                                                                   .ToListAsync();
 
         public async Task UpdateProvisioningState(int resourceId, string newProvisioningState)
         { 
@@ -187,5 +164,8 @@ namespace Sepes.Infrastructure.Service
             }
             return sandboxFromDb;
         }
+
+        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Where(sr => sr.Deleted.HasValue)
+                                                                                                                .ToListAsync();
     }
 }

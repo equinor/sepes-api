@@ -19,6 +19,7 @@ namespace Sepes.Infrastructure.Service
         Task<SandboxResourceDto> Update(int resourceId, IResourceGroup updated);
         Task<SandboxResourceDto> Update(int resourceId, IResource updated);
 
+        Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync();
       
 
         Task<List<SandboxResource>> GetActiveResources();
