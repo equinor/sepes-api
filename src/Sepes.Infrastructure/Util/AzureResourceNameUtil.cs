@@ -11,40 +11,19 @@ namespace Sepes.Infrastructure.Util
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
             return StripWhitespace($"rg-study-{sandboxName}{shortGuid}");
         }
-        public static string Sandbox(string studyName)
-        {
-            return StripWhitespace($"{studyName}-sandbox");
-        }
+        public static string Sandbox(string studyName) => StripWhitespace($"{studyName}-sandbox");
 
-        public static string VNet(string studyName, string sandboxName)
-        {
-            return StripWhitespace($"vnet-study-{sandboxName}");
-        }
+        public static string VNet(string studyName, string sandboxName) => StripWhitespace($"vnet-study-{sandboxName}");
 
-        public static string SubNet(string sandboxName)
-        {
-            return StripWhitespace($"snet-{sandboxName}");
-        }
+        public static string SubNet(string sandboxName) => StripWhitespace($"snet-{sandboxName}");
 
-        public static string NetworkSecGroup(string sandboxName)
-        {
-            return StripWhitespace($"nsg-{sandboxName}");
-        }
+        public static string NetworkSecGroup(string sandboxName) => StripWhitespace($"nsg-{sandboxName}");
 
-        public static string NetworkSecGroupSubnet(string sandboxName)
-        {
-            return StripWhitespace($"nsg-snet-{sandboxName}");
-        }
+        public static string NetworkSecGroupSubnet(string sandboxName) => StripWhitespace($"nsg-snet-{sandboxName}");
 
-        public static string Bastion(string sandboxName)
-        {
-            return StripWhitespace($"bastion-{sandboxName}");
-        }
+        public static string Bastion(string sandboxName) => StripWhitespace($"bastion-{sandboxName}");
 
-        public static string BastionPublicIp(string sandboxName)
-        {
-            return StripWhitespace($"pip-{sandboxName}-bastion");
-        }
+        public static string BastionPublicIp(string sandboxName) => StripWhitespace($"pip-{sandboxName}-bastion");
 
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
@@ -71,25 +50,16 @@ namespace Sepes.Infrastructure.Util
             return $"stdiag{sandboxName.ToLower()}{shortGuid}";
         }
 
-        public static string VirtualMachine(string sandboxName)
-        {
-            return StripWhitespace($"vm-{sandboxName}");
-        }
+        public static string VirtualMachine(string sandboxName) => StripWhitespace($"vm-{sandboxName}");
 
-        static string MakeStringAlphanumeric(string str)
-        {
-            return new string((from c in str
-                              where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)
-                              select c
-                              ).ToArray());
-        }
+        static string MakeStringAlphanumeric(string str) => new string((from c in str
+                                                                        where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)
+                                                                        select c
+                                                                       ).ToArray());
 
-        static string StripWhitespace(string str)
-        {
-            return new string((from c in str
-                               where !char.IsWhiteSpace(c)
-                               select c
-                              ).ToArray());
-        }
+        static string StripWhitespace(string str) => new string((from c in str
+                                                                 where !char.IsWhiteSpace(c)
+                                                                 select c
+                                                                ).ToArray());
     }
 }
