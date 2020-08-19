@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -10,7 +9,6 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -30,7 +28,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxWorkerService = sandboxWorkerService;
         }
 
-        public async Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId)
+        public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId).ToListAsync();
@@ -53,8 +51,14 @@ namespace Sepes.Infrastructure.Service
             return sandboxFromDb;
         }
 
-        // TODO Validate azure things
-        public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
+        async Task<SandboxDto> GetSandboxDtoAsync(int sandboxId)
+        {
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+           return _mapper.Map<SandboxDto>(sandboxFromDb);
+        }
+
+            // TODO Validate azure things
+            public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             return await ValidateSandboxAsync(studyFromDb, newSandbox);
@@ -66,7 +70,7 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<StudyDto> AddSandboxToStudyAsync(int studyId, SandboxDto newSandbox)
+        public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto newSandbox)
         {
             // Run validations: (Check if ID is valid)
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
@@ -78,27 +82,25 @@ namespace Sepes.Infrastructure.Service
             }
             // TODO: Do check on Sandbox
 
-            // Create reference to study
+           
             var sandbox = _mapper.Map<Sandbox>(newSandbox);
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
-            int sandboxId = sandbox.Id;
+        
             // Get Dtos for arguments to sandboxWorkerService
-            var studyDto = await _studyService.GetStudyByIdAsync(studyId);
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
-            var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
-            // Create Tags
+            var studyDto = await _studyService.GetStudyByIdAsync(studyId);          
+            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
+           
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
-
-            //TODO: Start sandbox creation (setting up jobs in Azure and creating table entries)
-            Region region = RegionStringConverter.Convert(newSandbox.Region);
-            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandboxId, region, studyFromDb.Name, tags);
-
-            return await _studyService.GetStudyByIdAsync(studyId);
+          
+            var region = RegionStringConverter.Convert(newSandbox.Region);
+            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+       
+            return await GetSandboxDtoAsync(sandbox.Id);
         }
     
         // TODO: DO stuff inn azure
-        public async Task<StudyDto> RemoveSandboxFromStudyAsync(int studyId, int sandboxId)
+        public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
             // Run validations: (Check if ID is valid)
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
@@ -111,8 +113,8 @@ namespace Sepes.Infrastructure.Service
 
             studyFromDb.Sandboxes.Remove(sandboxFromDb);
             await _db.SaveChangesAsync();
-
-            return await _studyService.GetStudyByIdAsync(studyId);
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
+    
         }
 
       

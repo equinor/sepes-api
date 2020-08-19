@@ -1,18 +1,14 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
-using System;
+﻿using Sepes.Infrastructure.Dto;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxService
     {
-        Task<IEnumerable<SandboxDto>> GetSandboxesByStudyIdAsync(int studyId);
+        Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId);
         Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox);
-        Task<StudyDto> AddSandboxToStudyAsync(int studyId, SandboxDto newSandbox);
-        Task<StudyDto> RemoveSandboxFromStudyAsync(int studyId, int sandboxId);
+        Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto newSandbox);
+        Task<SandboxDto> DeleteAsync(int studyId, int sandboxId);
     }
 }

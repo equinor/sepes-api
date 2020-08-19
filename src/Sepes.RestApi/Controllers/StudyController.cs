@@ -82,22 +82,22 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}/sandboxes")]
         public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var sandboxes = await _sandboxService.GetSandboxesByStudyIdAsync(studyId);
+            var sandboxes = await _sandboxService.GetSandboxesForStudyAsync(studyId);
             return new JsonResult(sandboxes);
         }
 
         [HttpPost("{studyId}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddSandboxAsync(int studyId, SandboxDto newSandbox)
+        public async Task<IActionResult> CreateSandboxAsync(int studyId, SandboxCreateDto newSandbox)
         {
-            var updatedStudy = await _sandboxService.AddSandboxToStudyAsync(studyId, newSandbox);
+            var updatedStudy = await _sandboxService.CreateAsync(studyId, newSandbox);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/sandboxes/{sandboxId}")]
         public async Task<IActionResult> RemoveSandboxAsync(int studyId, int sandboxId)
         {
-            var updatedStudy = await _sandboxService.RemoveSandboxFromStudyAsync(studyId, sandboxId);
+            var updatedStudy = await _sandboxService.DeleteAsync(studyId, sandboxId);
             return new JsonResult(updatedStudy);
         }     
 

@@ -93,11 +93,6 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureSandboxDto> CreateBasicSandboxResourcesAsync(int sandboxId, Region region, string studyName, Dictionary<string, string> tags)
         {
-            //At what point do SEPES know enough to start creating a sandbox?
-            //Sandbox exists -> ResourceGroup, Diag Storage Account
-
-            //Network config -> Network, NSG, Bastion
-
             var azureSandbox = new AzureSandboxDto() { StudyName = studyName, SandboxName = AzureResourceNameUtil.Sandbox(studyName) };          
 
             _logger.LogInformation($"Creating basic sandbox resources for sandbox: {azureSandbox.SandboxName}");
