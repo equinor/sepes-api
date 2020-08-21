@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Dto
 {
-    public class SandboxCreateDto : UpdateableBaseDto
+    public class SandboxCreateDto
     {
         public string Name { get; set; }    
 
