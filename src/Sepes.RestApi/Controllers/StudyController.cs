@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Management.Graph.RBAC.Fluent.Models;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
 using System.Net.Mime;
@@ -12,31 +11,46 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
+
     [Route("api/studies")]
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class StudyController : ControllerBase
+    public class StudyControllerBase : ControllerBase
     {
+       protected bool CanViewRestrictedStudy()
+        {
+            //TODO: Open up for more than admins
+            //TODO: ADdd relevant study specific roles
+            return User.IsInRole(Roles.Admin);
+        }
+    }
+
+  
+    public partial class StudyController : StudyControllerBase
+    {        
         readonly IStudyService _studyService;
         readonly ISandboxService _sandboxService;
-        readonly IDatasetService _datasetService;
-        readonly IParticipantService _participantService;
+        readonly IDatasetService _datasetService;    
 
 
-        public StudyController(IStudyService studyService, ISandboxService sandboxService, IDatasetService datasetService, IParticipantService participantService)
+        public StudyController(IStudyService studyService, ISandboxService sandboxService, IDatasetService datasetService)
         {
             _studyService = studyService;
             _sandboxService = sandboxService;
-            _datasetService = datasetService;
-            _participantService = participantService;
-        }
+            _datasetService = datasetService;      
+        }       
 
-        //Get list of studies
         [HttpGet]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? includeRestricted)
         {
+          
+            if(includeRestricted.HasValue && includeRestricted.Value && CanViewRestrictedStudy() == false)
+            {
+                return new ForbidResult();
+            }
+         
             var studies = await _studyService.GetStudiesAsync(includeRestricted);
             return new JsonResult(studies);
         }
@@ -44,11 +58,19 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}")]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
+            //TODO: Require a role for this?
             var study = await _studyService.GetStudyByIdAsync(studyId);
+
+            if(study.Restricted && CanViewRestrictedStudy() == false)
+            {
+                return new ForbidResult();
+            }
+
             return new JsonResult(study);
         }
 
         [HttpPost()]
+        [Authorize(Roles = RoleSets.AdminOrSponsor)]
         public async Task<IActionResult> CreateStudyAsync(StudyDto newStudy)
         {
             var study = await _studyService.CreateStudyAsync(newStudy);
@@ -64,84 +86,30 @@ namespace Sepes.RestApi.Controller
       //}
 
         [HttpDelete("{studyId}")]
+        [Authorize(Roles = Roles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
             var study = await _studyService.DeleteStudyAsync(studyId);
             return new JsonResult(study);
         }
-
-        //PUT localhost:8080/api/studies/1/details
+       
+       
         [HttpPut("{studyId}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
+        [Authorize(Roles = RoleSets.AdminOrSponsor)]
+        //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
-
-        [HttpGet("{studyId}/sandboxes")]
-        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
-        {
-            var sandboxes = await _sandboxService.GetSandboxesForStudyAsync(studyId);
-            return new JsonResult(sandboxes);
-        }
-
-        [HttpPost("{studyId}/sandboxes")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateSandboxAsync(int studyId, SandboxCreateDto newSandbox)
-        {
-            var updatedStudy = await _sandboxService.CreateAsync(studyId, newSandbox);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpDelete("{studyId}/sandboxes/{sandboxId}")]
-        public async Task<IActionResult> RemoveSandboxAsync(int studyId, int sandboxId)
-        {
-            var updatedStudy = await _sandboxService.DeleteAsync(studyId, sandboxId);
-            return new JsonResult(updatedStudy);
-        }     
-
-        [HttpPut("{studyId}/datasets/{datasetId}")]
-        public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
-        {
-            var updatedStudy = await _datasetService.AddDatasetToStudyAsync(studyId, datasetId);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpDelete("{studyId}/datasets/{datasetId}")]
-        public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
-        {
-            var updatedStudy = await _datasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpGet("{studyId}/datasets/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
-        {
-            var dataset = await _datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
-            return new JsonResult(dataset);
-        }
-
-        [HttpPost("{studyId}/datasets/studyspecific")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
-        {
-            var updatedStudy = await _datasetService.AddStudySpecificDatasetAsync(studyId, newDataset);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
-        {
-            var updatedStudy = await _datasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, newDataset);
-            return new JsonResult(updatedStudy);
-        }
-
+        
+        
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = RoleSets.AdminOrSponsor)]
+        //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
             var updatedStudy = await _studyService.AddLogoAsync(studyId, studyLogo);
@@ -151,9 +119,18 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}/logo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
+
+        //Is study restricted? Then check if user can view restricted studies
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
         {
+            var study = await _studyService.GetStudyByIdAsync(studyId);
+
+            if (study.Restricted && CanViewRestrictedStudy() == false)
+            {
+                return new ForbidResult();
+            }
+
             byte[] logo = await _studyService.GetLogoAsync(studyId);
             var studyDtoFromDb = await _studyService.GetStudyByIdAsync(studyId);
             string fileType = studyDtoFromDb.LogoUrl.Split('.').Last();
@@ -163,40 +140,9 @@ namespace Sepes.RestApi.Controller
             }
             return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
             //return new ObjectResult(logo);
-        }
+        }     
 
-        //[HttpPost]
-        //public async Task<ActionResult<StudyInputDto>> SaveStudy([FromBody] StudyInputDto[] studies)
-        //{
-        //    //Studies [1] is what the frontend claims the changes is based on while Studies [0] is the new version
-
-        //    //If based is null it can be assumed this will be a newly created study
-        //    if (studies[1] == null)
-        //    {
-        //        StudyDto study = await _studyService.Save(studies[0].ToStudy(), null);
-        //        return study.ToStudyInput();
-        //    }
-        //    //Otherwise it must be a change.
-        //    else
-        //    {
-        //        StudyDto study = await _studyService.Save(studies[0].ToStudy(), studies[1].ToStudy());
-        //        return study.ToStudyInput();
-        //    }
-        //}
-
-        [HttpPut("{studyId}/participants/{participantId}/{role}")]
-        public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
-        {
-            var updatedStudy = await _participantService.AddParticipantToStudyAsync(studyId, participantId, role);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpDelete("{studyId}/participants/{participantId}")]
-        public async Task<IActionResult> RemoveParticipantAsync(int studyId, int participantId)
-        {
-            var updatedStudy = await _participantService.RemoveParticipantFromStudyAsync(studyId, participantId);
-            return new JsonResult(updatedStudy);
-        }       
+          
     }
 
 }
