@@ -8,7 +8,7 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api")]
     [ApiController]
-    [Authorize]
+    [Authorize(Roles = Roles.Admin)]
     public class ParticipantController : ControllerBase
     {
         readonly IParticipantService _participantService;
@@ -33,8 +33,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(participant);
         }
 
-        [HttpPut("/studies/{studyId}/participants/{participantId}/{role}")]
-        [Authorize(Roles = Roles.Sponsor)]
+        [HttpPut("/studies/{studyId}/participants/{participantId}/{role}")]       
         public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
         {
             var updatedStudy = await _participantService.AddParticipantToStudyAsync(studyId, participantId, role);

@@ -37,7 +37,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Sandbox, SandboxDto>()
                 .ReverseMap();
 
-            CreateMap<SandboxCreateDto, SandboxDto>();
+            CreateMap<SandboxCreateDto, Sandbox>();
           
 
             //STUDY PARTICIPANTS
