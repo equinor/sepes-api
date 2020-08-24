@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace Sepes.RestApi.Controller
     [Route("api/datasets")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize]
+    [Authorize(Roles = Roles.Admin)] //Todo: Need wider access, but keeping it restricted for now
     public class DatasetController : ControllerBase
     {     
         readonly IDatasetService _datasetService;

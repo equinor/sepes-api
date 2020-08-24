@@ -81,7 +81,10 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
             }
 
-            // TODO: Do check on Sandbox           
+            if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
+            {
+                throw new ArgumentException("Region not specified.");
+            }                    
 
             var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
             studyFromDb.Sandboxes.Add(sandbox);
@@ -90,16 +93,20 @@ namespace Sepes.Infrastructure.Service
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
+            //TODO: Remember to consider templates specifed as argument
 
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+
+            //20200824: Disabled by KRST, as we want to prevent creation of resources, and get this branch deployed. RBAC is still not fully functional
+            //await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
 
-        // TODO: DO stuff inn azure
+        // TODO: Implement deletion of Azure resources. Only deletes from SEPES db as of now
+        //Todo, add a deleted flag instead of actually deleting, so that we keep history
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
             // Run validations: (Check if ID is valid)

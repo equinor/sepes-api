@@ -16,13 +16,14 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize]
+    [Authorize(Roles = Roles.Admin)] //Todo: Need wider access, but restricted for now
     public class StudyControllerBase : ControllerBase
     {
        protected bool CanViewRestrictedStudy()
         {
             //TODO: Open up for more than admins
             //TODO: ADdd relevant study specific roles
+     
             return User.IsInRole(Roles.Admin);
         }
     }
@@ -39,7 +40,9 @@ namespace Sepes.RestApi.Controller
         {
             _studyService = studyService;
             _sandboxService = sandboxService;
-            _datasetService = datasetService;      
+            _datasetService = datasetService; 
+            
+
         }       
 
         [HttpGet]
