@@ -98,9 +98,8 @@ namespace Sepes.Infrastructure.Service
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-
-            //20200824: Disabled by KRST, as we want to prevent creation of resources, and get this branch deployed. RBAC is still not fully functional
-            //await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+                        
+            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
