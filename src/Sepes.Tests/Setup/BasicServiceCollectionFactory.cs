@@ -2,10 +2,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Sepes.Infrastructure.Model.Automapper;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 
 namespace Sepes.Tests.Setup
@@ -15,16 +19,38 @@ namespace Sepes.Tests.Setup
         public static ServiceCollection GetServiceCollectionWithInMemory()
         {
             var services = new ServiceCollection();
-            services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"),
-             ServiceLifetime.Scoped,
-             ServiceLifetime.Scoped);
-            //IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true).AddEnvironmentVariables().Build();
+
+
+            services.AddDbContext<SepesDbContext>(opt => opt.UseInMemoryDatabase(databaseName: "InMemoryDb"), ServiceLifetime.Scoped, ServiceLifetime.Scoped);
+            IConfiguration config = new ConfigurationBuilder()
+             .AddJsonFile("appsettings.json", optional: true)
+             .AddJsonFile("appsettings.Development.json", optional: true)
+             .AddEnvironmentVariables().Build();
+
+
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
-            services.AddTransient<IConfiguration, TestConfig>();
+            services.AddSingleton<IConfiguration>(config);
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
 
+            if (!string.IsNullOrWhiteSpace(config[ConfigConstants.APPI_KEY]))
+            {    //https://docs.microsoft.com/en-us/azure/azure-monitor/app/worker-service         
+                services.AddApplicationInsightsTelemetryWorkerService(config[ConfigConstants.APPI_KEY]);
+            }
+            services.AddLogging();
+            //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
-
+            services.AddTransient<SandboxResourceOperationService>();
+            services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureBastionService, AzureBastionService>();
+            services.AddTransient<IAzureVNetService, AzureVNetService>();
+            services.AddTransient<IAzureVMService, AzureVMService>();
+            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IVariableService, VariableService>();
+            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+    
             return services;
         }
     }
@@ -32,32 +58,5 @@ namespace Sepes.Tests.Setup
     public class ConnectionStrings
     {
         public string AzureStorageConnectionString { get; set; }
-    }
-
-    public class TestConfig : IConfiguration
-    {
-        readonly Dictionary<string, string> configKeys = new Dictionary<string, string>();
-
-        public TestConfig()
-        {
-            this["AzureStorageConnectionString"] = "UseDevelopmentStorage=true";
-        }
-        public string this[string key] { get { return configKeys[key]; }  set { configKeys[key] = value; }  } 
-
-        public IEnumerable<IConfigurationSection> GetChildren()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IChangeToken GetReloadToken()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IConfigurationSection GetSection(string key)
-        {
-            throw new System.NotImplementedException();
-        }
-    }
-
+    }  
 }

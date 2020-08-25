@@ -19,61 +19,6 @@ namespace Sepes.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.AzureResource", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DeletedFromAzure")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ResourceGroupId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceGroupName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("StudyId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Updated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StudyId");
-
-                    b.ToTable("AzureResources");
-                });
-
             modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
                 {
                     b.Property<int>("Id")
@@ -214,10 +159,23 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StudyId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TechnicalContactEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TechnicalContactName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -233,6 +191,123 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasIndex("StudyId");
 
                     b.ToTable("Sandboxes");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastKnownProvisioningState")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceGroupId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceGroupName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SandboxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SandboxId");
+
+                    b.HasIndex("StudyId");
+
+                    b.ToTable("SandboxResources");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResourceOperation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SandboxResourceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SandboxResourceId");
+
+                    b.ToTable("SandboxResourceOperations");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
@@ -332,11 +407,66 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("StudyParticipants");
                 });
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.AzureResource", b =>
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Variable", b =>
                 {
-                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
-                        .WithMany("AzureResources")
-                        .HasForeignKey("StudyId");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<bool?>("Bool1")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("Bool2")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("Bool3")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
+
+                    b.Property<int?>("Int1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Int2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Int3")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("Str1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Str2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Str3")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Variables");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
@@ -345,6 +475,28 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("Sandboxes")
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
+                        .WithMany("Resources")
+                        .HasForeignKey("SandboxId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
+                        .WithMany("CloudResources")
+                        .HasForeignKey("StudyId");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResourceOperation", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.SandboxResource", "Resource")
+                        .WithMany("Operations")
+                        .HasForeignKey("SandboxResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

@@ -1,18 +1,13 @@
 ﻿
-using Azure.Core;
+using Azure;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Storage.Auth;
 using Microsoft.Extensions.Configuration;
-using Microsoft.WindowsAzure.Storage.Blob;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -69,7 +64,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public Azure.Response<bool> DeleteBlob(string fileName)
+        public Response<bool> DeleteBlob(string fileName)
         {
             var blobContainerClient = CreateBlobContainerClient();
             return blobContainerClient.DeleteBlobIfExists(fileName);
@@ -180,16 +175,12 @@ namespace Sepes.Infrastructure.Service
         {
             string suppliedFileName = file.FileName;
             string fileType = suppliedFileName.Split('.').Last();
-            if (!String.IsNullOrWhiteSpace(fileType)
-                && (fileType.Equals(ImageFormat.png.ToString())
+            return !String.IsNullOrWhiteSpace(fileType) &&
+                (  fileType.Equals(ImageFormat.png.ToString())
                 || fileType.Equals(ImageFormat.jpeg.ToString())
                 || fileType.Equals(ImageFormat.jpg.ToString())
-                || fileType.Equals(ImageFormat.bmp.ToString()))
-                )
-            {
-                return true;
-            }
-            return false;
+                || fileType.Equals(ImageFormat.bmp.ToString())
+                );
         }
     }
 }

@@ -1,35 +1,41 @@
-﻿using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
+﻿using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Util;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureNwSecurityGroupService : IAzureNwSecurityGroupService
+    public class AzureNwSecurityGroupService : AzureServiceBase, IAzureNwSecurityGroupService
     {
-        private readonly IAzure _azure;
 
-        //TODO: Add Constructor
 
-        public string CreateName(string studyName, string sandboxName)
+        public AzureNwSecurityGroupService(IConfiguration config, ILogger<AzureNwSecurityGroupService> logger)
+             : base(config, logger)
         {
-            return $"vnet-study-{studyName}-{sandboxName}";
+
+
         }
 
-        public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName)
-        {
-            var nsgName = $"nsg-snet-{sandboxName}";
 
-            return await CreateSecurityGroup(region, resourceGroupName, nsgName);
+
+        public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
+        {
+            var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(sandboxName);
+
+            return await CreateSecurityGroup(region, resourceGroupName, nsgName, tags);
         }
 
-        public async Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName)
+        public async Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags)
         {
             var nsg = await _azure.NetworkSecurityGroups
                 .Define(nsgName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
-                /*.WithTag()*/
+                .WithTags(tags)
                 .CreateAsync();
             return nsg;
 
@@ -42,9 +48,47 @@ namespace Sepes.Infrastructure.Service
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
 
+        public async Task<INetworkSecurityGroup> GetResourceAsync(string resourceGroupName, string resourceName)
+        {
+            var resource = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
+        }
 
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
 
+            if (resource == null)
+            {
+                return false;
+            }
 
+            return true;
+        }
 
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.Inner.ProvisioningState.ToString();
+        }
+
+        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        {
+            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            return rg.Tags;
+        }
+
+        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        {
+            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
+            _ = await rg.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+        }
     }
 }

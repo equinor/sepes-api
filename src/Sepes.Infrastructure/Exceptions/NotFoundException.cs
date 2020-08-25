@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 
 namespace Sepes.Infrastructure.Exceptions
 {
@@ -13,6 +14,25 @@ namespace Sepes.Infrastructure.Exceptions
         public static NotFoundException CreateForIdentity(string entityName, int id, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with id {id} not found!", inner);
+        }
+
+        public static NotFoundException CreateForIdentityByName(string entityName, string name, Exception inner = null)
+        {
+            return new NotFoundException($"{entityName} with name {name} not found!", inner);
+        }
+
+        public static NotFoundException CreateForAzureResource(string resourceName, string resourceGroupName = null, Exception inner = null)
+        {
+            StringBuilder sbExMessage = new StringBuilder($"Azure resource with name {resourceName}");
+
+            if (!String.IsNullOrWhiteSpace(resourceGroupName))
+            {
+                sbExMessage.Append($" in resource group {resourceGroupName}");
+            }
+
+            sbExMessage.Append(" not found");
+
+            return new NotFoundException(sbExMessage.ToString(), inner);
         }
     }
 }

@@ -1,15 +1,17 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 
@@ -17,32 +19,35 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-        readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly IHasPrincipal _principalService;
+        readonly IAzureBlobStorageService _azureBlobStorageService;      
 
-        public StudyService(SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(IHasPrincipal principalService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
             :base(db, mapper)
         {
+            this._principalService = principalService;
             _azureBlobStorageService = azureBlobStorageService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
         {
             List<Study> studiesFromDb;
+
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
-                // TODO: Add authorization
-                //if (!(await UserCanSeeRestrictedStudies()))
-                //{
-                //    //TODO: THROW EXCEPTION THAT CAUSES 401
-                //}
-                //else
-                //{
-                //    // Get restricted studies 
-                //}
-                studiesFromDb = await _db.Studies.ToListAsync();
+               var principal =  _principalService.GetPrincipal();
+
+                if(principal == null)
+                {
+                    throw new ForbiddenException("Unknown user");
+                }
+             
+                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, principal.Identity.Name);
+                studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
             {
+              
                 studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
 
@@ -50,7 +55,12 @@ namespace Sepes.Infrastructure.Service
 
             studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
-        }   
+        }  
+        
+        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, string username)
+        {
+            return db.Studies.Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.Participant != null && sp.Participant.UserName == username).FirstOrDefault() != null);
+        }
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
@@ -106,6 +116,8 @@ namespace Sepes.Infrastructure.Service
             {
                 studyFromDb.ResultsAndLearnings = updatedStudy.ResultsAndLearnings;
             }
+
+            studyFromDb.Updated = DateTime.UtcNow;
 
             Validate(studyFromDb);
 
@@ -187,6 +199,23 @@ namespace Sepes.Infrastructure.Service
             string logoUrl = study.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
+        }
+
+        protected bool CanViewRestrictedStudies(ClaimsPrincipal user)
+        {
+            //TODO: Open up for more than admins
+            //TODO: Add relevant study specific roles
+
+            if (user.IsInRole(Roles.Admin))
+            {
+                //TODO: Should really be true?
+                return true;
+            }
+
+            //Do you have a participant role for this study? Return true
+
+
+            return user.IsInRole(Roles.Admin);
         }
     }
 }

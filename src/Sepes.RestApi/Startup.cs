@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,12 +12,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
+using Sepes.RestApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -90,6 +93,8 @@ namespace Sepes.RestApi
             })
              .AddAzureAdBearer(options => _configuration.Bind(options));
 
+    
+
             services.AddCors(options =>
             {
                 options.AddPolicy(MyAllowSpecificOrigins,
@@ -101,29 +106,26 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
+            services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
-
-            //var mappingConfig = new MapperConfiguration(mc =>
-            //{
-            //    mc.AddProfile(new AutoMappingConfigs());
-            //});
-            // var azureService = new AzureService(_configuration);
-            // var dbService = new SepesDb(readWriteDbConnectionString);
-            // var podService = new PodService(azureService);
-            //var studyService = new StudyService(dbService, podService);
-            //studyService.LoadStudies();
-
-            //services.AddSingleton<ISepesDb>(dbService);
-            //services.AddSingleton<IAuthService>(new AuthService(_configService.AuthConfig));
-            //services.AddSingleton<IAzureService>(azureService);
-            //services.AddSingleton<IPodService>(podService);
-            //services.AddSingleton<IStudyService_OLD>(studyService);
-     
+            services.AddTransient<IHasPrincipal, PrincipalService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IParticipantService, ParticipantService>();
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IVariableService, VariableService>();
+            services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureBastionService, AzureBastionService>();
+            services.AddTransient<IAzureVNetService, AzureVNetService>();
+            services.AddTransient<IAzureVMService, AzureVMService>();
+            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+            services.AddTransient<SandboxResourceOperationService>();
+            services.AddTransient<AzureResourceMonitoringService>();
 
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -176,7 +178,7 @@ namespace Sepes.RestApi
         {
             var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
-            var logMessage = "";
+            string logMessage;
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {

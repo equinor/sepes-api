@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Service
             return datasetDto;
         }
 
-        public async Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
+        public async Task<DataSetsForStudyDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
             }
 
-            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
+            var datasetDto = _mapper.Map<DataSetsForStudyDto>(studyDatasetRelation.Dataset);
 
             return datasetDto;
         }
@@ -261,12 +261,13 @@ namespace Sepes.Infrastructure.Service
             {
                 datasetFromDb.Description = updatedDataset.Description;
             }
+            datasetFromDb.Updated = DateTime.UtcNow;
             Validate(datasetFromDb);
             await _db.SaveChangesAsync();
             return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
         }
 
-        public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
+        public async Task<DataSetsForStudyDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
         {
             PerformUsualTestForPostedDatasets(updatedDataset);
             var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId);

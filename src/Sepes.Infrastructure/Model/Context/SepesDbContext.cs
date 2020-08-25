@@ -20,7 +20,11 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
-        public virtual DbSet<AzureResource> AzureResources { get; set; }
+        public virtual DbSet<SandboxResource> SandboxResources { get; set; }
+
+        public virtual DbSet<SandboxResourceOperation> SandboxResourceOperations { get; set; }
+
+        public virtual DbSet<Variable> Variables { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,11 +35,14 @@ namespace Sepes.Infrastructure.Model.Context
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Variable>().HasKey(v => v.Id);
             modelBuilder.Entity<Study>().HasKey(s => s.Id);
-            modelBuilder.Entity<Dataset>().HasKey(s => s.Id);
+            modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
             modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.ParticipantId, sd.RoleName });
+            modelBuilder.Entity<SandboxResource>().HasKey(cr => cr.Id);
+            modelBuilder.Entity<SandboxResourceOperation>().HasKey(cro => cro.Id);
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -57,6 +64,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasForeignKey(sd => sd.DatasetId);
 
 
+            //STUDY / PARTICIPANT RELATION
             modelBuilder.Entity<StudyParticipant>()
                 .HasOne(sd => sd.Study)
                 .WithMany(s => s.StudyParticipants)
@@ -66,58 +74,84 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.Participant)
                 .WithMany(d => d.StudyParticipants)
                 .HasForeignKey(sd => sd.ParticipantId);
+
+
+            //CLOUD RESOURCE / SANDBOX RELATION
+            modelBuilder.Entity<SandboxResource>()
+                .HasOne(cr => cr.Sandbox)
+                .WithMany(d => d.Resources)
+                .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .HasOne(cr => cr.Resource)
+                .WithMany(d => d.Operations)
+                .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
         }
 
 
         void AddDefaultValues(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Sandbox>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Dataset>()
-            .Property(b => b.Id)
-            .ValueGeneratedOnAdd();
+                .Property(b => b.Id)
+                .ValueGeneratedOnAdd();
 
             modelBuilder.Entity<Study>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Study>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Dataset>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Dataset>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Sandbox>()
                .Property(b => b.Created)
                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Sandbox>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Participant>()
-            .Property(b => b.Created)
-            .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Participant>()
-              .Property(b => b.Updated)
-              .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Updated)
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<StudyParticipant>()
-        .Property(b => b.Created)
-        .HasDefaultValueSql("getutcdate()");
+                .Property(b => b.Created)
+                .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<SandboxResource>()
+                .Property(sr => sr.Created)
+                .HasDefaultValueSql("getutcdate()");
+            modelBuilder.Entity<SandboxResource>()
+                .Property(sr => sr.Updated)
+                .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .Property(sro => sro.Created)
+                .HasDefaultValueSql("getutcdate()");
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .Property(sro => sro.Updated)
+                .HasDefaultValueSql("getutcdate()");
         }
     }
 }

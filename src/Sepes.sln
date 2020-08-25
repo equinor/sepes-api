@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Tests", "Sepes.Tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Infrastructure", "Sepes.Infrastructure\Sepes.Infrastructure.csproj", "{CB5753CF-F8F1-4336-95CD-595C1230F347}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.StructurizrDocs", "Sepes.StructurizrDocs\Sepes.StructurizrDocs.csproj", "{40537C28-18EF-47D2-8456-C8622E35FADA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.StructurizrDocs", "Sepes.StructurizrDocs\Sepes.StructurizrDocs.csproj", "{40537C28-18EF-47D2-8456-C8622E35FADA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
