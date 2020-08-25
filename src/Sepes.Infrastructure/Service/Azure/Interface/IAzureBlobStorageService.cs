@@ -1,7 +1,6 @@
 ﻿using Azure;
 using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Interface;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;

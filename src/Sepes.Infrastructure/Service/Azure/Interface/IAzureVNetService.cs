@@ -1,13 +1,15 @@
-﻿using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Sepes.Infrastructure.Dto;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureVNetService
+    public interface IAzureVNetService : IHasProvisioningState, IHasTags, IHasExists
     {
-        Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName);
-        string CreateVNetName(string studyName, string sandboxName);
-        Task Delete(string resourceGroup, string vNetName);
+        Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags);
+      
+        Task Delete(string resourceGroupName, string vNetName);
+        Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
     }
 }

@@ -4,11 +4,18 @@ namespace Sepes.StructurizrDocs.Models.SoftwareSystems.External
 {
     public static class SepesSystemFactory
     {
-        public static SoftwareSystem Create(Model model)
+        public static SoftwareSystem CreateAndAddSepesSystemToModel(Model model)
         {
-            var sepesSystem = model.AddSoftwareSystem(Location.Internal, "Sepes", "Allows users to administer Studies and subcomponents.");          
+            var sepesSystem = model.AddSoftwareSystem(Location.Internal, "Sepes", "Allows users to create and maintain Studies, Sandboxes, Datasets and more.");          
 
             return sepesSystem;
+        }
+
+        public static SoftwareSystem CreateAndAddAzureSystemToModel(Model model)
+        {
+            var azureSystem = model.AddSoftwareSystem(Location.External, "Azure", "Provides cloud computing services.");
+
+            return azureSystem;
         }
     }
 }

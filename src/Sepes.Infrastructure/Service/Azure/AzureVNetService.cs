@@ -1,69 +1,109 @@
-﻿
-using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Fluent.Models;
+﻿using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Azure.ResourceManager.Network;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Util;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Azure.ResourceManager.Network.Models;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
-    {       
-        readonly IAzureNwSecurityGroupService _nsgService;
-
-        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger, IAzureNwSecurityGroupService nsgService)
+    { 
+        public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger)
             :base (config, logger)
-        {
+        {         
           
-            _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
+        }       
 
-        }
-
-        //TODO: Add Constructor
-
-        public string CreateVNetName(string studyName, string sandboxName)
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags)
         {
-            return $"vnet-study-{studyName}-{sandboxName}";
-        }
+            var networkDto = new AzureVNetDto();
+            var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
 
-        public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
-        {
-            var networkName = CreateVNetName(studyName, sandboxName);
-
-            var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
+            var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
             var bastionSubnetName = "AzureBastionSubnet";
-            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
+            var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255         
 
-            var sandboxSubnetName = $"snet-{sandboxName}";
+            networkDto.SandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
             var sandboxSubnetAddress = "10.100.1.0/24";
 
-            var network = await _azure.Networks.Define(networkName)
+            networkDto.Network = await _azure.Networks.Define(networkName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
+                
                 .WithAddressSpace(addressSpace)
                 .WithSubnet(bastionSubnetName, bastionSubnetAddress)
-                .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)  
-                
+                .WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  
+                .WithTags(tags)
                 .CreateAsync();
 
-     
-
-            
-
-                
-
-               
-
-        
-
-            return network;
+            return networkDto;
         }
+
+        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        {
+            //Add the security group to a subnet.
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+            await network.Update()
+                .UpdateSubnet(subnetName)
+                .WithExistingNetworkSecurityGroup(nsg)
+                .Parent()
+                .ApplyAsync();
+        }      
+
+        public async Task Delete(string resourceGroupName, string vNetName)
+        {
+            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, vNetName);
+        }
+
+        public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
+        {
+            var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            return resource;
+        }
+
+        public async Task<bool> Exists(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
+            return resource.Inner.ProvisioningState.ToString();
+        }
+
+        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        {
+            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            return rg.Tags;
+        }
+
+        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        {
+            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
+            _ = await rg.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+        }
+
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         //{
@@ -119,12 +159,5 @@ namespace Sepes.Infrastructure.Service
         //    }
         //    return network;
         //}
-
-        public async Task Delete(string resourceGroup, string vNetName)
-        {
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroup, vNetName);
-            return;
-        }
-
     }
 }

@@ -54,12 +54,12 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            SandboxDto sandbox = new SandboxDto() { Name = "TestSandbox" };
-            SandboxDto sandbox2 = new SandboxDto() { Name = "TestSandbox2" };
-            _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox);
-            _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox2);
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            var sandbox2 = new SandboxCreateDto() { Name = "TestSandbox2" };
+            _ = await sandboxService.CreateAsync(studyId, sandbox);
+            _ = await sandboxService.CreateAsync(studyId, sandbox2);
 
-            var sandboxes = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
+            var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
             Assert.NotEmpty(sandboxes);
             Assert.Equal(2, sandboxes.Count());
@@ -74,9 +74,9 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            SandboxDto sandbox = new SandboxDto() { Name = "TestSandbox" };
-            _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox);
-            var sandboxes = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            _ = await sandboxService.CreateAsync(studyId, sandbox);
+            var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
             Assert.NotEmpty(sandboxes);
             Assert.Single<SandboxDto>(sandboxes);
@@ -101,9 +101,9 @@ namespace Sepes.Tests.Services
             StudyDto createdStudy = await studyService.CreateStudyAsync(study);
             int studyID = (int)createdStudy.Id;
 
-            SandboxDto sandbox = new SandboxDto() { Name = name };
+            var sandbox = new SandboxCreateDto() { Name = name };
 
-            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.AddSandboxToStudyAsync(studyID, sandbox));
+            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(studyID, sandbox));
         }
 
         [Fact]
@@ -114,19 +114,20 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            SandboxDto sandbox = new SandboxDto() { Name = "TestSandbox" };
-            _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox);
-            var sandboxFromDb = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            _ = await sandboxService.CreateAsync(studyId, sandbox);
+            var sandboxFromDb = await sandboxService.GetSandboxesForStudyAsync(studyId);
             var sandboxId = (int)sandboxFromDb.First().Id;
-            _ = await sandboxService.RemoveSandboxFromStudyAsync(studyId, sandboxId);
+            _ = await sandboxService.DeleteAsync(studyId, sandboxId);
 
-            var sandboxes = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
+            var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
             Assert.Empty(sandboxes);
         }
 
         [Theory]
         [InlineData(1, 420)]
+        [InlineData(420, 1)]
         public async void RemoveSandboxFromStudyAsync_ShouldThrow_IfSandboxOrStudyDoesNotExist(int providedStudyId, int providedSandboxId)
         {
             RefreshTestDb();
@@ -134,15 +135,10 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            SandboxDto sandbox = new SandboxDto() { Name = "TestSandbox" };
-            _ = await sandboxService.AddSandboxToStudyAsync(studyId, sandbox);
-            var sandboxFromDb = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
-            var sandboxId = (int)sandboxFromDb.First().Id;
-            _ = await sandboxService.RemoveSandboxFromStudyAsync(studyId, sandboxId);
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            _ = await sandboxService.CreateAsync(studyId, sandbox);
 
-            var sandboxes = await sandboxService.GetSandboxesByStudyIdAsync(studyId);
-
-            Assert.Empty(sandboxes);
+            await Assert.ThrowsAsync<NotFoundException>(() => sandboxService.DeleteAsync(providedStudyId, providedSandboxId));
         }
     }
 }

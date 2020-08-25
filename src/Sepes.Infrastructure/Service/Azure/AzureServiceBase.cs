@@ -1,9 +1,7 @@
 ﻿
 using Microsoft.Azure.Management.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
@@ -18,6 +16,8 @@ namespace Sepes.Infrastructure.Service
         protected readonly IAzure _azure;
         protected readonly AzureCredentials _credentials;
 
+        protected string _subscriptionId { get; set; }
+
 
         public AzureServiceBase(IConfiguration config, ILogger logger)
           
@@ -29,19 +29,21 @@ namespace Sepes.Infrastructure.Service
             var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
 
 
-            var subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
 
-            _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(subscriptionId);
+            _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 
 
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
-                .Authenticate(_credentials).WithDefaultSubscription();
+                .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
+                .Authenticate(_credentials).WithSubscription(_subscriptionId);
 
 
            // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
 
-;
-        }
+
+
+        }         
 
     
 

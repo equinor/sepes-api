@@ -24,16 +24,6 @@ namespace Sepes.Infrastructure.Service
             _studyService = studyService;
         }
 
-        //public Task<StudyDto> CreateStudyAsync(StudyDto newStudy)
-        //{
-        //    throw new System.NotImplementedException();
-        //}
-
-        //public Task<StudyDto> DeleteStudyAsync(StudyDto newStudy)
-        //{
-        //    throw new System.NotImplementedException();
-        //}
-
         public async Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync()
         {
             var participantsFromDb = await _db.Participants.ToListAsync();
