@@ -17,20 +17,19 @@ namespace Sepes.StructurizrDocs
         static void Main(string[] args)
         {
             CreateC1();
-            CreateC2();
-           
+            CreateC2();           
         }
 
         static void CreateC1()
         {
-            var c1 = C1.Create();
+            var c1 = C1.CreateWorkspaceWithCommonModel();
             ExportDiagram(c1, C1_PATH);
 
         }
 
         static void CreateC2()
         {
-            var c2 = C2.Create();
+            var c2 = C2.CreateWorkspaceWithCommonModel();
             ExportDiagram(c2, C2_PATH);
 
         }
