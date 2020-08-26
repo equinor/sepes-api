@@ -23,6 +23,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<byte[]> GetLogoAsync(int id);
 
+        Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
+        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+
         /// <summary>
         /// Makes changes to the meta data of a study.
         /// If based is null it means its a new study.
