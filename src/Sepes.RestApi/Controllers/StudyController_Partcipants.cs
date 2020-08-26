@@ -10,14 +10,14 @@ namespace Sepes.RestApi.Controller
 
     public partial class StudyController : StudyControllerBase
     {
-        [HttpPut("/studies/{studyId}/participants/{participantId}/{role}")]
+        [HttpPut("{studyId}/participants/{participantId}/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
         {
             var updatedStudy = await _studyService.AddParticipantToStudyAsync(studyId, participantId, role);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpDelete("/studies/{studyId}/participants/{participantId}")]
+        [HttpDelete("{studyId}/participants/{participantId}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int participantId)
         {
             var updatedStudy = await _studyService.RemoveParticipantFromStudyAsync(studyId, participantId);
