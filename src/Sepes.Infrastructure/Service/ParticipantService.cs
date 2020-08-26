@@ -52,51 +52,5 @@ namespace Sepes.Infrastructure.Service
 
             return entityFromDb;
         }
-
-        public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
-        {
-            // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
-
-            if (participantFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
-            }
-
-            //Check that association does not allready exist
-
-            await VerifyRoleOrThrowAsync(role);
-
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participantId, RoleName = role };
-            await _db.StudyParticipants.AddAsync(studyParticipant);
-            await _db.SaveChangesAsync();
-
-            return await _studyService.GetStudyByIdAsync(studyId);
-        }
-
-        public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
-        {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
-
-            if (participantFromDb == null)
-            {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
-            }
-
-            studyFromDb.StudyParticipants.Remove(participantFromDb);
-            await _db.SaveChangesAsync();
-
-            return await _studyService.GetStudyByIdAsync(studyId);
-        }
-
-        public async Task VerifyRoleOrThrowAsync(string roleName)
-        {
-            var roleExists = false;
-
-            var roleIsPermittedForParticipant = false;
-
-        }
     }
 }

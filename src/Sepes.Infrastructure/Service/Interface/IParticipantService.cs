@@ -8,9 +8,6 @@ namespace Sepes.Infrastructure.Service.Interface
     {       
         Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync();
         Task<ParticipantDto> GetByIdAsync(int id);
-
-        // -----------Applies to study-------------
-        Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
-        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+       
     }
 }
