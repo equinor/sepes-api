@@ -19,20 +19,21 @@ namespace Sepes.RestApi.Controller
         }
 
         //Get list of lookup items
-        [HttpGet("/participants")]
+        [HttpGet("participants")]
         public async Task<IActionResult> GetLookupAsync()
         {
             var studies = await _participantService.GetLookupAsync();
             return new JsonResult(studies);
         }
 
-        [HttpGet("/participants/{id}")]
+        [HttpGet("participants/{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)
         {
             var participant = await _participantService.GetByIdAsync(id);
             return new JsonResult(participant);
         }
 
+        /*
         [HttpPut("/studies/{studyId}/participants/{participantId}/{role}")]       
         public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
         {
@@ -45,7 +46,7 @@ namespace Sepes.RestApi.Controller
         {
             var updatedStudy = await _participantService.RemoveParticipantFromStudyAsync(studyId, participantId);
             return new JsonResult(updatedStudy);
-        }
+        }*/
     }
 
 }
