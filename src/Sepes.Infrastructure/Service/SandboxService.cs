@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -17,13 +18,15 @@ namespace Sepes.Infrastructure.Service
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
+        readonly IHasPrincipal _principalService;
         readonly IStudyService _studyService;
         readonly ISandboxWorkerService _sandboxWorkerService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
+        public SandboxService(SepesDbContext db, IMapper mapper, IHasPrincipal principalService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
         {
             _db = db;
             _mapper = mapper;
+            _principalService = principalService;
             _studyService = studyService;
             _sandboxWorkerService = sandboxWorkerService;
         }
@@ -84,9 +87,15 @@ namespace Sepes.Infrastructure.Service
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
                 throw new ArgumentException("Region not specified.");
-            }                    
+            }
 
             var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
+
+            var principal = _principalService.GetPrincipal();
+
+            sandbox.TechnicalContactName = UserUtil.GetFullName(principal);
+            sandbox.TechnicalContactEmail = UserUtil.GetEmail(principal);
+
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
@@ -95,10 +104,12 @@ namespace Sepes.Infrastructure.Service
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
             //TODO: Remember to consider templates specifed as argument
 
+
+
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-                        
+
             await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
 
             return await GetSandboxDtoAsync(sandbox.Id);
