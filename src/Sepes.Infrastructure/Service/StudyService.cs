@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -19,13 +18,13 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
-        readonly IHasPrincipal _principalService;
+        readonly IUserService _userService;
         readonly IAzureBlobStorageService _azureBlobStorageService;      
 
-        public StudyService(IHasPrincipal principalService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
             :base(db, mapper)
         {
-            this._principalService = principalService;
+            this._userService = userService;
             _azureBlobStorageService = azureBlobStorageService;
         }
 
@@ -35,19 +34,13 @@ namespace Sepes.Infrastructure.Service
 
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
-               var principal =  _principalService.GetPrincipal();
-
-                if(principal == null)
-                {
-                    throw new ForbiddenException("Unknown user");
-                }
+                var user = _userService.GetCurrentUser();               
              
-                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, principal.Identity.Name);
+                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.UserName);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
-            {
-              
+            {              
                 studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
 

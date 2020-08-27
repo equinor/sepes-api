@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -18,15 +17,15 @@ namespace Sepes.Infrastructure.Service
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly IHasPrincipal _principalService;
+        readonly IUserService _userService;
         readonly IStudyService _studyService;
         readonly ISandboxWorkerService _sandboxWorkerService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IHasPrincipal principalService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
+        public SandboxService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
         {
             _db = db;
             _mapper = mapper;
-            _principalService = principalService;
+            _userService = userService;
             _studyService = studyService;
             _sandboxWorkerService = sandboxWorkerService;
         }
@@ -91,10 +90,10 @@ namespace Sepes.Infrastructure.Service
 
             var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
 
-            var principal = _principalService.GetPrincipal();
+            var user = _userService.GetCurrentUser();
 
-            sandbox.TechnicalContactName = UserUtil.GetFullName(principal);
-            sandbox.TechnicalContactEmail = UserUtil.GetEmail(principal);
+            sandbox.TechnicalContactName = user.FullName;
+            sandbox.TechnicalContactEmail = user.Email;
 
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
@@ -103,7 +102,6 @@ namespace Sepes.Infrastructure.Service
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
             //TODO: Remember to consider templates specifed as argument
-
 
 
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
