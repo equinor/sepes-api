@@ -1,0 +1,35 @@
+@startuml Sepes C2
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/release/1-0/C4_Container.puml
+
+
+/'Put legend in separate box on the side, instead of inside components etc '/
+LAYOUT_WITH_LEGEND() 
+
+Person(user, "User", "Equinor Employee/Consultant or External")
+
+System_Boundary(sepesBoundrary, "Sepes") {
+    Container(spa, "Single-Page App", "React", "Provides all of the Sepes functionality to users via their web browser")
+    Container(api, "API", "ASP.NET Core", "Provides Sepes functionality via a JSON/HTTPS API")
+    Container(worker, "Azure Function(s)", ".NET Core", "Creates and monitors cloud resources in Azure. Might add several for separation of conserns")
+    Container(db, "Database", "Azure SQL Server", "Stores studies, sandboxes, user data etc.")
+}
+
+System_Boundary(azureBoundrary, "Microsoft Azure") {    
+    System_Ext(azureIaaS, "IaaS", "Queues, Storage. Also resources needed for Sandboxes: Network, VMs, Bastion ++")
+    System_Ext(azureAd, "Active Directory", "Authentication and authorization")
+    System_Ext(azureAppi, "Application Insights", "Logging and usage statistics")
+}
+
+
+Rel(user, spa, "Uses", "HTTPS")
+Rel(spa, api, "Uses", "HTTPS")
+Rel_Neighbor(api, worker, "Uses", "HTTPS")
+Rel(api, db, "Reads/writes data", "HTTPS")
+Rel(worker, db, "Reads/writes data", "HTTPS")
+Rel(api, azureIaaS, "Uses", "HTTPS")
+Rel(worker, azureIaaS, "Uses", "HTTPS")
+Rel(spa, azureAd, "Authenticates user with", "HTTPS")
+Rel(spa, azureAppi, "Sends logs/usage to", "HTTPS")
+Rel(api, azureAppi, "Sends logs/usage to", "HTTPS")
+Rel(worker, azureAppi, "Sends logs/usage to", "HTTPS")
+@enduml
