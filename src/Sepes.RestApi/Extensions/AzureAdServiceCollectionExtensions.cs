@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 options.Audience = _azureOptions.ClientId;
                 options.Authority = $"{_azureOptions.Instance}{_azureOptions.TenantId}/v2.0/";
+                //options.TokenValidationParameters.NameClaimType = "name";
                 options.TokenValidationParameters.ValidIssuers = new List<string>
                 {
                     "login.microsoftonline.com",

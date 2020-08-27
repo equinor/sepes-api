@@ -108,6 +108,7 @@ namespace Sepes.RestApi
             });
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
+            services.AddTransient<IUserService, UserService>();
             services.AddTransient<IHasPrincipal, PrincipalService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
