@@ -27,7 +27,8 @@ Person(user, "User", "Equinor Employee/Consultant or External")
 System_Boundary(sepesBoundrary, "Sepes") {
     AzureWebApp(spa, "Single-Page App", "React", "Provides Sepes functionality to users via their web browser")
     AzureWebApp(api, "API", "ASP.NET Core", "Provides Sepes functionality through API calls")
-    AzureFunction(worker, "Azure Function", ".NET Core", "Creates and monitors cloud resources in Azure")    
+    AzureFunction(worker, "Worker", ".NET Core Azure Function", "Creates and monitors cloud resources in Azure")    
+    AzureQueueStorage(workerqueue, "Worker Queue", "Queue Storage", "Contains work for the worker")   
     AzureSqlDatabase(db, "Database", "Azure SQL Server",  "Stores studies, sandboxes, user data etc.")
 }
 
@@ -40,12 +41,16 @@ System_Boundary(azureBoundrary, "Microsoft Azure") {
 
 
 Rel(user, spa, "Uses", "HTTPS")
-Rel(spa, api, "Uses", "HTTPS")
-Rel_Neighbor(api, worker, "Uses", "HTTPS")
+Rel(user, api, "Uses", "HTTPS")
+Rel_Neighbor(spa, api, "Uses", "HTTPS")
+' Rel_Neighbor(api, worker, "Uses", "HTTPS")
 Rel(api, db, "Reads/writes data", "HTTPS")
-Rel(worker, db, "Reads/writes data", "HTTPS")
+Rel(api, workerqueue, "Posts work to", "HTTPS")
+Rel(workerqueue, worker, "Pulls work from", "HTTPS")
+Rel_Neighbor(worker, db, "Reads/writes data", "HTTPS")
 Rel(api, azureIaaSforSepes, "Uses", "HTTPS")
-Rel(worker, azureIaaSforSandbox, "Uses", "HTTPS")
+Rel(api, azureIaaSforSandbox, "Uses", "HTTPS")
+Rel(worker, azureIaaSforSepes, "Uses", "HTTPS")
 Rel(worker, azureIaaSforSandbox, "Uses", "HTTPS")
 Rel(spa, azureAd, "Authenticates user with", "HTTPS")
 Rel(spa, azureAppi, "Sends logs/usage to", "HTTPS")
