@@ -110,6 +110,7 @@ namespace Sepes.RestApi
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<IUserService, UserService>();
             services.AddTransient<IHasPrincipal, PrincipalService>();
+            services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IParticipantService, ParticipantService>();
@@ -127,6 +128,7 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
             services.AddTransient<SandboxResourceOperationService>();
             services.AddTransient<AzureResourceMonitoringService>();
+                  
 
 
             // Register the Swagger generator, defining 1 or more Swagger documents

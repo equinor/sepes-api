@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -38,6 +39,15 @@ namespace Sepes.RestApi.Controller
         {
             var updatedStudy = await _sandboxService.DeleteAsync(studyId, sandboxId);
             return new JsonResult(updatedStudy);
+        }
+
+        [HttpGet("sandboxes/templatelookup")]
+        [Authorize(Roles = Roles.Admin)]
+        //TODO: Must also be possible for sponsor rep and other roles
+        public async Task<IActionResult> GetTemplatesLookupAsync()
+        {
+            var templates = new List<LookupDto>();
+            return new JsonResult(templates);
         }
 
     }
