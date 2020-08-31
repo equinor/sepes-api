@@ -11,25 +11,25 @@ namespace Sepes.RestApi.Controller
     [Authorize(Roles = Roles.Admin)]
     public class ParticipantController : ControllerBase
     {
-        readonly IParticipantService _participantService;
+        readonly IStudyParticipantService _studyParticipantService;
 
-        public ParticipantController(IParticipantService participantService)
+        public ParticipantController(IStudyParticipantService studyParticipantService)
         {
-            _participantService = participantService;
+            _studyParticipantService = studyParticipantService;
         }
 
         //Get list of lookup items
         [HttpGet("participants")]
         public async Task<IActionResult> GetLookupAsync()
         {
-            var studies = await _participantService.GetLookupAsync();
+            var studies = await _studyParticipantService.GetLookupAsync();
             return new JsonResult(studies);
         }
 
         [HttpGet("participants/{id}")]
         public async Task<IActionResult> GetByIdAsync(int id)
         {
-            var participant = await _participantService.GetByIdAsync(id);
+            var participant = await _studyParticipantService.GetByIdAsync(id);
             return new JsonResult(participant);
         }
 

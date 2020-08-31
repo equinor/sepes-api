@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -13,7 +11,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null);
         Task<StudyDto> GetStudyByIdAsync(int studyId);
 
-        Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
+        Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
 
         Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
 

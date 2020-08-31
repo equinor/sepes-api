@@ -74,7 +74,7 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost()]
         [Authorize(Roles = RoleSets.AdminOrSponsor)]
-        public async Task<IActionResult> CreateStudyAsync(StudyDto newStudy)
+        public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
         {
             var study = await _studyService.CreateStudyAsync(newStudy);
             return new JsonResult(study);

@@ -102,46 +102,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("Datasets");
                 });
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.Participant", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("EmailAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Updated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Participants");
-                });
-
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
                 {
                     b.Property<int>("Id")
@@ -386,7 +346,7 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("StudyId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ParticipantId")
+                    b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.Property<string>("RoleName")
@@ -400,11 +360,57 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("StudyId", "ParticipantId", "RoleName");
+                    b.HasKey("StudyId", "UserId", "RoleName");
 
-                    b.HasIndex("ParticipantId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("StudyParticipants");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("EmailAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ObjectId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("TenantId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Variable", b =>
@@ -517,16 +523,16 @@ namespace Sepes.Infrastructure.Migrations
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyParticipant", b =>
                 {
-                    b.HasOne("Sepes.Infrastructure.Model.Participant", "Participant")
-                        .WithMany("StudyParticipants")
-                        .HasForeignKey("ParticipantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
                         .WithMany("StudyParticipants")
                         .HasForeignKey("StudyId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.User", "User")
+                        .WithMany("StudyParticipants")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

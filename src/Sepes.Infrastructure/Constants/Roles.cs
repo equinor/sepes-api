@@ -8,10 +8,11 @@
         public const string DatasetAdmin = "Sepes-Dataset-Admin";
 
         //Study specific roles, maintained in Sepes application
-        public const string SponsorRep = "Sepes-Sponsor-Rep";
-        public const string VendorAdmin= "Sepes-Vendor-Admin";
-        public const string VendorContributor = "Sepes-Vendor-Contributor";
-        public const string StudyViewer = "Sepes-Study-Viewer";       
+        public const string SponsorRep = "Sponsor Rep";
+        public const string VendorAdmin= "Vendor Admin";
+        public const string VendorContributor = "Vendor Contributor";
+        public const string StudyViewer = "Study Viewer";
+        public const string StudySponsor = "Sponsor";
     }
 
     public static class RoleSets

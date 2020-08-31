@@ -19,7 +19,7 @@ namespace Sepes.Infrastructure.Service
                 .ThenInclude(sd => sd.Dataset)
             .Include(s => s.Sandboxes)
             .Include(s => s.StudyParticipants)
-                .ThenInclude(sp => sp.Participant);
+                .ThenInclude(sp => sp.User);
         }
 
         public static async Task<Study> GetStudyOrThrowAsync(int studyId, SepesDbContext db)
@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service
                     .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.Sandboxes)
                 .Include(s => s.StudyParticipants)
-                    .ThenInclude(sp => sp.Participant)
+                    .ThenInclude(sp => sp.User)
                 .FirstOrDefaultAsync(s => s.Id == studyId);
 
             if (studyFromDb == null)
