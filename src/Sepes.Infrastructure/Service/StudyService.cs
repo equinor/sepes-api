@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = _userService.GetCurrentUser();               
              
-                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.UserName);
+                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
@@ -50,9 +50,9 @@ namespace Sepes.Infrastructure.Service
             return studiesDtos;
         }  
         
-        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, string username)
+        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
         {
-            return db.Studies.Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.Participant != null && sp.Participant.UserName == username).FirstOrDefault() != null);
+            return db.Studies.Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.User != null && sp.User.Id == userId).FirstOrDefault() != null);
         }
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
@@ -65,13 +65,22 @@ namespace Sepes.Infrastructure.Service
             return studyDto;
         }
 
-        public async Task<StudyDto> CreateStudyAsync(StudyDto newStudy)
+        public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
-            var newStudyDbModel = _mapper.Map<Study>(newStudy);
+            var studyDb = _mapper.Map<Study>(newStudyDto);
 
-            var newStudyId = await Add(newStudyDbModel);       
+            var currentUser = await _userService.GetCurrentUserFromDb();
+            AddCurrentUserAsParticipant(studyDb, currentUser);
 
+
+            var newStudyId = await Add(studyDb);
             return await GetStudyByIdAsync(newStudyId);
+        }
+
+        void AddCurrentUserAsParticipant(Study study, UserDto user)
+        {
+            study.StudyParticipants = new List<StudyParticipant>();
+            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = Roles.StudySponsor, Created = DateTime.UtcNow, CreatedBy = user.UserName });
         }
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
@@ -198,7 +207,7 @@ namespace Sepes.Infrastructure.Service
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = await _db.Participants.FirstOrDefaultAsync(p => p.Id == participantId);
+            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
             {
@@ -209,7 +218,7 @@ namespace Sepes.Infrastructure.Service
 
             //await VerifyRoleOrThrowAsync(role);
 
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, ParticipantId = participantId, RoleName = role };
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = participantId, RoleName = role };
             await _db.StudyParticipants.AddAsync(studyParticipant);
             await _db.SaveChangesAsync();
 
@@ -219,7 +228,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.ParticipantId == participantId);
+            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.StudyId == participantId);
 
             if (participantFromDb == null)
             {
