@@ -27,26 +27,7 @@ namespace Sepes.Tests.Services
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
         }
-
-        [Theory]
-        [InlineData(0)]
-        [InlineData(5)]
-        [InlineData(12351324)]
-        public async void CreatingStudyWithSpecifiedIdShouldBeOk(int id)
-        {
-            RefreshTestDb();
-            var studyService = ServiceProvider.GetService<IStudyService>();
-            var studyWithSpecifiedId = new StudyDto()
-            {
-                Id = id,
-                Name = "Test",
-                Vendor = "Bouvet"
-            };
-
-            var result = await studyService.CreateStudyAsync(studyWithSpecifiedId);
-
-            Assert.IsType<int>(result.Id);
-        }
+     
 
         [Theory]
         [InlineData(null)]
@@ -56,7 +37,7 @@ namespace Sepes.Tests.Services
             RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            var studyWithInvalidName = new StudyDto()
+            var studyWithInvalidName = new StudyCreateDto()
             {
                 Name = name,
                 Vendor = "Bouvet"
@@ -73,7 +54,7 @@ namespace Sepes.Tests.Services
             RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            var studyWithInvalidVendor = new StudyDto()
+            var studyWithInvalidVendor = new StudyCreateDto()
             {
                 Name = "TestStudy",
                 Vendor = vendor
@@ -92,7 +73,7 @@ namespace Sepes.Tests.Services
             RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            var initialStudy = new StudyDto()
+            var initialStudy = new StudyCreateDto()
             {
                 Name = "TestStudy12345",
                 Vendor = "Equinor"
@@ -145,18 +126,17 @@ namespace Sepes.Tests.Services
             RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            var initialStudy = new StudyDto()
-            {
-                Id = 1,
+            var initialStudy = new StudyCreateDto()
+            {              
                 Name = "TestStudy12345",
                 Vendor = "Equinor"
             };
 
             var createdStudy = await studyService.CreateStudyAsync(initialStudy);
-            int studyId = (int)createdStudy.Id;
-            _ = await studyService.DeleteStudyAsync(1);
+            int studyId = createdStudy.Id.Value;
+            _ = await studyService.DeleteStudyAsync(studyId);
 
-            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(1));
+            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(studyId));
 
         }
         //        [Fact]

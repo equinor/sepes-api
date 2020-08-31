@@ -35,9 +35,8 @@ namespace Sepes.Tests.Services
         async Task<StudyDto> AddStudyToTestDatabase(int studyId)
         {
             var studyService = ServiceProvider.GetService<IStudyService>();
-            StudyDto study = new StudyDto()
-            {
-                Id = studyId,
+            StudyCreateDto study = new StudyCreateDto()
+            {       
                 Name = "TestStudy",
                 Vendor = "Bouvet",
                 WbsCode = "1234.1345afg"
@@ -91,7 +90,7 @@ namespace Sepes.Tests.Services
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
             ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
 
-            StudyDto study = new StudyDto()
+            StudyCreateDto study = new StudyCreateDto()
             {
                 Name = "TestStudy",
                 Vendor = "Bouvet",

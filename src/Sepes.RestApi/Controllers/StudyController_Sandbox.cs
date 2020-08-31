@@ -8,11 +8,8 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-
     public partial class StudyController : StudyControllerBase
     {
-
-
         [HttpGet("{studyId}/sandboxes")]
         [Authorize(Roles = Roles.Admin)]
         //TODO: Must also be possible for sponsor rep and other roles

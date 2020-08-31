@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyDataset> StudyDatasets { get; set; }
 
-        public virtual DbSet<Participant> Participants { get; set; }
+        public virtual DbSet<User> Users { get; set; }
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
@@ -30,17 +30,18 @@ namespace Sepes.Infrastructure.Model.Context
         {
             AddPrimaryKeys(modelBuilder);
             AddDefaultValues(modelBuilder);
-            AddRelationships(modelBuilder);
+            AddRelationships(modelBuilder);      
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Variable>().HasKey(v => v.Id);
+            modelBuilder.Entity<User>().HasKey(v => v.Id);
             modelBuilder.Entity<Study>().HasKey(s => s.Id);
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
-            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.ParticipantId, sd.RoleName });
+            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.UserId, sd.RoleName });
             modelBuilder.Entity<SandboxResource>().HasKey(cr => cr.Id);
             modelBuilder.Entity<SandboxResourceOperation>().HasKey(cro => cro.Id);
         }
@@ -68,12 +69,12 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<StudyParticipant>()
                 .HasOne(sd => sd.Study)
                 .WithMany(s => s.StudyParticipants)
-                .HasForeignKey(sd => sd.StudyId);
+                .HasForeignKey(sd => sd.StudyId).OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<StudyParticipant>()
-                .HasOne(sd => sd.Participant)
+                .HasOne(sd => sd.User)
                 .WithMany(d => d.StudyParticipants)
-                .HasForeignKey(sd => sd.ParticipantId);
+                .HasForeignKey(sd => sd.UserId).OnDelete(DeleteBehavior.Restrict);
 
 
             //CLOUD RESOURCE / SANDBOX RELATION
@@ -127,11 +128,11 @@ namespace Sepes.Infrastructure.Model.Context
                 .Property(b => b.Updated)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<Participant>()
+            modelBuilder.Entity<User>()
                 .Property(b => b.Created)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<Participant>()
+            modelBuilder.Entity<User>()
                 .Property(b => b.Updated)
                 .HasDefaultValueSql("getutcdate()");
 
