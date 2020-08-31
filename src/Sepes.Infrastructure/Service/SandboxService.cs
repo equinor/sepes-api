@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
             var user = _userService.GetCurrentUser();
 
             sandbox.TechnicalContactName = user.FullName;
-            sandbox.TechnicalContactEmail = user.Email;
+            sandbox.TechnicalContactEmail = user.Email;      
 
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();

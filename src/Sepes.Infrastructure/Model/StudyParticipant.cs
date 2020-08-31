@@ -6,14 +6,14 @@ namespace Sepes.Infrastructure.Model
     {
         public int StudyId { get; set; }
      
-        public int ParticipantId { get; set; }
+        public int UserId { get; set; }
         public string RoleName { get; set; }
      
         public DateTime Created { get; set; }
         public string CreatedBy { get; set; }
 
         public virtual Study Study { get; set; }
-        public virtual Participant Participant { get; set; }
+        public virtual User User { get; set; }
 
     } 
 }
