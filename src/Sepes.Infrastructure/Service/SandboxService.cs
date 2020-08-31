@@ -108,7 +108,8 @@ namespace Sepes.Infrastructure.Service
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
-            await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+            //Her har vi mye info om sandboxen i Azure, men den har for mye info
+           var dtoWithAzureInfo = await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
@@ -132,6 +133,9 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-
+        //public Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync()
+        //{
+        //    return templates;          
+        //}
     }
 }
