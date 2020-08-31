@@ -97,12 +97,10 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Creating basic sandbox resources for sandbox: {azureSandbox.SandboxName}");
 
-            //20200824: All creation disabled by KRST, as we want to prevent creation of resources, and get this branch deployed. RBAC is still not fully functional
-
-            //azureSandbox = await CreateResourceGroup(sandboxId, azureSandbox, region, tags);
-            //azureSandbox = await CreateDiagStorageAccount(sandboxId, azureSandbox, region, tags);
-            //azureSandbox = await CreateNetworkSecurityGroup(sandboxId, azureSandbox, region, tags);
-            //azureSandbox = await CreateVirtualNetwork(sandboxId, azureSandbox, region, tags);        
+            azureSandbox = await CreateResourceGroup(sandboxId, azureSandbox, region, tags);
+            azureSandbox = await CreateDiagStorageAccount(sandboxId, azureSandbox, region, tags);
+            azureSandbox = await CreateNetworkSecurityGroup(sandboxId, azureSandbox, region, tags);
+            azureSandbox = await CreateVirtualNetwork(sandboxId, azureSandbox, region, tags);        
 
             _logger.LogInformation($"Done creating basic resources for sandbox: {azureSandbox.SandboxName}");
 
