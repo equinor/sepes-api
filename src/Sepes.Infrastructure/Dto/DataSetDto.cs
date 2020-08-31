@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Dto
         public string AreaL1 { get; set; }
         public string AreaL2 { get; set; }
         public string Tags { get; set; }
+        public int? StudyNo { get; set; }
 
         public ICollection<StudyDto> Studies { get; set; }
     }
