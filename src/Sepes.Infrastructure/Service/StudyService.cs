@@ -154,7 +154,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check if study contains studySpecific Datasets
-            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyNo == studyId).ToListAsync();
+            List<Dataset> studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyId == studyId).ToListAsync();
             if (studySpecificDatasets.Any())
             {
                 foreach (Dataset dataset in studySpecificDatasets)
@@ -257,5 +257,7 @@ namespace Sepes.Infrastructure.Service
 
             return user.IsInRole(Roles.Admin);
         }
+
+        
     }
 }

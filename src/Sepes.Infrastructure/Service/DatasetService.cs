@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
             var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyNo == null)
+                .Where(ds => ds.StudyId == null)
                 .ToListAsync();
             var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
 
@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<DatasetDto>> GetDatasetsAsync()
         {
             var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyNo == null)
+                .Where(ds => ds.StudyId == null)
                 .ToListAsync();
             var dataasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(datasetsFromDb);
 
@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
         async Task<Dataset> GetDatasetOrThrowAsync(int id)
         {
             var datasetFromDb = await _db.Datasets
-                .Where(ds => ds.StudyNo == null)
+                .Where(ds => ds.StudyId == null)
                 .Include(s => s. StudyDatasets)
                 .ThenInclude(sd=> sd.Study)
                 .FirstOrDefaultAsync(s => s.Id == id);
@@ -94,7 +94,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForIdentity("Dataset", datasetId);
             }
 
-            if (datasetFromDb.StudyNo != null)
+            if (datasetFromDb.StudyId != null)
             {
                 throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
             }
@@ -131,7 +131,7 @@ namespace Sepes.Infrastructure.Service
 
             //If dataset is studyspecific, remove dataset as well.
             // Possibly keep database entry, but mark as deleted.
-            if (datasetFromDb.StudyNo != null)
+            if (datasetFromDb.StudyId != null)
             {
                 _db.Datasets.Remove(datasetFromDb);
             }
@@ -146,7 +146,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             PerformUsualTestForPostedDatasets(newDataset);
             var dataset = _mapper.Map<Dataset>(newDataset);
-            dataset.StudyNo = studyId;
+            dataset.StudyId = studyId;
             await _db.Datasets.AddAsync(dataset);
 
             // Create new linking table
