@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Controller
     [Route("api/datasets")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = Roles.Admin)] //Todo: Need wider access, but keeping it restricted for now
+    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but keeping it restricted for now
     public class DatasetController : ControllerBase
     {     
         readonly IDatasetService _datasetService;

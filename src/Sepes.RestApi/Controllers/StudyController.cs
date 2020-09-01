@@ -16,7 +16,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = Roles.Admin)] //Todo: Need wider access, but restricted for now
+    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
     public class StudyControllerBase : ControllerBase
     {
        protected bool CanViewRestrictedStudy()
@@ -24,7 +24,7 @@ namespace Sepes.RestApi.Controller
             //TODO: Open up for more than admins
             //TODO: ADdd relevant study specific roles
      
-            return User.IsInRole(Roles.Admin);
+            return User.IsInRole(AppRoles.Admin);
         }
     }
 
@@ -40,9 +40,7 @@ namespace Sepes.RestApi.Controller
         {
             _studyService = studyService;
             _sandboxService = sandboxService;
-            _datasetService = datasetService; 
-            
-
+            _datasetService = datasetService;    
         }       
 
         [HttpGet]
@@ -89,7 +87,7 @@ namespace Sepes.RestApi.Controller
       //}
 
         [HttpDelete("{studyId}")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
             var study = await _studyService.DeleteStudyAsync(studyId);

@@ -81,7 +81,7 @@ namespace Sepes.Infrastructure.Service
         void AddCurrentUserAsParticipant(Study study, UserDto user)
         {
             study.StudyParticipants = new List<StudyParticipant>();
-            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = Roles.StudySponsor, Created = DateTime.UtcNow, CreatedBy = user.UserName });
+            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
         }
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
@@ -247,7 +247,7 @@ namespace Sepes.Infrastructure.Service
             //TODO: Open up for more than admins
             //TODO: Add relevant study specific roles
 
-            if (user.IsInRole(Roles.Admin))
+            if (user.IsInRole(AppRoles.Admin))
             {
                 //TODO: Should really be true?
                 return true;
@@ -256,7 +256,7 @@ namespace Sepes.Infrastructure.Service
             //Do you have a participant role for this study? Return true
 
 
-            return user.IsInRole(Roles.Admin);
+            return user.IsInRole(AppRoles.Admin);
         }
 
         

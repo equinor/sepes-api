@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Dto
 
         public ICollection<SandboxDto> Sandboxes { get; set; }
 
-        public ICollection<ParticipantDto> Participants { get; set; }
+        public ICollection<StudyParticipantDto> Participants { get; set; }
         
     }
 }
