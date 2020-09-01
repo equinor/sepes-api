@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<int?>("StudyNo")
+                    b.Property<int?>("StudyId")
                         .HasColumnType("int");
 
                     b.Property<string>("Tags")
