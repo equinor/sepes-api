@@ -59,6 +59,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
+            studyDto.Sandboxes = studyDto.Sandboxes.Where(sb=> !sb.Deleted).ToList();
 
             studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
 
@@ -211,7 +212,7 @@ namespace Sepes.Infrastructure.Service
 
             if (participantFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
+                throw NotFoundException.CreateForEntity("Participant", participantId);
             }
 
             //Check that association does not allready exist
@@ -232,7 +233,7 @@ namespace Sepes.Infrastructure.Service
 
             if (participantFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Participant", participantId);
+                throw NotFoundException.CreateForEntity("Participant", participantId);
             }
 
             studyFromDb.StudyParticipants.Remove(participantFromDb);

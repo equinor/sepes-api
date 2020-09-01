@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
+//Use the command below to create a new migration. 
+//Replace <migration name> with a good migration name and run this in Package Manager Console
 //Add-Migration <migration name> -Context SepesDbContext -StartupProject Sepes.RestApi -Project Sepes.Infrastructure
 
 namespace Sepes.Infrastructure.Model.Context

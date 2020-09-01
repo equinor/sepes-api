@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
@@ -17,14 +19,16 @@ namespace Sepes.Infrastructure.Service
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
+        readonly ILogger _logger;
         readonly IUserService _userService;
         readonly IStudyService _studyService;
         readonly ISandboxWorkerService _sandboxWorkerService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
+        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
         {
             _db = db;
             _mapper = mapper;
+            _logger = logger;
             _userService = userService;
             _studyService = studyService;
             _sandboxWorkerService = sandboxWorkerService;
@@ -33,7 +37,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId).ToListAsync();
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
@@ -44,11 +48,11 @@ namespace Sepes.Infrastructure.Service
             var sandboxFromDb = await _db.Sandboxes
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
-                .FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+                .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
             return sandboxFromDb;
         }
@@ -118,19 +122,50 @@ namespace Sepes.Infrastructure.Service
         //Todo, add a deleted flag instead of actually deleting, so that we keep history
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
+            _logger.LogWarning(SepesEventId.SandboxDelete, "Deleting sandbox with id {0}, for study {1}", studyId, sandboxId);
+
             // Run validations: (Check if ID is valid)
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+            var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            studyFromDb.Sandboxes.Remove(sandboxFromDb);
-            await _db.SaveChangesAsync();
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
+            SetSandboxAsDeleted(sandboxFromDb);
 
+            await _db.SaveChangesAsync();
+
+            //Find resource group name
+            var resourceGroupForSandbox = sandboxFromDb.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.ResourceGroup);
+
+            if(resourceGroupForSandbox == null)
+            {
+                throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
+            }
+
+            await _sandboxWorkerService.NukeSandbox(studyFromDb.Name, sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName); 
+            
+            _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox with id {0} deleted", studyId);
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
+        }
+
+        void SetSandboxAsDeleted(Sandbox sandbox)
+        {
+            var user = _userService.GetCurrentUser();
+
+            //Mark sandbox object as deleted
+            sandbox.Deleted = true;
+            sandbox.DeletedAt = DateTime.UtcNow;
+            sandbox.DeletedBy = user.UserName;
+
+            //Mark all resources as deleted
+            foreach (var curResource in sandbox.Resources)
+            {
+                curResource.Deleted = DateTime.UtcNow;
+                curResource.DeletedBy = user.UserName;               
+            }
         }
 
         //public Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync()
