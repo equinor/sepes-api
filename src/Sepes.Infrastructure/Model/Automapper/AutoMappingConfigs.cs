@@ -14,8 +14,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Study, StudyDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
-                    .ForMember(dest => dest.Participants,
-                    source => source.MapFrom(x => x.StudyParticipants.Select(y => y.User).ToList()));
+                    .ForMember(dest => dest.Participants,source => source.MapFrom(x => x.StudyParticipants))
+                    ;
+
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
 
@@ -44,11 +45,18 @@ namespace Sepes.Infrastructure.Model.Automapper
             //STUDY PARTICIPANTS
             CreateMap<User, ParticipantDto>()
                 .ReverseMap();
-            CreateMap<User, ParticipantListItemDto>();
+            CreateMap<User, ParticipantListItemDto>()
+                    .ForMember(dest => dest.Name, source => source.MapFrom(x => x.FullName));
 
             CreateMap<ParticipantDto, User>();
 
             CreateMap<User, UserDto>().ReverseMap();
+
+            CreateMap<StudyParticipant, StudyParticipantDto>()
+                .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.User.EmailAddress))
+                .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.User.FullName))
+                .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
+                  .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
 
             //CLOUD RESOURCE
             CreateMap<SandboxResource, SandboxResourceDto>()

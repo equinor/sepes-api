@@ -16,9 +16,7 @@ namespace Sepes.Infrastructure.Dto
         public string ObjectId { get; set; }
 
         public string FullName { get; private set; }
-
-        public string UserName { get; private set; }   
-
+        public string UserName { get; private set; }
         public string Email { get; private set; }   
 
 
@@ -33,8 +31,7 @@ namespace Sepes.Infrastructure.Dto
         {
             Principal = principal;
             TenantId = UserUtil.GetTenantId(Principal);
-            ObjectId = UserUtil.GetOid(Principal);
-            UserName = UserUtil.GetUsername(Principal);
+            ObjectId = UserUtil.GetOid(Principal);  
             Email = UserUtil.GetEmail(Principal);
             FullName = UserUtil.GetFullName(Principal);
         }        

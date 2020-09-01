@@ -8,7 +8,7 @@ namespace Sepes.RestApi.Controller
 {
     [Route("api")]
     [ApiController]
-    [Authorize(Roles = Roles.Admin)]
+    [Authorize(Roles = AppRoles.Admin)]
     public class ParticipantController : ControllerBase
     {
         readonly IStudyParticipantService _studyParticipantService;

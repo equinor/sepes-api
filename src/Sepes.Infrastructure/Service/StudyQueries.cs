@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
                 .Include(s => s.Sandboxes)
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
-                       .Include(s => s.Sandboxes)
+                .Include(s => s.Sandboxes)
                     .ThenInclude(sp => sp.Resources)
                 .FirstOrDefaultAsync(s => s.Id == studyId);
 

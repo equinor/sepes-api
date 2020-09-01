@@ -29,7 +29,6 @@ namespace Sepes.Infrastructure.Util
             return user;
         }
 
-
         public static string GetTenantId(IPrincipal principal)
         {
             return GetClaimValue(principal, CLAIM_TENANT);
@@ -41,29 +40,7 @@ namespace Sepes.Infrastructure.Util
         }
         public static string GetUsername(IPrincipal principal)
         {
-            return principal.Identity.Name;
-
-            //20200828: The attempts below were just desperate tries to get the username. We then discovered that the front end forgot to specify relevant scopes, not giving us the claims we needed
-
-            //string userName;  
-            
-            //if()
-
-            //if (TryGetClaimValue(principal, CLAIM_UPN, out userName))
-            //{
-            //    return userName;
-            //}
-            //else if (TryGetClaimValue(principal, CLAIM_USERNAME, out userName))
-            //{
-            //    return userName;
-            //}
-            //else if (TryGetClaimValue(principal, CLAIM_USERNAME_PREFERRED, out userName))
-            //{
-            //    return userName;
-            //}
-
-            //throw new Exception("Unable to determine username for principal: " + principal.Identity.Name);
-         
+            return principal.Identity.Name;         
         }
 
         public static string GetEmail(IPrincipal principal)

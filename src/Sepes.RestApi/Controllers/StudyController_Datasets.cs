@@ -12,7 +12,7 @@ namespace Sepes.RestApi.Controller
     {
 
         [HttpPut("{studyId}/datasets/{datasetId}")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
         {
@@ -21,7 +21,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpDelete("{studyId}/datasets/{datasetId}")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
@@ -41,7 +41,7 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
         public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
@@ -51,7 +51,7 @@ namespace Sepes.RestApi.Controller
 
         [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
         public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
         {
