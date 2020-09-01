@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentityByName("Variable", name);
+                throw NotFoundException.CreateForEntityByName("Variable", name);
             }
 
             return entityFromDb;

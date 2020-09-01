@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
@@ -31,7 +32,7 @@ namespace Sepes.Tests.Util
 
 
             //Trying resource group
-            var resourceGroupService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "ResourceGroup");
+            var resourceGroupService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.ResourceGroup);
 
             Assert.NotNull(resourceGroupService);
             Assert.IsType<AzureResourceGroupService>(resourceGroupService);

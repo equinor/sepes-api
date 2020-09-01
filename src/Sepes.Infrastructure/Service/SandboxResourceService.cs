@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,13 @@ namespace Sepes.Infrastructure.Service
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
+        readonly IUserService _userService;
 
-        public SandboxResourceService(SepesDbContext db, IMapper mapper)
+        public SandboxResourceService(SepesDbContext db, IMapper mapper, IUserService userService)
         {
             _db = db;
             _mapper = mapper;
+            _userService = userService;
         }
 
         public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
@@ -103,7 +106,7 @@ namespace Sepes.Infrastructure.Service
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("AzureResource", id);
+                throw NotFoundException.CreateForEntity("AzureResource", id);
             }
 
             return entityFromDb;
@@ -117,16 +120,18 @@ namespace Sepes.Infrastructure.Service
 
         async Task<SandboxResource> MarkAsDeletedByIdInternalAsync(int id)
         {
-            //WE DON*T REALLY DELETE FROM THIS TABLE, WE "MARK AS DELETED" AND KEEP THE RECORDS FOR FUTURE REFERENCE
+            //WE DONT REALLY DELETE FROM THIS TABLE, WE "MARK AS DELETED" AND KEEP THE RECORDS FOR FUTURE REFERENCE
 
             var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("AzureResource", id);
+                throw NotFoundException.CreateForEntity("AzureResource", id);
             }
 
-            entityFromDb.DeletedBy = "TODO:AddUsernameHere";
+            var user = _userService.GetCurrentUser();
+
+            entityFromDb.DeletedBy = user.UserName;
             entityFromDb.Deleted = DateTime.UtcNow;
 
             await _db.SaveChangesAsync();
@@ -160,7 +165,7 @@ namespace Sepes.Infrastructure.Service
 
             if (sandboxFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Sandbox", sandboxId);
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
             return sandboxFromDb;
         }

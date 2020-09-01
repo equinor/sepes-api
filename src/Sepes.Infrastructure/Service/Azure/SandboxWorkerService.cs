@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -111,7 +112,7 @@ namespace Sepes.Infrastructure.Service
         {
             // Create entry in SandboxResource-table,
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup(azureSandbox.SandboxName);
-            var sandboxResourceEntry = await _sandboxResourceService.AddResourceGroup(sandboxId, "NotYetAvailable", resourceGroupName, "ResourceGroup");
+            var sandboxResourceEntry = await _sandboxResourceService.AddResourceGroup(sandboxId, "NotYetAvailable", resourceGroupName, AzureResourceType.ResourceGroup);
             _logger.LogInformation($"Creating resource group for sandbox: {azureSandbox.SandboxName}");
 
             // Create entry in SandboxResourceOperations-table
@@ -214,14 +215,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task NukeSandbox(string studyName, string sandboxName, string resourceGroupName)
         {
-            _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}");
-
-            //TODO: Get list of relevant resources and mark as deleted in our db
-
-            _logger.LogInformation($"Deleting resource group {resourceGroupName}");
-            await _resourceGroupService.Delete(resourceGroupName);
-
-            //Update sepes db? NO, ONE LEVEL ABOVE SHOULD DO THAT
+            _logger.LogInformation($"Terminating sandbox for study {studyName}. Sandbox name: {sandboxName}. Deleting Resource Group {resourceGroupName} and all it's contents");
+           
+            await _resourceGroupService.Delete(resourceGroupName);         
         }
 
         public async Task NukeUnitTestSandboxes()
