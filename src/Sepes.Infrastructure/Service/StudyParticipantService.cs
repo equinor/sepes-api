@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Participant", id);
+                throw NotFoundException.CreateForEntity("Participant", id);
             }
 
             return entityFromDb;

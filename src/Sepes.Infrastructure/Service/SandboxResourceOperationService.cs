@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("SandboxResourceOperation", id);
+                throw NotFoundException.CreateForEntity("SandboxResourceOperation", id);
             }
 
             return entityFromDb;
@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service
 
             if (entityFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("AzureResource", id);
+                throw NotFoundException.CreateForEntity("AzureResource", id);
             }
 
             return entityFromDb;
