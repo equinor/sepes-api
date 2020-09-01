@@ -59,7 +59,7 @@ namespace Sepes.Infrastructure.Service
 
             if (studyDatasetRelation == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
             var datasetDto = _mapper.Map<DataSetsForStudyDto>(studyDatasetRelation.Dataset);
@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
 
             if (datasetFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", id);
+                throw NotFoundException.CreateForEntity("Dataset", id);
             }
 
             return datasetFromDb;
@@ -91,7 +91,7 @@ namespace Sepes.Infrastructure.Service
 
             if (datasetFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
             if (datasetFromDb.StudyId != null)
@@ -115,7 +115,7 @@ namespace Sepes.Infrastructure.Service
             //Does dataset exist?
             if (datasetFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
             var studyDatasetFromDb = await _db.StudyDatasets
@@ -124,7 +124,7 @@ namespace Sepes.Infrastructure.Service
             //Is dataset linked to a study?
             if (studyDatasetFromDb == null)
             {
-                throw NotFoundException.CreateForIdentity("StudyDataset", datasetId);
+                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
             }
 
             _db.StudyDatasets.Remove(studyDatasetFromDb);
@@ -340,7 +340,7 @@ namespace Sepes.Infrastructure.Service
 
             if (studyDatasetRelation == null)
             {
-                throw NotFoundException.CreateForIdentity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
             return studyDatasetRelation.Dataset;

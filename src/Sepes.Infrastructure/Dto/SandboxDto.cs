@@ -11,6 +11,8 @@
 
         public string TechnicalContactEmail { get; set; }
 
+        public bool Deleted { get; set; }
+
 
     }
 }

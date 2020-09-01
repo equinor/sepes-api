@@ -11,19 +11,24 @@ namespace Sepes.Infrastructure.Exceptions
         protected NotFoundException(System.Runtime.Serialization.SerializationInfo info,
             System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 
-        public static NotFoundException CreateForIdentity(string entityName, int id, Exception inner = null)
+        public static NotFoundException CreateForEntity(string entityName, int id, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with id {id} not found!", inner);
         }
 
-        public static NotFoundException CreateForIdentityByName(string entityName, string name, Exception inner = null)
+        public static NotFoundException CreateForEntityByName(string entityName, string name, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with name {name} not found!", inner);
         }
+        public static NotFoundException CreateForEntityByOtherFieldName(string entityName, string field, string fieldValue, Exception inner = null)
+        {
+            return new NotFoundException($"{entityName} with {field} = {fieldValue} not found!", inner);
+        }
+
 
         public static NotFoundException CreateForAzureResource(string resourceName, string resourceGroupName = null, Exception inner = null)
         {
-            StringBuilder sbExMessage = new StringBuilder($"Azure resource with name {resourceName}");
+            var sbExMessage = new StringBuilder($"Azure resource with name {resourceName}");
 
             if (!String.IsNullOrWhiteSpace(resourceGroupName))
             {
