@@ -11,7 +11,7 @@ namespace Sepes.RestApi.Controller
     public partial class StudyController : StudyControllerBase
     {
         [HttpGet("{studyId}/sandboxes")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
         {
@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpDelete("{studyId}/sandboxes/{sandboxId}")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> RemoveSandboxAsync(int studyId, int sandboxId)
         {
@@ -39,7 +39,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet("sandboxes/templatelookup")]
-        [Authorize(Roles = Roles.Admin)]
+        [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> GetTemplatesLookupAsync()
         {
