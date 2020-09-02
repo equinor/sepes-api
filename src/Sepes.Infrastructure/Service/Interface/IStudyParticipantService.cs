@@ -6,8 +6,6 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyParticipantService
     {       
-        Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync();
-        Task<ParticipantDto> GetByIdAsync(int id);
-       
+        Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync();       
     }
 }

@@ -34,6 +34,20 @@ namespace Sepes.Infrastructure.Service
             _sandboxWorkerService = sandboxWorkerService;
         }
 
+        public async Task<SandboxDto> GetSandbox(int studyId, int sandboxId)
+        {
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+
+            if(sandboxFromDb.StudyId != studyId)
+            {
+                throw new ArgumentException($"Sandbox with id {sandboxId} does not belong to study with id {studyId}");
+            }
+
+            //TODO: Check that user can access study 
+
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
+        }
+
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
@@ -63,6 +77,8 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
+       
+
         // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
         {
@@ -78,8 +94,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
-            // Run validations: (Check if ID is valid)
+
+            // Verify that study with that id exists
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            //TODO: Verify that this user can create sandbox for study
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -113,7 +132,7 @@ namespace Sepes.Infrastructure.Service
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
             //Her har vi mye info om sandboxen i Azure, men den har for mye info
-           var dtoWithAzureInfo = await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+           await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }

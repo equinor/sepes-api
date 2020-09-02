@@ -22,9 +22,16 @@ namespace Sepes.RestApi.Controller
         [HttpGet("regions")]
         public IActionResult GetRegions()
         {
-            var regions = _lookupService.GetAzureRegions();
+            var regions = _lookupService.AzureRegions();
             return new JsonResult(regions);
-        }       
+        }
+
+        [HttpGet("studyroles")]
+        public IActionResult GetStudyRoles()
+        {
+            var roles = _lookupService.StudyRoles();
+            return new JsonResult(roles);
+        }
     }
 
 }
