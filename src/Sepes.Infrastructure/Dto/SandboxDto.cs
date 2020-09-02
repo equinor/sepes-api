@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿using System.Collections.Generic;
+
+namespace Sepes.Infrastructure.Dto
 {
     public class SandboxDto : UpdateableBaseDto
     {
@@ -12,6 +14,8 @@
         public string TechnicalContactEmail { get; set; }
 
         public bool Deleted { get; set; }
+
+        public List<SandboxResourceLightDto> Resources { get; set; }
 
 
     }
