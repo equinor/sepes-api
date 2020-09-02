@@ -5,6 +5,8 @@ namespace Sepes.Infrastructure.Service
 {
     public interface ILookupService
     {
-        public IEnumerable<LookupDto> GetAzureRegions();
+        public IEnumerable<LookupDto> AzureRegions();
+        public IEnumerable<LookupDto> StudyRoles();
+        
     }
 }

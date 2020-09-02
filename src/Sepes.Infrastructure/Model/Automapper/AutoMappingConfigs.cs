@@ -37,7 +37,16 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                .ReverseMap();
+                 .ForMember(dest => dest.Resources,
+                    source => source.MapFrom(x => x.Resources));
+
+            CreateMap<SandboxResource, SandboxResourceLightDto>()
+                    .ForMember(dest => dest.Name,source => source.MapFrom(x => x.ResourceName))
+                     .ForMember(dest => dest.Status, source => source.MapFrom(x => x.LastKnownProvisioningState))
+                     .ForMember(dest => dest.Type, source => source.MapFrom(x => x.ResourceType));
+
+            CreateMap<SandboxDto, Sandbox>();
+              
 
             CreateMap<SandboxCreateDto, Sandbox>();
           
