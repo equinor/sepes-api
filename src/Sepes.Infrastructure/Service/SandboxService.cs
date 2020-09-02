@@ -34,6 +34,20 @@ namespace Sepes.Infrastructure.Service
             _sandboxWorkerService = sandboxWorkerService;
         }
 
+        public async Task<SandboxDto> GetSandbox(int studyId, int sandboxId)
+        {
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+
+            if(sandboxFromDb.StudyId != studyId)
+            {
+                throw new ArgumentException($"Sandbox with id {sandboxId} does not belong to study with id {studyId}");
+            }
+
+            //TODO: Check that user can access study 
+
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
+        }
+
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
@@ -62,6 +76,8 @@ namespace Sepes.Infrastructure.Service
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
+
+       
 
         // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
