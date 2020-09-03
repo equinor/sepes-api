@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.KeyVault;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
@@ -8,7 +7,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -99,12 +97,6 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.TenantId == _userBasedOnPrincipal.TenantId && u.ObjectId == _userBasedOnPrincipal.ObjectId);
             return userFromDb;
-        }
-
-        async Task<User> GetUserWithParticipant()
-        {
-            var userFromDbWithParticipant = await _db.Users.Include(u => u.StudyParticipants).SingleOrDefaultAsync(u => u.ObjectId == _userBasedOnPrincipal.ObjectId);
-            return userFromDbWithParticipant;
-        }
+        }       
     }
 }
