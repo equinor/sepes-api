@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
@@ -32,16 +33,21 @@ namespace Sepes.Infrastructure.Service
             return _userBasedOnPrincipal;
         }
 
-        public async Task<UserDto> GetCurrentUserFromDb()
+        public async Task<UserDto> GetCurrentUserFromDbAsync()
         {
             var userFromDb = await EnsureDbUserExists(false);
             return MapToDtoAndAttachPrincipal(userFromDb);
         }
 
-        public async Task<UserDto> GetCurrentUserWithStudyParticipants()
+        public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
         {
             var userFromDb = await EnsureDbUserExists(true);
             return MapToDtoAndAttachPrincipal(userFromDb);
+        }
+
+        public bool CurrentUserIsAdmin()
+        {
+            return _userBasedOnPrincipal.Principal.IsInRole(AppRoles.Admin);
         }
 
         UserDto MapToDtoAndAttachPrincipal(User user)
@@ -97,6 +103,8 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.TenantId == _userBasedOnPrincipal.TenantId && u.ObjectId == _userBasedOnPrincipal.ObjectId);
             return userFromDb;
-        }       
+        }
+
+       
     }
 }
