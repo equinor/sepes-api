@@ -108,15 +108,15 @@ namespace Sepes.RestApi
             });
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IHasPrincipal, PrincipalService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IHasPrincipal, PrincipalService>();
             services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<IStudyService, StudyService>();
-            services.AddTransient<IVariableService, VariableService>();
+            services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
