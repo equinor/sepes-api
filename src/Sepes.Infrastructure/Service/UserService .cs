@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.KeyVault;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
@@ -8,7 +8,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -34,16 +33,21 @@ namespace Sepes.Infrastructure.Service
             return _userBasedOnPrincipal;
         }
 
-        public async Task<UserDto> GetCurrentUserFromDb()
+        public async Task<UserDto> GetCurrentUserFromDbAsync()
         {
             var userFromDb = await EnsureDbUserExists(false);
             return MapToDtoAndAttachPrincipal(userFromDb);
         }
 
-        public async Task<UserDto> GetCurrentUserWithStudyParticipants()
+        public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
         {
             var userFromDb = await EnsureDbUserExists(true);
             return MapToDtoAndAttachPrincipal(userFromDb);
+        }
+
+        public bool CurrentUserIsAdmin()
+        {
+            return _userBasedOnPrincipal.Principal.IsInRole(AppRoles.Admin);
         }
 
         UserDto MapToDtoAndAttachPrincipal(User user)
@@ -101,10 +105,6 @@ namespace Sepes.Infrastructure.Service
             return userFromDb;
         }
 
-        async Task<User> GetUserWithParticipant()
-        {
-            var userFromDbWithParticipant = await _db.Users.Include(u => u.StudyParticipants).SingleOrDefaultAsync(u => u.ObjectId == _userBasedOnPrincipal.ObjectId);
-            return userFromDbWithParticipant;
-        }
+       
     }
 }

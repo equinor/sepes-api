@@ -10,7 +10,6 @@ using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 
 
@@ -19,10 +18,10 @@ namespace Sepes.Infrastructure.Service
     public class StudyService : ServiceBase<Study>, IStudyService
     {
         readonly IUserService _userService;
-        readonly IAzureBlobStorageService _azureBlobStorageService;      
+        readonly IAzureBlobStorageService _azureBlobStorageService;
 
         public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
-            :base(db, mapper)
+            : base(db, mapper)
         {
             this._userService = userService;
             _azureBlobStorageService = azureBlobStorageService;
@@ -34,13 +33,13 @@ namespace Sepes.Infrastructure.Service
 
             if (includeRestricted.HasValue && includeRestricted.Value)
             {
-                var user = _userService.GetCurrentUser();               
-             
+                var user = await _userService.GetCurrentUserFromDbAsync();
+
                 var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
-            {              
+            {
                 studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
 
@@ -48,18 +47,30 @@ namespace Sepes.Infrastructure.Service
 
             studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
-        }  
-        
-        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
+        }
+
+        async Task ThrowIfUserDoesNotHaveAccess(Study study)
         {
-            return db.Studies.Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.User != null && sp.User.Id == userId).FirstOrDefault() != null);
+            if (study.Restricted)
+            {
+                var currentUser = await _userService.GetCurrentUserFromDbAsync();
+
+                if (study.StudyParticipants.Where(sp => sp.UserId == currentUser.Id).Any() == false)
+                {
+                    //User does has study specific roles
+                    throw new ForbiddenException($"User {currentUser.UserName} does not have access to study {study.Id}");
+                }
+            }
         }
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
+
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
-            studyDto.Sandboxes = studyDto.Sandboxes.Where(sb=> !sb.Deleted).ToList();
+            studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
 
             studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
 
@@ -70,7 +81,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
-            var currentUser = await _userService.GetCurrentUserFromDb();
+            var currentUser = await _userService.GetCurrentUserFromDbAsync();
             AddCurrentUserAsParticipant(studyDb, currentUser);
 
 
@@ -78,17 +89,15 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-        void AddCurrentUserAsParticipant(Study study, UserDto user)
-        {
-            study.StudyParticipants = new List<StudyParticipant>();
-            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }
+
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -129,18 +138,6 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
-        void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
-        {
-            if (studyId <= 0)
-            {
-                throw new ArgumentException("Id was zero or negative:" + studyId);
-            }
-
-            if (studyId != updatedStudy.Id)
-            {
-                throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
-            }
-        }
 
         // TODO: Deletion may be changed later to keep database entry, but remove from listing.
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId)
@@ -148,9 +145,15 @@ namespace Sepes.Infrastructure.Service
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            if (!_userService.CurrentUserIsAdmin())
+            {
+                throw new ForbiddenException("This action requires Admin role!");
+            }
+
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
-            {            
+            {
                 _ = _azureBlobStorageService.DeleteBlob(logoUrl);
             }
 
@@ -175,7 +178,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
-        {        
+        {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             string oldFileName = studyFromDb.LogoUrl;
@@ -190,14 +193,14 @@ namespace Sepes.Infrastructure.Service
 
             if (!String.IsNullOrWhiteSpace(oldFileName))
             {
-            _ = _azureBlobStorageService.DeleteBlob(oldFileName);
+                _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
             return await GetStudyByIdAsync(studyFromDb.Id);
         }
 
         public async Task<byte[]> GetLogoAsync(int studyId)
-        {      
+        {
             var study = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             string logoUrl = study.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
@@ -242,23 +245,32 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(studyId);
         }
 
-        protected bool CanViewRestrictedStudies(ClaimsPrincipal user)
-        {
-            //TODO: Open up for more than admins
-            //TODO: Add relevant study specific roles
 
-            if (user.IsInRole(AppRoles.Admin))
+        void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
+        {
+            if (studyId <= 0)
             {
-                //TODO: Should really be true?
-                return true;
+                throw new ArgumentException("Id was zero or negative:" + studyId);
             }
 
-            //Do you have a participant role for this study? Return true
-
-
-            return user.IsInRole(AppRoles.Admin);
+            if (studyId != updatedStudy.Id)
+            {
+                throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
+            }
         }
 
-        
+        void AddCurrentUserAsParticipant(Study study, UserDto user)
+        {
+            study.StudyParticipants = new List<StudyParticipant>();
+            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
+        }
+
+        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
+        {
+            return db.Studies
+                .Include(s=> s.StudyParticipants)
+                    .ThenInclude(sp=> sp.User)
+                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
+        }
     }
 }

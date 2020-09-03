@@ -15,12 +15,10 @@ namespace Sepes.Infrastructure.Util
         const string CLAIM_UPN = "http://schemas.microsoft.com/identity/claims/upn";
         const string CLAIM_FIRSTNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
         const string CLAIM_SURNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
-        const string CLAIM_USERNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
-        const string CLAIM_USERNAME_PREFERRED = "preferred_username";
+        const string CLAIM_USERNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";     
+
+
         
-
-
-        const string CLAIM_NAME_2 = "name"; //Cana probably delete
 
         public static UserDto CreateSepesUser(IPrincipal principal)
         {

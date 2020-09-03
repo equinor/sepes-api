@@ -7,8 +7,10 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         UserDto GetCurrentUser();
 
-        Task<UserDto> GetCurrentUserFromDb();
+        Task<UserDto> GetCurrentUserFromDbAsync();
 
-        Task<UserDto> GetCurrentUserWithStudyParticipants();
+        Task<UserDto> GetCurrentUserWithStudyParticipantsAsync();
+
+        bool CurrentUserIsAdmin();
     }
 }

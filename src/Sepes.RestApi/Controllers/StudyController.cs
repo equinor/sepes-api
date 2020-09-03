@@ -44,19 +44,15 @@ namespace Sepes.RestApi.Controller
         }       
 
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? includeRestricted)
-        {
-          
-            if(includeRestricted.HasValue && includeRestricted.Value && CanViewRestrictedStudy() == false)
-            {
-                return new ForbidResult();
-            }
-         
+        { 
             var studies = await _studyService.GetStudiesAsync(includeRestricted);
             return new JsonResult(studies);
         }
 
         [HttpGet("{studyId}")]
+        [Authorize]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
             //TODO: Require a role for this?
@@ -97,7 +93,7 @@ namespace Sepes.RestApi.Controller
        
         [HttpPut("{studyId}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [Authorize(Roles = RoleSets.AdminOrSponsor)]
+        [Authorize]
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
@@ -109,7 +105,7 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = RoleSets.AdminOrSponsor)]
+        [Authorize]
         //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
@@ -120,7 +116,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}/logo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
-
+        [Authorize]
         //Is study restricted? Then check if user can view restricted studies
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
