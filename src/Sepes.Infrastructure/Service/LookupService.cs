@@ -9,10 +9,9 @@ namespace Sepes.Infrastructure.Service
         {
             return new List<LookupDto>()
             {
-                new LookupDto{ Key= "NorwayEast", DisplayValue = "Norway East" },
-                new LookupDto{ Key= "NorthEurope",  DisplayValue = "North Europe" },
-                new LookupDto{ Key= "WestEurope",  DisplayValue = "West Europe" },
-                new LookupDto{ Key= "NorwayWest",  DisplayValue =  "Norway West" }
+                new LookupDto{ Key= "norwayeast", DisplayValue = "Norway East" },
+                new LookupDto{ Key= "europenorth",  DisplayValue = "North Europe" },
+                new LookupDto{ Key= "europewest",  DisplayValue = "West Europe" }
             };
         }
 
