@@ -1,0 +1,60 @@
+@startuml Sepes C2
+
+hide stereotype
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+!define AzurePuml https://raw.githubusercontent.com/RicardoNiepel/Azure-PlantUML/release/2-1/dist
+
+!includeurl AzurePuml/AzureC4Integration.puml
+
+' Import for icons
+!includeurl AzurePuml/AzureCommon.puml
+!includeurl AzurePuml/General/Azure.puml
+!includeurl AzurePuml/Web/AzureWebApp.puml
+!includeurl AzurePuml/Compute/AzureFunction.puml
+!includeurl AzurePuml/Databases/AzureSqlDatabase.puml
+!includeurl AzurePuml/Networking/AzureVirtualNetwork.puml
+!includeurl AzurePuml/Storage/AzureQueueStorage.puml
+!includeurl AzurePuml/Storage/AzureStorage.puml
+!includeurl AzurePuml/Identity/AzureActiveDirectory.puml
+!includeurl AzurePuml/DevOps/AzureApplicationInsights.puml
+
+
+
+Person(user, "User", "Equinor Employee/Consultant or External")
+
+System_Boundary(sepesBoundrary, "Sepes") {
+    AzureWebApp(spa, "Single-Page App", "React", "Provides Sepes functionality to users via their web browser")
+    AzureWebApp(api, "API", "ASP.NET Core", "Provides Sepes functionality through API calls")
+    AzureFunction(worker, "Worker", ".NET Core Azure Function", "Creates and monitors cloud resources in Azure")    
+    AzureQueueStorage(workerqueue, "Worker Queue", "Queue Storage", "Contains work for the worker")   
+    AzureSqlDatabase(db, "Database", "Azure SQL Server",  "Stores studies, sandboxes, user data etc.")
+}
+
+System_Boundary(azureBoundrary, "Microsoft Azure") { 
+    Azure(azureIaaSforSepes, "IaaS for Application", "Queue, Storage ++", "Hosts various resources needed for Sepes")   
+    Azure(azureIaaSforSandbox, "IaaS for Sandboxes", "Network, VM, Bastion, Storage ++", "Hosts various resources needed for Sandboxes")
+    AzureActiveDirectory(azureAd, "Active Directory", "Users and roles")
+    AzureApplicationInsights(azureAppi, "Application Insights", "Logs, usage, metrics", "Helps finding errors, and to understand how the application is being used")
+}
+
+
+Rel(user, spa, "Uses", "HTTPS")
+Rel(user, api, "Uses", "HTTPS")
+Rel_Neighbor(spa, api, "Uses", "HTTPS")
+' Rel_Neighbor(api, worker, "Uses", "HTTPS")
+Rel(api, db, "Reads/writes data", "HTTPS")
+Rel(api, workerqueue, "Posts work to", "HTTPS")
+Rel(workerqueue, worker, "Pulls work from", "HTTPS")
+Rel_Neighbor(worker, db, "Reads/writes data", "HTTPS")
+Rel(api, azureIaaSforSepes, "Uses", "HTTPS")
+Rel(api, azureIaaSforSandbox, "Uses", "HTTPS")
+Rel(worker, azureIaaSforSepes, "Uses", "HTTPS")
+Rel(worker, azureIaaSforSandbox, "Uses", "HTTPS")
+Rel(spa, azureAd, "Authenticates user with", "HTTPS")
+Rel(spa, azureAppi, "Sends logs/usage to", "HTTPS")
+Rel(api, azureAppi, "Sends logs/usage to", "HTTPS")
+Rel(worker, azureAppi, "Sends logs/usage to", "HTTPS")
+
+@enduml
