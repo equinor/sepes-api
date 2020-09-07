@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.AspNetCore.Http;
+using Sepes.Infrastructure.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -7,12 +8,21 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {
         
-        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync();
-        Task<StudyDto> GetStudyByIdAsync(int id);
+        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null);
+        Task<StudyDto> GetStudyByIdAsync(int studyId);
 
-        Task<StudyDto> CreateStudyAsync(StudyDto newStudy);
+        Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
 
-        Task<StudyDto> UpdateStudyAsync(int id, StudyDto newStudy);   
+        Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
+
+        Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId);
+
+        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
+
+        Task<byte[]> GetLogoAsync(int id);
+
+        Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
+        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
 
         /// <summary>
         /// Makes changes to the meta data of a study.

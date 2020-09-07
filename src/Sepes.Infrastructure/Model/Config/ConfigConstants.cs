@@ -4,6 +4,7 @@
     {
         public const string ENV_VARIABLE_PREFIX = "SEPES_";
 
+        public const string INSTANCE = "Instance";
         public const string TENANT_ID = "TenantId";
         public const string AZ_CLIENT_ID = "ClientId";
         public const string AZ_CLIENT_SECRET = "ClientSecret";
@@ -15,8 +16,6 @@
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRW-ConnectionString";
 
         public const string SUBSCRIPTION_ID = "SubscriptionId";
-        public const string COMMON_RESOURCE_GROUP_NAME = "CommonResourceGroupName";
-        public const string JOIN_NETWORK_ROLE_NAME = "JoinNetworkRoleName";
         public const string DISABLE_MIGRATIONS = "DisableMigrations";
         
 
