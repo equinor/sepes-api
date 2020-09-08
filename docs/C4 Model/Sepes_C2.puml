@@ -20,11 +20,9 @@ hide stereotype
 !includeurl AzurePuml/Identity/AzureActiveDirectory.puml
 !includeurl AzurePuml/DevOps/AzureApplicationInsights.puml
 
-
-
 Person(user, "User", "Equinor Employee/Consultant or External")
 
-System_Boundary(sepesBoundrary, "Sepes") {
+Boundary(sepesBoundrary, "Sepes") {
     AzureWebApp(spa, "Single-Page App", "React", "Provides Sepes functionality to users via their web browser")
     AzureWebApp(api, "API", "ASP.NET Core", "Provides Sepes functionality through API calls")
     AzureFunction(worker, "Worker", ".NET Core Azure Function", "Creates and monitors cloud resources in Azure")    
@@ -32,29 +30,25 @@ System_Boundary(sepesBoundrary, "Sepes") {
     AzureSqlDatabase(db, "Database", "Azure SQL Server",  "Stores studies, sandboxes, user data etc.")
 }
 
-System_Boundary(azureBoundrary, "Microsoft Azure") { 
+Boundary(azureBoundrary, "Microsoft Azure") { 
     Azure(azureIaaSforSepes, "IaaS for Application", "Queue, Storage ++", "Hosts various resources needed for Sepes")   
     Azure(azureIaaSforSandbox, "IaaS for Sandboxes", "Network, VM, Bastion, Storage ++", "Hosts various resources needed for Sandboxes")
     AzureActiveDirectory(azureAd, "Active Directory", "Users and roles")
     AzureApplicationInsights(azureAppi, "Application Insights", "Logs, usage, metrics", "Helps finding errors, and to understand how the application is being used")
 }
 
-
 Rel(user, spa, "Uses", "HTTPS")
 Rel(user, api, "Uses", "HTTPS")
-Rel_Neighbor(spa, api, "Uses", "HTTPS")
-' Rel_Neighbor(api, worker, "Uses", "HTTPS")
+Rel(spa, api, "Uses", "HTTPS")
 Rel(api, db, "Reads/writes data", "HTTPS")
-Rel(api, workerqueue, "Posts work to", "HTTPS")
-Rel(workerqueue, worker, "Pulls work from", "HTTPS")
-Rel_Neighbor(worker, db, "Reads/writes data", "HTTPS")
-Rel(api, azureIaaSforSepes, "Uses", "HTTPS")
-Rel(api, azureIaaSforSandbox, "Uses", "HTTPS")
-Rel(worker, azureIaaSforSepes, "Uses", "HTTPS")
-Rel(worker, azureIaaSforSandbox, "Uses", "HTTPS")
-Rel(spa, azureAd, "Authenticates user with", "HTTPS")
-Rel(spa, azureAppi, "Sends logs/usage to", "HTTPS")
-Rel(api, azureAppi, "Sends logs/usage to", "HTTPS")
-Rel(worker, azureAppi, "Sends logs/usage to", "HTTPS")
+Rel(api, workerqueue, "Posts work", "HTTPS")
+Rel_Neighbor(worker, workerqueue , "Pulls work", "HTTPS")
+Rel(worker, db, "Reads/writes data", "HTTPS")
+Rel_L(worker, azureIaaSforSepes, "Creates", "HTTPS")
+Rel_L(worker, azureIaaSforSandbox, "Creates", "HTTPS")
+Rel_L(spa, azureAd, "Authenticates user with", "HTTPS")
+Rel_L(spa, azureAppi, "Sends logs and usage", "HTTPS")
+Rel_L(api, azureAppi, "Sends logs and usage", "HTTPS")
+Rel_L(worker, azureAppi, "Sends logs and usage", "HTTPS")
 
 @enduml
