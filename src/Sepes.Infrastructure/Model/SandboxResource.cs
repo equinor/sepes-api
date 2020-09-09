@@ -29,6 +29,6 @@ namespace Sepes.Infrastructure.Model
 
         public Sandbox Sandbox { get; set; }
 
-        public List<SandboxResourceOperation> Operations{ get; set; }
+        public List<SandboxResourceOperation> Operations { get; set; }
     }    
 }

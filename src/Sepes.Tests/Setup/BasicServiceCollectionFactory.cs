@@ -5,11 +5,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Mocks;
 using System.Collections.Generic;
 
 namespace Sepes.Tests.Setup
@@ -40,6 +42,10 @@ namespace Sepes.Tests.Setup
             //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<SandboxResourceOperationService>();
+            services.AddTransient<IUserService, UserServiceMock>();
+            services.AddTransient<IHasRequestId, HasRequestIdMock>();
+
+            
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
@@ -49,7 +55,7 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IVariableService, VariableService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
     
             return services;
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -23,5 +24,7 @@ namespace Sepes.Infrastructure.Dto
         public DateTime Deleted { get; set; }
 
         public string DeletedBy { get; set; }
+
+        public List<SandboxResourceOperationDto> Operations { get; set; }
     }
 }

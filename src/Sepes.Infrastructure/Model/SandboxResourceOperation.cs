@@ -6,6 +6,8 @@ namespace Sepes.Infrastructure.Model
     {
         public int SandboxResourceId { get; set; }
 
+        public string OperationType { get; set; }
+
         public string Status { get; set; }
 
         public int TryCount { get; set; }

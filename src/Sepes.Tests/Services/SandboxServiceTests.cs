@@ -1,9 +1,11 @@
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
 using System.Linq;
@@ -73,7 +75,7 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
             _ = await sandboxService.CreateAsync(studyId, sandbox);
             var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
