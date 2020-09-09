@@ -48,8 +48,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<SandboxDto, Sandbox>();
               
 
-            CreateMap<SandboxCreateDto, Sandbox>();
-          
+            CreateMap<SandboxCreateDto, Sandbox>();        
+
 
             //STUDY PARTICIPANTS
             CreateMap<User, ParticipantDto>()
