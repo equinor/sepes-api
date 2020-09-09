@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -86,13 +88,14 @@ namespace Sepes.RestApi
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                 })   
                 .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-
+            
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
              .AddAzureAdBearer(options => _configuration.Bind(options));
 
+            services.AddHttpClient();
     
 
             services.AddCors(options =>
@@ -106,6 +109,14 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
+            /*
+            services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
+                  .AddProtectedWebApiCallsProtectedWebApi(_configuration)
+                  .AddInMemoryTokenCaches();
+            */
+            services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
+               .AddInMemoryTokenCaches();
+
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
@@ -126,6 +137,8 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+            services.AddTransient<IAzureADUsersService, AzureADUsersService>();
+            services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<SandboxResourceOperationService>();
             services.AddTransient<AzureResourceMonitoringService>();
                   
