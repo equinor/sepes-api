@@ -78,17 +78,17 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
-        {
-            var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
+        //public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
+        //{
+        //    var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
 
-            if (bastion == null)
-            {
-                return false;
-            }
+        //    if (bastion == null)
+        //    {
+        //        return false;
+        //    }
 
-            return true;
-        }
+        //    return true;
+        //}
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
         {
