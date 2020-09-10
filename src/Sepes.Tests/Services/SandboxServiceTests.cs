@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
@@ -69,16 +70,34 @@ namespace Sepes.Tests.Services
         public async void AddSandboxToStudyAsync_ShouldAddSandbox()
         {
             RefreshTestDb();
-            ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
+            var sandboxService = ServiceProvider.GetService<ISandboxService>();
             int studyId = 1;
             await AddStudyToTestDatabase(studyId);
 
-            var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+            var sandbox = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
             _ = await sandboxService.CreateAsync(studyId, sandbox);
             var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
             Assert.NotEmpty(sandboxes);
             Assert.Single<SandboxDto>(sandboxes);
+
+            //What to expect
+            var ourSandbox = sandboxes.FirstOrDefault();
+
+            Assert.NotNull(ourSandbox);
+            Assert.NotNull(ourSandbox.Resources);
+            Assert.Equal(1, ourSandbox.Resources.Count); //Resource group, network, nsg, diag stor, bastion
+
+            var sandboxResourceGroup = ourSandbox.Resources.FirstOrDefault(o=> o.Type == AzureResourceType.ResourceGroup);
+
+            Assert.NotNull(sandboxResourceGroup);      
+            Assert.Equal("Success", sandboxResourceGroup.LastKnownProvisioningState);
+
+            //Resource group resource created
+            //VNet resource and operation created
+            //NSG resource and operation created
+            //diag stor account resource and operation created
+
         }
 
         [Theory]

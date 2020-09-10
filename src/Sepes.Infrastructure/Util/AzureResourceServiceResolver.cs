@@ -31,15 +31,15 @@ namespace Sepes.Infrastructure.Util
             _ => null,
         };
 
-        public static IHasExists GetServiceWithExistance(IServiceProvider serviceProvider, string resourceType) => resourceType switch
-        {
-            AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
-            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
-            AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>(),
-            AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
-            AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
-            _ => null,
-        };
+        //public static IHasExists GetServiceWithExistance(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        //{
+        //    AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
+        //    AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
+        //    AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>(),
+        //    AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
+        //    AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
+        //    AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+        //    _ => null,
+        //};
     }
 }

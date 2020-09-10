@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto
 {
     public class SandboxResourceLightDto
     {
@@ -10,6 +8,7 @@ namespace Sepes.Infrastructure.Dto
 
         public string Type { get; set; }       
 
-        public string Status { get; set; }      
+        public string Status { get; set; }
+        public string LastKnownProvisioningState { get; set; }
     }
 }

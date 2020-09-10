@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -22,16 +23,18 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly IUserService _userService;
         readonly IStudyService _studyService;
-        readonly ISandboxWorkerService _sandboxWorkerService;
+        readonly ISandboxResourceService _sandboxResourceService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxWorkerService sandboxWorkerService)
+
+        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService)
         {
             _db = db;
             _mapper = mapper;
             _logger = logger;
             _userService = userService;
             _studyService = studyService;
-            _sandboxWorkerService = sandboxWorkerService;
+            _sandboxResourceService = sandboxResourceService;
+      
         }
 
         public async Task<SandboxDto> GetSandbox(int studyId, int sandboxId)
@@ -132,10 +135,80 @@ namespace Sepes.Infrastructure.Service
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
             //Her har vi mye info om sandboxen i Azure, men den har for mye info
-           await _sandboxWorkerService.CreateBasicSandboxResourcesAsync(sandbox.Id, region, studyFromDb.Name, tags);
+            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = AzureResourceNameUtil.Sandbox(studyFromDb.Name), Region = region, Tags = tags };
+            await CreateBasicSandboxResourcesAsync(azureSandbox);         
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
+
+        async Task<SandboxWithCloudResourcesDto> CreateBasicSandboxResourcesAsync(SandboxWithCloudResourcesDto dto)
+        {
+            _logger.LogInformation($"Ordering creation of basic sandbox resources for sandbox: {dto.SandboxName}");
+
+            await _sandboxResourceService.CreateSandboxResourceGroup(dto);
+            //await _sandboxProvisioningService.CreateResourceGroup(dto);
+
+            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");
+
+            //FOREACH resource to create
+            //Create record in CloudResource (remember resourece group)
+            //Create record in CloudResourceOperations
+            //Add to queue
+            //Send notification to worker?
+
+            //Create storage account resource, add to dto
+           
+
+            //Crate NetworkSecurityGroup resource, add to dto
+
+            //Create VirtualNetwork resource, add to dto
+
+            //await ScheduleCreationOfResource(dto, AzureResourceType.StorageAccount);
+            //await ScheduleCreationOfResource(dto, AzureResourceType.NetworkSecurityGroup);
+            //await ScheduleCreationOfResource(dto, AzureResourceType.VirtualNetwork);
+            //azureSandbox = await CreateDiagStorageAccount(sandboxId, azureSandbox, region, tags);
+            //azureSandbox = await CreateNetworkSecurityGroup(sandboxId, azureSandbox, region, tags);
+            //azureSandbox = await CreateVirtualNetwork(sandboxId, azureSandbox, region, tags);
+            //TODO: Order bastion
+
+            _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
+
+            return dto;
+        }
+
+
+        //Handles all the stuff around creating the resource
+        async Task ScheduleCreationOfResource(SandboxWithCloudResourcesDto dto, string resourceType)
+        {
+            _logger.LogInformation($"Scheduling a resource create for sandbox: {dto.SandboxName}");
+
+            // Create resource-entry
+            var sandboxResourceEntry = await _sandboxResourceService.Create(dto, resourceType);
+
+            // Create resource-operation-entry
+            //var sandboxOperation = CreateInitialResourceOperation(resourceType);
+            //var operationEntry = await _sandboxResourceService.Create((int)sandboxResourceEntry.Id, sandboxOperation);
+
+            //TODO: Add to queue
+
+            //TODO: Actual creation. Not handled here
+            //TODO: Update relevant entries. Not handled here
+        }
+
+        //private SandboxResourceOperationDto CreateInitialResourceOperation(string operationType, int dependsOn = 0)
+        //{
+        //    return new SandboxResourceOperationDto
+        //    {
+        //        DependsOn = dependsOn,
+        //        Status = "Initial",
+        //        TryCount = 0,
+        //        SessionId = _requestIdService.RequestId(),
+        //        OperationType = operationType,
+        //    };
+        //}
+
+        //TODO: Get status for specific resource
+        //TODO: Get status for resources for sandbox
 
         // TODO: Implement deletion of Azure resources. Only deletes from SEPES db as of now
         //Todo, add a deleted flag instead of actually deleting, so that we keep history
@@ -163,12 +236,16 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
             }
+       
+            _logger.LogInformation($"Terminating sandbox for study {studyFromDb.Name}. Sandbox name: { sandboxFromDb.Name}. Deleting Resource Group {resourceGroupForSandbox.ResourceGroupName} and all it's contents");
+           //TODO: Order instead of performing
+            //await _resourceGroupService.Delete(sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName);
 
-            await _sandboxWorkerService.NukeSandbox(studyFromDb.Name, sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName); 
-            
             _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox with id {0} deleted", studyId);
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
+
+       
 
         void SetSandboxAsDeleted(Sandbox sandbox)
         {

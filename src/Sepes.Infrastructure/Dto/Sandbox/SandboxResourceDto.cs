@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -20,8 +21,12 @@ namespace Sepes.Infrastructure.Dto
 
         public string Status { get; set; }
 
+        public string ProvisioningState { get; set; }
+
         public DateTime Deleted { get; set; }
 
         public string DeletedBy { get; set; }
+
+        public List<SandboxResourceOperationDto> Operations { get; set; }
     }
 }

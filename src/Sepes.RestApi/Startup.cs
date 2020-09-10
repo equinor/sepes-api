@@ -91,9 +91,7 @@ namespace Sepes.RestApi
             {
                 sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-             .AddAzureAdBearer(options => _configuration.Bind(options));
-
-    
+             .AddAzureAdBearer(options => _configuration.Bind(options));    
 
             services.AddCors(options =>
             {
@@ -110,6 +108,7 @@ namespace Sepes.RestApi
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IHasPrincipal, PrincipalService>();
+            services.AddTransient<IHasRequestId, RequestIdService>();
             services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
@@ -125,11 +124,9 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureVMService, AzureVMService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<SandboxResourceOperationService>();
-            services.AddTransient<AzureResourceMonitoringService>();
-                  
-
+            services.AddTransient<AzureResourceMonitoringService>();                      
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
@@ -165,6 +162,7 @@ namespace Sepes.RestApi
                             Scheme = "oauth2",
                             Name = "Bearer",
                             In = ParameterLocation.Header,
+                            
 
                         },
                         new List<string>()
