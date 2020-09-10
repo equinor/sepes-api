@@ -21,11 +21,11 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public Dictionary<string, string> Tags { get; set; }
 
-        public SandboxResourceDto ResourceGroup { get; set; }        
+        public SandboxResourceDto ResourceGroup { get; set; }       
 
         public IStorageAccount DiagnosticsStorage { get; set; }
 
-        public INetworkSecurityGroup NetworkSecurityGroup { get; set; }
+        //public INetworkSecurityGroup NetworkSecurityGroup { get; set; }
 
         public AzureVNetDto VNet { get; set; }
     }

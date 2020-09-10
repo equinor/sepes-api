@@ -78,17 +78,6 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string resourceName)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
-
-            if (resource == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {

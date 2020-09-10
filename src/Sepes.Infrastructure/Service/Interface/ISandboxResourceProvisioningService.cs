@@ -14,6 +14,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<SandboxWithCloudResourcesDto> CreateBastion(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags);
         Task<SandboxWithCloudResourcesDto> CreateVM(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags);
        
-        Task NukeUnitTestSandboxes();
+        //Task NukeUnitTestSandboxes();
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
@@ -57,11 +58,21 @@ namespace Sepes.Infrastructure.Service
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.SandboxName);
             // Create actual resource group in Azure.    
             var azureResourceGroup = await _resourceGroupService.Create(resourceGroupName, dto.Region, dto.Tags);
-
+            ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
             // After Resource is created, mark entry in SandboxResourceOperations-table as "created/successful" and update Id in resource-table.
-            _ = await Update(dto.ResourceGroup.Id.Value, azureResourceGroup);
+            _ = await UpdateResourceGroup(dto.ResourceGroup.Id.Value, dto.ResourceGroup);
             _ = await _sandboxResourceOperationService.UpdateStatus(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, azureResourceGroup.ProvisioningState);
             _logger.LogInformation($"Resource group created for sandbox with Id: {dto.SandboxId}! Id: {dto.ResourceGroupId}, name: {dto.ResourceGroupName}");
+        }
+
+        public void ApplyPropertiesFromResourceGroup(AzureResourceGroupDto source, SandboxResourceDto target)
+        {
+            target.ResourceId = source.Id;
+            target.ResourceName = source.Name;
+            target.ResourceGroupId = source.Id;
+            target.ResourceGroupName = source.Name;
+            target.ProvisioningState = source.ProvisioningState;
+            target.ResourceKey = source.Key;
         }
 
 
@@ -138,15 +149,15 @@ namespace Sepes.Infrastructure.Service
         //VNet
         //Bastion
 
-        public async Task<SandboxResourceDto> Update(int resourceId, IResourceGroup updated)
+        public async Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated)
         {
             var resource = await GetOrThrowAsync(resourceId);
-            resource.ResourceGroupId = updated.Id;
-            resource.ResourceGroupName = updated.Name;
-            resource.ResourceId = updated.Id;
-            resource.ResourceKey = updated.Key;
-            resource.ResourceName = updated.Name;
-            resource.Status = updated.ProvisioningState;
+            resource.ResourceGroupId = updated.ResourceId;
+            resource.ResourceGroupName = updated.ResourceName;
+            resource.ResourceId = updated.ResourceId;
+            resource.ResourceKey = updated.ResourceKey;
+            resource.ResourceName = updated.ResourceName;
+            resource.LastKnownProvisioningState = updated.ProvisioningState;
             resource.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
@@ -154,13 +165,14 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-        public async Task<SandboxResourceDto> Update(int resourceId, IResource updated)
+        public async Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated)
         {
             var resource = await GetOrThrowAsync(resourceId);
-            resource.ResourceId = updated.Id;
-            resource.ResourceKey = updated.Key;
-            resource.ResourceName = updated.Name;
-            resource.ResourceType = updated.Type;
+            resource.ResourceId = updated.ResourceId;
+            resource.ResourceKey = updated.ResourceKey;
+            resource.ResourceName = updated.ResourceName;
+            resource.ResourceType = updated.ResourceType;
+            resource.LastKnownProvisioningState = updated.ProvisioningState;
             resource.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
