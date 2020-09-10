@@ -23,8 +23,8 @@ namespace Sepes.Infrastructure.Service
         Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type);
         Task<SandboxResourceDto> GetByIdAsync(int id);
         Task<SandboxResourceDto> MarkAsDeletedByIdAsync(int id);
-        Task<SandboxResourceDto> Update(int resourceId, IResourceGroup updated);
-        Task<SandboxResourceDto> Update(int resourceId, IResource updated);
+        Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated);
+        Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated);
 
         Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync();
       

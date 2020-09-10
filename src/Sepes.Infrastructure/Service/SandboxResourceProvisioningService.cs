@@ -3,10 +3,8 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -175,25 +173,25 @@ namespace Sepes.Infrastructure.Service
 
      
 
-        public async Task NukeUnitTestSandboxes()
-        {
-            var deleteTasks = new List<Task>();
+        //public async Task NukeUnitTestSandboxes()
+        //{
+        //    var deleteTasks = new List<Task>();
 
-            //Get list of resource groups
-            var resourceGroups = await _resourceGroupService.GetResourceGroupsAsList();
-            foreach (var resourceGroup in resourceGroups)
-            {
-                //If resource group has unit-test prefix, nuke it
-                if (resourceGroup.Name.Contains(SandboxResourceProvisioningService.UnitTestPrefix))
-                {
-                    // TODO: Mark as deleted in SEPES DB
-                    deleteTasks.Add(_resourceGroupService.Delete(resourceGroup.Name));
-                }
-            }
+        //    //Get list of resource groups
+        //    var resourceGroups = await _resourceGroupService.GetResourceGroupsAsList();
+        //    foreach (var resourceGroup in resourceGroups)
+        //    {
+        //        //If resource group has unit-test prefix, nuke it
+        //        if (resourceGroup.Name.Contains(SandboxResourceProvisioningService.UnitTestPrefix))
+        //        {
+        //            // TODO: Mark as deleted in SEPES DB
+        //            deleteTasks.Add(_resourceGroupService.Delete(resourceGroup.Name));
+        //        }
+        //    }
 
-            await Task.WhenAll(deleteTasks);
-            return;
-        }
+        //    await Task.WhenAll(deleteTasks);
+        //    return;
+        //}
 
 
     }

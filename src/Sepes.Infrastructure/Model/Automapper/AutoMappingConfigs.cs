@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Azure;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Model.Automapper
@@ -14,7 +17,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Study, StudyDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
-                    .ForMember(dest => dest.Participants,source => source.MapFrom(x => x.StudyParticipants))
+                    .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants))
                     ;
 
             CreateMap<StudyDto, Study>();
@@ -41,14 +44,14 @@ namespace Sepes.Infrastructure.Model.Automapper
                     source => source.MapFrom(x => x.Resources));
 
             CreateMap<SandboxResource, SandboxResourceLightDto>()
-                    .ForMember(dest => dest.Name,source => source.MapFrom(x => x.ResourceName))
+                    .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                      .ForMember(dest => dest.Status, source => source.MapFrom(x => x.LastKnownProvisioningState))
                      .ForMember(dest => dest.Type, source => source.MapFrom(x => x.ResourceType));
 
             CreateMap<SandboxDto, Sandbox>();
-              
 
-            CreateMap<SandboxCreateDto, Sandbox>();        
+
+            CreateMap<SandboxCreateDto, Sandbox>();
 
 
             //STUDY PARTICIPANTS
@@ -73,6 +76,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>()
                 .ReverseMap();
+
+
+            //AZURE
+            CreateMap<IResource, AzureResourceDto>();
+
+            CreateMap<IResourceGroup, AzureResourceGroupDto>()
+                 .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
         }
     }
 }

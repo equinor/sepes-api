@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public interface IAzureVNetService : IHasProvisioningState, IHasTags, IHasExists
+    public interface IAzureVNetService : IHasProvisioningState, IHasTags//, IHasExists
     {
         Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags);
       
