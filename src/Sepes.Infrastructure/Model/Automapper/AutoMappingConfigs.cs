@@ -69,7 +69,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.User.FullName))
                 .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
                   .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
-
+            CreateMap<User, UserCreateDto>()
+                .ReverseMap();
             //CLOUD RESOURCE
             CreateMap<SandboxResource, SandboxResourceDto>()
                 .ReverseMap();

@@ -272,5 +272,54 @@ namespace Sepes.Infrastructure.Service
                     .ThenInclude(sp=> sp.User)
                 .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
         }
+
+        public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
+        {
+            if(!checkIfRoleExists(user.Role))
+            {
+                throw new ArgumentException("Role " + user.Role + " does not exist");
+            }
+            if(String.IsNullOrWhiteSpace(user.FullName))
+            {
+                throw new ArgumentException("Name is empty");
+            }
+            if (String.IsNullOrWhiteSpace(user.Email))
+            {
+                throw new ArgumentException("Email is empty");
+            }
+            if (String.IsNullOrWhiteSpace(user.Role))
+            {
+                throw new ArgumentException("Role is empty");
+            }
+
+            var userDb = _mapper.Map<User>(user);
+
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
+
+            var test = _db.StudyParticipants.ToList();
+            _db.Users.Add(userDb);
+            await _db.SaveChangesAsync();
+
+            //Check that association does not allready exist
+
+            //await VerifyRoleOrThrowAsync(role);
+
+            return await GetStudyByIdAsync(studyId);
+        }
+
+        private bool checkIfRoleExists (string Role)
+        {
+            if (Role.Equals(StudyRoles.SponsorRep) ||
+                Role.Equals(StudyRoles.StudyOwner) ||
+                Role.Equals(StudyRoles.StudyViewer) ||
+                Role.Equals(StudyRoles.VendorAdmin) ||
+                Role.Equals(StudyRoles.VendorContributor))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }
