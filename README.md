@@ -13,12 +13,18 @@ We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a P
 - PATCH version when you make backwards compatible bug fixes.
 
 ## Setup local dev environment
+
 - [Use this guide](./docs/developers/setup-dev-environment.md)
 
-## Other Documentation
+## System architecture
 
-- [Users](./docs/users/)
-- [Developers](./docs/developers/)
-- [Platform](./docs/platform/)
+C4 context diagram:
+
+- ![C1 model](/docs/platform/C4ContextDiagram.svg)
+
+
+C4 container diagram:
+
+- ![C2 model](/docs/platform/C4ContainerDiagram.svg)
 
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)

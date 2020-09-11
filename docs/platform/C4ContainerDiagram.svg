@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1018px" preserveAspectRatio="none" style="width:1616px;height:1018px;" version="1.1" viewBox="0 0 1616 1018" width="1616px" zoomAndPan="magnify"><defs/><g><!--MD5=[9cc53fc84966c59dad32f652fd069c9f]
+cluster sepesBoundrary--><rect fill="#FFFFFF" height="820" style="stroke: #444444; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;" width="636" x="7" y="187"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="54" x="298" y="203.8516">Sepes</text><!--MD5=[a242729c00c3dac7513c1338f28494ba]
+cluster azureBoundrary--><rect fill="#FFFFFF" height="262" style="stroke: #444444; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;" width="938" x="667" y="187"/><text fill="#444444" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="147" x="1062.5" y="203.8516">Microsoft Azure</text><!--MD5=[33573e971ff506c0f246109ca3fd77bd]
+entity spa--><rect fill="#FFFFFF" height="187.7813" style="stroke: #3C7FC0; stroke-width: 1.5;" width="200" x="328" y="245"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="146" x="355" y="269.8516">Single-Page App</text><image height="70" width="70" x="393" xlink:href="data:image/png;base64,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" y="273.625"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="44" x="406" y="354.7637">[React]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="430" y="370.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="109" x="371.5" y="386.8857">Provides Sepes</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="176" x="338" y="403.1826">functionality to users via</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="131" x="362.5" y="419.4795">their web browser</text><!--MD5=[e2307af040e3f87d22824e7603ca28ec]
+entity api--><rect fill="#FFFFFF" height="187.7813" style="stroke: #3C7FC0; stroke-width: 1.5;" width="203" x="171.5" y="541"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="29" x="258.5" y="565.8516">API</text><image height="70" width="70" x="238" xlink:href="data:image/png;base64,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" y="569.625"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="92" x="227" y="650.7637">[ASP.NET Core]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="275" y="666.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="109" x="216.5" y="682.8857">Provides Sepes</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="179" x="181.5" y="699.1826">functionality through API</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="31" x="257.5" y="715.4795">calls</text><!--MD5=[d37e7b6e4e01e9dcb388f1477493d265]
+entity worker--><rect fill="#FFFFFF" height="165.4844" style="stroke: #3C7FC0; stroke-width: 1.5;" width="217" x="409.5" y="552.5"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="67" x="484.5" y="577.3516">Worker</text><image height="64" width="70" x="483" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABACAIAAAAoFZbOAAADkklEQVR4XsWYPW4UQRCF55JcYa/gK3AFQlKTklkiJSEgBWkDhAiQwCJAiACpKNPWuPZVT/1NDftUiXfXvfV1v37dOwsdpvP3389efijX6dX5/tcfHDSgBV/o04u3X3Wj8Xr3+SeOGNOBSDzNutFgPX/zBYcL6ygknmPdaLDKlhs6ComnWfcarLuPP3C4jI5CKrtuj+WGDkHiada9Rmqn5YYOQSq7bqflhvqReJp1r5Hab7mhfqTb9990u261WG6oH+nm9SfdsVstlhuqI/F9Rx/wtUsQWG46clxFpDXToJuC68By6xnNqy0GTqiCJDOaG5JvFY4jsJyclBpVGgnWQTZUuATplOMVk/PCVNnYyCEBD/8p381evbdSjl+UGZOlSiAZ6zOUdZ0eYRVQbcFPFUWCFdDdZF2nLQcqU4WQXB5KXoLi/QEV5zt+QslHivDAnnZrOsiWslQOEsz9Viupq7drOS3ZhktlIQV5KHkJ4pjhoSIlWwcq43qxiRTnKV+97dL7LUg1R4JZN3hIhXtXTb80QoVIOjqn/yaVcl2wjP3mxtUFUoGndvW2S1sOZFM9IUEQR3hIjd5She+VVI9INR7KX4Lcgnujoa0L5wNSmSd7CXIr+2tiSrWUeUit/s5yt9BUmmqBvIqvO3W7TmdXUHCELtBWfNy7zCXILSO1XYFZFugs5Wb2iS6OdSj3kn66/LWfEo8vV4X7f4gHsGP2V6Qr15/x3QvSPLSGOKxdI5WbiqndKwU8q3WfjlqwRxeVnYopn0tt8RBciDSVfLcmw3W11CaTh/S1VVPVvnXIdl08XaVsHtJIpKyyh8rIOt1KRC4PTZGoj2rLdTXL8ZrLAblJ/MQ/zZGog8o4iwupHeQhA4l2n1dbriukdpyHbCRSMx2nut94IFFI0RQPuUhUpZq6rrCFIDNdHoogkZqnCNXN7IFENrVhXiI8FESiJNXUddPANQQ88R0YRSJ1JhhU2nWn5F27zEMpJApTadedzUe+oD08lEWiGRV8QLsu1RPwZLcfFZBIPX6BFdCnmXzXlVzhAg/VkEg8xNSbRPZUSO11Rmo8VEYa4vWBjs+XD19rbelhU9qFpCVdFzxG2tWMtO4xbcj/pk4k6bpUaveqE2n9PZJK7XZ1Ig3XZVO7XW1I48pcSO12tSEN19VSu1dtSLw+10ptUA/S+OmBr15JPUi8PldMbVAP0nVTG9SAdPWIA/0F5QKNTV6Oh1wAAAAASUVORK5CYII=" y="581.125"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="164" x="436" y="656.2637">[.NET Core Azure Function]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="520" y="672.0889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="197" x="419.5" y="688.3857">Creates and monitors cloud</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="131" x="452.5" y="704.6826">resources in Azure</text><!--MD5=[247b94fe510f4fec6cb1d515ffdee8b7]
+entity workerqueue--><rect fill="#FFFFFF" height="161.4844" style="stroke: #3C7FC0; stroke-width: 1.5;" width="180" x="94" y="825"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="131" x="118.5" y="849.8516">Worker Queue</text><image height="60" width="70" x="149" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAA8CAIAAABU9Vt0AAAD3klEQVR4Xs2ZsW4UQQyG7yX3FfYV8gr3CpS00NJFoqWhoAUpBUIUSIAoEKJAGpw4+8fn3zPjCWR3LBe5212PvxnPv57LqYzb+fXn5fn7HXx9efP91x8/fM9O/oue3Xz7zWM/nT9788Vn0LNhpKtXH3ngJ3WZRJ9E08aQrj/84CGf2mUSfR5NG0CSspbi5iF3cJlKn03dBpCkrHmwfVym0mdTtyzSzqrAnteJLNL+qsCe1IkU0iGqwC7vQ59ZZCmko1SB/e2nnz45sj7SgarAntGJDtKBwl3zF++++iwvrYO0WzuX927j10KSwuWIM3hb0FtIs5Wc9YagV5GkZDnQPN5o/GKkCVWBvdb4xUgTqgJ7TScCpGlVgT3UiQAJ7Zw8EE7DsSYzbjcF64RHgiokG6pDzPacnOcFklUF3XxCKN/M4wCwu901fhdItp3T+2Y4UzjXubazv142fg9I7pDHSPKkfHyEY+z/EmTdhM6Wn238HpCuLheEkf5FKhCHd3PeQIXyQ1hwFiDxIY+R9E55UtJKuj5STOnjS7655sjVrramd2MqC5z3SPbuLpJbz5rblwYjJRsuK2iugPVLu/81+C1SeMirIXEgdhnPqRAjFXrDcBB3NHI361WrE1d3jd/Jrp31GpIE0kqoJSSPoFSknlWgHBKC1NZcItv11GTccNg/dsFluFMYcakjSXJYBE7IzqtihEg2SKE1l6sAtkF4BlHbuCR/nGol1EDSj8heI9gUJW+MUUPSj8hJbtNHEJaDMBICQt4k4du9FN7aRVrMdEpEFJvb922kxRSqXMKkhEHCPPUSto/8cYvECr7kkJbLokedWO8iaRDANIIwkuoBAuqa34s476gk0rJJEyrHeQZJvRuEL2mSb+9OQ+umFvdIrHt5pLbnkRoeIp23V5Z+r/cU2xA5nZgcCWuiuw4VWCySfWctdSQhX6nnb3iINBqE30saFjljPxd3uLA6UUN6nDmkxxmQQlWA+VMtGBgJojRq9g3jepy8qQYsRmN1AVb6UcUjQScYaRJ3rR3PkUcq22pqsQqYfJzHUWM611YVYAGSTkB49yQGcQ73QoBUNmVct3foVH7elOZMvw2pxUhlyl1knVUBVkWCwszprAqwKlIZf8fv5mvz35stJNdPzOOhKsBaSIXOLTN4TRVgHaRC/e/h3m2p+khT6YRr50LrI5VpdKKtCrAUEh8QD/Hr7ZDXthRSoQPi/p5v0LJI5Wid6KoCbADpOvohaR/PqAJsAKkc1Pg12rnQxpAO0YmkKsDGkMruOpFXBdgw0s6NX14VYMNI5a6fkLXawRsniIb9BY1SeZMQO075AAAAAElFTkSuQmCC" y="853.625"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="100" x="134" y="924.7637">[Queue Storage]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="186" y="940.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="156" x="104" y="956.8857">Contains work for the</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="50" x="159" y="973.1826">worker</text><!--MD5=[7468467f3b6b392f1d176d828c753b77]
+entity db--><rect fill="#FFFFFF" height="171.4844" style="stroke: #3C7FC0; stroke-width: 1.5;" width="214" x="344" y="820"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="87" x="407.5" y="844.8516">Database</text><image height="70" width="65" x="418.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEEAAABGCAIAAAAckG6qAAAEd0lEQVR4Xu1au67UMBDNT+YX8gv5hf2FW9JCS3clWhoKWpBugRAFEqwoEKJAyj3rQ4bZGdubxySh2KMRungde45nPB5P0gzTcP71593nn48ff7x8/+305kv/+hOke/UEaV984B9sxK8Pb7+iG/o/ff9tB9oAjW1QgAZQGjpR0WVCbqRkJwhChgOWHFNiYq/QSgEfmCjcOFccoD3m8HNrJcRVYCIKfUwEP6FD3XpYoECz/ONQ0h7aQK1li8ddVLIqGpcNa3DhgJn8HFhFLCp+sk8sBV3UGIez2K4zceHgCcAmtmMQsuu1kkaDtTEjwnlsr2j4rbLGqRo/HFjZXtHAMplJ11i+MWO1yUcDt4EHltwv3BrjZziQRmDs04DrewJtilG262TkOci4UaEJa++DkpnLPjMZNQ56Avgr+ECViZQkv6ofdnoKO8RkTOLghVkQMzwRtkzR2MsBHMLlzsENd4jcObjhDpE7BzfcIXLn4IY7RO4c3HCHyJ2DG04LizEUn8zxV6S0pWIMs8ApieAmHKCTT7N1/cbfHn15Sn5CHu6n0BLPoXQzlAJC5c6tiwzSeAAHXWVg1ZVXU+pn5mN5T7fIlV9aDuCge4gr896DP/RVW5xHm0409i0l2ZYDvVwz0T/pp7T1zDgHcMgW3uhImoPRTNuHnEs9vcRzaAu7Ftz0ZFh4/Yhm/l9w4LjeICZk6cAvviQ+Jt0O4KAPLKM0/qv9HiTZTdtNGqXlAA6YkqX2U3r5oB/g2axbhrTw+m/hrxsxpoifcRMOtmOCLLA/wgVyOLTX8U3Dz7gTB11s7HIFWV8MNh0EfsZ4DhyUyVwpn2vHnE9vD5Mv9WPOZ0SP8DC+CFZazUORw3SBHtldXhE8Ar0rDjkLARxa98oCi5q1G3tKkMAjIAw79GNy3qV0BradVW+P4dBe3zROqX7s+/Tji1Cdv/BBepTx21Mu//cI43BTJCIzNnAnlF7DyfsKbbcSduIgBBh5xSB1yKXKn0gae3CQ3UIC/gJYB4NEJfjuwYFLzhW96RhZ8GgvWWNzDlx1KjHXAhrM/H0OOoRz6NNnPv61HXenblkAhmDbGsihV5/CgABoML3jdbwtLOEs8LrivTGGgzgJlM6eDNn1WwCePKYxgAMX5jx+TMKITgvQCDy/zMTLQJOauJz5XmOW0ALMWLuID3nqOKcbopmlYcxeJvQQXnq668xvO7RuSzRcQq/fFOF6MMPZh8CQQpyJ0ZdvsKZky15ohFKs2A5MbHXL3+/5KtlySTgQ00894tbI24GQBGui0JG6XIlgO3BP2/2g/zMk35DMvi480fyIm0JqIr2qfVkOgsdbn+0woWhdpNsUPG1EMbpAkYNAzilzADMQtfvaQYNZIGjc5mAguRCzOr/D9gRpzOZgQLPa1h2B2ddy4Nmypjq0EvDwtRyGclq/D2I41C+Km4KBMYDDoK7tU8pBgeChHMNhGD++7dLlYYf8T7IK/BvGYUjjSibfjR+PbiSchWE9kgNxHquoJ1W6DJcHVSN8Br5KRYKUx+eZAAAAAElFTkSuQmCC" y="848.625"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="115" x="393.5" y="929.7637">[Azure SQL Server]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="453" y="945.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="190" x="354" y="961.8857">Stores studies, sandboxes,</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="99" x="401.5" y="978.1826">user data etc.</text><!--MD5=[24396b0ff0a3004eab2152550ad0cf28]
+entity azureIaaSforSepes--><rect fill="#FFFFFF" height="155.4844" style="stroke: #3C7FC0; stroke-width: 1.5;" width="200" x="683" y="261.5"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="180" x="693" y="286.3516">IaaS for Application</text><image height="54" width="70" x="748" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAA2CAIAAAD1bngSAAADHElEQVR4Xs1ZsW4VQQx8P3m/kF/gF/gFSlpo00WipaGgBSkFQhSRAqJAiALpcOTIOLZ3b7zrPRiNouju3bsdjz17l1z203H79Zc9VIqLPbAS337+fnb9iX7aE6U4T9K7zz+uXt++eHtnT1TjJEk3H79vLz8QV1u0nyOJnGE92iLStsixtZJ4eFgPUQfDq/f35kgVFkqi5dLwiJ7nb77os3yKBOuDJVglicJAxHiL6Hc5Tp9U1xVgiSRuKk1jkUwXkezSp+ZRL4lWb/RsbmZ0QxKpBPrsJColmTAQmoGRQNcsDPcySbyT+rVublpCG01nzqBGUlh4prGI3PCfYVblRIEkPeueZqE+OYRVOTElqTU8nVW2mpNZkhPjksxOGpIa0lziP2M4nxODkjrDI/QW9VuUOZ8TI5L8k0FIY9F+1HXCyZwYkYSszFsEFmJzIZlFWlInsjS9ReF21KK/HEdOUmdX0fQWgRdqDudEThJYaZ/FoLeawy+ICUn4MNgr972/fbU49oKYkAQuy1uEbEchx3IClYR3jp8BZDtqcSAnIEm0SiS4t8YAgNeGpGt9jfqAJIGpsEUW4RPYYlimDo4l4ZMQ3num64SpnDiWBKbCFlm0Z5q2w1ROHEhCHk+ZncfNElV4TvQkpZbS7w28e1v0TyQt9CThY9CxSIAb3mI4qx5NSam69i0S4Jtbi8iNmpLwVEjNLu58SOResaRUk2Tf2PBihTy8XSwJTwWkbB4zqg5zIpCU6o3DmoVIZamnfzLWsJJSqTBmESN1I89wW2dYSamWGLNIMPP419k2nkhKpcJhTyOYifVWQZ9ISvU3/oTSR2p0NVs1/SspVbDW140Bf3kxDHPiUVL2LzhVFglSM6zpc+JRUqpOtRYxhmPd58SDpGzyhHbPA/m/QUiTEw+SUl+0wiJBtrhMsz1eUqmwLbNIkNpIhHq2L2R3iuruxaBxou+nxaW6hnml/pBknx7OBAmgTiPbacQHZBjKC+J5kqiKhQJCchOtkiQCqHjDe06WnBM1klgAjcGZAkLSGkYkyRz/cwGe1NKDkv5n/gH02psJs+J2QQAAAABJRU5ErkJggg==" y="290.125"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="128" x="719" y="355.2637">[Queue, Storage ++]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="785" y="371.0889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="167" x="697.5" y="387.3857">Hosts various resources</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="127" x="719.5" y="403.6826">needed for Sepes</text><!--MD5=[9c4f33b55545de28c7d308ab71c50abd]
+entity azureIaaSforSandbox--><rect fill="#FFFFFF" height="169.4531" style="stroke: #3C7FC0; stroke-width: 1.5;" width="212" x="1377" y="254.5"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="176" x="1395" y="279.3516">IaaS for Sandboxes</text><image height="54" width="70" x="1448" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAAA2CAIAAAD1bngSAAADHElEQVR4Xs1ZsW4VQQx8P3m/kF/gF/gFSlpo00WipaGgBSkFQhSRAqJAiALpcOTIOLZ3b7zrPRiNouju3bsdjz17l1z203H79Zc9VIqLPbAS337+fnb9iX7aE6U4T9K7zz+uXt++eHtnT1TjJEk3H79vLz8QV1u0nyOJnGE92iLStsixtZJ4eFgPUQfDq/f35kgVFkqi5dLwiJ7nb77os3yKBOuDJVglicJAxHiL6Hc5Tp9U1xVgiSRuKk1jkUwXkezSp+ZRL4lWb/RsbmZ0QxKpBPrsJColmTAQmoGRQNcsDPcySbyT+rVublpCG01nzqBGUlh4prGI3PCfYVblRIEkPeueZqE+OYRVOTElqTU8nVW2mpNZkhPjksxOGpIa0lziP2M4nxODkjrDI/QW9VuUOZ8TI5L8k0FIY9F+1HXCyZwYkYSszFsEFmJzIZlFWlInsjS9ReF21KK/HEdOUmdX0fQWgRdqDudEThJYaZ/FoLeawy+ICUn4MNgr972/fbU49oKYkAQuy1uEbEchx3IClYR3jp8BZDtqcSAnIEm0SiS4t8YAgNeGpGt9jfqAJIGpsEUW4RPYYlimDo4l4ZMQ3num64SpnDiWBKbCFlm0Z5q2w1ROHEhCHk+ZncfNElV4TvQkpZbS7w28e1v0TyQt9CThY9CxSIAb3mI4qx5NSam69i0S4Jtbi8iNmpLwVEjNLu58SOResaRUk2Tf2PBihTy8XSwJTwWkbB4zqg5zIpCU6o3DmoVIZamnfzLWsJJSqTBmESN1I89wW2dYSamWGLNIMPP419k2nkhKpcJhTyOYifVWQZ9ISvU3/oTSR2p0NVs1/SspVbDW140Bf3kxDHPiUVL2LzhVFglSM6zpc+JRUqpOtRYxhmPd58SDpGzyhHbPA/m/QUiTEw+SUl+0wiJBtrhMsz1eUqmwLbNIkNpIhHq2L2R3iuruxaBxou+nxaW6hnml/pBknx7OBAmgTiPbacQHZBjKC+J5kqiKhQJCchOtkiQCqHjDe06WnBM1klgAjcGZAkLSGkYkyRz/cwGe1NKDkv5n/gH02psJs+J2QQAAAABJRU5ErkJggg==" y="283.125"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="188" x="1387" y="348.2637">[Network, VM, Bastion, Storage</text><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="25" x="1470.5" y="362.2324">++]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1485" y="378.0576"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="167" x="1397.5" y="394.3545">Hosts various resources</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="161" x="1402.5" y="410.6514">needed for Sandboxes</text><!--MD5=[afa97bbf375adb25f627a422c8a0212c]
+entity azureAd--><rect fill="#FFFFFF" height="122.5938" style="stroke: #3C7FC0; stroke-width: 1.5;" width="169" x="918.5" y="277.5"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="149" x="928.5" y="302.3516">Active Directory</text><image height="70" width="70" x="968" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEYAAABGCAIAAAD+THXTAAAEiUlEQVR4XsWZMY4VMQyG95K5wlyBK3AFStqlpUOipdmCFqQtEKJAghUFQhRIwfu8m83Y8W8n44FfFto3M8nkS+w/eY+r+q/0/O0XeekcXckL5+jFu6/l5Ydnrz/JGyfoXyBdv/9GPBzEJm9n63Skm88/Gw/Hm48/5EOpOhfp9vvv7dWtQKIgTvlonk5Euvv1Z8hDQdeJVjZI0olIZAYapqciZtkmQ2chkWVrDBEnGeApSL3F4TjDAPORyND00EGkG2AykmVxOHINMBMJWByOXAPMRMIWhyPRANOQIhaHI8sAc5D4VHo8UgwwAcm1OEoqWkNydgoaNK634wZ4FEmfSkUQhmxz2bgA2EEDPITkWjYYHN2y2h60inUk17LdwgCHDLKKZap1JNeyI2MCk7L8xX4RybW4oCNj63fXeagVJJAwLYJz7E7NggFOI7kWx5GyShzAY4aaQ3ItrgU9JhuPFOlt9gQ4geRanAg3Z9w9usWUAU4guRYnwi2n+JpHemuKIkWSfmEEwcrkCBpgCClicda7KbtEJVBvfU5Ode4mc40gxTOeoz/Ucdve/Vr29j7mWnkfrgE6SFPpXvY8/fS33toV4WPxxHYNECEdsTgx8XyxRyrqeBq3H3yuRUhT78CJxNcFUtnn5NQMgq3cRFrOhGFDvqWRyt5LpvLcMsAxkp5mKyI8BSKVfQVO2frQAAdIcYvrc5r+AInKz1hIZe9jU7auDVAigUkiAFq99vtBf0jBPCWAJFa7pcl2+d2COrcSUhvgDslKZbo4XGKW1aqP9qS+1UL4GM2dsDUaw/BFouETEjAcvbhNEZ4SQyrQx1jW6/qGT0hW5ljGwgoaCT/sIhXvddUu9dbwAQmMTGSqUGSUZQYpct4dLlR5dM57JOAwW+CbnPWCPvjJCJK7StXeKsqlRq6AxZX/gRRZJZBTNJgrcJtD9qdkFaHuxEXa9gcrS3gS7xPPKjgOYN9Nlr224McwEq0POIw24dFSET3Yg2WOJZZ79bIHgAXnZyyk4OJUb5zcyW5fslKoPyj0zxOD8EP6OOyk3dW3tB/QTFMn2mlv4M/o7Xl5ILLMhNrQm6hTakn/Xnf/9UBjcrd5vi6Q9LjFtNJgqCsKhuzb9iEyViJV6OlWbJfjX98v/d3PDl9sSDxB7WEWWAQQepEHSHW1dz1Q6odnlz8y0tAGQB1asRknzzFSVTkQDw3WPlKfehCg4kH0xSNkIlWVPFNhTaHQQpIXw66aEBJrISVaAKrlLNDFI+Qj1ZGDRcL9pjCLFFz5EFJdynj39VPrD4pHKIpU51PFPRDECwkXj9AEEis+tVlIkbN5r2mkGh6K3kyFInbqZq/WClKN7cXYHu7snzo4tvBZVmgRqcZKCywUXqKp4hFaR2LhkZXRNuLu4LPFI3QUqQYMY3v8TZOChovzDSxsUAlIdXUvFrFcPEI5SHVpL+7jSPEIpSHVmGEM42DxCGUisdzSEqH946Dykar3I06LrOIROgWpBvbi+DF0VmchVVhaw+/qWToRiaV31fTiETodqXbH3OB3uIP6C34Rr7S8Y7YuAAAAAElFTkSuQmCC" y="306.125"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="102" x="952" y="387.2637">[Users and roles]</text><!--MD5=[aad425bddeaec45cfaa1a57fef7d5f1a]
+entity azureAppi--><rect fill="#FFFFFF" height="187.7813" style="stroke: #3C7FC0; stroke-width: 1.5;" width="219" x="1122.5" y="245"/><text fill="#000000" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="180" x="1142" y="269.8516">Application Insights</text><image height="70" width="45" x="1209.5" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAC0AAABGCAIAAADXS4pUAAADHElEQVR4Xu2ZsY7UQAyG85L7CvsK9wq8AiXt0dKdREtDQQvSFQhRIAGiQIgCyfxZ3/kce8Zj5y5ZkPaXddokk8w3Ho/jyU1U0e233zcffjx/8+XZ689Xrz7Cji9v2fgQ56/ffUWb77/+2JtDTfZES+gefaOzw4v3eQMWmJJAAw4Q4HG+j5JhDEOaLgfuhJP9Q9cZfAnf2D6U2hxwQ3UWMgbX9hzT4ECUbQHBhidjkLZLzwEIf/PTWhNlwfH2009/2xbmUR44MHPbTYc3xIrCUByPX59Vw3q2HDuERdNkdu449pwRbTI7M8e5nMHGLpk59o8MbRwlE5aJv7anISRmjvNOChumZoJb/IWdDa/A6QlfqqsNvpjOG6Rs8MV0rsyhDb743zi4oMILGYYfvbvgYSxAtMHffORlOfBEzr5aphs8B92bNsmSauYYUpsXtJaOcXRpL5+UyU/zeoGT/QVtMkr8OJ62KvoMt9GsGBja4K+UosMlCdZpWIPxs3SVhB/SB5+RWlxnRSkvhkOd8ymFL31O/uRKRnEJ3yuToocuToqnhpvNHHFq56GbqlE6Nhy6jTgp9gc3mzniylT6gPdkWyv+MIfSQO+agvgQf9/VYwGyjoYViidFBpmqk3HJ7zgyivOHTksPHMO9pHxTuFGfFfhQKDmTwtAyGNjBuXmxj4p9qM0EpkTDMCuyHYN9FCuJ8hgOD0Geg1yqaNpqjiYENTko4ZV1HD0I6nFQuJIPazn8C1nU5aBwJa/g0LtZr4gjyLNVjuN93uwp4qD+7FQ5ghlhDTio8zYucejqpKcxR3PtlDh6a0RrzEEtl+Q59EskUIrDR0meI+MMSnKQc0mSIxMZrCyHqdmSHMNlIspymM8kGY5hztDKclBntxJwxAnUqMChozXDkYxQVoEDU8M18NXp/z1scojRw3QDe3+oAsemunAsdeFYqsZxfdqVJM3eHKrGEe/ItZWSKV04rGoc/0p8bKcLx1IXjqVqHMNvRmL5ypRV46D7r8q+Y21SreVV5qDODk9MasSS1nBQa2fFVqqNtVZyUAulWpNq/QVd4tg/x/NIuQAAAABJRU5ErkJggg==" y="273.625"/><text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="135" x="1164.5" y="354.7637">[Logs, usage, metrics]</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="1234" y="370.5889"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="195" x="1132.5" y="386.8857">Helps finding errors, and to</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="143" x="1158.5" y="403.1826">understand how the</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="178" x="1143" y="419.4795">application is being used</text><!--MD5=[8fc3522a43f8c7199df5e09e5bb0188e]
+entity user--><rect fill="#08427B" height="87.5156" style="stroke: #073B6F; stroke-width: 1.5;" width="181" x="446.5" y="7"/><text fill="#FFFFFF" font-family="sans-serif" font-size="16" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="41" x="516.5" y="31.8516">User</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="0" x="539" y="48.6201"/><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="135" x="469.5" y="64.917">Equinor Employee/</text><text fill="#FFFFFF" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="161" x="456.5" y="81.2139">Consultant or External</text><!--MD5=[f01566b2b60b280485eda08a2d99c8d8]
+link user to spa--><path d="M520.564,95.127 C505.987,133.373 484.155,190.658 465.354,239.989 " fill="none" id="user-to-spa" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="463.544,244.737,470.4864,237.7511,465.3243,240.0647,463.0108,234.9026,463.544,244.737" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="35" x="515.5" y="145.5669">Uses</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="509" y="159.7715">[HTTPS]</text><!--MD5=[171bbbeb97f5c35b5c0d3208ac28312a]
+link user to api--><path d="M557.256,95.198 C560.88,104.807 564.103,115.088 566,125 C585.419,226.483 636.566,314.459 545,457 C503.073,522.268 456.772,498.311 392,541 C387.731,543.814 383.422,546.738 379.103,549.741 " fill="none" id="user-to-api" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="374.783,552.768,384.4495,550.8813,378.8784,549.8996,379.8601,544.3286,374.783,552.768" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="35" x="605.5" y="336.5669">Uses</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="599" y="350.7715">[HTTPS]</text><!--MD5=[b20751f21bc3c5e56073fe913b5ac5ab]
+link spa to api--><path d="M378.957,433.023 C361.599,465.948 342.029,503.067 324.475,536.364 " fill="none" id="spa-to-api" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="322.123,540.825,329.8583,534.7287,324.4546,536.4019,322.7813,530.9982,322.123,540.825" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="35" x="367.5" y="485.5669">Uses</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="361" y="499.7715">[HTTPS]</text><!--MD5=[1b9dbcfdb69d97b7ce5f2d963fc4ed75]
+link api to db--><path d="M182.042,729.199 C171.933,749.85 169.728,771.176 184,790 C213.839,829.356 245.127,801.698 291,820 C306.733,826.277 322.937,833.659 338.715,841.401 " fill="none" id="api-to-db" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="343.597,843.815,337.3011,836.2412,339.1146,841.5995,333.7563,843.413,343.597,843.815" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="138" x="185" y="772.0669">Reads/writes data</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="230" y="786.2715">[HTTPS]</text><!--MD5=[34f88b253cdea2a698df446eeda64f50]
+link api to workerqueue--><path d="M171.24,667.191 C127.361,686.261 80.3655,715.564 55,759 C35.9378,791.642 58.2303,823.566 89.3478,849.154 " fill="none" id="api-to-workerqueue" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="93.59,852.562,89.0783,843.8073,89.6919,849.4308,84.0684,850.0443,93.59,852.562" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="87" x="56" y="772.0669">Posts work</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="75.5" y="786.2715">[HTTPS]</text><!--MD5=[5054707453259c18ba77b98ede080360]
+link worker to workerqueue--><path d="M417.564,717.697 C388.694,741.101 357.138,766.608 328,790 C312.042,802.811 295.052,816.381 278.546,829.529 " fill="none" id="worker-to-workerqueue" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="274.361,832.861,283.8934,830.3843,278.2726,829.7466,278.9103,824.1258,274.361,832.861" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="78" x="366" y="772.0669">Pulls work</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="381" y="786.2715">[HTTPS]</text><!--MD5=[ced5fe15d2c5bbcfbfe7b295ba4216bd]
+link worker to db--><path d="M497.625,717.652 C489.951,748.407 481.185,783.536 473.34,814.972 " fill="none" id="worker-to-db" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="472.09,819.984,478.1491,812.2195,473.3,815.1326,470.3869,810.2835,472.09,819.984" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="138" x="488" y="772.0669">Reads/writes data</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="533" y="786.2715">[HTTPS]</text><!--MD5=[d2758c0792ed8db22cfa01a430f0ef94]
+reverse link azureIaaSforSepes to worker--><path d="M710.173,420.797 C673.255,461.755 628.525,511.38 591.511,552.444 " fill="none" id="azureIaaSforSepes-backto-worker" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="713.721,416.861,704.7237,420.8671,710.373,420.5746,710.6655,426.2239,713.721,416.861" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="667" y="485.5669">Creates</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="673" y="499.7715">[HTTPS]</text><!--MD5=[27e908246a56bc24406b24062546cb00]
+reverse link azureIaaSforSandbox to worker--><path d="M1396.85,426.838 C1384.58,437.531 1371.77,447.888 1359,457 C1316.92,487.016 1305,494.544 1256,511 C1039.75,583.628 772.873,614.495 626.612,626.717 " fill="none" id="azureIaaSforSandbox-backto-worker" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1400.64,423.509,1391.2383,426.4429,1396.8833,426.8086,1396.5176,432.4536,1400.64,423.509" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="60" x="1348" y="485.5669">Creates</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="1354" y="499.7715">[HTTPS]</text><!--MD5=[68c0bc595172853f694a840bb07d38c8]
+reverse link azureAd to spa--><path d="M987.095,272.228 C973.958,233.048 950.946,186.707 912,163 C855.813,128.798 829.73,160.488 764,163 C670.907,166.558 637.28,135.309 555,179 C526.183,194.302 501.676,219.27 482.103,244.98 " fill="none" id="azureAd-backto-spa" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="988.805,277.46,989.8095,267.6625,987.2509,272.7077,982.2057,270.1491,988.805,277.46" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="146" x="765" y="138.0669">Authenticates user</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="33" x="821.5" y="153.1997">with</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="814" y="167.4043">[HTTPS]</text><!--MD5=[d29def0511e7fb3ce58cd117b2c79fa1]
+reverse link azureAppi to spa--><path d="M1175.25,240.595 C1156.18,216.243 1132.62,193.106 1105,179 C1067.83,160.013 757.302,148.847 627.5,163 C594.697,166.577 582.983,161.513 555,179 C528.233,195.727 504.728,220.162 485.451,244.924 " fill="none" id="azureAppi-backto-spa" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1178.51,244.833,1176.1984,235.2593,1175.4637,240.8682,1169.8547,240.1334,1178.51,244.833" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="112" x="628.5" y="138.0669">Sends logs and</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="44" x="665" y="153.1997">usage</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="663" y="167.4043">[HTTPS]</text><!--MD5=[d25e86094312dcedbc470be9b45b3bfc]
+reverse link azureAppi to api--><path d="M1141.4,436.319 C1129.89,444.505 1117.68,451.677 1105,457 C1072.59,470.61 981.847,460.351 947,465 C851.862,477.692 830.891,496.579 736,511 C584.273,534.059 534.794,484.763 392,541 C386.145,543.306 380.342,545.997 374.632,548.98 " fill="none" id="azureAppi-backto-api" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1145.6,433.258,1135.9696,435.3206,1141.5576,436.2006,1140.6776,441.7886,1145.6,433.258" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="112" x="948" y="478.0669">Sends logs and</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="44" x="984.5" y="493.1997">usage</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="982.5" y="507.4043">[HTTPS]</text><!--MD5=[76f486935ba2dea24c090b807301685f]
+reverse link azureAppi to worker--><path d="M1160.62,437.414 C1136.01,464.918 1106.41,492.39 1074,511 C933.082,591.929 743.9,619.641 626.532,629.111 " fill="none" id="azureAppi-backto-worker" style="stroke: #666666; stroke-width: 1.0;"/><polygon fill="#666666" points="1164.21,433.357,1155.248,437.4413,1160.8945,437.0996,1161.2362,442.7462,1164.21,433.357" style="stroke: #666666; stroke-width: 1.0;"/><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="112" x="1130" y="478.0669">Sends logs and</text><text fill="#666666" font-family="sans-serif" font-size="13" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="44" x="1166.5" y="493.1997">usage</text><text fill="#666666" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="48" x="1164.5" y="507.4043">[HTTPS]</text><!--MD5=[96ceb090e649623fa12f8213dfb1e42c]
+@startuml
+'Read: Richardo Niepel's excellent https://github.com/RicardoNiepel/C4-PlantUML and https://github.com/RicardoNiepel/Azure-PlantUML
+
+hide stereotype
+
+!includeurl https://raw.githubusercontent.com/RicardoNiepel/C4-PlantUML/master/C4_Container.puml
+
+!define AzurePuml https://raw.githubusercontent.com/RicardoNiepel/Azure-PlantUML/release/2-1/dist
+
+!includeurl AzurePuml/AzureC4Integration.puml
+
+' Import for icons
+!includeurl AzurePuml/AzureCommon.puml
+!includeurl AzurePuml/General/Azure.puml
+!includeurl AzurePuml/Web/AzureWebApp.puml
+!includeurl AzurePuml/Compute/AzureFunction.puml
+!includeurl AzurePuml/Databases/AzureSqlDatabase.puml
+!includeurl AzurePuml/Networking/AzureVirtualNetwork.puml
+!includeurl AzurePuml/Storage/AzureQueueStorage.puml
+!includeurl AzurePuml/Storage/AzureStorage.puml
+!includeurl AzurePuml/Identity/AzureActiveDirectory.puml
+!includeurl AzurePuml/DevOps/AzureApplicationInsights.puml
+
+Person(user, "User", "Equinor Employee/Consultant or External")
+
+Boundary(sepesBoundrary, "Sepes") {
+    AzureWebApp(spa, "Single-Page App", "React", "Provides Sepes functionality to users via their web browser")
+    AzureWebApp(api, "API", "ASP.NET Core", "Provides Sepes functionality through API calls")
+    AzureFunction(worker, "Worker", ".NET Core Azure Function", "Creates and monitors cloud resources in Azure")    
+    AzureQueueStorage(workerqueue, "Worker Queue", "Queue Storage", "Contains work for the worker")   
+    AzureSqlDatabase(db, "Database", "Azure SQL Server",  "Stores studies, sandboxes, user data etc.")
+}
+
+Boundary(azureBoundrary, "Microsoft Azure") { 
+    Azure(azureIaaSforSepes, "IaaS for Application", "Queue, Storage ++", "Hosts various resources needed for Sepes")   
+    Azure(azureIaaSforSandbox, "IaaS for Sandboxes", "Network, VM, Bastion, Storage ++", "Hosts various resources needed for Sandboxes")
+    AzureActiveDirectory(azureAd, "Active Directory", "Users and roles")
+    AzureApplicationInsights(azureAppi, "Application Insights", "Logs, usage, metrics", "Helps finding errors, and to understand how the application is being used")
+}
+
+Rel(user, spa, "Uses", "HTTPS")
+Rel(user, api, "Uses", "HTTPS")
+Rel(spa, api, "Uses", "HTTPS")
+Rel(api, db, "Reads/writes data", "HTTPS")
+Rel(api, workerqueue, "Posts work", "HTTPS")
+Rel_Neighbor(worker, workerqueue , "Pulls work", "HTTPS")
+Rel(worker, db, "Reads/writes data", "HTTPS")
+Rel_L(worker, azureIaaSforSepes, "Creates", "HTTPS")
+Rel_L(worker, azureIaaSforSandbox, "Creates", "HTTPS")
+Rel_L(spa, azureAd, "Authenticates user with", "HTTPS")
+Rel_L(spa, azureAppi, "Sends logs and usage", "HTTPS")
+Rel_L(api, azureAppi, "Sends logs and usage", "HTTPS")
+Rel_L(worker, azureAppi, "Sends logs and usage", "HTTPS")
+@enduml
+
+@startuml
+
+hide stereotype
+
+
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam rectangle {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam database {
+    StereotypeFontSize 12
+    shadowing false
+}
+
+skinparam Arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+skinparam rectangle<<boundary>> {
+    Shadowing false
+    StereotypeFontSize 0
+    FontColor #444444
+    BorderColor #444444
+    BorderStyle dashed
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #08427B
+    BorderColor #073B6F
+}
+
+skinparam rectangle<<external_person>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #686868
+    BorderColor #8A8A8A
+}
+
+skinparam rectangle<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+skinparam rectangle<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+skinparam database<<system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #1168BD
+    BorderColor #3C7FC0
+}
+
+skinparam database<<external_system>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #999999
+    BorderColor #8A8A8A
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam rectangle<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+skinparam database<<container>> {
+    StereotypeFontColor #FFFFFF
+    FontColor #FFFFFF
+    BackgroundColor #438DD5
+    BorderColor #3C7FC0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+skinparam defaultTextAlignment center
+
+skinparam wrapWidth 200
+skinparam maxMessageSize 150
+
+skinparam rectangle {
+    StereotypeFontSize 12
+}
+
+skinparam Arrow {
+    Color #666666
+    FontColor #666666
+    FontSize 12
+}
+
+
+
+
+
+
+
+sprite $Azure [70x54/16z] {
+fPK9hiCm24IDLvZx7_ZB_LsiJafmyhHqHOoV4KaXShgFgAJR5ElfDXMu7wK3CuhqMqe0JBSDrmrd0p3cEuDUzWeyesG09LsYOJAUTc3f2WFlACa0e5tpEj7d
+RKzaVzJmJrbYZVrHMw88dfJTKLlh6fxOhfArp80dRM_KdjJ75_WWcqecjfnlIt31GbqEj2NOA4h1YgO0ZQCCWBxq4ImOVHKGJ7qRfvlqBRL83nJVvEIZ72M3
+q0sr41gMa60nyF4DZ4bKBOHCXGJdepzs799ZQY5qof3WYfL1iaA2nNv4pZZ2_FN62w361MV7NWiBLazUZmZcrCNfuUmhEscZ4S7zh8iOcEQgLSU-iw-KeZ05
+p73KMcHjS3-BRO_k2cvUb9NX29Ru8bCGSjp10ikG1HVAw93jXs1peaJkMqajHM7guRxANoGNoTKs7WXCBcrOU5ynybLFvDFwhZX5VzTNfvu5iy1OlJyUSeK_
+}
+
+skinparam rectangle<<Azure>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureWebApp [70x70/16z] {
+dLY9WeIe3ZG9kVp__trlLrgBbc0xcxcHBYgLWqnlQoDHyyZCZ71jlFtTH6E_MNgZlq2mvbwRosiCtnyizGq6ZHWPRcRcaUDY-ma2NyA41d1Mm0S_EnCNYIns
+jaln9xVQXqZ4lq1K7MCddMMuFZjIjjW1iz0-5ruvoD91AXQfb0ymFZxJdXsFOKnPWC1TBs5Oshycjc3JrmqBULkWvaFIH5RAjJl8nZc4bAQIY48vxcjKYDYs
+JMAVBQPpj-Zh5R_Ks4lhodM54P7Syrh0ScJcHCEq2RDzIyDPesns87p1XEBq-FB9Ju9rtG0cbMOrF-7cuun_LQ0fXG1JTIWzbWSgebqg60L2aL5tEP2XO_E1
+gxT00oQ0CONHBbfo_F09f0kMYMoVoIH-EM1p0ZbWObt2UYPcp_F-Kowci21TTmBg-lOof4-aV0PHPB4i-adsr0deJTAamPsKmS6KXRv2L-5wJs3Ow0MlOFhh
+8KShwfPksREtCaf-A4T8eT6yQ8Qj5COGu7m0GIysjiWm_bhrBcxXKLRN5SmWRqzmhnqgf8mPHiwWMA_ikrcP7h3k59yeMeSeVg3OY8AYV1PcSZl-AmhDpu7o
+tgEzv88OqIjrvo09yWKRfXZ0xeoJhnMz79JQePeC1ZmxVi6fTXDNAXIAiGDQXmr2YJ4GqA3guIvT-gd1NQ6yIg2jEyDwgChEmYzX7AEwmwj7itxHK6SWo4id
+6ky0Nz91cSVPnP4mWiaNWM2H2WqtI7U4paWds6BGoAEVBKTAEk6i62jR_amWnai-WxPDqIL_A0bGaV7AlarOK0T65PKOivgZt2Wv-dJJECPpPHYO9j8wptJC
+HCJI35I-hyLyGYb7NeQC7Q6C0rS086zLsx2dNf3ps1npoB94uSG59Sqy4f39nOa9b3bCAL20kBZy8OtNDUVXIdElqXLnBM7glRP-5FGJH9UH0CtyGOS3_NGD
+yzpXs7_lqVBV1fZuguxCkNwRH2nVlsEXYUnq5MOYPcaMM7VWBuriVxIGxPMHvWeYZLz1G0COjDh-QlobHRe-UF9_
+}
+
+skinparam rectangle<<AzureWebApp>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureFunction [70x64/16z] {
+hTK7Ra8n48JXTVVc_lSDTKNxtMIFUe0F9cFhIJV-3w9Erf992R8O1QJ8OiA9Fb90YR8QFT17uea-KaxqSIVwI3hHH-fM7nyQfx_OgtFB52oaxd4Gw-IyYeSb
+cZrcahq_y3vERuoRG99TPzh7LMBubuWez36cltb-lJrG7sRQY1JgOxapVemunJvZfho_EmxkJp664JxzARx76nCOuUiCcpDJ3Q7h39iJyzWklAFj55W34T_l
+WunJG-1XHiyqO00HRIC9hXqZeOrKlBs0z0gf4sIg_QQfGh5nMlNtnTWTcMyVj7MF-7lAMnz0lDu_d-wCctbMXoOYae71lH8YrhC00tlLBcBCe92w3WA_XWl5
+0TBxtnGScP4seyq-uVPI5fbW8eoCY2KHKs1aHYpnbt4qCYDjnWgfe-KCmMzuPogF71bXnWeLGfAquurvAwIJ23DMo2yZnhmLIe146SMfVN-YaUiOiMUSFZv0
+8oT0EDw9FI0ZlRYIP8TYAseZxyI_Hjv8jf4t2rNPJh2HDmj5sOzcsKzGEP3ivK2I7CZgF1S
+}
+
+skinparam rectangle<<AzureFunction>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureSqlDatabase [65x70/16z] {
+xTQ7phEw5eJXMVPgC_T_mGTXlaw0wAZl_r59VqErZUziUbGtARAxCkR0OyEB-eiT4_SiMgyn1ovPwWChmzsdRoABElJ4QwcbOlnjp-WZCN3ErXVeXXSikBw1
+K-ltYUNoJquBiROUDoXjnijF0ZVgvNPgHyEbmPSRgeKJ5vpQzNbWQJUS6a7fBh1q-lXHiUb5BKy22xjhqqqjDu4R_xt0ly2_0AkAnxFCusbtyrcWx7E8ps-J
+1O3vA51OGWeSuft0031y8jQNtB6fDmBOK69h0iYrIVFDW2Kb0h2FRNeZuDY5-F6J2O3F0mhil06CbNmle5uRKTXmxOBfUQ0erHuO07njaRyHc1OLs73Fm00O
+zu3DpNq0YqlsVKB5uMaWA75-pQVF0-hCB6h76W1Icpv8OiOy2vpYEfHV68PpEaS3CAc50PXdK-noUn8GQ_ErGBEaMBbMVcNuedi519a3omWotWaKKEg1BvQg
+vm4QIecVNFquC90A_3PL3mE9gSHV8RyBT0p3XiIPvdMW9s1Zpk5od1cAgq02ixKZpbLV10BMOimnF0FdN0CRwaHYa8vh9iUcz1TXvC0T1JQ3-iDH7BZ513P-
+iW53WNjTs4tgfq8I3p2nMEe71mltxDjcZgI-J2XmRnvpoS6BEWoJuvvdKOLlXcVl0IZmJAp2TpQcWOd71PmfuYdYZ6lYeSQfvlyPc2eyOi8vLniUIE459sFW
+XgKIhrX9x6jINlOzwreEu7y
+}
+
+skinparam rectangle<<AzureSqlDatabase>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureVirtualNetwork [70x36/16z] {
+fTK7hiGW30HG6nDCVF_x_e96o5glc2sZalv2Hqg6oJ5kmkDn6ttEaOZxyBn7W668oY4NOpZ26I0JoBbIqRz02iCGpX24n-x454HIE7CTa2-O6H4kxwI1uGXd
+HaM-OdG-eDtzKfphSE-2cFjebG5IInPtso_kSevu62SA9fz9VXSTjX2qeiNAhPMfJOqFe-73JNeaChU6oyZwIY2sXZh-NvKymzjYPcOcNbOHQJZtLDNeKXUj
+mk3_GzB_6ne1jQi82fMOAxUtx_VGXbDBTLOAesQQBsIdMPEA83rTibJaAsRW6yfmXEyp756HhnWl26CumXc-qFCDWYCrzX8p2y9MzXej2648GfXvUXvupfZp
+d-mPyWi
+}
+
+skinparam rectangle<<AzureVirtualNetwork>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureQueueStorage [70x60/16z] {
+fPO7bkmW30IRBEd-z_s1VYClPXAhsZWEPMWiMxWpx2EQy85iNz3n0R5lo7XBjQyGl2EfVKV56xfzYKQZ9JqQBSd1QCd02zHEAC5eYOPMsMaWdmhel9oA7TD3
+qRvUxMQ_GABHaXgCrWFUemq6B6OzuP2YQy2DPN46wsuiqLOqFMCmpVApW0haV86INkMKpIqg6_foioRKgvpaiYJi22EyepCJcJ9cv1OWvGK0OrhoGcB55EH7
+mBfQbdYwMzhzEJTdoamp_rmMS0FH0hUWg6zkVl4s0nPaMoqj-V6IW5ffQSb7gHbeXHPDSv1LRfQXPHxFx8VHCZTpb2CX3QkqM9-3qdwtpDFxd4rMSyiyeQer
+RgPbPbBD17gpy78rCL2tS8QvS3Cj_2TJTRTmwcdOQc7QtEmM0SPSITajfgsghPR9jTblaCBRBcyMibiSjmn0hR8OVslXGei_62vBrnLQjiq5-gZg358lomuj
+E-hHFf27fM0Zgrd3HfahMHajoRISmI9gowWhoZYZ0pAZTP8Apkdt29ffguUC_SqXWLTZyEtOOaqGqM13HWfscf5Whwh1JegKQ5T7HZ1Qaa-RiN3tBNYD1gCb
+DHejaQC22WPSyPuUZ9Oa3KPBIlz8mvs_
+}
+
+skinparam rectangle<<AzureQueueStorage>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureStorage [70x60/16z] {
+xTO5iW9138JXqKZV_xvFsU2J36vV6VeZlLjG1FEKqZR1ILhQWjFG8rG-bK-bbGM1xNA55gER3pfSAMdHD-xEa6Hauq5jflAfa1486IWP1TjblkRnqjk2mSr0
+kb6GNUQvxuMTx-K-bQmR7vk0_m-U9ok4GtYkKd1OFRQHsEKEgIk2myGgP-aJnowEqXm-ZmOLKBII5GCbM66CSAnICLP35S6OH7u3UkWF4Swc-R_21uyNXX8f
+VEHzBmKHnQam8dXSQOYfeuegOcHKcLFpeeFiSi6DCN0-pOBpzLJEpsZoDFXQSWayadmrS1O5i7j6HsHrLauXtLavI2ChdxLsJM5opigcdBMoeU3AyslRod7T
+MVaR
+}
+
+skinparam rectangle<<AzureStorage>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureActiveDirectory [70x70/16z] {
+fLU9bkCW31imFl__V_V8f7LQwz4Ij3iNl0X7aZt3psVe-NKB4hPFmX4XkoGK_p7sIBh70TeXQIT9UDzWiNZ0ssqIZOHjs9EuQzI8LumTUnAqOK_2-uOz2MyR
+zjmsIW93RjhZoYn-noXA4ZwZuyj6TQ_cagV2gnuB2BArLO-l3povTT4UmzxBMWigPe-nO4-f9K4hBUZNBPzqrBm51mWYCchUWeghd1kbW0GeDZUAGUkDVkoC
+kZs-cv1yhDdlYr9jTFfcGl9v_B-TXoiAHjzdUoIUBE6jgE_jWpr-la6oXDMZR6PFrd-ofDZTPqO98acML8ecHetolisYi0HLlma4oeN5BKcI9MkK25VpN7hp
+s4TnFLdI5Jwi6PvBBnxJXGIpXDLysQl7KhIkB25LJ7bvfESnW0KqgATtZ4QIJse16IEADHP58VEB1AKT08iJFEjdm1mEXopQO5JvTApCwYQLnGbCadCvSshj
+93ZSwfOi5s7P-jilxlucjZDrOe-GHpoJnVhpH1s33Rmannlyu6dwO76-5W2SnzldSsG7YxQQwUoyHBF0FFnlRwISiybxLZyzYiksjI__8XoWLYG9Y1eS13QL
+10K9nLbcaimr9Y0BbWIBCsVHfKiHvxgktN78aRhDuNJuJXokfLXRlv38UoJrrfN4XLaTA0Km3-2Y93Y0Yv9WZP4ag-BiNwXt94cGm-vR5oTdz0uq9Ta1bu44
+y1S
+}
+
+skinparam rectangle<<AzureActiveDirectory>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+sprite $AzureApplicationInsights [45x70/16z] {
+vTG7jXiX38NX2vBGbVQ_tnJZa-01pKkldyjfFvfn0RpgEfoC2D9D6sfzHBwYjI9bden3tZmBOTlOo1eRLXfv9_hQvgQi9JTbtIBVHapCBp4EDrph013vPLWC
+BaSplzH0ooyMqFnoVUINCyylDvXVpYE_7Byz3XEnoCbLrElOyV0eGlPTmMKjiVmDzR0lXkKd0aY4038NUdW3-3dGPPVCRH0Do3HWp3_nCgqZyYa0ULuWKkT8
+hlV1EM1gSuFfZ1zJR9riwmvKe3ifmEFDILitNG3BqcZOQIwprhNiUnlvvDlHvQRQ0DKEYAenjyjghXI8DC2B8qdBU6y1AUEz1RICznQmcrXmnJ8UsBGeui21
+5R7W98unSQJ7kECi3h6ZO8Uuen9RJ9J65WjAxHe7Rl0I3zomIznnev5qTzB78EdulnbVuDR8LVoUUB_d_rkFN0ZkoL8hAlj9RNYRbITjNJjsxm4
+}
+
+skinparam rectangle<<AzureApplicationInsights>> {
+    BackgroundColor #FFFFFF
+    BorderColor #3C7FC0
+}
+
+rectangle "==User\n\n Equinor Employee/Consultant or External" <<person>> as user
+
+rectangle "==Sepes" <<boundary>> as sepesBoundrary {
+    rectangle "==Single-Page App\n<color:#0072C6><$AzureWebApp></color>\n//<size:12>[React]</size>//\n\n Provides Sepes functionality to users via their web browser" <<AzureWebApp>> as spa
+    rectangle "==API\n<color:#0072C6><$AzureWebApp></color>\n//<size:12>[ASP.NET Core]</size>//\n\n Provides Sepes functionality through API calls" <<AzureWebApp>> as api
+    rectangle "==Worker\n<color:#0072C6><$AzureFunction></color>\n//<size:12>[.NET Core Azure Function]</size>//\n\n Creates and monitors cloud resources in Azure" <<AzureFunction>> as worker    
+    rectangle "==Worker Queue\n<color:#0072C6><$AzureQueueStorage></color>\n//<size:12>[Queue Storage]</size>//\n\n Contains work for the worker" <<AzureQueueStorage>> as workerqueue   
+    rectangle "==Database\n<color:#0072C6><$AzureSqlDatabase></color>\n//<size:12>[Azure SQL Server]</size>//\n\n Stores studies, sandboxes, user data etc." <<AzureSqlDatabase>> as db
+}
+
+rectangle "==Microsoft Azure" <<boundary>> as azureBoundrary { 
+    rectangle "==IaaS for Application\n<color:#0072C6><$Azure></color>\n//<size:12>[Queue, Storage ++]</size>//\n\n Hosts various resources needed for Sepes" <<Azure>> as azureIaaSforSepes   
+    rectangle "==IaaS for Sandboxes\n<color:#0072C6><$Azure></color>\n//<size:12>[Network, VM, Bastion, Storage ++]</size>//\n\n Hosts various resources needed for Sandboxes" <<Azure>> as azureIaaSforSandbox
+    rectangle "==Active Directory\n<color:#0072C6><$AzureActiveDirectory></color>\n//<size:12>[Users and roles]</size>//" <<AzureActiveDirectory>> as azureAd
+    rectangle "==Application Insights\n<color:#0072C6><$AzureApplicationInsights></color>\n//<size:12>[Logs, usage, metrics]</size>//\n\n Helps finding errors, and to understand how the application is being used" <<AzureApplicationInsights>> as azureAppi
+}
+
+user - -> spa : "===Uses\n//<size:12>[HTTPS]</size>//"
+user - -> api : "===Uses\n//<size:12>[HTTPS]</size>//"
+spa - -> api : "===Uses\n//<size:12>[HTTPS]</size>//"
+api - -> db : "===Reads/writes data\n//<size:12>[HTTPS]</size>//"
+api - -> workerqueue : "===Posts work\n//<size:12>[HTTPS]</size>//"
+worker -> workerqueue : "===Pulls work\n//<size:12>[HTTPS]</size>//"
+worker - -> db : "===Reads/writes data\n//<size:12>[HTTPS]</size>//"
+worker -LEFT-> azureIaaSforSepes : "===Creates\n//<size:12>[HTTPS]</size>//"
+worker -LEFT-> azureIaaSforSandbox : "===Creates\n//<size:12>[HTTPS]</size>//"
+spa -LEFT-> azureAd : "===Authenticates user with\n//<size:12>[HTTPS]</size>//"
+spa -LEFT-> azureAppi : "===Sends logs and usage\n//<size:12>[HTTPS]</size>//"
+api -LEFT-> azureAppi : "===Sends logs and usage\n//<size:12>[HTTPS]</size>//"
+worker -LEFT-> azureAppi : "===Sends logs and usage\n//<size:12>[HTTPS]</size>//"
+@enduml
+
+PlantUML version 1.2020.17beta5(Unknown compile time)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>
