@@ -202,14 +202,6 @@ namespace Sepes.Tests.Services
                 Email = "john@test.com"
             };
 
-            //var createdParticipant = await studyService.AddNewParticipantToStudyAsync(studyId, initialUser);
-            //int studyId = (int)createdStudy.Id;
-
-            //var study = studyService.GetStudyByIdAsync(studyId);
-
-
-            // var updatedStudy = await studyService.UpdateStudyDetailsAsync(studyId, studyWithoutReqFields);
-            // |
             await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddNewParticipantToStudyAsync(studyId, initialUser));
             //Assert.Equal(expected, createdParticipant.Participants.Count);
         }
