@@ -17,6 +17,13 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpPut("{studyId}/participants")]
+        public async Task<IActionResult> AddNewParticipantAsync(int studyId, UserCreateDto user)
+        {
+            var updatedStudy = await _studyService.AddNewParticipantToStudyAsync(studyId, user);
+            return new JsonResult(updatedStudy);
+        }
+
         [HttpDelete("{studyId}/participants/{participantId}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int participantId)
         {
