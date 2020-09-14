@@ -44,7 +44,7 @@ namespace Sepes.RestApi.Controller
         }       
 
         [HttpGet]
-        [Authorize]
+        [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? includeRestricted)
         { 
             var studies = await _studyService.GetStudiesAsync(includeRestricted);

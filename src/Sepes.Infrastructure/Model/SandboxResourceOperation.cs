@@ -13,7 +13,9 @@ namespace Sepes.Infrastructure.Model
 
         public int TryCount { get; set; }
 
-        public string SessionId { get; set; }
+        public string CreatedBySessionId { get; set; }
+
+        public string CarriedOutBySessionId { get; set; }
 
         public string Description { get; set; }
 

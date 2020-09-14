@@ -34,14 +34,14 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyService = studyService;
             _sandboxResourceService = sandboxResourceService;
-      
+
         }
 
         public async Task<SandboxDto> GetSandbox(int studyId, int sandboxId)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
-            if(sandboxFromDb.StudyId != studyId)
+            if (sandboxFromDb.StudyId != studyId)
             {
                 throw new ArgumentException($"Sandbox with id {sandboxId} does not belong to study with id {studyId}");
             }
@@ -80,7 +80,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
-       
+
 
         // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
             var user = _userService.GetCurrentUser();
 
             sandbox.TechnicalContactName = user.FullName;
-            sandbox.TechnicalContactEmail = user.Email;      
+            sandbox.TechnicalContactEmail = user.Email;
 
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
@@ -136,7 +136,7 @@ namespace Sepes.Infrastructure.Service
 
             //Her har vi mye info om sandboxen i Azure, men den har for mye info
             var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = AzureResourceNameUtil.Sandbox(studyFromDb.Name), Region = region, Tags = tags };
-            await CreateBasicSandboxResourcesAsync(azureSandbox);         
+            await CreateBasicSandboxResourcesAsync(azureSandbox);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
@@ -146,7 +146,6 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Ordering creation of basic sandbox resources for sandbox: {dto.SandboxName}");
 
             await _sandboxResourceService.CreateSandboxResourceGroup(dto);
-            //await _sandboxProvisioningService.CreateResourceGroup(dto);
 
             _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");
 
@@ -157,13 +156,12 @@ namespace Sepes.Infrastructure.Service
             //Send notification to worker?
 
             //Create storage account resource, add to dto
-           
+            await ScheduleCreationOfDiagStorageAccount(dto);    
+            await ScheduleCreationOfNetworkSecurityGroup(dto);
+            await ScheduleCreationOfVirtualNetwork(dto);
+            await ScheduleCreationOfVirtualNetwork(dto);
+            await ScheduleCreationOfBastion(dto);
 
-            //Crate NetworkSecurityGroup resource, add to dto
-
-            //Create VirtualNetwork resource, add to dto
-
-            //await ScheduleCreationOfResource(dto, AzureResourceType.StorageAccount);
             //await ScheduleCreationOfResource(dto, AzureResourceType.NetworkSecurityGroup);
             //await ScheduleCreationOfResource(dto, AzureResourceType.VirtualNetwork);
             //azureSandbox = await CreateDiagStorageAccount(sandboxId, azureSandbox, region, tags);
@@ -176,6 +174,35 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
+        async Task ScheduleCreationOfDiagStorageAccount(SandboxWithCloudResourcesDto dto)
+        {
+            var resourceEntry = await CreateResource(dto, AzureResourceType.StorageAccount);
+            dto.DiagnosticsStorage = resourceEntry;
+        }
+
+        async Task ScheduleCreationOfNetworkSecurityGroup(SandboxWithCloudResourcesDto dto)
+        {
+            var resourceEntry = await CreateResource(dto, AzureResourceType.NetworkSecurityGroup);
+            dto.DiagnosticsStorage = resourceEntry;
+        }
+
+        async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto)
+        {
+            var resourceEntry = await CreateResource(dto, AzureResourceType.VirtualNetwork);
+            dto.DiagnosticsStorage = resourceEntry;
+        }
+
+        async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto)
+        {
+            var resourceEntry = await CreateResource(dto, AzureResourceType.Bastion);
+            dto.DiagnosticsStorage = resourceEntry;
+        }
+
+        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, string resourceType)
+        {
+            return await _sandboxResourceService.Create(dto, resourceType);
+        }
+
 
         //Handles all the stuff around creating the resource
         async Task ScheduleCreationOfResource(SandboxWithCloudResourcesDto dto, string resourceType)
@@ -185,27 +212,13 @@ namespace Sepes.Infrastructure.Service
             // Create resource-entry
             var sandboxResourceEntry = await _sandboxResourceService.Create(dto, resourceType);
 
-            // Create resource-operation-entry
-            //var sandboxOperation = CreateInitialResourceOperation(resourceType);
-            //var operationEntry = await _sandboxResourceService.Create((int)sandboxResourceEntry.Id, sandboxOperation);
+            //Add to dto
 
             //TODO: Add to queue
 
             //TODO: Actual creation. Not handled here
             //TODO: Update relevant entries. Not handled here
-        }
-
-        //private SandboxResourceOperationDto CreateInitialResourceOperation(string operationType, int dependsOn = 0)
-        //{
-        //    return new SandboxResourceOperationDto
-        //    {
-        //        DependsOn = dependsOn,
-        //        Status = "Initial",
-        //        TryCount = 0,
-        //        SessionId = _requestIdService.RequestId(),
-        //        OperationType = operationType,
-        //    };
-        //}
+        }       
 
         //TODO: Get status for specific resource
         //TODO: Get status for resources for sandbox
@@ -232,20 +245,20 @@ namespace Sepes.Infrastructure.Service
             //Find resource group name
             var resourceGroupForSandbox = sandboxFromDb.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.ResourceGroup);
 
-            if(resourceGroupForSandbox == null)
+            if (resourceGroupForSandbox == null)
             {
                 throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
             }
-       
+
             _logger.LogInformation($"Terminating sandbox for study {studyFromDb.Name}. Sandbox name: { sandboxFromDb.Name}. Deleting Resource Group {resourceGroupForSandbox.ResourceGroupName} and all it's contents");
-           //TODO: Order instead of performing
+            //TODO: Order instead of performing
             //await _resourceGroupService.Delete(sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName);
 
             _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox with id {0} deleted", studyId);
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
-       
+
 
         void SetSandboxAsDeleted(Sandbox sandbox)
         {
@@ -260,7 +273,7 @@ namespace Sepes.Infrastructure.Service
             foreach (var curResource in sandbox.Resources)
             {
                 curResource.Deleted = DateTime.UtcNow;
-                curResource.DeletedBy = user.UserName;               
+                curResource.DeletedBy = user.UserName;
             }
         }
 

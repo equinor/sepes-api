@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -104,7 +103,7 @@ namespace Sepes.Infrastructure.Service
                     new SandboxResourceOperation()
                     {
                     OperationType = CloudResourceOperationType.CREATE,
-                    SessionId = _requestIdService.RequestId()
+                    CreatedBySessionId = _requestIdService.RequestId()
                     }
                 }
             };

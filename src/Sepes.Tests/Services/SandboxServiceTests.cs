@@ -66,38 +66,76 @@ namespace Sepes.Tests.Services
 
         }
 
+        async Task CreateSandbox(int studyId) {
+            RefreshTestDb();
+            var sandboxService = ServiceProvider.GetService<ISandboxService>();
+         
+            await AddStudyToTestDatabase(studyId);
+
+            var sandboxCreateDto = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
+            _ = await sandboxService.CreateAsync(studyId, sandboxCreateDto);  
+
+
+        }
+
+        async Task<SandboxDto> CreateAndGetSandbox(int studyId)
+        {
+            var sandboxService = ServiceProvider.GetService<ISandboxService>();
+
+            await CreateSandbox(studyId);
+            var sandboxesForStydy = await sandboxService.GetSandboxesForStudyAsync(studyId);
+            var newlyCreatedSandbox = sandboxesForStydy.FirstOrDefault();
+
+            return newlyCreatedSandbox;
+        }
+
         [Fact]
         public async void AddSandboxToStudyAsync_ShouldAddSandbox()
         {
             RefreshTestDb();
-            var sandboxService = ServiceProvider.GetService<ISandboxService>();
+            
             int studyId = 1;
-            await AddStudyToTestDatabase(studyId);
+            var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);         
 
-            var sandbox = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
-            _ = await sandboxService.CreateAsync(studyId, sandbox);
-            var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
+            Assert.NotNull(newlyCreatedSandbox);
+            Assert.NotNull(newlyCreatedSandbox.Resources);
+            Assert.Equal(6, newlyCreatedSandbox.Resources.Count); //Resource group, network, nsg, diag stor, bastion
 
-            Assert.NotEmpty(sandboxes);
-            Assert.Single<SandboxDto>(sandboxes);
-
-            //What to expect
-            var ourSandbox = sandboxes.FirstOrDefault();
-
-            Assert.NotNull(ourSandbox);
-            Assert.NotNull(ourSandbox.Resources);
-            Assert.Equal(1, ourSandbox.Resources.Count); //Resource group, network, nsg, diag stor, bastion
-
-            var sandboxResourceGroup = ourSandbox.Resources.FirstOrDefault(o=> o.Type == AzureResourceType.ResourceGroup);
-
+            //Resource group test
+            var sandboxResourceGroup = newlyCreatedSandbox.Resources.FirstOrDefault(o=> o.Type == AzureResourceType.ResourceGroup);         
             Assert.NotNull(sandboxResourceGroup);      
             Assert.Equal("Success", sandboxResourceGroup.LastKnownProvisioningState);
 
-            //Resource group resource created
-            //VNet resource and operation created
-            //NSG resource and operation created
-            //diag stor account resource and operation created
+            //Diag storage account
+            var diagStorageAccount = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.StorageAccount);
+            CommonTestsForScheduledResources(diagStorageAccount);
 
+            //VNet resource and operation created
+            var vNet = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.VirtualNetwork);
+            CommonTestsForScheduledResources(vNet);
+
+            //NSG resource and operation created
+            var nsg = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.NetworkSecurityGroup);
+            CommonTestsForScheduledResources(nsg);
+        }
+
+        void CommonTestsForScheduledResources(SandboxResourceLightDto dto)
+        {
+            Assert.NotNull(dto);
+            Assert.Null(dto.LastKnownProvisioningState);
+            Assert.Null(dto.Status);      
+        }
+
+        [Fact]
+        public async void SetUpSandboxResources_ShouldSucceed()
+        {
+            RefreshTestDb();
+
+            int studyId = 1;
+            var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
+
+
+            //Call the method that picks up work
         }
 
         [Theory]
