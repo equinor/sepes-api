@@ -53,7 +53,7 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
-            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            //services.AddTransient<IAzureQueueService, AzureQueueServiceBase>();
             services.AddTransient<IVariableService, VariableService>();
             services.AddTransient<IStudyService, StudyService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();

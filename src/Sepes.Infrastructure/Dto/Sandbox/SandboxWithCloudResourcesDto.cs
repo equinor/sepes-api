@@ -1,7 +1,4 @@
-﻿using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Storage.Fluent;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
@@ -23,7 +20,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public SandboxResourceDto ResourceGroup { get; set; }       
 
-        public IStorageAccount DiagnosticsStorage { get; set; }
+        public SandboxResourceDto DiagnosticsStorage { get; set; }
 
         //public INetworkSecurityGroup NetworkSecurityGroup { get; set; }
 
