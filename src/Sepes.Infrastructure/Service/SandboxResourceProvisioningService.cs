@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -13,73 +14,122 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly IHasRequestId _requestIdService;
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly IAzureResourceGroupService _resourceGroupService;
-        readonly IAzureVNetService _vNetService;
-        readonly IAzureNwSecurityGroupService _nsgService;
-        readonly IAzureStorageAccountService _storageService;
-        readonly IAzureBastionService _bastionService;
-        readonly IAzureVMService _vmService;
-        readonly IAzureQueueService _azureQueueService;
-       
+        readonly ISandboxResourceOperationService _sandboxResourceOperationService;        
+        readonly IResourceProvisioningQueueService _workQueue;
+
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IHasRequestId requestIdService, ISandboxResourceService sandboxResourceService, IAzureResourceGroupService resourceGroupService
-            , IAzureVNetService vNetService, IAzureBastionService bastionService, IAzureNwSecurityGroupService nsgService
-            , IAzureVMService vmService, IAzureStorageAccountService storageService, IAzureQueueService azureQueueService
+        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IHasRequestId requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _requestIdService = requestIdService;
-            _sandboxResourceService = sandboxResourceService ?? throw new ArgumentNullException(nameof(sandboxResourceService));
-            _resourceGroupService = resourceGroupService ?? throw new ArgumentNullException(nameof(resourceGroupService));
-            _vNetService = vNetService ?? throw new ArgumentNullException(nameof(vNetService));
-            _bastionService = bastionService ?? throw new ArgumentNullException(nameof(bastionService));
-            _nsgService = nsgService ?? throw new ArgumentNullException(nameof(nsgService));
-            _vmService = vmService ?? throw new ArgumentNullException(nameof(vmService));
-            _storageService = storageService ?? throw new ArgumentNullException(nameof(storageService));
-            _azureQueueService = azureQueueService ?? throw new ArgumentNullException(nameof(azureQueueService));
-            
-        }     
+            _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));          
+            _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
 
-        public async Task DoWork()
+        }
+
+        public async Task LookForWork()
         {
-            // This method should take orders from queue, check for dependencies and execute.
-            var queueMessage = await _azureQueueService.RecieveMessage();
-            var workOrder = _azureQueueService.MessageToSandboxResourceOperation(queueMessage);
-            if(workOrder.DependsOn > 0)
-            {
-                // Skip queue item
-                // Possibly after checking if dependent resources already exists.
-                return;
-            }
-            else // No dependencies => Execute workOrder
-            {
-                if (workOrder.TryCount > 2)
-                {
-                    // Report that order has failed too many times.
-                    _logger.LogCritical($"Workorder {workOrder.Id} : {workOrder.Description} exceeded max retry count!");
-                    return;
-                }
-                else
-                {
-                    // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
-                    // Possibly implement an ActionResolver...
-                    // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
+            var reservedWork = await _workQueue.RecieveMessageAsync();
+            await CarryOutWork(reservedWork);
+        }
 
-                    //Possible actions steps:
-                    // var service = resolveService(workOrder)
-                    // var action = resolveAction(workOrder)
-                    // var result = await service.doAction(action)
-                    // await sandboxResourceOperationService.RemoveDependencies(workOrder);
-                    // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
-                    // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
+        public async Task CarryOutWork(ProvisioningQueueParentDto work)
+        {
+            foreach (var curChild in work.Children)
+            {
+                try
+                {
+                    var resource = await _sandboxResourceOperationService.GetByIdAsync(curChild.SandboxResourceOperationId);
+
+                    if (resource.TryCount > 2)
+                    {
+
+                        //TODO: Delete from queue
+                        // TODO: Report that order has failed too many times.
+                        // TODO: Update resource operation table and set FAILED STATE (CloudResourceOperationState.FAILED)
+                        _logger.LogCritical($"ResourceOperation {curChild.SandboxResourceOperationId}: {curChild.Description} exceeded max retry count {curChild.MaxTryCount}!");
+                        return;
+                    }
+                    else
+                    {
+
+                        //TODO: Update queue with relevant timeout + 1 min 
+
+                        // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
+                        // Possibly implement an ActionResolver...
+                        // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
+
+                        //Possible actions steps:
+                        // var service = resolveService(workOrder)
+                        // var action = resolveAction(workOrder)
+                        // var result = await service.doAction(action)
+                        // await sandboxResourceOperationService.RemoveDependencies(workOrder);
+                        // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
+                        // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
+                    }
                 }
+                catch (Exception ex)
+                {
+                    //RETRY X NUMBER OF TIMES
+                    //TODO: HANDLE FAILE OPERATION
+                    //INCREASE RETRY COUNT IN DB
+                    //RE-QUEUE ITEM, can it go first?
+                    throw;
+                }
+               
+
             }
+
             // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
-            throw new NotImplementedException();
-        }           
+        }
+
+        //Into work:
+        //Add as a single operation
+        //Create xx resources
+        //Ordered
+        //Mother/child relationship?
+        //Remember for operations: The status, readyForProcessing, inprogress, done 
+
+        //When picking up
+        //Is there a delete operation? Then this superseeds all the other?
+
+        //public async Task CarryOutWork(ProvisioningQueueParentDto workOrder)
+        //{
+        //    if (workOrder.DependsOn > 0)
+        //    {
+        //        // Skip queue item
+        //        // Possibly after checking if dependent resources already exists.
+        //        return;
+        //    }
+        //    else // No dependencies => Execute workOrder
+        //    {
+        //        if (workOrder.TryCount > workOrder.MaxTryCount)
+        //        {
+        //            // Report that order has failed too many times.
+        //            _logger.LogCritical($"Workorder {workOrder.Id} : {workOrder.Description} exceeded max retry count {workOrder.MaxTryCount}!");
+        //            return;
+        //        }
+        //        else
+        //        {
+        //            // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
+        //            // Possibly implement an ActionResolver...
+        //            // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
+
+        //            //Possible actions steps:
+        //            // var service = resolveService(workOrder)
+        //            // var action = resolveAction(workOrder)
+        //            // var result = await service.doAction(action)
+        //            // await sandboxResourceOperationService.RemoveDependencies(workOrder);
+        //            // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
+        //            // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
+        //        }
+        //    }
+
+        //    // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
+        //}
 
 
         public async Task<SandboxWithCloudResourcesDto> CreateDiagStorageAccount(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
@@ -153,25 +203,25 @@ namespace Sepes.Infrastructure.Service
             //return azureSandbox;
         }
 
-        public async Task<SandboxWithCloudResourcesDto> CreateBastion(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
-        {
-            //TODO: How to make this ready for execution after picking up queue message?
-            _logger.LogInformation($"Creating Bastion for sandbox: {azureSandbox.SandboxName}");
-            var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId, tags);
-            await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
-            return azureSandbox;
-        }
+        //public async Task<SandboxWithCloudResourcesDto> CreateBastion(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
+        //{
+        //    //TODO: How to make this ready for execution after picking up queue message?
+        //    _logger.LogInformation($"Creating Bastion for sandbox: {azureSandbox.SandboxName}");
+        //    var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId, tags);
+        //    await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
+        //    return azureSandbox;
+        //}
 
-        public async Task<SandboxWithCloudResourcesDto> CreateVM(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
-        {
-            //TODO: How to make this ready for execution after picking up queue message?
-            _logger.LogInformation($"Creating Virtual Machine for sandbox: {azureSandbox.SandboxName}");
-            var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags, azureSandbox.DiagnosticsStorage.Name);
-            await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
-            return azureSandbox;
-        }
+        //public async Task<SandboxWithCloudResourcesDto> CreateVM(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
+        //{
+        //    //TODO: How to make this ready for execution after picking up queue message?
+        //    _logger.LogInformation($"Creating Virtual Machine for sandbox: {azureSandbox.SandboxName}");
+        //    var virtualMachine = await _vmService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.SandboxName, azureSandbox.VNet.Network, azureSandbox.VNet.SandboxSubnetName, "sepesTestAdmin", "sepesRules12345", "Cheap", "windows", "win2019datacenter", tags, azureSandbox.DiagnosticsStorage.ResourceName);
+        //    await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, virtualMachine.Type, virtualMachine.Key, virtualMachine.Name);
+        //    return azureSandbox;
+        //}
 
-     
+
 
         //public async Task NukeUnitTestSandboxes()
         //{

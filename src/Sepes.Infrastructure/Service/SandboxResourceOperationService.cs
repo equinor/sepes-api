@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceOperationService
+    public class SandboxResourceOperationService : ISandboxResourceOperationService
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
@@ -34,11 +34,11 @@ namespace Sepes.Infrastructure.Service
             var itemFromDb = await GetOrThrowAsync(id);
             var itemDto = _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
             return itemDto;
-        }     
+        }
 
         async Task<SandboxResourceOperation> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResourceOperations.FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResourceOperations.Include(o => o.Resource).FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
