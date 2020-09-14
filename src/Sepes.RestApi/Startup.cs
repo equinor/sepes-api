@@ -122,7 +122,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
-            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<SandboxResourceOperationService>();
