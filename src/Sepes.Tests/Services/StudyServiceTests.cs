@@ -163,7 +163,7 @@ namespace Sepes.Tests.Services
             {
                 FullName = "John",
                 Role = role,
-                Email = "john@test.com"
+                EmailAddress = "john@test.com"
             };
 
             var createdParticipant = await studyService.AddNewParticipantToStudyAsync(studyId, initialUser);
@@ -199,7 +199,7 @@ namespace Sepes.Tests.Services
             {
                 FullName = "John",
                 Role = role,
-                Email = "john@test.com"
+                EmailAddress = "john@test.com"
             };
 
             await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddNewParticipantToStudyAsync(studyId, initialUser));
