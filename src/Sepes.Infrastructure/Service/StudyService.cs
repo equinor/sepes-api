@@ -283,7 +283,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException("Name is empty");
             }
-            if (String.IsNullOrWhiteSpace(user.Email))
+            if (String.IsNullOrWhiteSpace(user.EmailAddress))
             {
                 throw new ArgumentException("Email is empty");
             }
