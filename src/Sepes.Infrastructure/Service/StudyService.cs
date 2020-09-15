@@ -232,7 +232,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.StudyId == participantId);
+            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == participantId);
 
             if (participantFromDb == null)
             {
