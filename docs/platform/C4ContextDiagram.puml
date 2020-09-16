@@ -33,8 +33,8 @@ System(api, "Sepes API", "Provides Sepes functionality through API calls")
 }
 
 Azure(study, "Study", "Virtual machine(s)", "Vendor for Sepes")   
-System(datasets, "Data sets", "Pool of data sets pre-approved for Sepes studies")
-System(datasetStudy, "Study data set", "Study specific data set")0
+AzureStorage(datasets, "Data sets", "Azure Storage", "Pool of data sets pre-approved for Sepes studies")
+AzureStorage(datasetStudy, "Study data set", "Azure Storage", "Study specific data set")
 
 Boundary(bb, "Toolbox for Sepes") {
 AzureActiveDirectory(azureAd, "Users and roles", "Azure AD/AccessIT")
@@ -50,8 +50,8 @@ Rel(viewer, study, "Uses")
 Rel(spa, api, "Uses")
 
 Rel(sepes, study, "Create and configure study")
-Rel(study, datasets, "Create and configure study")
-Rel(study, datasetStudy, "Create and configure study")
+Rel(study, datasets, "Process data from")
+Rel(study, datasetStudy, "Process data from")
 Rel(sepes, azureAd, "Single-sign-on and user roles")
 Rel(sepes, azureAppi, "Sends logs and usage")
 
