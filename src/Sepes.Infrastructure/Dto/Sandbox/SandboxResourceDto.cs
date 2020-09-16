@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
@@ -6,6 +7,8 @@ namespace Sepes.Infrastructure.Dto
     public class SandboxResourceDto : UpdateableBaseDto
     {
         public int SandboxId { get; set; }
+
+        public string SandboxName { get; set; }
 
         public string ResourceId { get; set; }
 
@@ -25,7 +28,14 @@ namespace Sepes.Infrastructure.Dto
 
         public DateTime Deleted { get; set; }
 
-        public string DeletedBy { get; set; }
+        public string DeletedBy { get; set; }       
+
+        public Dictionary<string, string> Tags
+        {
+            get;set;
+        }
+
+        public string Region { get; set; }
 
         public List<SandboxResourceOperationDto> Operations { get; set; }
     }

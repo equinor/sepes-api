@@ -94,7 +94,7 @@ namespace Sepes.Infrastructure.Service
                     var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
                     var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
 
-                    var tagsFromAzure = await serviceForResource.GetTags(resource.ResourceGroupName, resource.ResourceName);
+                    var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
@@ -118,7 +118,7 @@ namespace Sepes.Infrastructure.Service
                                     //Report
                                     _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info: {tag.Key} : {dbValue}");
                                     //Update tag in Azure to match DB-information.
-                                    await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
+                                    await serviceForResource.UpdateTagAsync(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
                                     _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
                                     //TODO: Proper report!
                                 }

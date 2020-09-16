@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 
 namespace Sepes.Infrastructure.Util
@@ -28,6 +29,17 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
             AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            _ => null,
+        };
+
+        public static IPerformCloudResourceCRUD GetCRUDService(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        {
+            AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
+            //AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
+            //AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>(),
+            AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
+            //AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
+            //AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
             _ => null,
         };
 

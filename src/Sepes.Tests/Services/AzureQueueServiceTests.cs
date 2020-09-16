@@ -16,7 +16,7 @@ namespace Sepes.Tests.Services.Azure
         public AzureQueueServiceTests()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            Services.AddTransient<IAzureQueueService, AzureQueueServiceBase>();
+            Services.AddTransient<IAzureQueueService, AzureQueueService>();
             ServiceProvider = Services.BuildServiceProvider();
         }     
 
@@ -32,22 +32,22 @@ namespace Sepes.Tests.Services.Azure
             await queueService.DeleteQueueAsync();
         }
 
-        [Fact]
-        public async void SendMessage_ShouldSendMessage()
-        {
-            var queueService = Init();
+        //[Fact]
+        //public async void SendMessage_ShouldSendMessage()
+        //{
+        //    var queueService = Init();
           
-            var msgsBefore = await queueService.PeekMessagesAsync(32);
-            int noBefore = msgsBefore.ToList().Count;
+        //    var msgsBefore = await queueService.PeekMessagesAsync(32);
+        //    int noBefore = msgsBefore.ToList().Count;
 
-            await queueService.SendMessageAsync("Test message");
+        //    await queueService.SendMessageAsync("Test message");
 
-            var msgsAfter = await queueService.PeekMessagesAsync(32);
-            int noAfter = msgsAfter.ToList().Count;
+        //    var msgsAfter = await queueService.PeekMessagesAsync(32);
+        //    int noAfter = msgsAfter.ToList().Count;
 
-            Assert.Equal<int>(noBefore + 1, noAfter);
-            await Cleanup();
-        }
+        //    Assert.Equal<int>(noBefore + 1, noAfter);
+        //    await Cleanup();
+        //}
 
         //[Fact]
         //public async void SandboxResourceOperationToMessageString_ShouldConvertToSameFormatAsFoundInQueue()

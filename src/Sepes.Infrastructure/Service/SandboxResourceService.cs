@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CreateSandboxResourceGroup(SandboxWithCloudResourcesDto dto)
         {
-            var sandboxResource = await AddInternal(dto.SandboxId, "not created", "not created", AzureResourceType.ResourceGroup);
+            var sandboxResource = await AddInternal(dto.SandboxId, "not created", "not created", AzureResourceType.ResourceGroup, dto.Region.Name, dto.Tags);
            
             dto.ResourceGroup = MapEntityToDto(sandboxResource);
 
@@ -78,7 +78,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type)
         {
             //Create SandboxResource entry and add to database
-            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type);
+            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags);
 
             //Order provisioning by adding to queue
             //_azureQueueService.MessageToSandboxResourceOperation()
@@ -87,9 +87,11 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(newResource.Id);
         }      
 
-        async Task<SandboxResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type)
+        async Task<SandboxResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string,string> tags)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+
+            var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
 
             var newResource = new SandboxResource()
             {
@@ -99,6 +101,8 @@ namespace Sepes.Infrastructure.Service
                 ResourceKey = "n/a",
                 ResourceName = "n/a",
                 ResourceId = "n/a",
+                Region = region,
+                Tags = tagsString,
                 Operations = new List<SandboxResourceOperation> {
                     new SandboxResourceOperation()
                     {

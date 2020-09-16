@@ -80,13 +80,13 @@ namespace Sepes.Infrastructure.Service
             return resource.Inner.ProvisioningState.ToString();
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            return rg.Tags;
+            var vNet = await GetResourceAsync(resourceGroupName, resourceName);
+            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(vNet.Tags);
         }
 
-        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
             var rg = await GetResourceAsync(resourceGroupName, resourceName);
             _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();

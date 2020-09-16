@@ -58,6 +58,17 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(itemFromDb.Id);
         }
 
+        public async Task<SandboxResourceOperationDto> SetInProgress(int id, string requestId, string status)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.CarriedOutBySessionId = requestId;
+            itemFromDb.Status = status;
+            itemFromDb.Updated = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return await GetByIdAsync(itemFromDb.Id);
+        }
+
         private async Task<SandboxResource> GetSandboxResourceOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResources

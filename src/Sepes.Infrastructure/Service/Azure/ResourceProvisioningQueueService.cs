@@ -6,40 +6,41 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class ResourceProvisioningQueueService : AzureQueueServiceBase, IResourceProvisioningQueueService
+    public class ResourceProvisioningQueueService : IResourceProvisioningQueueService
     {
-        protected readonly IConfiguration _config;      
+        readonly ILogger _logger;
+        readonly IAzureQueueService _queueService;
 
-        public ResourceProvisioningQueueService(IConfiguration config, ILogger<ResourceProvisioningQueueService> logger)
-            
-        {
-            _config = config; 
-            _logger = logger;         
-            _connectionString = config["ResourceProvisioningQueueConnectionString"];
-            _queueName = config["ResourceProvisioningQueueName"];
+        public ResourceProvisioningQueueService(IConfiguration config, ILogger<ResourceProvisioningQueueService> logger, IAzureQueueService queueService)            
+        {          
+            _logger = logger;
+            _queueService = queueService;
+            _queueService.Init(config["ResourceProvisioningQueueConnectionString"], config["ResourceProvisioningQueueName"]);
         }
 
         public async Task SendMessageAsync(ProvisioningQueueParentDto message)
         {
-           await base.SendMessageAsync<ProvisioningQueueParentDto>(message);  
+           await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message);  
         }
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
         public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
         {      
-            _ = await base.DeleteMessageAsync(message.OriginalMessage);
+            await _queueService.DeleteMessageAsync(message);
         }       
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
-        public new async Task<ProvisioningQueueParentDto> RecieveMessageAsync()
+        public async Task<ProvisioningQueueParentDto> RecieveMessageAsync()
         {
-            var message = await base.PopNextMessageAsync();
+            var message = await _queueService.RecieveMessageAsync();
 
             if(message != null)
             {
                 var result = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(message.MessageText);
 
-                result.OriginalMessage = message;
+                result.MessageId = message.MessageId;
+                result.PopReceipt = message.PopReceipt;
+                result.MessageText = message.MessageText;
 
                 return result;
             }
@@ -47,9 +48,9 @@ namespace Sepes.Infrastructure.Service
             return null; 
         } 
         
-        public new async Task DeleteQueueAsync()
+        public async Task DeleteQueueAsync()
         {
-            await base.DeleteQueueAsync();
+            await _queueService.DeleteQueueAsync();
         }
     }
 }

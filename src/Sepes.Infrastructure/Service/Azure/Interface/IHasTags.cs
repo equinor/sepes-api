@@ -7,7 +7,7 @@ namespace Sepes.Infrastructure.Service
 {
     public interface IHasTags
     {
-        Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName);
-        Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag);
+        Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName);
+        Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag);
     }
 }

@@ -66,28 +66,7 @@ namespace Sepes.Tests.Services
 
         }
 
-        async Task CreateSandbox(int studyId) {
-            RefreshTestDb();
-            var sandboxService = ServiceProvider.GetService<ISandboxService>();
-         
-            await AddStudyToTestDatabase(studyId);
-
-            var sandboxCreateDto = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
-            _ = await sandboxService.CreateAsync(studyId, sandboxCreateDto);  
-
-
-        }
-
-        async Task<SandboxDto> CreateAndGetSandbox(int studyId)
-        {
-            var sandboxService = ServiceProvider.GetService<ISandboxService>();
-
-            await CreateSandbox(studyId);
-            var sandboxesForStydy = await sandboxService.GetSandboxesForStudyAsync(studyId);
-            var newlyCreatedSandbox = sandboxesForStydy.FirstOrDefault();
-
-            return newlyCreatedSandbox;
-        }
+      
 
         [Fact]
         public async void AddSandboxToStudyAsync_ShouldAddSandbox()
@@ -134,8 +113,35 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
 
+            var provisioningService = ServiceProvider.GetService<ISandboxResourceProvisioningService>();
+
+            
+            await provisioningService.LookForWork();
+
 
             //Call the method that picks up work
+        }
+
+        async Task CreateSandbox(int studyId)
+        {
+            RefreshTestDb();
+            var sandboxService = ServiceProvider.GetService<ISandboxService>();
+
+            await AddStudyToTestDatabase(studyId);
+
+            var sandboxCreateDto = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
+            _ = await sandboxService.CreateAsync(studyId, sandboxCreateDto);
+        }
+
+        async Task<SandboxDto> CreateAndGetSandbox(int studyId)
+        {
+            var sandboxService = ServiceProvider.GetService<ISandboxService>();
+
+            await CreateSandbox(studyId);
+            var sandboxesForStydy = await sandboxService.GetSandboxesForStudyAsync(studyId);
+            var newlyCreatedSandbox = sandboxesForStydy.FirstOrDefault();
+
+            return newlyCreatedSandbox;
         }
 
         [Theory]
