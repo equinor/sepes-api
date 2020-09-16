@@ -42,7 +42,7 @@ AzureApplicationInsights(azureAppi, "Logs, usage, metrics", "Application Insight
 }
 
 Rel(sponsor, sepes, "Uses")
-Rel(sponsorRep, sepes, "Uses)
+Rel(sponsorRep, sepes, "Uses")
 
 Rel(vendor, study, "Uses")
 Rel(viewer, study, "Uses")
