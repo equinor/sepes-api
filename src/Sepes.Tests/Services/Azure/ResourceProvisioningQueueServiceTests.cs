@@ -16,18 +16,12 @@ namespace Sepes.Tests.Services.Azure
         public ServiceProvider ServiceProvider { get; protected set; }      
 
         private readonly ProvisioningQueueParentDto mockOperation = new ProvisioningQueueParentDto
-        {
-
-            CreatedBySessionId = "session123451",
+        {          
             Children = new System.Collections.Generic.List<ProvisioningQueueChildDto>() {
 
                 new ProvisioningQueueChildDto(){
                   SandboxResourceId = 1,
-                  SandboxResourceOperationId = 2,
-                  Status = "Updating",
-                  TryCount = 0,
-                  MaxTryCount = 3,
-                  OperationType = CloudResourceOperationState.NOT_STARTED
+                  SandboxResourceOperationId = 2                
                 }
             }
         };
@@ -39,9 +33,10 @@ namespace Sepes.Tests.Services.Azure
             ServiceProvider = Services.BuildServiceProvider();
         }    
 
-        IResourceProvisioningQueueService Init()
+        async Task<IResourceProvisioningQueueService> InitAsync()
         {
-            var queueService = ServiceProvider.GetService<IResourceProvisioningQueueService>();   
+            var queueService = ServiceProvider.GetService<IResourceProvisioningQueueService>();
+            await queueService.DeleteQueueAsync();
             return queueService;
         }
 
@@ -54,7 +49,7 @@ namespace Sepes.Tests.Services.Azure
         [Fact]
         public async void SendMessage_ShouldSendMessage()
         {
-            var queueService = Init();
+            var queueService = await InitAsync();
         
             var msgsBefore = await queueService.RecieveMessageAsync();
 
@@ -64,15 +59,12 @@ namespace Sepes.Tests.Services.Azure
 
             var msgsAfter = await queueService.RecieveMessageAsync();
             Assert.NotNull(msgsAfter);
-            Assert.NotNull(msgsAfter.OriginalMessage);
-            Assert.NotNull(msgsAfter.CreatedBySessionId);
+            Assert.NotNull(msgsAfter.MessageText);         
 
             var messageChild = msgsAfter.Children.SingleOrDefault();
             Assert.NotNull(messageChild);
             Assert.Equal(1, messageChild.SandboxResourceId);
-            Assert.Equal(2, messageChild.SandboxResourceOperationId);
-            Assert.Equal(0, messageChild.TryCount);
-            Assert.Equal(3, messageChild.MaxTryCount);
+            Assert.Equal(2, messageChild.SandboxResourceOperationId);       
      
 
             await Cleanup();

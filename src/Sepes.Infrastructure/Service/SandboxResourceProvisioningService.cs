@@ -1,9 +1,12 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,27 +16,32 @@ namespace Sepes.Infrastructure.Service
     public class SandboxResourceProvisioningService : ISandboxResourceProvisioningService
     {
         readonly ILogger _logger;
+        readonly IServiceProvider _serviceProvider;
         readonly IHasRequestId _requestIdService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;        
         readonly IResourceProvisioningQueueService _workQueue;
 
-
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IHasRequestId requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue
+        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IHasRequestId requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue
             )
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _requestIdService = requestIdService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));          
             _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
-
         }
 
         public async Task LookForWork()
         {
-            var reservedWork = await _workQueue.RecieveMessageAsync();
-            await CarryOutWork(reservedWork);
+            var work = await _workQueue.RecieveMessageAsync();
+
+            if(work != null)
+            {
+                await CarryOutWork(work);
+            }
+          
         }
 
         public async Task CarryOutWork(ProvisioningQueueParentDto work)
@@ -42,33 +50,63 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
-                    var resource = await _sandboxResourceOperationService.GetByIdAsync(curChild.SandboxResourceOperationId);
+                    var resourceOperation = await _sandboxResourceOperationService.GetByIdAsync(curChild.SandboxResourceOperationId);
+                    var resource = resourceOperation.Resource;
+                    var resourceType = resourceOperation.Resource.ResourceType;
 
-                    if (resource.TryCount > 2)
+                    if (resourceOperation.TryCount > 2)
                     {
-
-                        //TODO: Delete from queue
+                        // TODO: Delete from queue
                         // TODO: Report that order has failed too many times.
                         // TODO: Update resource operation table and set FAILED STATE (CloudResourceOperationState.FAILED)
-                        _logger.LogCritical($"ResourceOperation {curChild.SandboxResourceOperationId}: {curChild.Description} exceeded max retry count {curChild.MaxTryCount}!");
+                        resourceOperation = await _sandboxResourceOperationService.UpdateStatus(resourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+                        _logger.LogCritical($"ResourceOperation {curChild.SandboxResourceOperationId}: Operation type:{resourceOperation.OperationType} exceeded max retry count: {resourceOperation.TryCount}!");
                         return;
                     }
                     else
                     {
 
+                        //Update operation with request id and "in progress" state
+                        resourceOperation = await _sandboxResourceOperationService.SetInProgress(resourceOperation.Id.Value, _requestIdService.RequestId(), CloudResourceOperationState.IN_PROGRESS);
+
                         //TODO: Update queue with relevant timeout + 1 min 
+                       
+                     
 
                         // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
                         // Possibly implement an ActionResolver...
                         // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
 
                         //Possible actions steps:
-                        // var service = resolveService(workOrder)
+                        var service = AzureResourceServiceResolver.GetCRUDService(_serviceProvider, resourceType);
+
+                        if (service == null)
+                        {
+                            _logger.LogCritical($"ResourceOperation {curChild.SandboxResourceOperationId}: Unable to resolve CRUD service for type {resourceType}!");
+                            break;
+                        }
+
+                        var crudInput = new CloudResourceCRUDInput() { Name = resource.ResourceName, SandboxName = resource.SandboxName, ResourceGrupName = resource.ResourceGroupName, Region = resource.Region, Tags = resource.Tags };
+
+                        CloudResourceCRUDResult crudResult = null;
+
+                        if(resourceOperation.OperationType == CloudResourceOperationType.CREATE)
+                        {
+                            crudResult = await service.Create(crudInput);
+                        }
+                        else if (resourceOperation.OperationType == CloudResourceOperationType.UPDATE)
+                        {
+
+                        }
+                        else if (resourceOperation.OperationType == CloudResourceOperationType.DELETE)
+                        {
+
+                        }
                         // var action = resolveAction(workOrder)
                         // var result = await service.doAction(action)
                         // await sandboxResourceOperationService.RemoveDependencies(workOrder);
                         // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
-                        // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
+                        _logger.LogInformation($"ResourceOperation {resourceOperation.Id}: Operation type:{resourceOperation.OperationType} finished with provisioningState: {crudResult.CurrentProvisioningState}");
                     }
                 }
                 catch (Exception ex)
@@ -86,51 +124,7 @@ namespace Sepes.Infrastructure.Service
             // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
         }
 
-        //Into work:
-        //Add as a single operation
-        //Create xx resources
-        //Ordered
-        //Mother/child relationship?
-        //Remember for operations: The status, readyForProcessing, inprogress, done 
-
-        //When picking up
-        //Is there a delete operation? Then this superseeds all the other?
-
-        //public async Task CarryOutWork(ProvisioningQueueParentDto workOrder)
-        //{
-        //    if (workOrder.DependsOn > 0)
-        //    {
-        //        // Skip queue item
-        //        // Possibly after checking if dependent resources already exists.
-        //        return;
-        //    }
-        //    else // No dependencies => Execute workOrder
-        //    {
-        //        if (workOrder.TryCount > workOrder.MaxTryCount)
-        //        {
-        //            // Report that order has failed too many times.
-        //            _logger.LogCritical($"Workorder {workOrder.Id} : {workOrder.Description} exceeded max retry count {workOrder.MaxTryCount}!");
-        //            return;
-        //        }
-        //        else
-        //        {
-        //            // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
-        //            // Possibly implement an ActionResolver...
-        //            // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
-
-        //            //Possible actions steps:
-        //            // var service = resolveService(workOrder)
-        //            // var action = resolveAction(workOrder)
-        //            // var result = await service.doAction(action)
-        //            // await sandboxResourceOperationService.RemoveDependencies(workOrder);
-        //            // await sandboxResourceOperationService.UpdateProvisioningState(workOrder);
-        //            // _logger.LogInformation($"WorkOrder {workOrder.Id} : {workOrder.Description} finished with provisioningState: {workOrder.ProvisioningState}");
-        //        }
-        //    }
-
-        //    // When completed should report with provisioning state and mark this in SandboxResourceOperation-table.
-        //}
-
+      
 
         public async Task<SandboxWithCloudResourcesDto> CreateDiagStorageAccount(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
         {

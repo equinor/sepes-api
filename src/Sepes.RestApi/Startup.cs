@@ -35,7 +35,6 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -122,6 +121,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
+            services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();

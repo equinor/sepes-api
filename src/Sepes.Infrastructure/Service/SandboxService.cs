@@ -24,9 +24,9 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
         readonly IStudyService _studyService;
         readonly ISandboxResourceService _sandboxResourceService;
+        readonly IResourceProvisioningQueueService _provisioningQueueService;
 
-
-        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService)
+        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;
@@ -34,6 +34,7 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyService = studyService;
             _sandboxResourceService = sandboxResourceService;
+            _provisioningQueueService = provisioningQueueService;
 
         }
 
@@ -80,14 +81,11 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
-
-
         // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             return await ValidateSandboxAsync(studyFromDb, newSandbox);
-
         }
 
         Task<StudyDto> ValidateSandboxAsync(Study study, SandboxDto newSandbox)
@@ -129,7 +127,6 @@ namespace Sepes.Infrastructure.Service
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
             //TODO: Remember to consider templates specifed as argument
 
-
             var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
@@ -155,52 +152,56 @@ namespace Sepes.Infrastructure.Service
             //Add to queue
             //Send notification to worker?
 
-            //Create storage account resource, add to dto
-            await ScheduleCreationOfDiagStorageAccount(dto);    
-            await ScheduleCreationOfNetworkSecurityGroup(dto);
-            await ScheduleCreationOfVirtualNetwork(dto);
-            await ScheduleCreationOfVirtualNetwork(dto);
-            await ScheduleCreationOfBastion(dto);
+            var queueParentItem = new ProvisioningQueueParentDto();
 
-            //await ScheduleCreationOfResource(dto, AzureResourceType.NetworkSecurityGroup);
-            //await ScheduleCreationOfResource(dto, AzureResourceType.VirtualNetwork);
-            //azureSandbox = await CreateDiagStorageAccount(sandboxId, azureSandbox, region, tags);
-            //azureSandbox = await CreateNetworkSecurityGroup(sandboxId, azureSandbox, region, tags);
-            //azureSandbox = await CreateVirtualNetwork(sandboxId, azureSandbox, region, tags);
-            //TODO: Order bastion
+            //Create storage account resource, add to dto
+            await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
+
+            //TODO: ADD BACK IN
+            //await ScheduleCreationOfNetworkSecurityGroup(dto);
+            //await ScheduleCreationOfVirtualNetwork(dto);
+            //await ScheduleCreationOfVirtualNetwork(dto);
+            //await ScheduleCreationOfBastion(dto);
+
+            
+            await _provisioningQueueService.SendMessageAsync(queueParentItem);
 
             _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
 
             return dto;
         }
 
-        async Task ScheduleCreationOfDiagStorageAccount(SandboxWithCloudResourcesDto dto)
+        async Task ScheduleCreationOfDiagStorageAccount(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var resourceEntry = await CreateResource(dto, AzureResourceType.StorageAccount);
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount);
             dto.DiagnosticsStorage = resourceEntry;
         }
 
-        async Task ScheduleCreationOfNetworkSecurityGroup(SandboxWithCloudResourcesDto dto)
+        async Task ScheduleCreationOfNetworkSecurityGroup(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var resourceEntry = await CreateResource(dto, AzureResourceType.NetworkSecurityGroup);
-            dto.DiagnosticsStorage = resourceEntry;
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup);
+           //TODO: FIX dto.NetworkSecurityGroup = resourceEntry;
         }
 
-        async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto)
+        async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var resourceEntry = await CreateResource(dto, AzureResourceType.VirtualNetwork);
-            dto.DiagnosticsStorage = resourceEntry;
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork);
+           //TOD: FIX: dto.VirtualNetwork = resourceEntry;
         }
 
-        async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto)
+        async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var resourceEntry = await CreateResource(dto, AzureResourceType.Bastion);
-            dto.DiagnosticsStorage = resourceEntry;
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion);
+            //TOD: FIX: dto.Bastion = resourceEntry;
         }
 
-        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, string resourceType)
+        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType)
         {
-            return await _sandboxResourceService.Create(dto, resourceType);
+            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType);
+
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = resourceEntry.Id.Value, SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
+
+            return resourceEntry;
         }
 
 
@@ -218,7 +219,7 @@ namespace Sepes.Infrastructure.Service
 
             //TODO: Actual creation. Not handled here
             //TODO: Update relevant entries. Not handled here
-        }       
+        }
 
         //TODO: Get status for specific resource
         //TODO: Get status for resources for sandbox
