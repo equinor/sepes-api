@@ -1,5 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Constants
-{
+{  
+
     public static class CloudResourceOperationType
     {
         public const string CREATE = "create";

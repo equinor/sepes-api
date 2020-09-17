@@ -12,5 +12,7 @@ namespace Sepes.Infrastructure.Service
         Task DeleteMessageAsync(ProvisioningQueueParentDto message);
 
         Task DeleteQueueAsync();
+
+        Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds);
     }
 }

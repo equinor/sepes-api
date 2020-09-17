@@ -144,27 +144,21 @@ namespace Sepes.Infrastructure.Service
 
             await _sandboxResourceService.CreateSandboxResourceGroup(dto);
 
-            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");
-
-            //FOREACH resource to create
-            //Create record in CloudResource (remember resourece group)
-            //Create record in CloudResourceOperations
-            //Add to queue
-            //Send notification to worker?
+            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");           
 
             var queueParentItem = new ProvisioningQueueParentDto();
-
+            queueParentItem.SandboxId = dto.SandboxId;
+            queueParentItem.Description = $"Create basic resources for Sandbox: {dto.SandboxId}";
+           
             //Create storage account resource, add to dto
             await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
-
-            //TODO: ADD BACK IN
-            //await ScheduleCreationOfNetworkSecurityGroup(dto);
-            //await ScheduleCreationOfVirtualNetwork(dto);
-            //await ScheduleCreationOfVirtualNetwork(dto);
-            //await ScheduleCreationOfBastion(dto);
-
+            await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
+            await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
+            await ScheduleCreationOfBastion(dto, queueParentItem);   
             
             await _provisioningQueueService.SendMessageAsync(queueParentItem);
+
+            //Send notification to worker and tell it that dinner is ready?
 
             _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
 
@@ -180,25 +174,25 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfNetworkSecurityGroup(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup);
-           //TODO: FIX dto.NetworkSecurityGroup = resourceEntry;
+            dto.NetworkSecurityGroup = resourceEntry;
         }
 
         async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
+            //TODO: Add special network rules to resource
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork);
-           //TOD: FIX: dto.VirtualNetwork = resourceEntry;
+            dto.Network = resourceEntry;     
         }
 
         async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion);
-            //TOD: FIX: dto.Bastion = resourceEntry;
+            dto.Bastion = resourceEntry;         
         }
 
         async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType)
         {
             var resourceEntry = await _sandboxResourceService.Create(dto, resourceType);
-
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = resourceEntry.Id.Value, SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
 
             return resourceEntry;

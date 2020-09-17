@@ -2,8 +2,10 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,12 +18,32 @@ namespace Sepes.Infrastructure.Service
             :base (config, logger)
         {         
           
-        }       
+        }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string studyName, string sandboxName, Dictionary<string, string> tags)
+
+        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        {
+            _logger.LogInformation($"Creating Network for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.SandboxName, parameters.Tags);
+            var result = CreateResult(vNet);
+
+            _logger.LogInformation($"Done creating Network for sandbox with Id: {parameters.SandboxName}! Id: {vNet.Id}");
+            return result;
+        }
+
+        CloudResourceCRUDResult CreateResult(AzureVNetDto networkDto)
+        {
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(networkDto.Network);
+            crudResult.CurrentProvisioningState = networkDto.ProvisioningState;
+            crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.BASTION_SUBNET_ID, networkDto.BastionSubnetId);
+            return crudResult;
+        }
+
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
         {
             var networkDto = new AzureVNetDto();
-            var networkName = AzureResourceNameUtil.VNet(studyName, sandboxName);
+            var networkName = AzureResourceNameUtil.VNet(sandboxName);
 
             var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
@@ -40,6 +62,8 @@ namespace Sepes.Infrastructure.Service
                 .WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  
                 .WithTags(tags)
                 .CreateAsync();
+
+            networkDto.ProvisioningState = networkDto.Network.Inner.ProvisioningState.ToString();
 
             return networkDto;
         }

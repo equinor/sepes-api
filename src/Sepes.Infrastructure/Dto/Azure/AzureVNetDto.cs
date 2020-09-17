@@ -4,6 +4,8 @@ namespace Sepes.Infrastructure.Dto
 {
     public class AzureVNetDto
     {
+        public string ProvisioningState { get; set; }
+
         public string BastionSubnetId { get
             {
                 var subnet = Network.Subnets["AzureBastionSubnet"];

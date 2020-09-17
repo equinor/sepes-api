@@ -28,9 +28,9 @@ namespace Sepes.Infrastructure.Service
         readonly IHasRequestId _requestIdService;
         readonly IAzureQueueService _azureQueueService;
         readonly IAzureResourceGroupService _resourceGroupService;
-        readonly SandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
 
-        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IHasRequestId requestIdService, IAzureQueueService azureQueueService, IAzureResourceGroupService resourceGroupService, SandboxResourceOperationService sandboxResourceOperationService)
+        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IHasRequestId requestIdService, IAzureQueueService azureQueueService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
         {
             _db = db;
             _logger = logger;
@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
             // After Resource is created, mark entry in SandboxResourceOperations-table as "created/successful" and update Id in resource-table.
             _ = await UpdateResourceGroup(dto.ResourceGroup.Id.Value, dto.ResourceGroup);
-            _ = await _sandboxResourceOperationService.UpdateStatus(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, azureResourceGroup.ProvisioningState);
+            _ = await _sandboxResourceOperationService.UpdateStatus(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL);
             _logger.LogInformation($"Resource group created for sandbox with Id: {dto.SandboxId}! Id: {dto.ResourceGroupId}, name: {dto.ResourceGroupName}");
         }
 

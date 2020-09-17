@@ -22,8 +22,10 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public SandboxResourceDto DiagnosticsStorage { get; set; }
 
-        //public INetworkSecurityGroup NetworkSecurityGroup { get; set; }
+        public SandboxResourceDto NetworkSecurityGroup { get; set; }
 
-        public AzureVNetDto VNet { get; set; }
+        public SandboxResourceDto Network { get; set; }
+
+        public SandboxResourceDto Bastion { get; set; }
     }
 }
