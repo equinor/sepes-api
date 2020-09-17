@@ -21,6 +21,6 @@ namespace Sepes.Infrastructure.Dto.Azure
 
         public Region Region { get; set; }
 
-        public IEnumerable<KeyValuePair<string, string>> Tags { get; set; }
+        public Dictionary<string, string> Tags { get; set; }
     }
 }

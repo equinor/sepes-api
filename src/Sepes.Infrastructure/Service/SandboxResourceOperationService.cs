@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceOperationService
+    public class SandboxResourceOperationService : ISandboxResourceOperationService
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
@@ -34,11 +34,14 @@ namespace Sepes.Infrastructure.Service
             var itemFromDb = await GetOrThrowAsync(id);
             var itemDto = _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
             return itemDto;
-        }     
+        }
 
         async Task<SandboxResourceOperation> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResourceOperations.FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResourceOperations
+                .Include(o => o.Resource)
+                 .ThenInclude(o => o.Sandbox)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
@@ -48,9 +51,38 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatus(int id, string status)
+        public async Task<SandboxResourceOperationDto> UpdateStatus(int id, string status, string updatedProvisioningState = null)
         {
             var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.Status = status;
+            itemFromDb.Updated = DateTime.UtcNow;
+
+            if(updatedProvisioningState != null)
+            {
+                itemFromDb.Resource.LastKnownProvisioningState = updatedProvisioningState;
+                itemFromDb.Updated = DateTime.UtcNow;                
+            }
+
+            await _db.SaveChangesAsync();
+
+            return await GetByIdAsync(itemFromDb.Id);
+        }
+
+        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCount(int id, string status)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.Status = status;
+            itemFromDb.TryCount++;
+            itemFromDb.Updated = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+
+            return await GetByIdAsync(itemFromDb.Id);
+        }
+
+        public async Task<SandboxResourceOperationDto> SetInProgress(int id, string requestId, string status)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.CarriedOutBySessionId = requestId;
             itemFromDb.Status = status;
             itemFromDb.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -76,13 +77,13 @@ namespace Sepes.Infrastructure.Service
             return GetProvisioningState(resourceGroupName);
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var rg = await GetResourceAsync(resourceGroupName);
-            return rg.Tags;
+            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);         
         }
 
-        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
             var rg = await GetResourceAsync(resourceGroupName);
                 _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
