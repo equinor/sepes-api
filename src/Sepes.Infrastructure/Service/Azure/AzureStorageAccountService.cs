@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService, IPerformCloudResourceCRUD
+    public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
         public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger) : base(config, logger)
         {
@@ -20,6 +20,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
+            _logger.LogInformation($"Creating Storage Account for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
             string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(parameters.SandboxName);
             var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
 
@@ -40,22 +42,19 @@ namespace Sepes.Infrastructure.Service
                 .WithTags(parameters.Tags)
                 .CreateAsync();
 
-            var result = CreateResult(account); 
+            var result = CreateResult(account);
+
+            _logger.LogInformation($"Done creating Storage Account for sandbox with Id: {parameters.SandboxName}! Id: {account.Id}");
 
             return result;
         }
 
         CloudResourceCRUDResult CreateResult(IStorageAccount storageAccount)
         {
-            var result = CreateResultFromIResource(storageAccount);
+            var result = CloudResourceCRUDUtil.CreateResultFromIResource(storageAccount);
             result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
             return result;
-        }
-
-        CloudResourceCRUDResult CreateResultFromIResource(IResource resource)
-        {
-            return new CloudResourceCRUDResult() { Resource = resource, Success = true };
-        }
+        }       
 
         public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
         {

@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         // Updates the message in-place in the queue.
         // The message parameter is a message that has been fetched with RecieveMessage() or RecieveMessages()
-        Task UpdateMessageAsync(QueueStorageItemDto item, int timespan = 30);     
+        Task<QueueStorageItemDto> UpdateMessageAsync(QueueStorageItemDto item, int timespan = 30);
 
         // Returns approximate number of messages in queue.
         // The number is not lower than the actual number of messages in the queue, but could be higher.

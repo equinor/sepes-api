@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Service
         string _connectionString;
         string _queueName;
 
-        public AzureQueueService(ILogger logger)
+        public AzureQueueService(ILogger<AzureQueueService> logger)
         {
             _logger = logger;                  
         }
@@ -107,11 +107,13 @@ namespace Sepes.Infrastructure.Service
 
         // Updates the message in-place in the queue.
         // The message parameter is a message that has been fetched with RecieveMessageRaw() or RecieveMessages()
-        public async Task UpdateMessageAsync(QueueStorageItemDto message, int timespan = 30)
+        public async Task<QueueStorageItemDto> UpdateMessageAsync(QueueStorageItemDto message, int timespan = 30)
         {
             var client = await CreateQueueClient();
-            _ = await client.UpdateMessageAsync(message.MessageId, message.PopReceipt, message.MessageText, TimeSpan.FromSeconds(timespan));
-        }             
+            var updateReceipt = await client.UpdateMessageAsync (message.MessageId, message.PopReceipt, message.MessageText, TimeSpan.FromSeconds(timespan));
+            message.PopReceipt = updateReceipt.Value.PopReceipt;
+            return message;
+        }      
 
         public async Task DeleteQueueAsync()
         {
@@ -147,6 +149,6 @@ namespace Sepes.Infrastructure.Service
             return queueClient;
         }
 
-       
+     
     }
 }

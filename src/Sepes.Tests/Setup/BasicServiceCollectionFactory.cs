@@ -54,7 +54,7 @@ namespace Sepes.Tests.Setup
 
             //Azure resource services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
-            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();

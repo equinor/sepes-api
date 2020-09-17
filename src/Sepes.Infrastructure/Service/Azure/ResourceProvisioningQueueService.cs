@@ -11,8 +11,8 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly IAzureQueueService _queueService;
 
-        public ResourceProvisioningQueueService(IConfiguration config, ILogger<ResourceProvisioningQueueService> logger, IAzureQueueService queueService)            
-        {          
+        public ResourceProvisioningQueueService(IConfiguration config, ILogger<ResourceProvisioningQueueService> logger, IAzureQueueService queueService)
+        {
             _logger = logger;
             _queueService = queueService;
             _queueService.Init(config["ResourceProvisioningQueueConnectionString"], config["ResourceProvisioningQueueName"]);
@@ -20,21 +20,21 @@ namespace Sepes.Infrastructure.Service
 
         public async Task SendMessageAsync(ProvisioningQueueParentDto message)
         {
-           await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message);  
+            await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message);
         }
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
         public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
-        {      
+        {
             await _queueService.DeleteMessageAsync(message);
-        }       
+        }
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
         public async Task<ProvisioningQueueParentDto> RecieveMessageAsync()
         {
             var message = await _queueService.RecieveMessageAsync();
 
-            if(message != null)
+            if (message != null)
             {
                 var result = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(message.MessageText);
 
@@ -45,12 +45,18 @@ namespace Sepes.Infrastructure.Service
                 return result;
             }
 
-            return null; 
-        } 
-        
+            return null;
+        }
+
         public async Task DeleteQueueAsync()
         {
             await _queueService.DeleteQueueAsync();
+        }
+
+        public async Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds)
+        {
+            var updatedMessage = await _queueService.UpdateMessageAsync(message, invisibleForInSeconds);
+            message.PopReceipt = updatedMessage.PopReceipt;
         }
     }
 }

@@ -7,9 +7,8 @@ namespace Sepes.Infrastructure.Dto
     public class ProvisioningQueueParentDto : QueueStorageItemDto
     {
         public int SandboxId { get; set; }
-        //public string CreatedBySessionId { get; set; }      
 
-        //public string CarriedOutBySessionId { get; set; }
+        public string Description { get; set; }
 
         public List<ProvisioningQueueChildDto> Children { get; set; } = new List<ProvisioningQueueChildDto>();    
     }
