@@ -53,6 +53,8 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
             var logMsg = "ConfigureServices starting";
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
@@ -68,7 +70,7 @@ namespace Sepes.RestApi
             Trace.WriteLine("Configuring Application Insights");
             services.AddApplicationInsightsTelemetry(_configuration[ConfigConstants.APPI_KEY]);
 
-            DoMigration();
+    //        DoMigration();
 
             var enableSensitiveDataLogging = true;
 
@@ -81,19 +83,9 @@ namespace Sepes.RestApi
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
-            services.AddMvc(option => option.EnableEndpointRouting = false)
-                .AddNewtonsoftJson(options =>
-                {
-                    options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                    options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                })   
-                .SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
-            
-            services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-             .AddAzureAdBearer(options => _configuration.Bind(options));
+            services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
+                  .AddProtectedWebApiCallsProtectedWebApi(_configuration)
+                  .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
     
@@ -160,7 +152,11 @@ namespace Sepes.RestApi
                     {
                         Implicit = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.TENANT_ID]}/oauth2/authorize")                          
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.TENANT_ID]}/oauth2/authorize"),
+                            Scopes = new Dictionary<string, string>
+                            {
+                                { "User.Impersonation", "Sepes Development" }
+                            }
                         }
                     }
                 });
