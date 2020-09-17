@@ -1,9 +1,6 @@
 ﻿using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Service.Azure.Interface;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sepes.Infrastructure.Util
 {

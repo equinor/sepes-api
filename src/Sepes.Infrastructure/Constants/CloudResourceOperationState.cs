@@ -14,5 +14,5 @@
         public const string IN_PROGRESS = "in progress";
         public const string DONE_SUCCESSFUL = "success";
         public const string FAILED = "failed";
-    }
+    }   
 }
