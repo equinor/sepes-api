@@ -51,10 +51,28 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatus(int id, string status)
+        public async Task<SandboxResourceOperationDto> UpdateStatus(int id, string status, string updatedProvisioningState = null)
         {
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.Status = status;
+            itemFromDb.Updated = DateTime.UtcNow;
+
+            if(updatedProvisioningState != null)
+            {
+                itemFromDb.Resource.LastKnownProvisioningState = updatedProvisioningState;
+                itemFromDb.Updated = DateTime.UtcNow;                
+            }
+
+            await _db.SaveChangesAsync();
+
+            return await GetByIdAsync(itemFromDb.Id);
+        }
+
+        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCount(int id, string status)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.Status = status;
+            itemFromDb.TryCount++;
             itemFromDb.Updated = DateTime.UtcNow;
             await _db.SaveChangesAsync();
 
