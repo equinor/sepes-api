@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -28,7 +29,19 @@ namespace Sepes.Infrastructure.Service
             var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.SandboxName, parameters.Tags);
             var result = CreateResult(vNet);
 
-            _logger.LogInformation($"Done creating Network for sandbox with Id: {parameters.SandboxName}! Id: {vNet.Id}");
+            _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
+
+            string networkSecurityGroupName = null; //Comes from Network Security Group Service 
+
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out networkSecurityGroupName) == false)
+            {
+                throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
+            }
+
+            await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNet.SandboxSubnetName, vNet.Network.Name);       
+
+            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Id: {parameters.SandboxName}! Id: {vNet.Id}");
+
             return result;
         }
 

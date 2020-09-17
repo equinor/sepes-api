@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task LookForWork();
 
-        Task CarryOutWork(ProvisioningQueueParentDto work);
+        Task HandleQueueItem(ProvisioningQueueParentDto work);
 
         //Task<SandboxWithCloudResourcesDto> CreateDiagStorageAccount(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags);
         //Task<SandboxWithCloudResourcesDto> CreateNetworkSecurityGroup(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags);

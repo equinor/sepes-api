@@ -2,6 +2,7 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -35,6 +36,7 @@ namespace Sepes.Infrastructure.Service
         {
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(nsg);
             crudResult.CurrentProvisioningState = nsg.Inner.ProvisioningState.ToString();
+            crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, nsg.Name);
             return crudResult;
         }
 
