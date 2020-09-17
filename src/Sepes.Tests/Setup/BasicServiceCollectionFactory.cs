@@ -2,9 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Primitives;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
@@ -13,7 +10,6 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Mocks;
 using Sepes.Tests.Mocks.Azure;
-using System.Collections.Generic;
 
 namespace Sepes.Tests.Setup
 {
@@ -46,20 +42,24 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IUserService, UserServiceMock>();
             services.AddTransient<IHasRequestId, HasRequestIdMock>();
 
-            
+            //Sepes Services
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<IVariableService, VariableService>();
+            services.AddTransient<IStudyService, StudyService>();
+
+            //Resource provisioning services
+            services.AddSingleton<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
+            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
+
+            //Azure resource services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
-            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
-            services.AddTransient<IAzureQueueService, AzureQueueService>();
-            services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyService, StudyService>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-          
-            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-         
+            services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
+            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();                 
 
             return services;
         }

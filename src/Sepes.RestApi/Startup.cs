@@ -35,7 +35,6 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -118,14 +117,16 @@ namespace Sepes.RestApi
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-            services.AddTransient<SandboxResourceOperationService>();
+            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            //ISandboxResourceOperationService
             services.AddTransient<AzureResourceMonitoringService>();                      
 
             // Register the Swagger generator, defining 1 or more Swagger documents

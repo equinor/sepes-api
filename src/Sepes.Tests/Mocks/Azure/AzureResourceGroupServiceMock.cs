@@ -59,14 +59,14 @@ namespace Sepes.Tests.Mocks.Azure
             return GetOrThrow(resourceGroupName).ProvisioningState;
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             return GetOrThrow(resourceGroupName).Tags;
         }
 
-        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var newTagList = new List<KeyValuePair<string, string>>();         
+            var newTagList = new Dictionary<string, string>();         
 
             var resourceGroup = GetOrThrow(resourceGroupName);        
             
@@ -74,16 +74,16 @@ namespace Sepes.Tests.Mocks.Azure
             {
                 if(curTag.Key == tag.Key)
                 {
-                    newTagList.Add(curTag);                
+                    newTagList.Add(tag.Key, tag.Value);                
                     break;
                 }
                 else
                 {
-                    newTagList.Add(curTag);
+                    newTagList.Add(curTag.Key, curTag.Value);
                 }              
             }
 
-            resourceGroup.Tags = newTagList;
+            resourceGroup.Tags = newTagList;            
         }
     }
 }
