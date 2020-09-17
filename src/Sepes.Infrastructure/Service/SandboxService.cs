@@ -144,18 +144,18 @@ namespace Sepes.Infrastructure.Service
 
             await _sandboxResourceService.CreateSandboxResourceGroup(dto);
 
-            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");           
+            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}");
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = dto.SandboxId;
             queueParentItem.Description = $"Create basic resources for Sandbox: {dto.SandboxId}";
-           
+
             //Create storage account resource, add to dto
             await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
             await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
             await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
-            await ScheduleCreationOfBastion(dto, queueParentItem);   
-            
+            await ScheduleCreationOfBastion(dto, queueParentItem);
+
             await _provisioningQueueService.SendMessageAsync(queueParentItem);
 
             //Send notification to worker and tell it that dinner is ready?
@@ -181,13 +181,13 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: Add special network rules to resource
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork);
-            dto.Network = resourceEntry;     
+            dto.Network = resourceEntry;
         }
 
         async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion);
-            dto.Bastion = resourceEntry;         
+            dto.Bastion = resourceEntry;
         }
 
         async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType)
@@ -198,28 +198,13 @@ namespace Sepes.Infrastructure.Service
             return resourceEntry;
         }
 
-
-        //Handles all the stuff around creating the resource
-        async Task ScheduleCreationOfResource(SandboxWithCloudResourcesDto dto, string resourceType)
+        public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            _logger.LogInformation($"Scheduling a resource create for sandbox: {dto.SandboxName}");
-
-            // Create resource-entry
-            var sandboxResourceEntry = await _sandboxResourceService.Create(dto, resourceType);
-
-            //Add to dto
-
-            //TODO: Add to queue
-
-            //TODO: Actual creation. Not handled here
-            //TODO: Update relevant entries. Not handled here
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            var resources = _mapper.Map<List<SandboxResourceLightDto>>(sandboxFromDb.Resources);
+            return resources;
         }
 
-        //TODO: Get status for specific resource
-        //TODO: Get status for resources for sandbox
-
-        // TODO: Implement deletion of Azure resources. Only deletes from SEPES db as of now
-        //Todo, add a deleted flag instead of actually deleting, so that we keep history
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Deleting sandbox with id {0}, for study {1}", studyId, sandboxId);
@@ -271,6 +256,8 @@ namespace Sepes.Infrastructure.Service
                 curResource.DeletedBy = user.UserName;
             }
         }
+
+
 
         //public Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync()
         //{
