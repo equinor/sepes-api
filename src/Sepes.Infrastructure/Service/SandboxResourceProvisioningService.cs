@@ -158,7 +158,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"ResourceOperation {currentResourceOperation.Id}: Operation type:{currentResourceOperation.OperationType} finished with provisioningState: {currentCrudResult.CurrentProvisioningState}");
 
-            await _sandboxResourceOperationService.UpdateStatus(currentResourceOperation.Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL, currentResourceOperation.Resource.ProvisioningState); 
+            await _sandboxResourceOperationService.UpdateStatus(currentResourceOperation.Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL, currentCrudResult.CurrentProvisioningState); 
             
             return currentCrudResult;
         }
