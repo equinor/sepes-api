@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Graph;
 using Sepes.Infrastructure.Dto;
 using System.Linq;
 
@@ -73,6 +74,10 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>()
                 .ReverseMap();
+
+            //Graph API
+            CreateMap<Microsoft.Graph.User, AzureADUserDto>()                ;
+            
         }
     }
 }
