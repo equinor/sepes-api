@@ -19,12 +19,11 @@ namespace Sepes.Infrastructure.Service
         protected string _subscriptionId { get; set; }
 
 
-        public AzureServiceBase(IConfiguration config, ILogger logger)
-          
+        public AzureServiceBase(IConfiguration config, ILogger logger)          
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
-            var tenantId = config[ConfigConstants.TENANT_ID];
+            var tenantId = config[ConfigConstants.AZ_TENANT_ID];
             var clientId = config[ConfigConstants.AZ_CLIENT_ID];
             var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
 

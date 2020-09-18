@@ -1,10 +1,6 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,8 +8,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
@@ -37,7 +31,6 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -53,24 +46,28 @@ namespace Sepes.RestApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
-
             var logMsg = "ConfigureServices starting";
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
-            var azureAdConfig = new AzureAdOptions();
-            _configuration.GetSection("AzureAd").Bind(azureAdConfig);
+            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            var sepesAzureConfig = new SepesAzureOptions();
-            _configuration.Bind(sepesAzureConfig);
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
+                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
+                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });       
 
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
             Trace.WriteLine("Configuring Application Insights");
-            services.AddApplicationInsightsTelemetry(_configuration[ConfigConstants.APPI_KEY]);
-
-    //        DoMigration();
+            services.AddApplicationInsightsTelemetry(_configuration[ConfigConstants.APPI_KEY]); 
 
             var enableSensitiveDataLogging = true;
 
@@ -84,30 +81,17 @@ namespace Sepes.RestApi
               );
 
             services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
-                  .AddProtectedWebApiCallsProtectedWebApi(_configuration)
-                  .AddInMemoryTokenCaches();
+                 .AddProtectedWebApiCallsProtectedWebApi(_configuration)
+                 .AddInMemoryTokenCaches();
 
-            services.AddHttpClient();
-    
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(MyAllowSpecificOrigins,
-                builder =>
-                {
-                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
-                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                });
-            });
-            /*
-            services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
-                  .AddProtectedWebApiCallsProtectedWebApi(_configuration)
-                  .AddInMemoryTokenCaches();
-            */
+            // Token acquisition service based on MSAL.NET
+            // and chosen token cache implementation
             services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
                .AddInMemoryTokenCaches();
+
+            services.AddHttpClient();
+      
+
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
@@ -152,7 +136,7 @@ namespace Sepes.RestApi
                     {
                         Implicit = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.TENANT_ID]}/oauth2/authorize"),
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
                             Scopes = new Dictionary<string, string>
                             {
                                 { "User.Impersonation", "Sepes Development" }
@@ -285,7 +269,7 @@ namespace Sepes.RestApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllers();                
             });
 
             var logMsgDone = "Configure done";
