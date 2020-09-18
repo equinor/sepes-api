@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,25 +50,12 @@ namespace Sepes.Infrastructure.Service
             return studiesDtos;
         }
 
-        async Task ThrowIfUserDoesNotHaveAccess(Study study)
-        {
-            if (study.Restricted)
-            {
-                var currentUser = await _userService.GetCurrentUserFromDbAsync();
-
-                if (study.StudyParticipants.Where(sp => sp.UserId == currentUser.Id).Any() == false)
-                {
-                    //User does has study specific roles
-                    throw new ForbiddenException($"User {currentUser.UserName} does not have access to study {study.Id}");
-                }
-            }
-        }
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
-            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
+            await StudyAccessUtil.ThrowIfUserCannotViewStudy(_userService, studyFromDb);           
 
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
@@ -89,15 +77,13 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyByIdAsync(newStudyId);
         }
 
-
+       
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-
-            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -143,13 +129,10 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId)
         {
             //TODO: VALIDATION
-            //Delete logo from Azure Blob Storage before deleting study.
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            //Delete logo from Azure Blob Storage before deleting study.       
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_DELETE);
 
-            if (!_userService.CurrentUserIsAdmin())
-            {
-                throw new ForbiddenException("This action requires Admin role!");
-            }
+           
 
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
@@ -180,7 +163,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
+     
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
@@ -200,9 +184,9 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<byte[]> GetLogoAsync(int studyId)
-        {
-            var study = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            string logoUrl = study.LogoUrl;
+        {     
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_READ);
+            string logoUrl = studyFromDb.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
@@ -210,7 +194,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
             var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
@@ -230,8 +214,8 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
-        {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+        {     
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
             var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == participantId);
 
             if (participantFromDb == null)
