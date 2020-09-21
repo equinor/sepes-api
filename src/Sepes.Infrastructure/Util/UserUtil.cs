@@ -43,6 +43,10 @@ namespace Sepes.Infrastructure.Util
         public static string GetUsername(IConfiguration config, IPrincipal principal)
         {
             var claimKey = config[ConfigConstants.CLAIM_USERNAME];
+            //Placeholder
+            //Placeholder
+            //Placeholder
+            //Placeholder
             return GetClaimValue(principal, claimKey);
         }
 
