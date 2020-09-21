@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -7,23 +9,23 @@ namespace Sepes.Infrastructure.Util
 {
     public static class UserUtil
     {
-        //c4c0daf8-a7a3-41b8-91b3-332439661e04
-
-
-        const string CLAIM_TENANT = "http://schemas.microsoft.com/identity/claims/tenantid";
-        const string CLAIM_OID = "http://schemas.microsoft.com/identity/claims/objectidentifier";
-        const string CLAIM_UPN = "http://schemas.microsoft.com/identity/claims/upn";
-        const string CLAIM_FIRSTNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
-        const string CLAIM_SURNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname";
-        const string CLAIM_USERNAME = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";     
-
-
         
+        const string CLAIM_TENANT = "http://schemas.microsoft.com/identity/claims/tenantid";
 
-        public static UserDto CreateSepesUser(IPrincipal principal)
+        public static UserDto CreateSepesUser(IConfiguration config, IPrincipal principal)
         {
             var claimsPrincipal = principal as ClaimsPrincipal;
-            var user = new UserDto(claimsPrincipal);
+
+            var user = new UserDto(
+                claimsPrincipal,
+                GetTenantId(claimsPrincipal),
+                GetOid(config, claimsPrincipal),
+                GetUsername(config, claimsPrincipal),
+                GetFullName(config, claimsPrincipal),
+                GetEmail(config, claimsPrincipal)
+
+        );
+
             return user;
         }
 
@@ -32,35 +34,29 @@ namespace Sepes.Infrastructure.Util
             return GetClaimValue(principal, CLAIM_TENANT);
         }
 
-        public static string GetOid(IPrincipal principal)
+        public static string GetOid(IConfiguration config, IPrincipal principal)
         {
-            return GetClaimValue(principal, CLAIM_OID);      
-        }
-        public static string GetUsername(IPrincipal principal)
-        {
-            return principal.Identity.Name;         
+            var claimKey = config[ConfigConstants.CLAIM_OID];
+            return GetClaimValue(principal, claimKey);
         }
 
-        public static string GetEmail(IPrincipal principal)
+        public static string GetUsername(IConfiguration config, IPrincipal principal)
         {
-            return GetUsername(principal).ToLowerInvariant();
+            var claimKey = config[ConfigConstants.CLAIM_USERNAME];
+            return GetClaimValue(principal, claimKey);
         }
 
-        public static string GetFullName(IPrincipal principal)
+        public static string GetEmail(IConfiguration config, IPrincipal principal)
         {
-            string firstName;
-            string surName;
+            var claimKey = config[ConfigConstants.CLAIM_EMAIL];
+            return GetClaimValue(principal, claimKey).ToLower();
+        }
 
-            if(TryGetClaimValue(principal, CLAIM_FIRSTNAME, out firstName))
-            {
-                if (TryGetClaimValue(principal, CLAIM_SURNAME, out surName))
-                {
-                    return firstName + " " + surName;
-                }
-            }
-
-            return "n/a";            
-        }       
+        public static string GetFullName(IConfiguration config, IPrincipal principal)
+        {
+            var claimKey = config[ConfigConstants.CLAIM_FULLNAME];
+            return GetClaimValue(principal, claimKey);
+        }
 
         static string GetClaimValue(IPrincipal principal, string claimName)
         {
@@ -74,7 +70,7 @@ namespace Sepes.Infrastructure.Util
             var claimsPrincipal = principal as ClaimsPrincipal;
             var relevantClaim = claimsPrincipal.FindFirst(claimName);
 
-            if(relevantClaim == null)
+            if (relevantClaim == null)
             {
                 claimValue = null;
                 return false;
