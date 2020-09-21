@@ -47,6 +47,15 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpGet("{studyId}/sandboxes/{sandboxId}/resources")]
+        [Authorize(Roles = AppRoles.Admin)]
+        //TODO: Must also be possible for sponsor rep and other roles
+        public async Task<IActionResult> GetSandboxResources(int studyId, int sandboxId)
+        {
+            var sandboxes = await _sandboxService.GetSandboxResources(studyId, sandboxId);
+            return new JsonResult(sandboxes);
+        }
+
         [HttpGet("sandboxes/templatelookup")]
         [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep and other roles

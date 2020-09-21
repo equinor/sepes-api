@@ -4,10 +4,11 @@
     {
         public const string ENV_VARIABLE_PREFIX = "SEPES_";
 
-        public const string INSTANCE = "Instance";
-        public const string TENANT_ID = "TenantId";
-        public const string AZ_CLIENT_ID = "ClientId";
-        public const string AZ_CLIENT_SECRET = "ClientSecret";
+        public const string AZ_INSTANCE = "AzureAd:Instance";
+        public const string AZ_TENANT_ID = "AzureAd:TenantId";
+        public const string AZ_CLIENT_ID = "AzureAd:ClientId";
+        public const string AZ_CLIENT_SECRET = "AzureAd:ClientSecret";
+   
 
         public const string APPI_KEY = "Appi_Key";
         public const string KEY_VAULT = "KeyVault_Url";
