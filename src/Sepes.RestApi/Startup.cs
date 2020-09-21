@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -87,13 +88,7 @@ namespace Sepes.RestApi
             // Token acquisition service based on MSAL.NET
             // and chosen token cache implementation
             services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
-               .AddInMemoryTokenCaches();
-
-            services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            })
-             .AddAzureAdBearer(options => _configuration.Bind(options));    
+               .AddInMemoryTokenCaches();          
 
             services.AddCors(options =>
             {
@@ -134,9 +129,9 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             //ISandboxResourceOperationService
-            services.AddTransient<AzureResourceMonitoringService>();                      
+            services.AddTransient<AzureResourceMonitoringService>();                     
 
-            services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
+       
             services.AddTransient<IAzureADUsersService, AzureADUsersService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<SandboxResourceOperationService>();
