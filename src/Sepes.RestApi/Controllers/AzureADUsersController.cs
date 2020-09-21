@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -25,7 +26,5 @@ namespace Sepes.RestApi.Controllers
             var result = await _azureADUsersService.SearchUsers(search, limit);
             return Ok(result);
         }
-
-
     }
 }
