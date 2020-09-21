@@ -42,18 +42,6 @@ namespace Sepes.Infrastructure.Dto
             Email = email;
             TenantId = tenantId;
             ObjectId = objectId;
-        }
-
-        public UserDto(int id, string userName, string fullName, string email, string tenantId, string objectId)
-        {
-            Id = id;
-            UserName = userName;
-            FullName = fullName;
-            Email = email;
-            TenantId = tenantId;
-            ObjectId = objectId;
-        }
-
-           
+        }          
     }
 }
