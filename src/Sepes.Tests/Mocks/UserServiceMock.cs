@@ -15,7 +15,7 @@ namespace Sepes.Tests.Mocks
 
         public UserDto GetBaseUser()
         {
-            return new UserDto("testuser", "Test User", "testuser@equinor.com", "abcd", "objectId");
+            return new UserDto("abcd", "objectId", "testuser", "Test User", "testuser@equinor.com");
         }
 
         public UserDto GetCurrentUser()
