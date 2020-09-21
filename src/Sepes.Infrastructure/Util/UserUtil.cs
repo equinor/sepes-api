@@ -60,9 +60,14 @@ namespace Sepes.Infrastructure.Util
 
         static string GetClaimValue(IPrincipal principal, string claimName)
         {
-            var claimsPrincipal = principal as ClaimsPrincipal;
-            var relevantClaim = claimsPrincipal.FindFirst(claimName);
-            return relevantClaim.Value;
+            string claimValue = null;
+
+            if(TryGetClaimValue(principal, claimName, out claimValue))
+            {
+               return claimValue;               
+            }
+
+            throw new NullReferenceException($"Claim with name {claimName} not present!");        
         }
 
         static bool TryGetClaimValue(IPrincipal principal, string claimName, out string claimValue)
