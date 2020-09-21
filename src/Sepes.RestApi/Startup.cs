@@ -89,6 +89,23 @@ namespace Sepes.RestApi
             services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
                .AddInMemoryTokenCaches();
 
+            services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+             .AddAzureAdBearer(options => _configuration.Bind(options));    
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy(MyAllowSpecificOrigins,
+                builder =>
+                {
+                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
+                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
+                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
+                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
             services.AddHttpClient();
       
 
@@ -97,6 +114,7 @@ namespace Sepes.RestApi
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IHasPrincipal, PrincipalService>();
+            services.AddTransient<IHasRequestId, RequestIdService>();
             services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
@@ -106,12 +124,18 @@ namespace Sepes.RestApi
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            services.AddTransient<IAzureNwSecurityGroupService, AzureNwSecurityGroupService>();
+            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVMService, AzureVMService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
+            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            //ISandboxResourceOperationService
+            services.AddTransient<AzureResourceMonitoringService>();                      
+
             services.AddTransient<ISandboxWorkerService, SandboxWorkerService>();
             services.AddTransient<IAzureADUsersService, AzureADUsersService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
@@ -158,6 +182,7 @@ namespace Sepes.RestApi
                             Scheme = "oauth2",
                             Name = "Bearer",
                             In = ParameterLocation.Header,
+                            
 
                         },
                         new List<string>()

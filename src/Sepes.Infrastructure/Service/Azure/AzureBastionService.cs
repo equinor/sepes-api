@@ -5,8 +5,11 @@ using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,9 +22,37 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags)
+        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
-            var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); // $"pip-{studyName}-{sandboxName}-bastion";
+            _logger.LogInformation($"Creating Bastion for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            string subnetId = null;
+
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out subnetId) == false)
+            {
+                throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
+            }
+            
+            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.SandboxName, subnetId, parameters.Tags);
+            var result = CreateResult(bastionHost);
+
+            _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
+            return result;
+        }
+
+        CloudResourceCRUDResult CreateResult(BastionHost bastion)
+        {
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(bastion);
+            crudResult.CurrentProvisioningState = bastion.ProvisioningState.ToString();
+            return crudResult;
+        }
+
+
+        public async Task<BastionHost> Create(Region region, string resourceGroupName, string sandboxName, string subnetId, Dictionary<string, string> tags)
+        {
+       
+
+            var publicIpName = AzureResourceNameUtil.BastionPublicIp(sandboxName); 
 
             var pip = await _azure.PublicIPAddresses.Define(publicIpName)
              .WithRegion(region)
@@ -54,7 +85,7 @@ namespace Sepes.Infrastructure.Service
                 };
 
                 var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
-
+            
                 return createdBastion;
             }
         }
@@ -78,17 +109,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string bastionHostName)
-        {
-            var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
-
-            if (bastion == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
         {
@@ -102,13 +122,13 @@ namespace Sepes.Infrastructure.Service
             return bastion.ProvisioningState;
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var rg = await GetResourceAsync(resourceGroupName, resourceName);
             return rg.Tags;
         }
 
-        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
             var rg = await GetResourceAsync(resourceGroupName, resourceName);
             // TODO: A bit unsure if this actually updates azure resource...

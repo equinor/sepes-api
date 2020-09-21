@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Util
         }
         public static string Sandbox(string studyName) => StripWhitespace($"{studyName}-sandbox");
 
-        public static string VNet(string studyName, string sandboxName) => StripWhitespace($"vnet-study-{sandboxName}");
+        public static string VNet(string sandboxName) => StripWhitespace($"vnet-study-{sandboxName}");
 
         public static string SubNet(string sandboxName) => StripWhitespace($"snet-{sandboxName}");
 

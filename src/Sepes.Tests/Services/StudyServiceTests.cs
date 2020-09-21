@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
@@ -138,6 +139,71 @@ namespace Sepes.Tests.Services
 
             _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyByIdAsync(studyId));
 
+        }
+
+        [Theory]
+        [InlineData(1, 2, "Sponsor Rep")]
+        [InlineData(1, 2, "Vendor Admin")]
+        [InlineData(1, 2, "Vendor Contributor")]
+        [InlineData(1, 2, "Study Viewer")]
+        public async void TestAddNewUser(int studyId, int expected, string role)
+        {
+            RefreshTestDb();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            var initialStudy = new StudyCreateDto()
+            {
+                Name = "TestStudy12345",
+                Vendor = "Equinor"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(initialStudy);
+
+            var initialUser = new UserCreateDto()
+            {
+                FullName = "John",
+                Role = role,
+                EmailAddress = "john@test.com"
+            };
+
+            var createdParticipant = await studyService.AddNewParticipantToStudyAsync(studyId, initialUser);
+            //int studyId = (int)createdStudy.Id;
+
+            var study = studyService.GetStudyByIdAsync(studyId);
+
+
+           // var updatedStudy = await studyService.UpdateStudyDetailsAsync(studyId, studyWithoutReqFields);
+           // |
+            Assert.Equal(expected, createdParticipant.Participants.Count);
+        }
+
+        [Theory]
+        [InlineData(1, "Sponsor Re1p")]
+        [InlineData(1, "Vendor Ad1min")]
+        [InlineData(1, "Vendor Contr1ibutor")]
+        [InlineData(1, "Study Vie1wer")]
+        public async void TestAddNewUserInvalidRole(int studyId, string role)
+        {
+            RefreshTestDb();
+            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+
+            var initialStudy = new StudyCreateDto()
+            {
+                Name = "TestStudy12345",
+                Vendor = "Equinor"
+            };
+
+            var createdStudy = await studyService.CreateStudyAsync(initialStudy);
+
+            var initialUser = new UserCreateDto()
+            {
+                FullName = "John",
+                Role = role,
+                EmailAddress = "john@test.com"
+            };
+
+            await Assert.ThrowsAsync<ArgumentException>(() => studyService.AddNewParticipantToStudyAsync(studyId, initialUser));
+            //Assert.Equal(expected, createdParticipant.Participants.Count);
         }
         //        [Fact]
         //        public async void TestSave()

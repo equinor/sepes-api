@@ -1,6 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.Graph;
+using Microsoft.Azure.Management.ResourceManager.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Util;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Model.Automapper
@@ -15,8 +21,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Study, StudyDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
-                    .ForMember(dest => dest.Participants,source => source.MapFrom(x => x.StudyParticipants))
-                    ;
+                    .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+
 
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
@@ -41,26 +47,40 @@ namespace Sepes.Infrastructure.Model.Automapper
                  .ForMember(dest => dest.Resources,
                     source => source.MapFrom(x => x.Resources));
 
-            CreateMap<SandboxResource, SandboxResourceLightDto>()
-                    .ForMember(dest => dest.Name,source => source.MapFrom(x => x.ResourceName))
-                     .ForMember(dest => dest.Status, source => source.MapFrom(x => x.LastKnownProvisioningState))
-                     .ForMember(dest => dest.Type, source => source.MapFrom(x => x.ResourceType));
-
             CreateMap<SandboxDto, Sandbox>();
-              
 
             CreateMap<SandboxCreateDto, Sandbox>();
-          
 
-            //STUDY PARTICIPANTS
-            CreateMap<User, ParticipantDto>()
+            CreateMap<SandboxResource, SandboxResourceLightDto>()
+            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+             .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
+             .ForMember(dest => dest.Type, source => source.MapFrom(x => x.ResourceType))
+              .ForMember(dest => dest.Status, source => source.MapFrom(x => x.Status))
+             ;
+
+            //CLOUD RESOURCE
+
+            CreateMap<SandboxResource, SandboxResourceDto>()
+                .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
+                .ForMember(dest=> dest.SandboxName, source => source.MapFrom(s=> s.Sandbox.Name));
+
+
+            CreateMap<SandboxResourceDto, SandboxResource>()
+                .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
+
+            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>()
                 .ReverseMap();
+
+            //USERS/PARTICIPANTS
+
+            CreateMap<User, ParticipantDto>().ReverseMap();
+            CreateMap<User, UserDto>().ReverseMap();
+
             CreateMap<User, ParticipantListItemDto>()
                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.FullName));
 
-            CreateMap<ParticipantDto, User>();
-
-            CreateMap<User, UserDto>().ReverseMap();
+            CreateMap<User, UserCreateDto>()
+              .ReverseMap();
 
             CreateMap<StudyParticipant, StudyParticipantDto>()
                 .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.User.EmailAddress))
@@ -78,6 +98,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             //Graph API
             CreateMap<Microsoft.Graph.User, AzureADUserDto>()                ;
             
+                  .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
+
+            //AZURE
+            CreateMap<IResource, AzureResourceDto>();
+
+            CreateMap<IResourceGroup, AzureResourceGroupDto>()
+                 .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
         }
     }
 }

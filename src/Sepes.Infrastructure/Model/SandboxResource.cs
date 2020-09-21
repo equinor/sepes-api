@@ -23,12 +23,18 @@ namespace Sepes.Infrastructure.Model
 
         public string LastKnownProvisioningState { get; set; }
 
+        public string Tags { get; set; }
+
+        public string Region { get; set; }
+
+        public string ConfigString { get; set; }
+
         public DateTime? Deleted { get; set; }
 
         public string DeletedBy { get; set; }
 
         public Sandbox Sandbox { get; set; }
 
-        public List<SandboxResourceOperation> Operations{ get; set; }
+        public List<SandboxResourceOperation> Operations { get; set; }
     }    
 }

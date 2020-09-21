@@ -152,6 +152,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<SandboxResourceOperation>()
                 .Property(sro => sro.Created)
                 .HasDefaultValueSql("getutcdate()");
+
             modelBuilder.Entity<SandboxResourceOperation>()
                 .Property(sro => sro.Updated)
                 .HasDefaultValueSql("getutcdate()");
