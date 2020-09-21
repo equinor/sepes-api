@@ -1,6 +1,8 @@
 ﻿using Sepes.Infrastructure.Dto;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 namespace Sepes.Infrastructure.Util
 {
@@ -31,6 +33,21 @@ namespace Sepes.Infrastructure.Util
         static Dictionary<string, string> CreateBaseTags(string studyName)
         {
            return new Dictionary<string, string>() { { "CreatedByMachine", Environment.MachineName }, { "StudyName",studyName } };
+        }
+
+        public static string TagDictionaryToString(Dictionary<string, string> tags)
+        {
+            return JsonSerializer.Serialize(tags);          
+        }
+
+        public static Dictionary<string, string> TagReadOnlyDictionaryToDictionary(IReadOnlyDictionary<string, string> tags)
+        {
+            return tags.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        public static Dictionary<string, string> TagStringToDictionary(string tags)
+        {
+            return JsonSerializer.Deserialize<Dictionary<string, string>>(tags);
         }
 
     }
