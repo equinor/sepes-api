@@ -94,7 +94,7 @@ namespace Sepes.Infrastructure.Service
                     var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
                     var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
 
-                    var tagsFromAzure = await serviceForResource.GetTags(resource.ResourceGroupName, resource.ResourceName);
+                    var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
@@ -118,7 +118,7 @@ namespace Sepes.Infrastructure.Service
                                     //Report
                                     _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info: {tag.Key} : {dbValue}");
                                     //Update tag in Azure to match DB-information.
-                                    await serviceForResource.UpdateTag(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
+                                    await serviceForResource.UpdateTagAsync(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
                                     _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
                                     //TODO: Proper report!
                                 }
@@ -137,24 +137,38 @@ namespace Sepes.Infrastructure.Service
         {
             // Check that resources marked as deleted in db does not exist in Azure.
             var deletedResources = await _sandboxResourceService.GetDeletedResourcesAsync();
+
             foreach (var resource in deletedResources)
             {
                 try
                 {
-                    var serviceForResource = AzureResourceServiceResolver.GetServiceWithExistance(_serviceProvider, resource.ResourceType);
+                    var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, resource.ResourceType);
+
                     if (serviceForResource == null)
                     {
                         _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
                     }
                     else
                     {
-                        var resourceExists = await serviceForResource.Exists(resource.ResourceGroupName, resource.ResourceName);
-                        if (resourceExists)
+                        try
                         {
-                            // Do stuff.
-                            // TODO: Either remove Deleted tag in db or delete from Azure.
-                            _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
+                            var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
+
+                            if (!String.IsNullOrWhiteSpace(provisioningState))
+                            {
+                                //TODO: VERIFY THAT THIS WORKS AND THAT IT TAKES INNTO ACCOUNT RESOURCES THAT HAS BEEN RECENTLY DELETED(LIKE 5 minutes ago)
+                             
+                                // TODO: Either remove Deleted tag in db or delete from Azure.
+                                _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
+
+                            }
                         }
+                        catch (Exception)
+                        {
+                            //TODO: Handle not found exception, that would be a good sign
+                            throw;
+                        }
+                      
                     }
                 }
                 catch (Exception ex)

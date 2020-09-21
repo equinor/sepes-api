@@ -3,6 +3,7 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,44 @@ namespace Sepes.Infrastructure.Service
         {
 
         }
+
+        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        {
+            _logger.LogInformation($"Creating Storage Account for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(parameters.SandboxName);
+            var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
+
+            if (!(bool)nameIsAvailable.IsAvailable)
+            {
+                _logger.LogError($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+                throw new ArgumentException($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+            }
+
+            // Create storage account
+            var account = await _azure.StorageAccounts.Define(storageAccountName)
+                .WithRegion(parameters.Region)
+                .WithExistingResourceGroup(parameters.ResourceGrupName)
+                .WithAccessFromAllNetworks()
+                .WithGeneralPurposeAccountKindV2()
+                .WithOnlyHttpsTraffic()
+                .WithSku(StorageAccountSkuType.Standard_LRS)
+                .WithTags(parameters.Tags)
+                .CreateAsync();
+
+            var result = CreateResult(account);
+
+            _logger.LogInformation($"Done creating Storage Account for sandbox with Id: {parameters.SandboxName}! Id: {account.Id}");
+
+            return result;
+        }
+
+        CloudResourceCRUDResult CreateResult(IStorageAccount storageAccount)
+        {
+            var result = CloudResourceCRUDUtil.CreateResultFromIResource(storageAccount);
+            result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
+            return result;
+        }       
 
         public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
         {
@@ -78,17 +117,6 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
-        public async Task<bool> Exists(string resourceGroupName, string resourceName)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
-
-            if (resource == null)
-            {
-                return false;
-            }
-
-            return true;
-        }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
@@ -102,13 +130,13 @@ namespace Sepes.Infrastructure.Service
             return resource.ProvisioningState.ToString();
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, string>>> GetTags(string resourceGroupName, string resourceName)
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            return rg.Tags;
+            var storageAccount = await GetResourceAsync(resourceGroupName, resourceName);
+            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(storageAccount.Tags);
         }
 
-        public async Task UpdateTag(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
             var rg = await GetResourceAsync(resourceGroupName, resourceName);
             _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
