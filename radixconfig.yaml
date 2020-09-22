@@ -18,8 +18,8 @@ spec:
           port: 80
       publicPort: http
       secrets:
-        - ClientId
-        - ClientSecret
+        - AzureAd__ClientId
+        - AzureAd__ClientSecret
         - KeyVault_Url
       environmentConfig:
         - environment: prod
