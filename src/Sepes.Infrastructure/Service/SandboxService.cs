@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> GetSandbox(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, AccessType.SANDBOX_READ);
 
             if (sandboxFromDb.StudyId != studyId)
             {
@@ -54,41 +54,19 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.SANDBOX_READ);
+   
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
         }
 
-        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
-        {
-            var sandboxFromDb = await _db.Sandboxes
-                .Include(sb => sb.Resources)
-                    .ThenInclude(r => r.Operations)
-                .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
-
-            if (sandboxFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
-            }
-
-            _studyService 
-
-
-            return sandboxFromDb;
-        }
-
-        async Task<SandboxDto> GetSandboxDtoAsync(int sandboxId)
-        {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
-        }
 
         // TODO Validate azure things
         public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.SANDBOX_READ);
             return await ValidateSandboxAsync(studyFromDb, newSandbox);
         }
 
@@ -99,9 +77,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
-
             // Verify that study with that id exists
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.SANDBOX_READ);
 
             //TODO: Verify that this user can create sandbox for study
 
@@ -140,6 +117,31 @@ namespace Sepes.Infrastructure.Service
             await CreateBasicSandboxResourcesAsync(azureSandbox);
 
             return await GetSandboxDtoAsync(sandbox.Id);
+        }
+
+
+        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, string accessType = AccessType.SANDBOX_READ)
+        {
+            var sandboxFromDb = await _db.Sandboxes
+                .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations)
+                .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
+
+            if (sandboxFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            //Check that relevant access to Study is present
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, accessType);
+
+            return sandboxFromDb;
+        }
+
+        async Task<SandboxDto> GetSandboxDtoAsync(int sandboxId)
+        {
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
         async Task<SandboxWithCloudResourcesDto> CreateBasicSandboxResourcesAsync(SandboxWithCloudResourcesDto dto)
@@ -204,7 +206,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, AccessType.SANDBOX_READ);
             var resources = _mapper.Map<List<SandboxResourceLightDto>>(sandboxFromDb.Resources);
             return resources;
         }
@@ -214,7 +216,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogWarning(SepesEventId.SandboxDelete, "Deleting sandbox with id {0}, for study {1}", studyId, sandboxId);
 
             // Run validations: (Check if ID is valid)
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.SANDBOX_READ);
             var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
