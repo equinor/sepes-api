@@ -2,10 +2,7 @@
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -38,6 +35,8 @@ namespace Sepes.Infrastructure.Service
             {
                 throw NotFoundException.CreateForEntity("Study", studyId);
             }
+
+
 
             return studyFromDb;
         }

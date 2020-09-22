@@ -19,7 +19,9 @@ namespace Sepes.Infrastructure.Service
         readonly IHasPrincipal _principalService;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly UserDto _userBasedOnPrincipal;
+        UserDto _cachedUser;
+        bool userIsLoadedFromDb;
+        bool userIsLoadedFromDbWithStudyParticipants;
 
         public UserService(IConfiguration config, SepesDbContext db, IHasPrincipal principalService, IMapper mapper)
         {
@@ -28,35 +30,47 @@ namespace Sepes.Infrastructure.Service
             _principalService = principalService;
             _mapper = mapper;
 
-            _userBasedOnPrincipal = CreateUserFromPrincipal();
+            _cachedUser = CreateUserFromPrincipal();
         }
 
         public UserDto GetCurrentUser()
         {
-            return _userBasedOnPrincipal;
+            return _cachedUser;
         }
 
         public async Task<UserDto> GetCurrentUserFromDbAsync()
         {
-            var userFromDb = await EnsureDbUserExists(false);
-            return MapToDtoAndAttachPrincipal(userFromDb);
+            if (userIsLoadedFromDb == false)
+            {
+                var userFromDb = await EnsureDbUserExists(false);
+                _cachedUser = MapToDtoAndAttachPrincipal(userFromDb);
+                userIsLoadedFromDb = true;
+            }
+          
+            return _cachedUser;
         }
 
         public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
         {
-            var userFromDb = await EnsureDbUserExists(true);
-            return MapToDtoAndAttachPrincipal(userFromDb);
+            if (userIsLoadedFromDb == false || userIsLoadedFromDbWithStudyParticipants == false)
+            {
+                var userFromDb = await EnsureDbUserExists(true);             
+                _cachedUser = MapToDtoAndAttachPrincipal(userFromDb);
+                userIsLoadedFromDb = true;
+                userIsLoadedFromDbWithStudyParticipants = true;
+            }
+            return _cachedUser;
         }
 
         public bool CurrentUserIsAdmin()
         {
-            return _userBasedOnPrincipal.Principal.IsInRole(AppRoles.Admin);
+            return _cachedUser.Principal.IsInRole(AppRoles.Admin);
         }
 
         UserDto MapToDtoAndAttachPrincipal(User user)
         {
             var mapped = _mapper.Map<UserDto>(user);
-            mapped.Principal = _userBasedOnPrincipal.Principal;
+            mapped.Principal = _cachedUser.Principal;
             return mapped;
         }
 
@@ -84,16 +98,16 @@ namespace Sepes.Infrastructure.Service
 
             if (userFromDb == null)
             {
-                userFromDb = _mapper.Map<User>(_userBasedOnPrincipal);
+                userFromDb = _mapper.Map<User>(_cachedUser);
                 _db.Users.Add(userFromDb);
                 await _db.SaveChangesAsync();
             }
             else
             {
                 //Ensure details are correct
-                userFromDb.EmailAddress = _userBasedOnPrincipal.Email;
-                userFromDb.FullName = _userBasedOnPrincipal.FullName;
-                userFromDb.UserName = _userBasedOnPrincipal.UserName;
+                userFromDb.EmailAddress = _cachedUser.Email;
+                userFromDb.FullName = _cachedUser.FullName;
+                userFromDb.UserName = _cachedUser.UserName;
                 await _db.SaveChangesAsync();
             }
 
@@ -103,10 +117,8 @@ namespace Sepes.Infrastructure.Service
         async Task<User> GetUserFromDb(bool includeParticipantInfo = false)
         {
             var queryable = GetUserQueryable(includeParticipantInfo);
-            var userFromDb = await queryable.SingleOrDefaultAsync(u => u.TenantId == _userBasedOnPrincipal.TenantId && u.ObjectId == _userBasedOnPrincipal.ObjectId);
+            var userFromDb = await queryable.SingleOrDefaultAsync(u => u.TenantId == _cachedUser.TenantId && u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
-        }
-
-       
+        }       
     }
 }
