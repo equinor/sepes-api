@@ -14,6 +14,11 @@ namespace Sepes.Infrastructure.Util
         public static async Task<Study> GetStudyAndCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, string accessType = AccessType.STUDY_READ)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, db);
+            //TODO: remove and fix
+            if (userService.CurrentUserIsAdmin())
+            {
+                return studyFromDb;
+            }
 
             if (accessType == AccessType.STUDY_READ)
             {
@@ -37,7 +42,7 @@ namespace Sepes.Infrastructure.Util
         {
             if (await CanViewStudy(userService, study) == false)
             {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to study {study.Id}");
+                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have read access to study {study.Id}");
             }
         }
 
@@ -45,22 +50,16 @@ namespace Sepes.Infrastructure.Util
         {
             if (await CanViewStudy(userService, study) == false)
             {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to study {study.Id}");
+                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to update study {study.Id}");
             }
         }
 
         public static async Task ThrowIfUserCannotDeleteStudy(IUserService userService, Study study)
         {
-
             if (!userService.CurrentUserIsAdmin())
             {
-                throw new ForbiddenException("This action requires Admin role!");
+                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to delete study {study.Id}");
             }
-
-            //if (await CanViewStudy(userService, study) == false)
-            //{
-            //    throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to study {study.Id}");
-            //}
 
         }
         public static async Task<bool> CanViewStudy(IUserService userService, Study study)
@@ -78,6 +77,25 @@ namespace Sepes.Infrastructure.Util
             if (await UserHasRoleForStudy(userService, study,
                 StudyRoles.StudyOwner,
                 StudyRoles.StudyViewer,
+                StudyRoles.VendorAdmin,
+                StudyRoles.VendorContributor,
+                StudyRoles.SponsorRep))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static async Task<bool> CanUpdateStudy(IUserService userService, Study study)
+        {
+            if (study.StudyParticipants == null || study.StudyParticipants.Count == 0)
+            {
+                return false;
+            }
+
+            if (await UserHasRoleForStudy(userService, study,
+                StudyRoles.StudyOwner,
                 StudyRoles.VendorAdmin,
                 StudyRoles.VendorContributor,
                 StudyRoles.SponsorRep))
