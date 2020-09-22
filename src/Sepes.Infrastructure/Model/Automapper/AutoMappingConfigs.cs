@@ -79,6 +79,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<User, ParticipantListItemDto>()
                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.FullName));
 
+            //Graph API: TODO: CHANGE target tp ParticipantListItemDto
+            CreateMap<Microsoft.Graph.User, AzureADUserDto>();
+
             CreateMap<User, UserCreateDto>()
               .ReverseMap();
 
@@ -88,8 +91,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
                   .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));         
 
-            //Graph API
-            CreateMap<Microsoft.Graph.User, AzureADUserDto>();
+         
 
             //AZURE
             CreateMap<IResource, AzureResourceDto>();

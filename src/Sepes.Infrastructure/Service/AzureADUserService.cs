@@ -2,9 +2,7 @@
 using Microsoft.Graph;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -19,7 +17,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
             _graphServiceProvider = graphServiceProvider;
         }
-        public async Task<List<AzureADUserDto>> SearchUsers(string search, int limit)
+        public async Task<List<AzureADUserDto>> SearchUsersAsync(string search, int limit)
         {
             // Initialize the GraphServiceClient.            
             GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });
