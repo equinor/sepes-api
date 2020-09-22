@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
@@ -14,6 +15,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class UserService : IUserService
     {
+        readonly IConfiguration _config;
         readonly IHasPrincipal _principalService;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
@@ -21,8 +23,9 @@ namespace Sepes.Infrastructure.Service
         bool userIsLoadedFromDb;
         bool userIsLoadedFromDbWithStudyParticipants;
 
-        public UserService(SepesDbContext db, IHasPrincipal principalService, IMapper mapper)
+        public UserService(IConfiguration config, SepesDbContext db, IHasPrincipal principalService, IMapper mapper)
         {
+            _config = config;
             _db = db;
             _principalService = principalService;
             _mapper = mapper;
@@ -73,9 +76,8 @@ namespace Sepes.Infrastructure.Service
 
         UserDto CreateUserFromPrincipal()
         {
-            var user = UserUtil.CreateSepesUser(_principalService.GetPrincipal());
+            var user = UserUtil.CreateSepesUser(_config, _principalService.GetPrincipal());
             return user;
-
         }
 
         IQueryable<User> GetUserQueryable(bool includeParticipantInfo = false)
