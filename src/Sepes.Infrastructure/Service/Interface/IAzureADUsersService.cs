@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IAzureADUsersService
     {
-        Task<List<AzureADUserDto>> SearchUsers(string search, int limit);
+        Task<List<AzureADUserDto>> SearchUsersAsync(string search, int limit);
 
         //Task<User> GetUser(string id);
     }
