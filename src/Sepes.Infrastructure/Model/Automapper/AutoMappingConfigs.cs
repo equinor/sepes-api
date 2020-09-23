@@ -84,29 +84,6 @@ namespace Sepes.Infrastructure.Model.Automapper
                     .ForMember(dest => dest.Mail, source => source.MapFrom(x => x.EmailAddress))
                     ;
 
-            //Graph API: TODO: CHANGE target tp ParticipantListItemDto
-            CreateMap<Microsoft.Graph.User, ParticipantListItemDto>()
-                .ForMember(dest => dest.Name, source => source.MapFrom(x => x.DisplayName))
-                .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail))
-                .ForMember(dest => dest.Id, source => source.MapFrom(x => 1))
-                .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.Mail))
-                .ForMember(dest => dest.Source, source => source.MapFrom(x => x.Mail))
-                .ForMember(dest => dest.AzureObjectId, source => source.MapFrom(x => x.Mail))
-                ;
-            ;
-            CreateMap<Microsoft.Graph.User, ParticipantListItemDto>().ReverseMap();
-            CreateMap<AzureADUserDto, ParticipantListItemDto>().ReverseMap();
-            CreateMap<AzureADUserDto, ParticipantListItemDto>()
-                .ForMember(dest => dest.Name, source => source.MapFrom(x => x.DisplayName))
-                .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail));
-            ;
-
-            CreateMap<ParticipantListItemDto, AzureADUserDto>()
-                .ForMember(dest => dest.DisplayName, source => source.MapFrom(x => x.Name))
-                .ForMember(dest => dest.Mail, source => source.MapFrom(x => x.EmailAddress))
-                .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Name))
-                .ForMember(dest => dest.MobilePhone, source => source.MapFrom(x => x.EmailAddress));
-            ;
 
             CreateMap<Microsoft.Graph.User, AzureADUserDto>().ReverseMap()
             ;
