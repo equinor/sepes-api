@@ -237,41 +237,40 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
             var participantFromAzure = await _azureADUsersService.GetUser(participantId);
 
-            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.EmailAddress == participantFromAzure.Mail);
-
-            //If participant has been added previously
-            if(participantFromDb != null)
-            {
-                return await AddParticipantToStudyAsync(studyId, participantFromDb.Id, role);
-            }
-
             if (participantFromAzure == null)
             {
                 throw new NotFoundException($"Participant with id {participantId} not found!");
             }
 
-            var userDb = new User { EmailAddress = participantFromAzure.Mail, FullName = participantFromAzure.DisplayName };
-
-            //var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var userDb = new User { EmailAddress = participantFromAzure.Mail, FullName = participantFromAzure.DisplayName, ObjectId = participantId };
 
             userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role } };
 
-            //var test = _db.StudyParticipants.ToList();
+
             _db.Users.Add(userDb);
             await _db.SaveChangesAsync();
             return await GetStudyByIdAsync(studyId);
 
-            //Check that association does not allready exist
+ 
+        }
 
-            //await VerifyRoleOrThrowAsync(role);
-
-            /*
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };
-            await _db.StudyParticipants.AddAsync(studyParticipant);
-            await _db.SaveChangesAsync();
+        public async Task<StudyDto> HandleAddParticipant(int studyId, AzureADUserDto user, string role)
+        {
+            if (user.Source == ParticipantSource.Db)
+            {
+                return await AddParticipantToStudyAsync(studyId, user.DatabaseId , role);
+            }
+            else if (user.Source == ParticipantSource.Azure)
+            {
+                return await AddParticipantFromAzureToStudyAsync(studyId, user.Id, role);
+            }
+            else
+            {
+                //ToDo Not in azure or in DB
+                
+            }
 
             return await GetStudyByIdAsync(studyId);
-            */
         }
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)

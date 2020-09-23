@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -21,21 +24,42 @@ namespace Sepes.Infrastructure.Service
             _azureADUsersService = azureADUsersService;
         }
 
-        public async Task<IEnumerable<ParticipantListItemDto>> GetLookupAsync(string searchText, int limit = 30)
+        public async Task<IEnumerable<AzureADUserDto>> GetLookupAsync(string searchText, int limit = 30)
         {
             var participantsFromAzureAdTask = _azureADUsersService.SearchUsersAsync(searchText, limit);
-            var participantsFromDbTask = _db.Users.ToListAsync();
+            var participantsFromDbTask = _db.Users.Where(u => u.FullName.Contains(searchText)).ToListAsync();
 
             await Task.WhenAll(participantsFromAzureAdTask, participantsFromDbTask);
 
-            //TODO: Merge results and bake into DTO
-            //Remember source: If exists in both db and azure (based on object id), then source is DB
-            //remember to demove duplicates
-            //Sort ??
+            var participantDtos = _mapper.Map<IEnumerable<AzureADUserDto>>(participantsFromDbTask.Result).ToList();
 
-            var participantDtos = _mapper.Map<IEnumerable<ParticipantListItemDto>>(participantsFromDb);
+            var participantAzureDtos = _mapper.Map<IEnumerable<AzureADUserDto>>(participantsFromAzureAdTask.Result).ToList();
+ 
+            foreach (var participantFromDb in participantDtos.ToList())
+            {
+                participantFromDb.Source = ParticipantSource.Db;
+                try
+                {
+                    participantFromDb.DatabaseId = Int32.Parse(participantFromDb.Id);
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine($"Unable to parse '{participantFromDb.Id}'");
+                }
+            }
 
-            return participantDtos;  
+            foreach (var participantFromAzure in participantAzureDtos)
+            {
+                var azureParticipantInDb = participantDtos.Where(i => i.ObjectId == participantFromAzure.Id).FirstOrDefault();
+                if (azureParticipantInDb == null)
+                {
+                    participantFromAzure.Source = ParticipantSource.Azure;
+                    participantDtos.Add(participantFromAzure);
+                    
+                }
+            }
+
+            return participantDtos.OrderBy(o => o.DisplayName).ToList();  
         }
     }
 }
