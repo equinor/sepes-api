@@ -25,6 +25,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> AddParticipantFromAzureToStudyAsync(int studyId, string participantId, string role);
         Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user);
         Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+        Task<StudyDto> HandleAddParticipant(int studyId, AzureADUserDto user, string role);
 
         /// <summary>
         /// Makes changes to the meta data of a study.

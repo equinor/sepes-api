@@ -13,21 +13,41 @@ namespace Sepes.Infrastructure.Service
     {
         private readonly IGraphServiceProvider _graphServiceProvider;
         private readonly IMapper _mapper;
-        readonly IStudyParticipantService _studyParticipantService;
 
-        public AzureADUsersService(IGraphServiceProvider graphServiceProvider, IMapper mapper, IStudyParticipantService studyParticipantService)
+        public AzureADUsersService(IGraphServiceProvider graphServiceProvider, IMapper mapper)
         {
             _mapper = mapper;
             _graphServiceProvider = graphServiceProvider;
-            _studyParticipantService = studyParticipantService;
         }
-        public async Task<List<AzureADUserDto>> SearchUsersAsync(string search, int limit)
+        public async Task<List<Microsoft.Graph.User>> SearchUsersAsync(string search, int limit)
         {
+            List<Microsoft.Graph.User> listUsers = new List<User>();
             // Initialize the GraphServiceClient.            
             GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });
 
-            var result = await graphClient.Users.Request().Top(limit).Filter($"startswith(displayName,'{search}') or startswith(givenName,'{search}') or startswith(surname,'{search}') or startswith(mail,'{search}') or startswith(userPrincipalName,'{search}')").GetAsync();
-            return _mapper.Map<List<AzureADUserDto>>(result);
+            var graphRequest = graphClient.Users.Request().Top(limit).Filter($"startswith(displayName,'{search}') or startswith(givenName,'{search}') or startswith(surname,'{search}') or startswith(mail,'{search}') or startswith(userPrincipalName,'{search}')");
+
+            
+            while (true)
+            {
+                if(graphRequest == null || listUsers.Count > limit)
+                {
+                    break;
+                }
+                var response = await graphRequest.GetAsync();
+                //if (response.CurrentPage.Count() == 0)
+                //{
+                //    break;
+                //}
+
+                 listUsers.AddRange(response.CurrentPage);
+                    
+                
+                graphRequest = response.NextPageRequest;
+            } 
+
+            return listUsers;
+            //return _mapper.Map<List<AzureADUserDto>>(result);
         }
         public async Task<User> GetUser(string id)
         {
@@ -39,6 +59,9 @@ namespace Sepes.Infrastructure.Service
             return result.FirstOrDefault();
         }
 
-
+        public Task<IEnumerable<User>> SearchUsersAsync2(string search, int limit)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
