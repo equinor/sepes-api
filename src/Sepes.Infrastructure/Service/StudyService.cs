@@ -193,69 +193,106 @@ namespace Sepes.Infrastructure.Service
             return await logo;
         }
 
-        public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
+        public async Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
+        {
+            if (user.Source == ParticipantSource.Db)
+            {
+                return await AddDbUserAsParticipantAsync(studyId, user.DatabaseId.Value, role);
+            }
+            else if (user.Source == ParticipantSource.Azure)
+            {
+                return await AddAzureUserAsParticipantAsync(studyId, user, role);
+            }
+            else
+            {
+                //ToDo Not in azure or in DB
+
+            }
+
+            return await GetStudyByIdAsync(studyId);
+        }
+
+        async Task<StudyDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
-            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
 
-            if (participantFromDb == null)
+            if(RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
-                throw NotFoundException.CreateForEntity("Participant", participantId);
+                throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyId}");
             }
 
-            //Check that association does not allready exist
+            var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
 
-            //await VerifyRoleOrThrowAsync(role);
+            if (userFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("User", userId);
+            }          
 
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = participantId, RoleName = role };
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
             await _db.StudyParticipants.AddAsync(studyParticipant);
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyId);
         }
 
-        public async Task<StudyDto> AddParticipantFromAzureToStudyAsync(int studyId, string participantId, string role)
+   
+
+        async Task<StudyDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromAzure = await _azureADUsersService.GetUser(participantId);
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);           
 
-            if (participantFromAzure == null)
+            var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
+
+            if (userFromAzure == null)
             {
-                throw new NotFoundException($"Participant with id {participantId} not found!");
+                throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
             }
 
-            var userDb = new User { EmailAddress = participantFromAzure.Mail, FullName = participantFromAzure.DisplayName, ObjectId = participantId };
+            var userDb = await _db.Users.FirstOrDefaultAsync(p => p.ObjectId == user.ObjectId);
+
+            if(userDb == null)
+            {
+                userDb = new User { EmailAddress = userFromAzure.Mail, FullName = userFromAzure.DisplayName, ObjectId = user.ObjectId };
+                _db.Users.Add(userDb);
+            }
+
+            if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
+            {
+                throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyId}");
+            }
 
             userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role } };
-
-
-            _db.Users.Add(userDb);
+            
             await _db.SaveChangesAsync();
             return await GetStudyByIdAsync(studyId);
 
  
         }
+  
 
-        public async Task<StudyDto> HandleAddParticipant(int studyId, AzureADUserDto user, string role)
+        bool RoleAllreadyExistsForUser(Study study, int userId, string roleName)
         {
-            if (user.Source == ParticipantSource.Db)
+            if (study.StudyParticipants == null)
             {
-                return await AddParticipantToStudyAsync(studyId, user.DatabaseId , role);
-            }
-            else if (user.Source == ParticipantSource.Azure)
-            {
-                return await AddParticipantFromAzureToStudyAsync(studyId, user.Id, role);
-            }
-            else
-            {
-                //ToDo Not in azure or in DB
-                
+                throw new ArgumentNullException($"Study not loaded properly. Probably missing include for \"StudyParticipants\"");
             }
 
-            return await GetStudyByIdAsync(studyId);
+            if (study.StudyParticipants.Count == 0)
+            {
+                return false;
+            }
+
+            if (study.StudyParticipants.Where(sp => sp.UserId == userId && sp.RoleName == roleName).Any())
+            {
+                return true;
+            }
+
+            return false;
         }
+
+
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
         {     
@@ -301,41 +338,41 @@ namespace Sepes.Infrastructure.Service
                 .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
         }
 
-        public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
-        {
-            if(!checkIfRoleExists(user.Role))
-            {
-                throw new ArgumentException("Role " + user.Role + " does not exist");
-            }
-            if(String.IsNullOrWhiteSpace(user.FullName))
-            {
-                throw new ArgumentException("Name is empty");
-            }
-            if (String.IsNullOrWhiteSpace(user.EmailAddress))
-            {
-                throw new ArgumentException("Email is empty");
-            }
-            if (String.IsNullOrWhiteSpace(user.Role))
-            {
-                throw new ArgumentException("Role is empty");
-            }
+        //public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, AddStudyParticipantDto user)
+        //{
+        //    if(!checkIfRoleExists(user.Role))
+        //    {
+        //        throw new ArgumentException("Role " + user.Role + " does not exist");
+        //    }
+        //    if(String.IsNullOrWhiteSpace(user.FullName))
+        //    {
+        //        throw new ArgumentException("FullName is empty");
+        //    }
+        //    if (String.IsNullOrWhiteSpace(user.EmailAddress))
+        //    {
+        //        throw new ArgumentException("Email is empty");
+        //    }
+        //    if (String.IsNullOrWhiteSpace(user.Role))
+        //    {
+        //        throw new ArgumentException("Role is empty");
+        //    }
 
-            var userDb = _mapper.Map<User>(user);
+        //    var userDb = _mapper.Map<User>(user);
 
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+        //    var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
-            userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
+        //    userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
 
-            var test = _db.StudyParticipants.ToList();
-            _db.Users.Add(userDb);
-            await _db.SaveChangesAsync();
+        //    var test = _db.StudyParticipants.ToList();
+        //    _db.Users.Add(userDb);
+        //    await _db.SaveChangesAsync();
 
-            //Check that association does not allready exist
+        //    //Check that association does not allready exist
 
-            //await VerifyRoleOrThrowAsync(role);
+        //    //await VerifyRoleOrThrowAsync(role);
 
-            return await GetStudyByIdAsync(studyId);
-        }
+        //    return await GetStudyByIdAsync(studyId);
+        //}
 
         private bool checkIfRoleExists (string Role)
         {

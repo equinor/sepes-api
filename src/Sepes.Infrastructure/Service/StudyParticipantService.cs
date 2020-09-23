@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,42 +22,28 @@ namespace Sepes.Infrastructure.Service
             _azureADUsersService = azureADUsersService;
         }
 
-        public async Task<IEnumerable<AzureADUserDto>> GetLookupAsync(string searchText, int limit = 30)
+        public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30)
         {
-            var participantsFromAzureAdTask = _azureADUsersService.SearchUsersAsync(searchText, limit);
-            var participantsFromDbTask = _db.Users.Where(u => u.FullName.Contains(searchText)).ToListAsync();
+            var usersFromAzureAdTask = _azureADUsersService.SearchUsersAsync(searchText, limit);
+            var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.Contains(searchText) || u.FullName.Contains(searchText) || u.ObjectId.Equals(searchText)).ToListAsync();
 
-            await Task.WhenAll(participantsFromAzureAdTask, participantsFromDbTask);
+            await Task.WhenAll(usersFromAzureAdTask, usersFromDbTask);
 
-            var participantDtos = _mapper.Map<IEnumerable<AzureADUserDto>>(participantsFromDbTask.Result).ToList();
+            var usersFromDb = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromDbTask.Result);        
+            var usersFromDbAsDictionary = usersFromDb.ToDictionary(p => p.ObjectId, p => p);
 
-            var participantAzureDtos = _mapper.Map<IEnumerable<AzureADUserDto>>(participantsFromAzureAdTask.Result).ToList();
- 
-            foreach (var participantFromDb in participantDtos.ToList())
+            var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
+
+
+            foreach (var curAzureUser in usersFromAzureAd)
             {
-                participantFromDb.Source = ParticipantSource.Db;
-                try
+                if(usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId) == false)
                 {
-                    participantFromDb.DatabaseId = Int32.Parse(participantFromDb.Id);
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine($"Unable to parse '{participantFromDb.Id}'");
-                }
-            }
+                    usersFromDbAsDictionary.Add(curAzureUser.ObjectId, curAzureUser);
+                }               
+            }      
 
-            foreach (var participantFromAzure in participantAzureDtos)
-            {
-                var azureParticipantInDb = participantDtos.Where(i => i.ObjectId == participantFromAzure.Id).FirstOrDefault();
-                if (azureParticipantInDb == null)
-                {
-                    participantFromAzure.Source = ParticipantSource.Azure;
-                    participantDtos.Add(participantFromAzure);
-                    
-                }
-            }
-
-            return participantDtos.OrderBy(o => o.DisplayName).ToList();  
+            return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);
         }
     }
 }
