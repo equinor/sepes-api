@@ -1,9 +1,11 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,106 +13,67 @@ namespace Sepes.Infrastructure.Util
 {
     public static class StudyAccessUtil
     {
-        public static async Task<Study> GetStudyAndCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, string accessType = AccessType.STUDY_READ)
+        //Scenarios
+        //Might come with list of study, might come with single
+
+        //Wonder if has access it role. Not solved here
+        //Wonder if has study specific role, solved here
+        //Might have study Id
+        //Might have list of studies
+        //Remember to get user from db as late as possible
+
+        public static IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
+        {
+
+            //As of now, if you have ANY role associated with a study, you can view it
+            return db.Studies
+                .Include(s => s.StudyParticipants)
+                    .ThenInclude(sp => sp.User)
+                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
+        }
+
+
+        public static async Task<Study> GetStudyAndCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)
         {
             var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, db);
-            //TODO: remove and fix
-            if (userService.CurrentUserIsAdmin())
+
+            ////TODO: remove and fix
+            //if (userService.CurrentUserIsAdmin())
+            //{
+            //    return studyFromDb;
+            //}
+
+            //No study specific roles required
+            if (operation == UserOperations.StudyReadOwnRestricted && studyFromDb.Restricted == false)
             {
                 return studyFromDb;
             }
 
-            if (accessType == AccessType.STUDY_READ)
-            {
-                await StudyAccessUtil.ThrowIfUserCannotViewStudy(userService, studyFromDb);
-            }
-            else if (accessType == AccessType.STUDY_UPDATE)
-            {
-                await StudyAccessUtil.ThrowIfUserCannotUpdateStudy(userService, studyFromDb);
-            }
-            else if (accessType == AccessType.STUDY_DELETE)
-            {
-                await StudyAccessUtil.ThrowIfUserCannotDeleteStudy(userService, studyFromDb);
-            }
+            await ThrowIfOperationNotAllowed(userService, studyFromDb, operation);
 
             return studyFromDb;
         }
 
 
-
-        public static async Task ThrowIfUserCannotViewStudy(IUserService userService, Study study)
+        public static async Task ThrowIfOperationNotAllowed(IUserService userService, Study study, UserOperations operation)
         {
-            if (await CanViewStudy(userService, study) == false)
+            var requiredRoles = UserOperationsAndRequiredRoles.GetRequiredRoles(operation);
+
+            if ((await UserHasRequiredStudyRole(userService, study, requiredRoles)) == false)
             {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have read access to study {study.Id}");
+                throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
             }
         }
 
-        public static async Task ThrowIfUserCannotUpdateStudy(IUserService userService, Study study)
-        {
-            if (await CanViewStudy(userService, study) == false)
-            {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to update study {study.Id}");
-            }
-        }
-
-        public static async Task ThrowIfUserCannotDeleteStudy(IUserService userService, Study study)
-        {
-            if (!userService.CurrentUserIsAdmin())
-            {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().Email} does not have access to delete study {study.Id}");
-            }
-
-        }
-        public static async Task<bool> CanViewStudy(IUserService userService, Study study)
-        {
-            if (study.Restricted == false)
-            {
-                return true;
-            }
-
-            if (study.StudyParticipants == null || study.StudyParticipants.Count == 0)
-            {
-                return false;
-            }
-
-            if (await UserHasRoleForStudy(userService, study,
-                StudyRoles.StudyOwner,
-                StudyRoles.StudyViewer,
-                StudyRoles.VendorAdmin,
-                StudyRoles.VendorContributor,
-                StudyRoles.SponsorRep))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static async Task<bool> CanUpdateStudy(IUserService userService, Study study)
-        {
-            if (study.StudyParticipants == null || study.StudyParticipants.Count == 0)
-            {
-                return false;
-            }
-
-            if (await UserHasRoleForStudy(userService, study,
-                StudyRoles.StudyOwner,
-                StudyRoles.VendorAdmin,
-                StudyRoles.VendorContributor,
-                StudyRoles.SponsorRep))
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        static async Task<bool> UserHasRoleForStudy(IUserService userService, Study study, params string[] requiredRoles)
+        static async Task<bool> UserHasRequiredStudyRole(IUserService userService, Study study, params string[] requiredRoles)
         {
             var currentUser = await userService.GetCurrentUserFromDbAsync();
+            return UserHasRequiredStudyRole(currentUser.Id, study, requiredRoles);
+        }
 
-            foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == currentUser.Id))
+        static bool UserHasRequiredStudyRole(int userId, Study study, params string[] requiredRoles)
+        {
+            foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
             {
                 if (requiredRoles.Contains(curParticipant.RoleName))
                 {
@@ -120,5 +83,27 @@ namespace Sepes.Infrastructure.Util
 
             return false;
         }
+
+        static async Task<bool> UserHasRequiredStudyRole(IUserService userService, Study study, HashSet<string> requiredRoles)
+        {
+            var currentUser = await userService.GetCurrentUserFromDbAsync();
+            return UserHasRequiredStudyRole(currentUser.Id, study, requiredRoles);
+        }
+
+        static bool UserHasRequiredStudyRole(int userId, Study study, HashSet<string> requiredRoles)
+        {
+
+            foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
+            {
+                if (requiredRoles.Contains(curParticipant.RoleName))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
     }
 }

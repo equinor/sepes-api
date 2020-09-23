@@ -23,9 +23,9 @@
         public const string DISABLE_MIGRATIONS = "DisableMigrations";
 
         public const string CLAIM_OID = "ClaimKeys:ObjectId";
-        public const string CLAIM_USERNAME = "ClaimKeys:ObjectId";
-        public const string CLAIM_EMAIL = "ClaimKeys:ObjectId";
-        public const string CLAIM_FULLNAME = "ClaimKeys:ObjectId";
+        public const string CLAIM_USERNAME = "ClaimKeys:UserName";
+        public const string CLAIM_EMAIL = "ClaimKeys:Email";
+        public const string CLAIM_FULLNAME = "ClaimKeys:FullName";
 
 
     }

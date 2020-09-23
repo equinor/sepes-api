@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Dto
 
         public string FullName { get; set; }
         public string UserName { get; set; }
-        public string Email { get; set; }   
+        public string EmailAddress { get; set; }   
 
 
         public List<StudyParticipantDto> StudyParticipants { get; set; }
@@ -26,22 +26,24 @@ namespace Sepes.Infrastructure.Dto
         }
 
         public UserDto(string tenantId, string objectId, string userName, string fullName, string email)
-        {         
-            UserName = userName;
-            FullName = fullName;
-            Email = email;
+        {
             TenantId = tenantId;
             ObjectId = objectId;
+            UserName = userName;
+            FullName = fullName;
+            EmailAddress = email;  
         }
 
         public UserDto(ClaimsPrincipal principal, string tenantId, string objectId, string userName, string fullName, string email)
         {            
-            Principal = principal;           
-            UserName = userName;
-            FullName = fullName;
-            Email = email;
+            Principal = principal;
             TenantId = tenantId;
             ObjectId = objectId;
+            UserName = userName;
+            FullName = fullName;
+            EmailAddress = email;
+           
+          
         }          
     }
 }
