@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserFromDbAsync();
 
-                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
+                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
@@ -53,9 +53,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            //var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
-            await StudyAccessUtil.ThrowIfUserCannotViewStudy(_userService, studyFromDb);           
+           var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId,  UserOperations.StudyReadOwnRestricted);           
 
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
@@ -83,7 +83,7 @@ namespace Sepes.Infrastructure.Service
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -130,7 +130,7 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: VALIDATION
             //Delete logo from Azure Blob Storage before deleting study.       
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_DELETE);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
 
            
 
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
      
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -185,7 +185,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<byte[]> GetLogoAsync(int studyId)
         {     
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_READ);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
             string logoUrl = studyFromDb.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
@@ -194,7 +194,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
             var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
 
             if (participantFromDb == null)
@@ -215,7 +215,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
         {     
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
             var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == participantId);
 
             if (participantFromDb == null)
@@ -247,15 +247,7 @@ namespace Sepes.Infrastructure.Service
         {
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }
-
-        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
-        {
-            return db.Studies
-                .Include(s=> s.StudyParticipants)
-                    .ThenInclude(sp=> sp.User)
-                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
-        }
+        }    
 
         public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
         {
