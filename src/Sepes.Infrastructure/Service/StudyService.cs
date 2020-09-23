@@ -19,12 +19,14 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IUserService _userService;
         readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly IAzureADUsersService _azureADUsersService;
 
-        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService, IAzureADUsersService azureADUsersService)
             : base(db, mapper)
         {
             this._userService = userService;
             _azureBlobStorageService = azureBlobStorageService;
+            _azureADUsersService = azureADUsersService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
@@ -227,6 +229,49 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyId);
+        }
+
+        public async Task<StudyDto> AddParticipantFromAzureToStudyAsync(int studyId, string participantId, string role)
+        {
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var participantFromAzure = await _azureADUsersService.GetUser(participantId);
+
+            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.EmailAddress == participantFromAzure.Mail);
+
+            //If participant has been added previously
+            if(participantFromDb != null)
+            {
+                return await AddParticipantToStudyAsync(studyId, participantFromDb.Id, role);
+            }
+
+            if (participantFromAzure == null)
+            {
+                throw new NotFoundException($"Participant with id {participantId} not found!");
+            }
+
+            var userDb = new User { EmailAddress = participantFromAzure.Mail, FullName = participantFromAzure.DisplayName };
+
+            //var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+
+            userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role } };
+
+            //var test = _db.StudyParticipants.ToList();
+            _db.Users.Add(userDb);
+            await _db.SaveChangesAsync();
+            return await GetStudyByIdAsync(studyId);
+
+            //Check that association does not allready exist
+
+            //await VerifyRoleOrThrowAsync(role);
+
+            /*
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };
+            await _db.StudyParticipants.AddAsync(studyParticipant);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(studyId);
+            */
         }
 
         public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)

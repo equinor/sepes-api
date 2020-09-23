@@ -113,6 +113,11 @@ namespace Sepes.Tests.Mocks.Azure
                 _queue = newQueue;
             }
         }
+
+        Task<QueueStorageItemDto> IAzureQueueService.UpdateMessageAsync(QueueStorageItemDto item, int timespan)
+        {
+            throw new NotImplementedException();
+        }
     }
     public class QueueMessageWrapper
     {
