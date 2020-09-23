@@ -35,10 +35,6 @@ namespace Sepes.Infrastructure.Service
                     break;
                 }
                 var response = await graphRequest.GetAsync();
-                //if (response.CurrentPage.Count() == 0)
-                //{
-                //    break;
-                //}
 
                  listUsers.AddRange(response.CurrentPage);
                     
@@ -47,7 +43,7 @@ namespace Sepes.Infrastructure.Service
             } 
 
             return listUsers;
-            //return _mapper.Map<List<AzureADUserDto>>(result);
+
         }
         public async Task<User> GetUser(string id)
         {
