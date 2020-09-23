@@ -46,8 +46,8 @@ namespace Sepes.Tests.Mocks.Azure
 
             return null;
         }
-
-        public async Task UpdateMessageAsync(QueueStorageItemDto message, int timespan = 30)
+     
+        public async Task<QueueStorageItemDto> UpdateMessageAsync(QueueStorageItemDto message, int timespan = 30)
         {
             AddBackItemsThatShouldBeVisibleAgain();
 
@@ -57,11 +57,14 @@ namespace Sepes.Tests.Mocks.Azure
             {
                 if (message.PopReceipt == itemToUpdate.PopReceipt)
                 {
-                    _invisibleItems[message.MessageId].Message.MessageText = message.MessageText;
-                    _invisibleItems[message.MessageId].VisibleAgain = DateTime.UtcNow.AddSeconds(timespan);
-                    return;
+                    itemToUpdate.Message.MessageText = message.MessageText;
+                    itemToUpdate.VisibleAgain = DateTime.UtcNow.AddSeconds(timespan);
+                    message.PopReceipt = itemToUpdate.PopReceipt = Guid.NewGuid().ToString();
+                    return message;
                 }
-            }     
+            }
+
+            throw new ArgumentException($"No item with message id: {message.MessageId} found!");
         }
 
         async Task SendInternal(string messageText)
