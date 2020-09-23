@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,6 +27,8 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user);
         Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
         Task<StudyDto> HandleAddParticipant(int studyId, AzureADUserDto user, string role);
+
+        
 
         /// <summary>
         /// Makes changes to the meta data of a study.
