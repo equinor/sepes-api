@@ -22,6 +22,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<byte[]> GetLogoAsync(int id);
 
         Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
+        Task<StudyDto> AddParticipantFromAzureToStudyAsync(int studyId, string participantId, string role);
         Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user);
         Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
 

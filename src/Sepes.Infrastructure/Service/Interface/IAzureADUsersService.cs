@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.Graph;
+using Sepes.Infrastructure.Dto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,6 +11,6 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<List<AzureADUserDto>> SearchUsersAsync(string search, int limit);
 
-        //Task<User> GetUser(string id);
+        Task<User> GetUser(string id);
     }
 }

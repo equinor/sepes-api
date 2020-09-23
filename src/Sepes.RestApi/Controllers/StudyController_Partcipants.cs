@@ -11,9 +11,10 @@ namespace Sepes.RestApi.Controller
     public partial class StudyController : StudyControllerBase
     {
         [HttpPut("{studyId}/participants/{participantId}/{role}")]
-        public async Task<IActionResult> AddParticipantAsync(int studyId, int participantId, string role)
+        public async Task<IActionResult> AddParticipantAsync(int studyId, string participantId, string role)
         {
-            var updatedStudy = await _studyService.AddParticipantToStudyAsync(studyId, participantId, role);
+            //var updatedStudy = await _studyService.AddParticipantToStudyAsync(studyId, participantId, role);
+            var updatedStudy = await _studyService.AddParticipantFromAzureToStudyAsync(studyId, participantId, role);
             return new JsonResult(updatedStudy);
         }
 
