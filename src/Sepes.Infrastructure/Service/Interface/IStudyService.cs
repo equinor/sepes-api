@@ -22,11 +22,11 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<byte[]> GetLogoAsync(int id);
 
-        Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
-        Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user);
+       
         Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+        Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role);
 
-        
+       
 
         /// <summary>
         /// Makes changes to the meta data of a study.
