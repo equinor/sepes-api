@@ -20,9 +20,9 @@ namespace Sepes.RestApi.Controller
 
         //Get list of lookup items
         [HttpGet("participants")]
-        public async Task<IActionResult> GetLookupAsync()
+        public async Task<IActionResult> GetLookupAsync(string search)
         {
-            var studies = await _studyParticipantService.GetLookupAsync();
+            var studies = await _studyParticipantService.GetLookupAsync(search);
             return new JsonResult(studies);
         }     
     }
