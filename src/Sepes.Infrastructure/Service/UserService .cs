@@ -105,7 +105,7 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 //Ensure details are correct
-                userFromDb.EmailAddress = _cachedUser.Email;
+                userFromDb.EmailAddress = _cachedUser.EmailAddress;
                 userFromDb.FullName = _cachedUser.FullName;
                 userFromDb.UserName = _cachedUser.UserName;
                 await _db.SaveChangesAsync();
