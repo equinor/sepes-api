@@ -150,11 +150,11 @@ namespace Sepes.RestApi
                         Implicit = new OpenApiOAuthFlow
                         {
                             AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "https://graph.microsoft.com/User.Read", "MS Graph: Read for user" },
-                                { "https://graph.microsoft.com/User.Read.All", "MS Graph: Read all users" }
-                            }
+                            //Scopes = new Dictionary<string, string>
+                            //{
+                            //    { "https://graph.microsoft.com/User.Read", "MS Graph: Read for user" },
+                            //    { "https://graph.microsoft.com/User.Read.All", "MS Graph: Read all users" }
+                            //}
                         }
                     }
                 });

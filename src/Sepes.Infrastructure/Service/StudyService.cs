@@ -215,8 +215,7 @@ namespace Sepes.Infrastructure.Service
         async Task<StudyDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, AccessType.STUDY_UPDATE);
-            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);            
 
             if(RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
@@ -235,9 +234,7 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyId);
-        }
-
-   
+        }   
 
         async Task<StudyDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
@@ -295,17 +292,22 @@ namespace Sepes.Infrastructure.Service
 
 
 
-        public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
-        {     
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == participantId);
-
-            if (participantFromDb == null)
+        public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName)
+        {  
+            if(roleName == StudyRoles.StudyOwner)
             {
-                throw NotFoundException.CreateForEntity("Participant", participantId);
+                throw new ArgumentException($"The Study Owner role cannot be deleted");
             }
 
-            studyFromDb.StudyParticipants.Remove(participantFromDb);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
+            var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
+
+            if (studyParticipantFromDb == null)
+            {
+                throw NotFoundException.CreateForEntityCustomDescr("StudyParticipant", $"studyId: {studyId}, userId: {userId}, roleName: {roleName}");
+            }
+
+            studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyId);

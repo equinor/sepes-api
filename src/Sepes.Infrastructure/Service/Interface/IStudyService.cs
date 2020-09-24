@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<byte[]> GetLogoAsync(int id);
 
        
-        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName);
         Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role);
 
        
