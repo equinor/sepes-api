@@ -47,8 +47,10 @@ namespace Sepes.Infrastructure.Service
             SandboxResourceOperationDto currentResourceOperation = null;
 
             //Get's re-used amonong child elements because the operations might share variables
-            CloudResourceCRUDInput currentCrudInput = new CloudResourceCRUDInput();
+            var currentCrudInput = new CloudResourceCRUDInput();
+
             CloudResourceCRUDResult currentCrudResult = null;
+
             try
             {
                 foreach (var queueChildItem in queueParentItem.Children)
@@ -90,9 +92,7 @@ namespace Sepes.Infrastructure.Service
             }
 
 
-            await _workQueue.DeleteMessageAsync(queueParentItem);
-
-       
+            await _workQueue.DeleteMessageAsync(queueParentItem);       
         }
 
         async Task<SandboxResourceOperationDto> HandleRetryCountExceeded(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation)
