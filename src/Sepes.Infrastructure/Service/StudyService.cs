@@ -72,7 +72,7 @@ namespace Sepes.Infrastructure.Service
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
-            AddCurrentUserAsParticipant(studyDb, currentUser);
+            MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
 
             var newStudyId = await Add(studyDb);
@@ -327,7 +327,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        void AddCurrentUserAsParticipant(Study study, UserDto user)
+        void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
         {
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
