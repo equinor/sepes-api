@@ -117,7 +117,7 @@ namespace Sepes.Infrastructure.Service
         async Task<User> GetUserFromDb(bool includeParticipantInfo = false)
         {
             var queryable = GetUserQueryable(includeParticipantInfo);
-            var userFromDb = await queryable.SingleOrDefaultAsync(u => u.TenantId == _cachedUser.TenantId && u.ObjectId == _cachedUser.ObjectId);
+            var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
         }       
     }
