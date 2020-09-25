@@ -17,8 +17,7 @@ namespace Sepes.Infrastructure.Util
             var claimsPrincipal = principal as ClaimsPrincipal;
 
             var user = new UserDto(
-                claimsPrincipal,
-                GetTenantId(claimsPrincipal),
+                claimsPrincipal,                
                 GetOid(config, claimsPrincipal),
                 GetUsername(config, claimsPrincipal),
                 GetFullName(config, claimsPrincipal),

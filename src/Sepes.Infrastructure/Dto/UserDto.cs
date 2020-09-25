@@ -7,9 +7,7 @@ namespace Sepes.Infrastructure.Dto
     {
         public ClaimsPrincipal Principal { get; set; }
 
-        public int Id { get; set; }
-
-        public string TenantId { get; set; }
+        public int Id { get; set; }     
 
         public string ObjectId { get; set; }
 
@@ -25,24 +23,21 @@ namespace Sepes.Infrastructure.Dto
           
         }
 
-        public UserDto(string tenantId, string objectId, string userName, string fullName, string email)
-        {
-            TenantId = tenantId;
+        public UserDto(string objectId, string userName, string fullName, string email)
+        {          
             ObjectId = objectId;
             UserName = userName;
             FullName = fullName;
             EmailAddress = email;  
         }
 
-        public UserDto(ClaimsPrincipal principal, string tenantId, string objectId, string userName, string fullName, string email)
+        public UserDto(ClaimsPrincipal principal, string objectId, string userName, string fullName, string email)
         {            
-            Principal = principal;
-            TenantId = tenantId;
+            Principal = principal;            
             ObjectId = objectId;
             UserName = userName;
             FullName = fullName;
-            EmailAddress = email;
-           
+            EmailAddress = email;          
           
         }          
     }
