@@ -1,19 +1,22 @@
 ﻿using System.Collections.Generic;
-using System.Security.Claims;
 
 namespace Sepes.Infrastructure.Dto
 {
     public class UserDto
     {
-        public ClaimsPrincipal Principal { get; set; }
-
         public int Id { get; set; }     
 
         public string ObjectId { get; set; }
 
         public string FullName { get; set; }
         public string UserName { get; set; }
-        public string EmailAddress { get; set; }   
+        public string EmailAddress { get; set; }
+
+        public bool Admin { get; private set; }
+
+        public bool Sponsor { get; private set; }
+
+        public bool DatasetAdmin { get; private set; }
 
 
         public List<StudyParticipantDto> StudyParticipants { get; set; }
@@ -23,22 +26,16 @@ namespace Sepes.Infrastructure.Dto
           
         }
 
-        public UserDto(string objectId, string userName, string fullName, string email)
+        public UserDto(string objectId, string userName, string fullName, string email, bool admin = false, bool sponsor = false, bool datasetAdmin = false)
         {          
             ObjectId = objectId;
             UserName = userName;
             FullName = fullName;
-            EmailAddress = email;  
-        }
+            EmailAddress = email;
 
-        public UserDto(ClaimsPrincipal principal, string objectId, string userName, string fullName, string email)
-        {            
-            Principal = principal;            
-            ObjectId = objectId;
-            UserName = userName;
-            FullName = fullName;
-            EmailAddress = email;          
-          
-        }          
+            Admin = admin;
+            Sponsor = sponsor;
+            DatasetAdmin = datasetAdmin;
+        }  
     }
 }

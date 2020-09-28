@@ -25,12 +25,12 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger<SandboxResourceService> _logger;
         readonly IMapper _mapper;
         readonly IUserService _userService;
-        readonly IHasRequestId _requestIdService;
+        readonly IRequestIdService _requestIdService;
         readonly IAzureQueueService _azureQueueService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
 
-        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IHasRequestId requestIdService, IAzureQueueService azureQueueService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
+        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IRequestIdService requestIdService, IAzureQueueService azureQueueService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
         {
             _db = db;
             _logger = logger;
@@ -93,6 +93,8 @@ namespace Sepes.Infrastructure.Service
 
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
 
+            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+
             var newResource = new SandboxResource()
             {
                 ResourceGroupId = resourceGroupId,
@@ -107,9 +109,11 @@ namespace Sepes.Infrastructure.Service
                     new SandboxResourceOperation()
                     {
                     OperationType = CloudResourceOperationType.CREATE,
-                    CreatedBySessionId = _requestIdService.RequestId()
+                    CreatedBySessionId = _requestIdService.GetRequestId()
                     }
-                }
+                },
+                CreatedBy = currentUser.UserName,
+                Created = DateTime.UtcNow
             };
 
             sandboxFromDb.Resources.Add(newResource);
@@ -154,6 +158,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated)
         {
+            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+
             var resource = await GetOrThrowAsync(resourceId);
             resource.ResourceGroupId = updated.ResourceId;
             resource.ResourceGroupName = updated.ResourceName;
@@ -162,6 +168,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceName = updated.ResourceName;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
             resource.Updated = DateTime.UtcNow;
+            resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
             var retVal = await GetByIdAsync(resourceId);
@@ -170,6 +177,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated)
         {
+            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+
             var resource = await GetOrThrowAsync(resourceId);
             resource.ResourceId = updated.ResourceId;
             resource.ResourceKey = updated.ResourceKey;
@@ -177,6 +186,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceType = updated.ResourceType;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
             resource.Updated = DateTime.UtcNow;
+            resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
             var retVal = await GetByIdAsync(resourceId);
@@ -244,8 +254,11 @@ namespace Sepes.Infrastructure.Service
 
             if (resource.LastKnownProvisioningState != newProvisioningState)
             {
+                var currentUser = await _userService.GetCurrentUserFromDbAsync();
+
                 resource.LastKnownProvisioningState = newProvisioningState;
                 resource.Updated = DateTime.UtcNow;
+                resource.UpdatedBy = currentUser.UserName;
                 await _db.SaveChangesAsync();
             }
 

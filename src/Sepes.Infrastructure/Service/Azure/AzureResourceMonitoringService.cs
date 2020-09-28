@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureResourceMonitoringService
+    public class AzureResourceMonitoringService : IAzureResourceMonitoringService
     {
         readonly IServiceProvider _serviceProvider;
         readonly ILogger _logger;
@@ -48,24 +48,54 @@ namespace Sepes.Infrastructure.Service
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
+        public async Task<string> GetProvisioningState(SandboxResourceDto resource)
+        {
+            return await GetProvisioningState(resource.ResourceId, resource.ResourceType, resource.ResourceGroupName, resource.ResourceName);
+        }
+
+        //Fetches the provisioning state for the resource and write this on our record of the resource
+        async Task<string> GetProvisioningState(SandboxResource resource)
+        {
+            return await GetProvisioningState(resource.ResourceId, resource.ResourceType, resource.ResourceGroupName, resource.ResourceName);
+        }
+
+        async Task<string> GetProvisioningState(string resourceId, string resourceType, string resourceGroupName, string resourceName)
+        {
+            try
+            {
+                var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, resourceType);
+
+                if (serviceForResource == null)
+                {
+                    _logger.LogCritical($"Service not found for Azure Resource Type: {resourceType}, for resource: {resourceName}");
+                }
+                else
+                {
+                    return await serviceForResource.GetProvisioningState(resourceGroupName, resourceName);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex, $"Getting provisioning state failed for resource id: {resourceId}");
+            }
+
+            return null;
+
+        }
+
+        //Fetches the provisioning state for the resource and write this on our record of the resource
         async Task GetAndLogProvisioningState(SandboxResource resource)
         {
             try
             {
-                var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, resource.ResourceType);
+                var provisioningState = await GetProvisioningState(resource);
 
-                if (serviceForResource == null)
+                if (String.IsNullOrWhiteSpace(provisioningState))
                 {
-                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
+                    provisioningState = "Provisioning state was empty";
                 }
-                else
-                {
-                    var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
 
-                    if (String.IsNullOrWhiteSpace(provisioningState)) provisioningState = "Provisioning state was empty";
-
-                    await _sandboxResourceService.UpdateProvisioningState(resource.Id, provisioningState);
-                }
+                await _sandboxResourceService.UpdateProvisioningState(resource.Id, provisioningState);
             }
             catch (Exception ex)
             {
@@ -77,7 +107,7 @@ namespace Sepes.Infrastructure.Service
         // Checks Tags from Resource in Azure with information from db. 
         // Makes sure they are equal.
         async Task CheckAndUpdateTags(SandboxResource resource)
-        {    
+        {
             try
             {
                 var serviceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, resource.ResourceType);
@@ -132,7 +162,7 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogCritical(ex, $"Tag check/update failed for resource id: {resource.Id}");
             }
         }
-        
+
         public async Task CheckForOrphanResources()
         {
             // Check that resources marked as deleted in db does not exist in Azure.
@@ -157,7 +187,7 @@ namespace Sepes.Infrastructure.Service
                             if (!String.IsNullOrWhiteSpace(provisioningState))
                             {
                                 //TODO: VERIFY THAT THIS WORKS AND THAT IT TAKES INNTO ACCOUNT RESOURCES THAT HAS BEEN RECENTLY DELETED(LIKE 5 minutes ago)
-                             
+
                                 // TODO: Either remove Deleted tag in db or delete from Azure.
                                 _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
 
@@ -168,7 +198,7 @@ namespace Sepes.Infrastructure.Service
                             //TODO: Handle not found exception, that would be a good sign
                             throw;
                         }
-                      
+
                     }
                 }
                 catch (Exception ex)

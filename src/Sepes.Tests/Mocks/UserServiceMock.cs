@@ -13,6 +13,16 @@ namespace Sepes.Tests.Mocks
             return true;
         }
 
+        public bool CurrentUserIsDatasetAdmin()
+        {
+            return true;
+        }
+
+        public bool CurrentUserIsSponsor()
+        {
+            return true;
+        }
+
         public UserDto GetBaseUser()
         {
             return new UserDto("objectId", "testuser", "Test User", "testuser@equinor.com");

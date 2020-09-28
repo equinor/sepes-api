@@ -49,6 +49,22 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
+
+            // The following line enables Application Insights telemetry collection.
+            // If this is left empty then no logs are made. Unknown if still affects performance.
+            Trace.WriteLine("Configuring Application Insights");
+            //services.AddApplicationInsightsTelemetry();
+
+            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
+                = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
+            // Disables adaptive sampling.
+            aiOptions.EnableAdaptiveSampling = false;
+            aiOptions.InstrumentationKey = _configuration[ConfigConstants.APPI_KEY];
+            aiOptions.EnableDebugLogger = true;           
+         
+
+            services.AddApplicationInsightsTelemetry(aiOptions);
+
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             services.AddCors(options =>
@@ -63,10 +79,7 @@ namespace Sepes.RestApi
                 });
             });       
 
-            // The following line enables Application Insights telemetry collection.
-            // If this is left empty then no logs are made. Unknown if still affects performance.
-            Trace.WriteLine("Configuring Application Insights");
-            services.AddApplicationInsightsTelemetry(_configuration[ConfigConstants.APPI_KEY]); 
+      
 
             var enableSensitiveDataLogging = true;
 
@@ -107,8 +120,8 @@ namespace Sepes.RestApi
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IHasPrincipal, PrincipalService>();
-            services.AddTransient<IHasRequestId, RequestIdService>();
+            services.AddScoped<IPrincipalService, PrincipalService>();
+            services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
