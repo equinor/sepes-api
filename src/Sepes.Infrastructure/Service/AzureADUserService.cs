@@ -22,6 +22,12 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<Microsoft.Graph.User>> SearchUsersAsync(string search, int limit)
         {
             List<Microsoft.Graph.User> listUsers = new List<User>();
+
+            if (string.IsNullOrWhiteSpace(search))
+            {
+                return listUsers;
+            }
+
             // Initialize the GraphServiceClient.            
             GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });
 

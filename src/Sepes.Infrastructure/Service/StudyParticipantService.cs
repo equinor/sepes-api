@@ -24,6 +24,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30)
         {
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                return new List<ParticipantLookupDto>();
+            }
             var usersFromAzureAdTask = _azureADUsersService.SearchUsersAsync(searchText, limit);
             var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.Contains(searchText) || u.FullName.Contains(searchText) || u.ObjectId.Equals(searchText)).ToListAsync();
 
