@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,12 +20,14 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IUserService _userService;
         readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly IAzureADUsersService _azureADUsersService;
 
-        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService, IAzureADUsersService azureADUsersService)
             : base(db, mapper)
         {
             this._userService = userService;
             _azureBlobStorageService = azureBlobStorageService;
+            _azureADUsersService = azureADUsersService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
@@ -35,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserFromDbAsync();
 
-                var studiesQueryable = GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
+                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
             else
@@ -49,25 +52,12 @@ namespace Sepes.Infrastructure.Service
             return studiesDtos;
         }
 
-        async Task ThrowIfUserDoesNotHaveAccess(Study study)
-        {
-            if (study.Restricted)
-            {
-                var currentUser = await _userService.GetCurrentUserFromDbAsync();
-
-                if (study.StudyParticipants.Where(sp => sp.UserId == currentUser.Id).Any() == false)
-                {
-                    //User does has study specific roles
-                    throw new ForbiddenException($"User {currentUser.UserName} does not have access to study {study.Id}");
-                }
-            }
-        }
 
         public async Task<StudyDto> GetStudyByIdAsync(int studyId)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            //var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
-            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
+           var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId,  UserOperations.StudyReadOwnRestricted);           
 
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
@@ -82,22 +72,20 @@ namespace Sepes.Infrastructure.Service
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
-            AddCurrentUserAsParticipant(studyDb, currentUser);
+            MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
 
             var newStudyId = await Add(studyDb);
             return await GetStudyByIdAsync(newStudyId);
         }
 
-
+       
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-
-            await ThrowIfUserDoesNotHaveAccess(studyFromDb);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
 
             if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
             {
@@ -143,13 +131,10 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<StudyListItemDto>> DeleteStudyAsync(int studyId)
         {
             //TODO: VALIDATION
-            //Delete logo from Azure Blob Storage before deleting study.
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            //Delete logo from Azure Blob Storage before deleting study.       
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
 
-            if (!_userService.CurrentUserIsAdmin())
-            {
-                throw new ForbiddenException("This action requires Admin role!");
-            }
+           
 
             string logoUrl = studyFromDb.LogoUrl;
             if (!String.IsNullOrWhiteSpace(logoUrl))
@@ -180,7 +165,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
+     
             string oldFileName = studyFromDb.LogoUrl;
 
             if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
@@ -200,46 +186,128 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<byte[]> GetLogoAsync(int studyId)
-        {
-            var study = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            string logoUrl = study.LogoUrl;
+        {     
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
+            string logoUrl = studyFromDb.LogoUrl;
             var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
             return await logo;
         }
 
-        public async Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role)
+        public async Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == participantId);
-
-            if (participantFromDb == null)
+            if (user.Source == ParticipantSource.Db)
             {
-                throw NotFoundException.CreateForEntity("Participant", participantId);
+                return await AddDbUserAsParticipantAsync(studyId, user.DatabaseId.Value, role);
             }
+            else if (user.Source == ParticipantSource.Azure)
+            {
+                return await AddAzureUserAsParticipantAsync(studyId, user, role);
+            }
+            else
+            {
+                //ToDo Not in azure or in DB
 
-            //Check that association does not allready exist
-
-            //await VerifyRoleOrThrowAsync(role);
-
-            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = participantId, RoleName = role };
-            await _db.StudyParticipants.AddAsync(studyParticipant);
-            await _db.SaveChangesAsync();
+            }
 
             return await GetStudyByIdAsync(studyId);
         }
 
-        public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId)
+        async Task<StudyDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-            var participantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == participantId);
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);            
 
-            if (participantFromDb == null)
+            if(RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
-                throw NotFoundException.CreateForEntity("Participant", participantId);
+                throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyId}");
             }
 
-            studyFromDb.StudyParticipants.Remove(participantFromDb);
+            var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
+
+            if (userFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("User", userId);
+            }          
+
+            var studyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
+            await _db.StudyParticipants.AddAsync(studyParticipant);
+            await _db.SaveChangesAsync();
+
+            return await GetStudyByIdAsync(studyId);
+        }   
+
+        async Task<StudyDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
+        {
+            // Run validations: (Check if both id's are valid)
+            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);           
+
+            var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
+
+            if (userFromAzure == null)
+            {
+                throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
+            }
+
+            var userDb = await _db.Users.FirstOrDefaultAsync(p => p.ObjectId == user.ObjectId);
+
+            if(userDb == null)
+            {
+                userDb = new User { EmailAddress = userFromAzure.Mail, FullName = userFromAzure.DisplayName, ObjectId = user.ObjectId };
+                _db.Users.Add(userDb);
+            }
+
+            if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
+            {
+                throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyId}");
+            }
+
+            userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role } };
+            
+            await _db.SaveChangesAsync();
+            return await GetStudyByIdAsync(studyId);
+
+ 
+        }
+  
+
+        bool RoleAllreadyExistsForUser(Study study, int userId, string roleName)
+        {
+            if (study.StudyParticipants == null)
+            {
+                throw new ArgumentNullException($"Study not loaded properly. Probably missing include for \"StudyParticipants\"");
+            }
+
+            if (study.StudyParticipants.Count == 0)
+            {
+                return false;
+            }
+
+            if (study.StudyParticipants.Where(sp => sp.UserId == userId && sp.RoleName == roleName).Any())
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        public async Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName)
+        {  
+            if(roleName == StudyRoles.StudyOwner)
+            {
+                throw new ArgumentException($"The Study Owner role cannot be deleted");
+            }
+
+            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
+            var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
+
+            if (studyParticipantFromDb == null)
+            {
+                throw NotFoundException.CreateForEntityCustomDescr("StudyParticipant", $"studyId: {studyId}, userId: {userId}, roleName: {roleName}");
+            }
+
+            studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
             await _db.SaveChangesAsync();
 
             return await GetStudyByIdAsync(studyId);
@@ -259,55 +327,47 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        void AddCurrentUserAsParticipant(Study study, UserDto user)
+        void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
         {
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }
+        }    
 
-        IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
-        {
-            return db.Studies
-                .Include(s=> s.StudyParticipants)
-                    .ThenInclude(sp=> sp.User)
-                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
-        }
+        //public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
+        //{
+        //    if(!checkIfRoleExists(user.Role))
+        //    {
+        //        throw new ArgumentException("Role " + user.Role + " does not exist");
+        //    }
+        //    if(String.IsNullOrWhiteSpace(user.FullName))
+        //    {
+        //        throw new ArgumentException("Name is empty");
+        //    }
+        //    if (String.IsNullOrWhiteSpace(user.EmailAddress))
+        //    {
+        //        throw new ArgumentException("Email is empty");
+        //    }
+        //    if (String.IsNullOrWhiteSpace(user.Role))
+        //    {
+        //        throw new ArgumentException("Role is empty");
+        //    }
 
-        public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
-        {
-            if(!checkIfRoleExists(user.Role))
-            {
-                throw new ArgumentException("Role " + user.Role + " does not exist");
-            }
-            if(String.IsNullOrWhiteSpace(user.FullName))
-            {
-                throw new ArgumentException("Name is empty");
-            }
-            if (String.IsNullOrWhiteSpace(user.EmailAddress))
-            {
-                throw new ArgumentException("Email is empty");
-            }
-            if (String.IsNullOrWhiteSpace(user.Role))
-            {
-                throw new ArgumentException("Role is empty");
-            }
+        //    var userDb = _mapper.Map<User>(user);
 
-            var userDb = _mapper.Map<User>(user);
+        //    var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
 
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+        //    userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
 
-            userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
+        //    var test = _db.StudyParticipants.ToList();
+        //    _db.Users.Add(userDb);
+        //    await _db.SaveChangesAsync();
 
-            var test = _db.StudyParticipants.ToList();
-            _db.Users.Add(userDb);
-            await _db.SaveChangesAsync();
+        //    //Check that association does not allready exist
 
-            //Check that association does not allready exist
+        //    //await VerifyRoleOrThrowAsync(role);
 
-            //await VerifyRoleOrThrowAsync(role);
-
-            return await GetStudyByIdAsync(studyId);
-        }
+        //    return await GetStudyByIdAsync(studyId);
+        //}
 
         private bool checkIfRoleExists (string Role)
         {

@@ -417,9 +417,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("ObjectId")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("TenantId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")

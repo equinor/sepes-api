@@ -1,14 +1,11 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -50,8 +47,10 @@ namespace Sepes.Infrastructure.Service
             SandboxResourceOperationDto currentResourceOperation = null;
 
             //Get's re-used amonong child elements because the operations might share variables
-            CloudResourceCRUDInput currentCrudInput = new CloudResourceCRUDInput();
+            var currentCrudInput = new CloudResourceCRUDInput();
+
             CloudResourceCRUDResult currentCrudResult = null;
+
             try
             {
                 foreach (var queueChildItem in queueParentItem.Children)
@@ -93,14 +92,11 @@ namespace Sepes.Infrastructure.Service
             }
 
 
-            await _workQueue.DeleteMessageAsync(queueParentItem);
-
-       
+            await _workQueue.DeleteMessageAsync(queueParentItem);       
         }
 
         async Task<SandboxResourceOperationDto> HandleRetryCountExceeded(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation)
         {
-
             _logger.LogCritical($"ResourceOperation {queueChildItem.SandboxResourceOperationId}: Operation type:{currentResourceOperation.OperationType} exceeded max retry count: {currentResourceOperation.TryCount}!");
             currentResourceOperation = await _sandboxResourceOperationService.UpdateStatus(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
             await _workQueue.DeleteMessageAsync(queueParentItem);
@@ -163,43 +159,8 @@ namespace Sepes.Infrastructure.Service
             return currentCrudResult;
         }
 
-        public async Task<SandboxWithCloudResourcesDto> CreateVirtualNetwork(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
-        {
-            throw new NotImplementedException();
-            //_logger.LogInformation($"Creating VNet for sandbox: {azureSandbox.SandboxName}");
-            //// Create resource-entry
-            //var sandboxResourceEntry = await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, "VirtualNetwork", "Not Yet Available", AzureResourceNameUtil.VNet(azureSandbox.StudyName, azureSandbox.SandboxName));
+     
 
-            //// Create resource-operation-entry
-            //var sandboxOperation = CreateInitialResourceOperation("Create Virtual Network.");
-            //var operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
-
-            //// Create actual VNET in Azure
-            ////TODO: Add to queue instead
-            //azureSandbox.VNet = await _vNetService.CreateAsync(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, tags);
-
-            //// Update Entries
-            //_ = await _sandboxResourceService.Update((int)sandboxResourceEntry.Id, azureSandbox.VNet.Network);
-            //_ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, azureSandbox.VNet.Network.Inner.ProvisioningState.ToString());
-
-            //_logger.LogInformation($"Applying NSG to subnet for sandbox: {azureSandbox.SandboxName}");
-
-            ////Applying nsg to subnet
-            //sandboxOperation = CreateInitialResourceOperation($"Apply Network Security Group: {azureSandbox.NetworkSecurityGroup.Name} to Subnet.");
-            //operationEntry = await _sandboxResourceOperationService.Add((int)sandboxResourceEntry.Id, sandboxOperation);
-            //await _vNetService.ApplySecurityGroup(azureSandbox.ResourceGroupName, azureSandbox.NetworkSecurityGroup.Name, azureSandbox.VNet.SandboxSubnetName, azureSandbox.VNet.Network.Name);
-            //_ = await _sandboxResourceOperationService.UpdateStatus((int)operationEntry.Id, "Succeeded");
-            //return azureSandbox;
-        }
-
-        //public async Task<SandboxWithCloudResourcesDto> CreateBastion(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
-        //{
-        //    //TODO: How to make this ready for execution after picking up queue message?
-        //    _logger.LogInformation($"Creating Bastion for sandbox: {azureSandbox.SandboxName}");
-        //    var bastion = await _bastionService.Create(region, azureSandbox.ResourceGroupName, azureSandbox.StudyName, azureSandbox.SandboxName, azureSandbox.VNet.BastionSubnetId, tags);
-        //    await _sandboxResourceService.Add(sandboxId, azureSandbox.ResourceGroupId, azureSandbox.ResourceGroupName, bastion);
-        //    return azureSandbox;
-        //}
 
         //public async Task<SandboxWithCloudResourcesDto> CreateVM(int sandboxId, SandboxWithCloudResourcesDto azureSandbox, Region region, Dictionary<string, string> tags)
         //{
