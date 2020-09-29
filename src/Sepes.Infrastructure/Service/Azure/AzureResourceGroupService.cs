@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw NotFoundException.CreateForAzureResource(resourceGroupName);
             }
-
+            
             return resource.ProvisioningState;
         }
 

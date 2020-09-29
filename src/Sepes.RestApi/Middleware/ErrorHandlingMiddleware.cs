@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.RestApi.Util;
+using Sepes.Infrastructure.Interface;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -11,18 +11,20 @@ namespace Sepes.RestApi.Middelware
 {
     public class ErrorHandlingMiddleware
     {
-        private readonly RequestDelegate next;
+        readonly RequestDelegate next;
+        readonly IRequestIdService _requestIdService;
 
-        public ErrorHandlingMiddleware(RequestDelegate next)
+        public ErrorHandlingMiddleware(RequestDelegate next, IRequestIdService requestIdService)
         {
             this.next = next;
+            _requestIdService = requestIdService;
         }
 
         public async Task Invoke(HttpContext context, ILogger<ErrorHandlingMiddleware> log /* other dependencies */)
         {
             var path = context.Request.Path;
             var method = context.Request.Method;  
-            var requestId = ApplicationInsightsUtil.GetOperationId();
+            var requestId = _requestIdService.GetRequestId();
 
             try
             {
