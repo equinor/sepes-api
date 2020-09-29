@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Util
 
             if(resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
             {
-                return CloudResourceStatus.RUNNING;
+                return CloudResourceStatus.OK;
             }
 
             return CloudResourceStatus.FAILED;           
