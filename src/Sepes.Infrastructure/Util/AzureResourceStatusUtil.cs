@@ -19,6 +19,10 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.IN_PROGRESS;
             }
+            else if (lastOperation.OperationType == CloudResourceOperationType.CREATE && string.IsNullOrWhiteSpace(resource.LastKnownProvisioningState))
+            {
+                return CloudResourceStatus.IN_PROGRESS;
+            }
             else if (lastOperation.OperationType == CloudResourceOperationType.DELETE && lastOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
             {
                 return CloudResourceStatus.DELETED;
