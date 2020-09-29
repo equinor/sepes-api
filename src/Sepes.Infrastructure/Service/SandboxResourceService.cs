@@ -104,7 +104,7 @@ namespace Sepes.Infrastructure.Service
                 ResourceName = "n/a",
                 ResourceId = "n/a",
                 Region = region,
-                Tags = tagsString,
+                Tags = tagsString,               
                 Operations = new List<SandboxResourceOperation> {
                     new SandboxResourceOperation()
                     {
