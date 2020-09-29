@@ -16,6 +16,11 @@ namespace Sepes.Infrastructure.Exceptions
             return new NotFoundException($"{entityName} with id {id} not found!", inner);
         }
 
+        public static NotFoundException CreateForEntityCustomDescr(string entityName, string fieldsAndValuesCustom, Exception inner = null)
+        {
+            return new NotFoundException($"{entityName} with {fieldsAndValuesCustom} not found!", inner);
+        }
+
         public static NotFoundException CreateForEntityByName(string entityName, string name, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with name {name} not found!", inner);
@@ -23,7 +28,7 @@ namespace Sepes.Infrastructure.Exceptions
         public static NotFoundException CreateForEntityByOtherFieldName(string entityName, string field, string fieldValue, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with {field} = {fieldValue} not found!", inner);
-        }
+        }      
 
 
         public static NotFoundException CreateForAzureResource(string resourceName, string resourceGroupName = null, Exception inner = null)

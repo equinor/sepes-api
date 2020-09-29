@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -21,9 +22,11 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<byte[]> GetLogoAsync(int id);
 
-        Task<StudyDto> AddParticipantToStudyAsync(int studyId, int participantId, string role);
-        Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user);
-        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int participantId);
+       
+        Task<StudyDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName);
+        Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role);
+
+       
 
         /// <summary>
         /// Makes changes to the meta data of a study.

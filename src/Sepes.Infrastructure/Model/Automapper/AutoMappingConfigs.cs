@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Linq;
+using Sepes.Infrastructure.Constants;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -62,7 +63,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResource, SandboxResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
-                .ForMember(dest=> dest.SandboxName, source => source.MapFrom(s=> s.Sandbox.Name));
+                .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name));
 
 
             CreateMap<SandboxResourceDto, SandboxResource>()
@@ -73,23 +74,24 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //USERS/PARTICIPANTS
 
-            CreateMap<User, ParticipantDto>().ReverseMap();
             CreateMap<User, UserDto>().ReverseMap();
 
-            CreateMap<User, ParticipantListItemDto>()
-                    .ForMember(dest => dest.Name, source => source.MapFrom(x => x.FullName));
+            CreateMap<User, ParticipantLookupDto>()
+                    .ForMember(dest => dest.Source, source => source.MapFrom(s=> ParticipantSource.Db))
+                    .ForMember(dest => dest.DatabaseId, source => source.MapFrom(s => s.Id));
 
-            CreateMap<User, UserCreateDto>()
-              .ReverseMap();
+            CreateMap<Microsoft.Graph.User, ParticipantLookupDto>()
+                    .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))
+                    .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail))
+                    .ForMember(dest => dest.ObjectId, source => source.MapFrom(x => x.Id))
+                    .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.UserPrincipalName))
+                    .ForMember(dest => dest.Source, source => source.MapFrom(s=> ParticipantSource.Azure));
 
             CreateMap<StudyParticipant, StudyParticipantDto>()
                 .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.User.EmailAddress))
                 .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.User.FullName))
                 .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
-                  .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));         
-
-            //Graph API
-            CreateMap<Microsoft.Graph.User, AzureADUserDto>();
+                .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
 
             //AZURE
             CreateMap<IResource, AzureResourceDto>();

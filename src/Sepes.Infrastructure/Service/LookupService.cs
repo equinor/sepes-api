@@ -19,10 +19,10 @@ namespace Sepes.Infrastructure.Service
         {
             return new List<LookupDto>()
             {
-                new LookupDto{ Key= "SponsorRep", DisplayValue = "Sponsor Rep" },
-                new LookupDto{ Key= "VendorAdmin",  DisplayValue = "Vendor Admin" },
-                new LookupDto{ Key= "VendorContributor",  DisplayValue = "Vendor Contributor" },
-                new LookupDto{ Key= "StudyViewer",  DisplayValue =  "Study Viewer" }
+                new LookupDto{ Key= Constants.StudyRoles.SponsorRep, DisplayValue = Constants.StudyRoles.SponsorRep },
+                new LookupDto{ Key= Constants.StudyRoles.VendorAdmin,  DisplayValue = Constants.StudyRoles.VendorAdmin },
+                new LookupDto{ Key= Constants.StudyRoles.VendorContributor,  DisplayValue = Constants.StudyRoles.VendorContributor },
+                new LookupDto{ Key= Constants.StudyRoles.StudyViewer,  DisplayValue =  Constants.StudyRoles.StudyViewer }
             };
         }
     }

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +41,6 @@ namespace Sepes.RestApi
 
             _configuration = configuration;           
         }
-
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -87,7 +85,7 @@ namespace Sepes.RestApi
 
             // Token acquisition service based on MSAL.NET
             // and chosen token cache implementation
-            services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
+            services.AddWebAppCallsProtectedWebApi(_configuration)
                .AddInMemoryTokenCaches();          
 
             services.AddCors(options =>
@@ -101,10 +99,11 @@ namespace Sepes.RestApi
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
             });
-            services.AddHttpClient();
-      
 
+            DoMigration();
 
+            services.AddHttpClient(); 
+            
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
@@ -128,17 +127,12 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            //ISandboxResourceOperationService
-            services.AddTransient<AzureResourceMonitoringService>();                     
-
-       
+            services.AddTransient<AzureResourceMonitoringService>();   
             services.AddTransient<IAzureADUsersService, AzureADUsersService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<SandboxResourceOperationService>();
             services.AddTransient<AzureResourceMonitoringService>();
-                  
-
-
+            
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
@@ -156,10 +150,11 @@ namespace Sepes.RestApi
                         Implicit = new OpenApiOAuthFlow
                         {
                             AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                            Scopes = new Dictionary<string, string>
-                            {
-                                { "User.Impersonation", "Sepes Development" }
-                            }
+                            //Scopes = new Dictionary<string, string>
+                            //{
+                            //    { "https://graph.microsoft.com/User.Read", "MS Graph: Read for user" },
+                            //    { "https://graph.microsoft.com/User.Read.All", "MS Graph: Read all users" }
+                            //}
                         }
                     }
                 });

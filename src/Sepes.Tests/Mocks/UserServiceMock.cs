@@ -15,7 +15,7 @@ namespace Sepes.Tests.Mocks
 
         public UserDto GetBaseUser()
         {
-            return new UserDto("testuser", "Test User", "testuser@equinor.com", "abcd", "objectId");
+            return new UserDto("objectId", "testuser", "Test User", "testuser@equinor.com");
         }
 
         public UserDto GetCurrentUser()
@@ -35,7 +35,7 @@ namespace Sepes.Tests.Mocks
         {
             var dbUser = await GetCurrentUserFromDbAsync();
             dbUser.StudyParticipants = new List<StudyParticipantDto>();
-            dbUser.StudyParticipants.Add(new StudyParticipantDto() {  UserId = 1, StudyId = 1, EmailAddress = dbUser.Email, FullName = dbUser.FullName, Role = StudyRoles.StudyOwner });
+            dbUser.StudyParticipants.Add(new StudyParticipantDto() {  UserId = 1, StudyId = 1, EmailAddress = dbUser.EmailAddress, FullName = dbUser.FullName, Role = StudyRoles.StudyOwner });
             return dbUser;
         }
     }
