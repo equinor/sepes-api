@@ -56,8 +56,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => x.ResourceType))
-              .ForMember(dest => dest.Status, source => source.MapFrom(x => x.Status))
-             ;
+              .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)));
+             
 
             //CLOUD RESOURCE
 

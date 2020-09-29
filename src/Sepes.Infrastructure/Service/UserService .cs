@@ -16,14 +16,14 @@ namespace Sepes.Infrastructure.Service
     public class UserService : IUserService
     {
         readonly IConfiguration _config;
-        readonly IHasPrincipal _principalService;
+        readonly IPrincipalService _principalService;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         UserDto _cachedUser;
         bool userIsLoadedFromDb;
         bool userIsLoadedFromDbWithStudyParticipants;
 
-        public UserService(IConfiguration config, SepesDbContext db, IHasPrincipal principalService, IMapper mapper)
+        public UserService(IConfiguration config, SepesDbContext db, IPrincipalService principalService, IMapper mapper)
         {
             _config = config;
             _db = db;
@@ -64,13 +64,22 @@ namespace Sepes.Infrastructure.Service
 
         public bool CurrentUserIsAdmin()
         {
-            return _cachedUser.Principal.IsInRole(AppRoles.Admin);
+            return _principalService.GetPrincipal().IsInRole(AppRoles.Admin);
+        }
+
+        public bool CurrentUserIsSponsor()
+        {
+            return _principalService.GetPrincipal().IsInRole(AppRoles.Sponsor);
+        }
+
+        public bool CurrentUserIsDatasetAdmin()
+        {
+            return _principalService.GetPrincipal().IsInRole(AppRoles.DatasetAdmin);
         }
 
         UserDto MapToDtoAndAttachPrincipal(User user)
         {
-            var mapped = _mapper.Map<UserDto>(user);
-            mapped.Principal = _cachedUser.Principal;
+            var mapped = _mapper.Map<UserDto>(user);        
             return mapped;
         }
 

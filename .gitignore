@@ -3,3 +3,4 @@
 node_modules
 docker-compose.yml
 appsettings.Development.json
+local.settings.json

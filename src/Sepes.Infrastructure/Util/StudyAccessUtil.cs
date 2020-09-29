@@ -43,6 +43,16 @@ namespace Sepes.Infrastructure.Util
             //    return studyFromDb;
             //}
 
+            //Sponsors should be able to add sandbox
+            //TODO: Verify that they should have access to create sandbox for restricted studies in which they don't own
+            if (operation == UserOperations.StudyAddRemoveSandbox)
+            {
+                if (userService.GetCurrentUser().Sponsor) {
+
+                    return studyFromDb;
+                } 
+            }
+
             //No study specific roles required
             if (operation == UserOperations.StudyReadOwnRestricted && studyFromDb.Restricted == false)
             {
