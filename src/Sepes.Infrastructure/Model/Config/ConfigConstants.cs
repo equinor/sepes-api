@@ -10,10 +10,8 @@
         public const string AZ_CLIENT_SECRET = "AzureAd:ClientSecret";
 
         public const string AZ_SWAGGER_CLIENT_ID = "Swagger:ClientId";
-        public const string AZ_SWAGGER_CLIENT_SECRET = "Swagger:ClientSecret";
-
-
-        public const string APPI_KEY = "Appi_Key";
+        public const string AZ_SWAGGER_CLIENT_SECRET = "Swagger:ClientSecret";       
+        public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";
         public const string KEY_VAULT = "KeyVault_Url";
 
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwner-ConnectionString";
