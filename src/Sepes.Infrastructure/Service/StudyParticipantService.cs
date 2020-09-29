@@ -33,11 +33,23 @@ namespace Sepes.Infrastructure.Service
 
             await Task.WhenAll(usersFromAzureAdTask, usersFromDbTask);
 
-            var usersFromDb = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromDbTask.Result);        
-            var usersFromDbAsDictionary = usersFromDb.ToDictionary(p => p.ObjectId, p => p);
+            var usersFromDb = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromDbTask.Result);
+            var usersFromDbAsDictionary = new Dictionary<string, ParticipantLookupDto>();
+
+            foreach (var curUserFromDb in usersFromDb)
+            {
+                if(string.IsNullOrWhiteSpace(curUserFromDb.ObjectId))
+                {
+                    continue;
+                }
+
+                if (!usersFromDbAsDictionary.ContainsKey(curUserFromDb.ObjectId))
+                {
+                    usersFromDbAsDictionary.Add(curUserFromDb.ObjectId, curUserFromDb);
+                }
+            }     
 
             var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
-
 
             foreach (var curAzureUser in usersFromAzureAd)
             {
