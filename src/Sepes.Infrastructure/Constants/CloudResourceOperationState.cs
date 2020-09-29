@@ -18,10 +18,10 @@
 
     public static class CloudResourceStatus
     {
-        public const string RUNNING = "running";
-        public const string IN_PROGRESS = "inprogress";
-        public const string DELETED = "deleted";
-        public const string FAILED = "failed";
+        public const string OK = "Ok";
+        public const string IN_PROGRESS = "In progress";
+        public const string DELETED = "Deleted";
+        public const string FAILED = "Failed";
     }
 
     public static class CloudResourceProvisioningStates
