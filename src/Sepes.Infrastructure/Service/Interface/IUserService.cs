@@ -11,6 +11,5 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<UserDto> GetCurrentUserWithStudyParticipantsAsync();
 
-        bool CurrentUserIsAdmin();
     }
 }

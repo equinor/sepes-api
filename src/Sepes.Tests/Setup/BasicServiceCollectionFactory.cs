@@ -40,7 +40,7 @@ namespace Sepes.Tests.Setup
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<SandboxResourceOperationService>();
             services.AddTransient<IUserService, UserServiceMock>();
-            services.AddTransient<IHasRequestId, HasRequestIdMock>();
+            services.AddTransient<IRequestIdService, HasRequestIdMock>();
 
             //Sepes Services
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();

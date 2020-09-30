@@ -8,7 +8,6 @@ namespace Sepes.Infrastructure.Service
     {
         void Init(string connectionString, string queueName);
 
-
         Task SendMessageAsync(string messageText);
 
         Task SendMessageAsync<T>(T messageObj);
@@ -24,14 +23,14 @@ namespace Sepes.Infrastructure.Service
 
         // Updates the message in-place in the queue.
         // The message parameter is a message that has been fetched with RecieveMessage() or RecieveMessages()
-        Task<QueueStorageItemDto> UpdateMessageAsync(QueueStorageItemDto item, int timespan = 30);
+        Task<string> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30);
 
         // Returns approximate number of messages in queue.
         // The number is not lower than the actual number of messages in the queue, but could be higher.
         //Task<int> GetApproximateNumberOfMessengesInQueueAsync();
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted. 
-        Task DeleteMessageAsync(QueueStorageItemDto item);
+        Task DeleteMessageAsync(string messageId, string popReceipt);
 
         Task DeleteQueueAsync();       
     }

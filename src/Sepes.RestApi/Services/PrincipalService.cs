@@ -4,7 +4,7 @@ using System.Security.Principal;
 
 namespace Sepes.RestApi.Services
 {
-    public class PrincipalService : IHasPrincipal
+    public class PrincipalService : IPrincipalService
     {
         readonly IHttpContextAccessor _contextAccessor;
 

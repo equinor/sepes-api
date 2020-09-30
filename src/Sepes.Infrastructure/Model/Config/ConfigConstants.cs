@@ -25,6 +25,17 @@
         public const string CLAIM_EMAIL = "ClaimKeys:Email";
         public const string CLAIM_FULLNAME = "ClaimKeys:FullName";
 
+        public const string RESOURCE_PROVISIONING_QUEUE_CONSTRING = "ResourceProvisioningQueueConnectionString";
+        public const string RESOURCE_PROVISIONING_QUEUE_NAME = "ResourceProvisioningQueueName";
+
+        public const string STUDY_LOGO_STORAGE_CONSTRING = "StudyLogoStorageConnectionString";
+
+        
+
+
+
+
+
 
     }
 }
