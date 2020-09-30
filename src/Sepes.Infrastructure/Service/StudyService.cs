@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -18,13 +19,15 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyService : ServiceBase<Study>, IStudyService
     {
+        readonly ILogger _logger;
         readonly IUserService _userService;
         readonly IAzureBlobStorageService _azureBlobStorageService;
         readonly IAzureADUsersService _azureADUsersService;
 
-        public StudyService(IUserService userService, SepesDbContext db, IMapper mapper, IAzureBlobStorageService azureBlobStorageService, IAzureADUsersService azureADUsersService)
+        public StudyService(ILogger<StudyService> logger, SepesDbContext db, IMapper mapper , IUserService userService, IAzureBlobStorageService azureBlobStorageService, IAzureADUsersService azureADUsersService)
             : base(db, mapper)
         {
+            _logger = logger;
             this._userService = userService;
             _azureBlobStorageService = azureBlobStorageService;
             _azureADUsersService = azureADUsersService;
@@ -186,11 +189,20 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<byte[]> GetLogoAsync(int studyId)
-        {     
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
-            string logoUrl = studyFromDb.LogoUrl;
-            var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
-            return await logo;
+        {
+            try
+            {
+                var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
+                string logoUrl = studyFromDb.LogoUrl;
+                var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
+                return await logo;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to get logo for Study {studyId}");
+                return null;
+            }
+       
         }
 
         public async Task<StudyDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
