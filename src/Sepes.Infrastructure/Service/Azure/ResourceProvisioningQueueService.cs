@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model.Config;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -15,7 +16,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger = logger;
             _queueService = queueService;
-            _queueService.Init(config["ResourceProvisioningQueueConnectionString"], config["ResourceProvisioningQueueName"]);
+            _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
         public async Task SendMessageAsync(ProvisioningQueueParentDto message)
@@ -26,23 +27,22 @@ namespace Sepes.Infrastructure.Service
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
         public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
         {
-            await _queueService.DeleteMessageAsync(message);
+            await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
         }
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
         public async Task<ProvisioningQueueParentDto> RecieveMessageAsync()
         {
-            var message = await _queueService.RecieveMessageAsync();
+            var messageFromQueue = await _queueService.RecieveMessageAsync();
 
-            if (message != null)
+            if (messageFromQueue != null)
             {
-                var result = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(message.MessageText);
+                var convertedMessage = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
 
-                result.MessageId = message.MessageId;
-                result.PopReceipt = message.PopReceipt;
-                result.MessageText = message.MessageText;
+                convertedMessage.MessageId = messageFromQueue.MessageId;
+                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;              
 
-                return result;
+                return convertedMessage;
             }
 
             return null;
@@ -55,8 +55,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds)
         {
-            var updatedMessage = await _queueService.UpdateMessageAsync(message, invisibleForInSeconds);
-            message.PopReceipt = updatedMessage.PopReceipt;
+            var messageAsJson = JsonConvert.SerializeObject(message);
+            message.PopReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);           
         }
     }
 }

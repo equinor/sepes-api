@@ -5,8 +5,8 @@ using Sepes.Infrastructure.Interface;
 
 namespace Sepes.Tests.Mocks
 {
-    public class HasRequestIdMock : IHasRequestId
+    public class HasRequestIdMock : IRequestIdService
     {
-        public string RequestId() { return "requestId"; }
+        public string GetRequestId() { return "requestId"; }
     }
 }

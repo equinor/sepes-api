@@ -1,0 +1,22 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "ResourceProvisioningQueueConnectionString": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "dotnet",
+    "Appi_Key": "881d305a-4b34-4f3d-8919-dbaad1ab8885",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "881d305a-4b34-4f3d-8919-dbaad1ab8885",
+    "SepesRW-ConnectionString": "Server=PC0D8M5K;Uid=sepes;Pwd=m6mNz3YQA5J8yMGace;Database=sepes;Application Name=SEPESWorker;",
+    "SubscriptionId": "6cfb8f33-6d4b-43bf-9000-91fd6f53ca28",
+    "AzureAd__ClientId": "e90cbb61-896e-4ec7-aa37-23511700e1ed",
+    "AzureAd__ClientSecret": "SazQf9bg/g24q@PMkHor?@TSrJR528@1",
+    "AzureAd__Instance": "https://login.microsoftonline.com/",
+    "AzureAd__Domain": "StatoilSRM.onmicrosoft.com",
+    "AzureAd__TenantId": "3aa4a235-b6e2-48d5-9195-7fcf05b459b0",
+    "AzureAd__CallbackPath": "/signin-oidc"
+    //"AzureAd": {
+    //  "ClientId": "e90cbb61-896e-4ec7-aa37-23511700e1ed",
+    //  "ClientSecret": "SazQf9bg/g24q@PMkHor?@TSrJR528@1"
+    //}
+  }
+}

@@ -6,8 +6,10 @@ using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,6 +20,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureBlobStorageService : IAzureBlobStorageService
     {
+        readonly ILogger _logger;
         readonly IConfiguration _config;
         readonly string _connectionString;
         readonly string _containerName = "studylogos";
@@ -31,22 +34,47 @@ namespace Sepes.Infrastructure.Service
             png
         }
 
-        public AzureBlobStorageService(IConfiguration config)
+        public AzureBlobStorageService(IConfiguration config, ILogger<AzureBlobStorageService> logger)
         {
+            this._logger = logger;
             this._config = config;
-            this._connectionString = config["AzureStorageConnectionString"];
+            this._connectionString = config[ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING];
 
         }
 
-        BlobContainerClient CreateBlobContainerClient()
+        bool CreateBlobContainerClient(out BlobContainerClient client)
         {
-            return new BlobContainerClient(this._connectionString, _containerName);
+            client = null;
+
+            try
+            {
+                client = new BlobContainerClient(this._connectionString, _containerName);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to create new BlobContainerClient");
+                return false;
+            }
+           
         }
 
-        BlobServiceClient CreateBlobServiceClient()
+        bool CreateBlobServiceClient(out BlobServiceClient client)
         {
-            return new BlobServiceClient(this._connectionString);
+            client = null;
+
+            try
+            {
+                client = new BlobServiceClient(this._connectionString);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unable to create new BlobServiceClient");
+                return false;
+            }
         }
+
 
         public string UploadBlob(IFormFile blob)
         {
@@ -56,34 +84,61 @@ namespace Sepes.Infrastructure.Service
             }
 
             string suppliedFileName = blob.FileName;
-            var blobContainerClient = CreateBlobContainerClient();
-            string fileName = Guid.NewGuid().ToString("N") + suppliedFileName;
-            var fileStream = blob.OpenReadStream();
-            blobContainerClient.UploadBlob(fileName, fileStream);
-            return fileName;
+
+            BlobContainerClient blobContainerClient;
+
+            if(CreateBlobContainerClient(out blobContainerClient))
+            {               
+                string fileName = Guid.NewGuid().ToString("N") + suppliedFileName;
+                var fileStream = blob.OpenReadStream();
+                blobContainerClient.UploadBlob(fileName, fileStream);
+                return fileName;
+            }
+
+            throw new Exception("File upload failed. Unable to crate connection to file storage");                 
 
         }
 
         public Response<bool> DeleteBlob(string fileName)
         {
-            var blobContainerClient = CreateBlobContainerClient();
-            return blobContainerClient.DeleteBlobIfExists(fileName);
+            BlobContainerClient blobContainerClient;
+
+            if (CreateBlobContainerClient(out blobContainerClient))
+            {
+                return blobContainerClient.DeleteBlobIfExists(fileName);
+            }
+
+            throw new Exception("File upload failed. Unable to crate connection to file storage");
+
         }
 
         public async Task<byte[]> GetImageFromBlobAsync(string logoUrl)
         {
-            var blobContainerClient = CreateBlobContainerClient();
-            var blockBlobClient = blobContainerClient.GetBlockBlobClient(logoUrl);
-            var memStream = new MemoryStream();
-            await blockBlobClient.DownloadToAsync(memStream);
-            return memStream.ToArray();
+            BlobContainerClient blobContainerClient;
+
+            if (CreateBlobContainerClient(out blobContainerClient))
+            {
+                var blockBlobClient = blobContainerClient.GetBlockBlobClient(logoUrl);
+                var memStream = new MemoryStream();
+                await blockBlobClient.DownloadToAsync(memStream);
+                return memStream.ToArray();
+            }
+
+            throw new Exception("File upload failed. Unable to crate connection to file storage");
         }
 
         public async Task<StudyDto> DecorateLogoUrlWithSAS(StudyDto studyDto)
         {
             var uriBuilder = await CreateUriBuilderWithSasToken();
 
-            DecorateLogoUrlsWithSAS(uriBuilder, studyDto);
+            if(uriBuilder == null)
+            {
+                _logger.LogError("Unable to decorate logo urls");
+            }
+            else
+            {
+                DecorateLogoUrlsWithSAS(uriBuilder, studyDto);
+            }            
 
             return studyDto;
         }
@@ -92,10 +147,17 @@ namespace Sepes.Infrastructure.Service
         {
             var uriBuilder = await CreateUriBuilderWithSasToken();
 
-            foreach (var curDto in studyDtos)
+            if (uriBuilder == null)
             {
-                DecorateLogoUrlsWithSAS(uriBuilder, curDto);             
+                _logger.LogError("Unable to decorate logo urls");
             }
+            else
+            {
+                foreach (var curDto in studyDtos)
+                {
+                    DecorateLogoUrlsWithSAS(uriBuilder, curDto);
+                }
+            }          
 
             return studyDtos;
         }
@@ -112,48 +174,52 @@ namespace Sepes.Infrastructure.Service
             {
                 studyDto.LogoUrl = null;
             }            
-        }
+        }      
 
-
-
-        public async Task<UriBuilder> CreateUriBuilderWithSasToken()
+        async Task<UriBuilder> CreateUriBuilderWithSasToken()
         {
             bool isDevelopmentStorage = this._connectionString == "UseDevelopmentStorage=true";
 
-            var blobServiceClient = new BlobServiceClient(this._connectionString);
-
-            var uriBuilder = new UriBuilder()
+            BlobServiceClient blobServiceClient = null;
+            
+            if(CreateBlobServiceClient(out blobServiceClient))
             {
-                Scheme = "https",
-                Host = string.Format("{0}.blob.core.windows.net", blobServiceClient.AccountName),
+                var uriBuilder = new UriBuilder()
+                {
+                    Scheme = "https",
+                    Host = string.Format("{0}.blob.core.windows.net", blobServiceClient.AccountName)
+                };
 
-            };
+                if (isDevelopmentStorage)
+                {
+                    return uriBuilder;
+                }
+                else
+                {
+                    var sasBuilder = new BlobSasBuilder()
+                    {
+                        BlobContainerName = _containerName,
+                        Resource = "c",
+                        StartsOn = DateTimeOffset.UtcNow.AddMinutes(-1),
+                        ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10)
 
-            if (isDevelopmentStorage)
-            {
-                return uriBuilder;
+                    };
+
+                    sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
+
+                    var credential = new StorageSharedKeyCredential(GetKeyValueFromConnectionString("AccountName"), GetKeyValueFromConnectionString("AccountKey"));
+
+                    var sasToken = sasBuilder.ToSasQueryParameters(credential);
+
+                    uriBuilder.Query = sasToken.ToString();
+
+                    return uriBuilder;
+                }
             }
             else
             {
-                var sasBuilder = new BlobSasBuilder()
-                {
-                    BlobContainerName = _containerName,
-                    Resource = "c",
-                    StartsOn = DateTimeOffset.UtcNow.AddMinutes(-1),
-                    ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(10)
-                  
-                };
-
-                sasBuilder.SetPermissions(BlobContainerSasPermissions.Read);
-
-                var credential = new StorageSharedKeyCredential(GetKeyValueFromConnectionString("AccountName"), GetKeyValueFromConnectionString("AccountKey"));
-
-               var sasToken = sasBuilder.ToSasQueryParameters(credential);           
-
-                uriBuilder.Query = sasToken.ToString();
-
-                return uriBuilder;
-            }
+                return null;
+            }          
         }
 
         private string GetKeyValueFromConnectionString(string key)
