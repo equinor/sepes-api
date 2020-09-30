@@ -140,11 +140,11 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            services.AddTransient<AzureResourceMonitoringService>();   
+            services.AddTransient<IAzureResourceMonitoringService, AzureResourceMonitoringService>();   
             services.AddTransient<IAzureADUsersService, AzureADUsersService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<SandboxResourceOperationService>();
-            services.AddTransient<AzureResourceMonitoringService>();
+            
             
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
