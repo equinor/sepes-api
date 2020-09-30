@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = firstMessage.MessageText, PopReceipt = firstMessage.PopReceipt };
+                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText) , PopReceipt = firstMessage.PopReceipt };
             }
 
             return null;
@@ -110,6 +110,12 @@ namespace Sepes.Infrastructure.Service
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
-        }    
+        }
+
+        static string Base64Decode(string encodedText)
+        {
+            var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
+            return System.Text.Encoding.UTF8.GetString(plainTextBytes);   
+        }
     }
 }
