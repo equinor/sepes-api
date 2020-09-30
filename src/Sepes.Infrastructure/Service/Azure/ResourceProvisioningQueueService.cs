@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model.Config;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -15,7 +16,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger = logger;
             _queueService = queueService;
-            _queueService.Init(config["ResourceProvisioningQueueConnectionString"], "sandbox-resource-operations-queue");
+            _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
         public async Task SendMessageAsync(ProvisioningQueueParentDto message)

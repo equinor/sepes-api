@@ -1,7 +1,6 @@
 ﻿using Azure;
 using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Dto;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,8 +8,6 @@ namespace Sepes.Infrastructure.Service
 {
     public interface IAzureBlobStorageService
     {
-        Task<UriBuilder> CreateUriBuilderWithSasToken();
-
         Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);    
 
         Task<StudyDto> DecorateLogoUrlWithSAS(StudyDto studyDto);
