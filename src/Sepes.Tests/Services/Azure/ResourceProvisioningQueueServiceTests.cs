@@ -59,7 +59,7 @@ namespace Sepes.Tests.Services.Azure
 
             var msgsAfter = await queueService.RecieveMessageAsync();
             Assert.NotNull(msgsAfter);
-            Assert.NotNull(msgsAfter.MessageText);         
+            
 
             var messageChild = msgsAfter.Children.SingleOrDefault();
             Assert.NotNull(messageChild);

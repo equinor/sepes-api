@@ -4,6 +4,7 @@ WORKDIR /app
 # Copy csproj and restore as distinct layers
 # TODO: Copy only csproj
 COPY . .
+
 RUN dotnet restore Sepes.RestApi/Sepes.RestApi.csproj
 
 # Copy everything else and build

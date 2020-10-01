@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IMapper _mapper;
 
-        public AzureResourceMonitoringService(ILogger logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
+        public AzureResourceMonitoringService(ILogger<AzureResourceMonitoringService> logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
         {
             _logger = logger;
             _serviceProvider = serviceProvider;
