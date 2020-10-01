@@ -110,6 +110,7 @@ namespace Sepes.Infrastructure.Service
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
             return System.Convert.ToBase64String(plainTextBytes);
+
         }
 
         static string Base64Decode(string encodedText)
@@ -117,5 +118,8 @@ namespace Sepes.Infrastructure.Service
             var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
             return System.Text.Encoding.UTF8.GetString(plainTextBytes);   
         }
+
+        }    
+
     }
 }
