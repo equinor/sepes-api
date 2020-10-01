@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 
 namespace Sepes.CloudResourceWorker
 {
-    public class ProcessResourceOperationsFunction
+    public class ResourceOperationsQueueFunction
     {    
         readonly ISandboxResourceProvisioningService _provisioningService;
 
-        public ProcessResourceOperationsFunction(ISandboxResourceProvisioningService provisioningService)
+        public ResourceOperationsQueueFunction(ISandboxResourceProvisioningService provisioningService)
         {
             _provisioningService = provisioningService;
         }
 
-        [FunctionName("ProcessProvisioningQueue")]
+        [FunctionName("ResourceOperationsQueue")]
         [StorageAccount(ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING)]      
         public async Task Run([QueueTrigger(queueName: "sandbox-resource-operations-queue")] CloudQueueMessage myQueueItem, ILogger log)
         {

@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Tests", "Sepes.Tests\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Infrastructure", "Sepes.Infrastructure\Sepes.Infrastructure.csproj", "{CB5753CF-F8F1-4336-95CD-595C1230F347}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.CloudResourceWorker", "Sepes.CloudResourceWorker\Sepes.CloudResourceWorker.csproj", "{F9C12CDF-6F17-4BCA-81B9-CF8967BFCDE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Functions", "Sepes.Functions\Sepes.Functions.csproj", "{F9C12CDF-6F17-4BCA-81B9-CF8967BFCDE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
