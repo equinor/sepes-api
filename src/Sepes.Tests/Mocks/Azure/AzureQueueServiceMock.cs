@@ -116,6 +116,16 @@ namespace Sepes.Tests.Mocks.Azure
                 _queue = newQueue;
             }
         }
+
+        public Task<string> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            throw new NotImplementedException();
+        }
     }
     public class QueueMessageWrapper
     {
