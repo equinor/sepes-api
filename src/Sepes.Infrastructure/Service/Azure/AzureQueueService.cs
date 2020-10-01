@@ -17,7 +17,7 @@ namespace Sepes.Infrastructure.Service
 
         public AzureQueueService(ILogger<AzureQueueService> logger)
         {
-            _logger = logger;                  
+            _logger = logger;
         }
 
         public void Init(string connectionString, string queueName)
@@ -30,12 +30,12 @@ namespace Sepes.Infrastructure.Service
         {
             var client = await CreateQueueClient();
             var base64Message = Base64Encode(message);
-            await client.SendMessageAsync(base64Message);    
+            await client.SendMessageAsync(base64Message);
         }
 
         public async Task SendMessageAsync<T>(T message)
         {
-            var serializedMessage = JsonConvert.SerializeObject(message);      
+            var serializedMessage = JsonConvert.SerializeObject(message);
             await SendMessageAsync(serializedMessage);
         }
 
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText) , PopReceipt = firstMessage.PopReceipt };
+                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt };
             }
 
             return null;
@@ -70,13 +70,13 @@ namespace Sepes.Infrastructure.Service
             await client.DeleteMessageAsync(messageId, popReceipt);
         }
 
-      
+
 
         public async Task DeleteQueueAsync()
         {
             var client = await CreateQueueClient();
             _ = await client.DeleteIfExistsAsync();
-        }       
+        }
 
 
         // Helper method for creating queueClient
@@ -116,10 +116,10 @@ namespace Sepes.Infrastructure.Service
         static string Base64Decode(string encodedText)
         {
             var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
-            return System.Text.Encoding.UTF8.GetString(plainTextBytes);   
+            return System.Text.Encoding.UTF8.GetString(plainTextBytes);
         }
 
-        }    
-
     }
+
+
 }
