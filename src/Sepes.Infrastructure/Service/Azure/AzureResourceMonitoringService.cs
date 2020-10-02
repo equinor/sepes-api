@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -11,13 +13,15 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureResourceMonitoringService : IAzureResourceMonitoringService
     {
-        readonly IServiceProvider _serviceProvider;
+        readonly IConfiguration _config;
         readonly ILogger _logger;
+        readonly IServiceProvider _serviceProvider;    
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IMapper _mapper;
 
-        public AzureResourceMonitoringService(ILogger<AzureResourceMonitoringService> logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
+        public AzureResourceMonitoringService(IConfiguration config, ILogger<AzureResourceMonitoringService> logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
         {
+            _config = config;
             _logger = logger;
             _serviceProvider = serviceProvider;
             _sandboxResourceService = sandboxResourceService;
@@ -118,11 +122,13 @@ namespace Sepes.Infrastructure.Service
                 }
                 else
                 {
+                    var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.MANAGED_BY);
+
                     // Read info used to create tags from resourceGroup in DB
                     // These tags should be checked with the ones in Azure.
                     var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
                     var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
-                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(studyDto.Name, studyDto, sandboxDto);
+                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(managedByTagValue, studyDto.Name, studyDto, sandboxDto);
 
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 

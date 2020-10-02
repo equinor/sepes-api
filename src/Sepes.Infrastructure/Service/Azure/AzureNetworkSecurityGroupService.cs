@@ -62,6 +62,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DeleteSecurityGroup(string resourceGroupName, string securityGroupName)
         {
+            var resource = await GetResourceAsync(resourceGroupName, securityGroupName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
         }
 
@@ -91,9 +96,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
-            _ = await rg.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
+            _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
     }
 }

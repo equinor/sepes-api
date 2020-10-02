@@ -89,12 +89,18 @@ namespace Sepes.Infrastructure.Service
                 return createdBastion;
             }
         }
-
+    
         public async Task Delete(string resourceGroupName, string bastionHostName)
         {
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
+
+                var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
+
+                //Ensure resource is is managed by this instance
+                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
+
                 await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
             }
         }
@@ -130,9 +136,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
             // TODO: A bit unsure if this actually updates azure resource...
-            rg.Tags[tag.Key] = tag.Value;
+            resource.Tags[tag.Key] = tag.Value;
             
         }
     }

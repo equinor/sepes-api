@@ -86,6 +86,11 @@ namespace Sepes.Infrastructure.Service
             //Add the security group to a subnet.
             var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
             var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, nsg.Tags);
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+
             await network.Update()
                 .UpdateSubnet(subnetName)
                 .WithExistingNetworkSecurityGroup(nsg)
@@ -93,9 +98,11 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }      
 
-        public async Task Delete(string resourceGroupName, string vNetName)
+        public async Task Delete(string resourceGroupName, string networkName)
         {
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, vNetName);
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, networkName);
         }
 
         public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
@@ -125,9 +132,12 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
-            _ = await rg.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
+            _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
 

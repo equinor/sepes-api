@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -18,6 +20,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxService : ISandboxService
     {
+        readonly IConfiguration _config;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly ILogger _logger;
@@ -26,7 +29,7 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IResourceProvisioningQueueService _provisioningQueueService;
 
-        public SandboxService(SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
+        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;
@@ -35,6 +38,7 @@ namespace Sepes.Infrastructure.Service
             _studyService = studyService;
             _sandboxResourceService = sandboxResourceService;
             _provisioningQueueService = provisioningQueueService;
+            _config = config;
 
         }
 
@@ -103,12 +107,14 @@ namespace Sepes.Infrastructure.Service
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
+            var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.MANAGED_BY);
+
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
             //TODO: Remember to consider templates specifed as argument
 
-            var tags = AzureResourceTagsFactory.CreateTags(studyFromDb.Name, studyDto, sandboxDto);
+            var tags = AzureResourceTagsFactory.CreateTags(managedByTagValue, studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
@@ -238,6 +244,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Terminating sandbox for study {studyFromDb.Name}. Sandbox name: { sandboxFromDb.Name}. Deleting Resource Group {resourceGroupForSandbox.ResourceGroupName} and all it's contents");
             //TODO: Order instead of performing
+            //TODO: add to queue
             //await _resourceGroupService.Delete(sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName);
 
             _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox with id {0} deleted", studyId);

@@ -83,6 +83,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             builder.Services.AddTransient<IAzureResourceMonitoringService, AzureResourceMonitoringService>();
-            }
+            builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+        }
     }
 }
