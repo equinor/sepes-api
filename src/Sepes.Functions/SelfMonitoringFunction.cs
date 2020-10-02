@@ -10,7 +10,7 @@ namespace Sepes.Functions
     public static class SelfMonitoringFunction
     {
         [FunctionName("SelfMonitoring")]
-        public static void Run([TimerTrigger("0 */10 * * * *")]TimerInfo myTimer, ILogger log, TelemetryClient telemetry)
+        public static void Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, ILogger log)
         {
             var databaseOkay = true;
             var provisioningQueueOkay = true;
