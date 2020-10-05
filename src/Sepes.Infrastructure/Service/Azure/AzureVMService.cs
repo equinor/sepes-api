@@ -145,8 +145,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int sizeInGB, string type)
         {
+            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
+
             // Not finished
-            _azure.VirtualMachines.GetByResourceGroup(resourceGroupName, virtualMachineName).Update()
+            vm.Update()
                 .WithNewDataDisk(sizeInGB);
 
             throw new NotImplementedException();
@@ -155,6 +160,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task Delete(string resourceGroupName, string virtualMachineName)
         {
+            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
+
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
             return;
         }
@@ -185,9 +195,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
-            _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
+            _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
     }
 }

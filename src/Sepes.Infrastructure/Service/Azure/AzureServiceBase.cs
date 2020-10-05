@@ -5,13 +5,16 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class AzureServiceBase
     {
+        protected readonly IConfiguration _config;
         protected readonly ILogger _logger;
         protected readonly IAzure _azure;
         protected readonly AzureCredentials _credentials;
@@ -19,10 +22,11 @@ namespace Sepes.Infrastructure.Service
         protected string _subscriptionId { get; set; }
 
 
-        public AzureServiceBase(IConfiguration config, ILogger logger)          
+        public AzureServiceBase(IConfiguration config, ILogger logger)
         {
+            _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
             var tenantId = config[ConfigConstants.AZ_TENANT_ID];
             var clientId = config[ConfigConstants.AZ_CLIENT_ID];
             var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
@@ -33,19 +37,32 @@ namespace Sepes.Infrastructure.Service
 
             _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 
-
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
                 .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
                 .Authenticate(_credentials).WithSubscription(_subscriptionId);
 
 
-           // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
+            // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
 
 
 
-        }         
+        }
 
-    
+        protected void CheckIfResourceHasCorrectManagedByTagThrowIfNot(string resourceName, IReadOnlyDictionary<string, string> resourceTags)
+        {
+            var convertedTags = AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resourceTags);
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceName, convertedTags);
+        }     
+
+        protected void CheckIfResourceHasCorrectManagedByTagThrowIfNot(string resourceName, IDictionary<string, string> resourceTags)
+        {
+            if (AzureResourceTagsFactory.ResourceIsManagedByThisInstance(_config, resourceTags) == false)
+            {
+                throw new Exception($"Attempting to modify Azure resource not managed by this instance: {resourceName} ");
+            }
+        }
+
+
 
         //public string CreateVNetName(string studyName, string sandboxName)
         //{

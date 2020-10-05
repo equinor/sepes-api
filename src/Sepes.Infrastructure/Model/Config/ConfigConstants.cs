@@ -30,12 +30,6 @@
 
         public const string STUDY_LOGO_STORAGE_CONSTRING = "StudyLogoStorageConnectionString";
 
-        
-
-
-
-
-
-
+        public const string MANAGED_BY = "ManagedBy";
     }
 }

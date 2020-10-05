@@ -108,6 +108,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName)
         {
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName);
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
             await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName);
         }
 
@@ -138,9 +142,14 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
-            _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+       
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+       
+            _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
+            _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
     }
 }
