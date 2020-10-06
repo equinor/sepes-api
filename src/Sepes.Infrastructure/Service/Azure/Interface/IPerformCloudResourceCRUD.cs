@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         public string ResourceGrupName { get; set; }
         public string Name { get; set; }
 
+        public string StudyName { get; set; }
         public string SandboxName { get; set; }
         public Region Region { get; set; }
 
