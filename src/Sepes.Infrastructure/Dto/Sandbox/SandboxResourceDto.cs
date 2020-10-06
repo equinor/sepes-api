@@ -8,6 +8,7 @@ namespace Sepes.Infrastructure.Dto
     {
         public int SandboxId { get; set; }
 
+        public string StudyName { get; set; }
         public string SandboxName { get; set; }
 
         public string ResourceId { get; set; }

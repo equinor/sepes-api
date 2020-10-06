@@ -24,9 +24,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
-            _logger.LogInformation($"Creating Network for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
-            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.SandboxName, parameters.Tags);
+            var sandboxSubnetName = AzureResourceNameUtil.SubNet(parameters.StudyName, parameters.SandboxName);
+
+            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, sandboxSubnetName, parameters.Tags);
             var result = CreateResult(vNet);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
@@ -40,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNet.SandboxSubnetName, vNet.Network.Name);       
 
-            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Id: {parameters.SandboxName}! Id: {vNet.Id}");
+            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNet.Id}");
 
             return result;
         }
@@ -53,17 +55,16 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags)
         {
-            var networkDto = new AzureVNetDto();
-            var networkName = AzureResourceNameUtil.VNet(sandboxName);
+            var networkDto = new AzureVNetDto();          
 
             var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
             var bastionSubnetName = "AzureBastionSubnet";
             var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255         
 
-            networkDto.SandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
+            networkDto.SandboxSubnetName = sandboxSubnetName;
             var sandboxSubnetAddress = "10.100.1.0/24";
 
             networkDto.Network = await _azure.Networks.Define(networkName)

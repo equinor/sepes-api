@@ -45,6 +45,7 @@ namespace Sepes.Infrastructure.Service
             var entityFromDb = await _db.SandboxResourceOperations
                 .Include(o => o.Resource)
                  .ThenInclude(o => o.Sandbox)
+                         .ThenInclude(o => o.Study)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)

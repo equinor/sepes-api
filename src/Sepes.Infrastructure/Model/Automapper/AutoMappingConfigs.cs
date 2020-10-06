@@ -63,7 +63,8 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResource, SandboxResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
-                .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name));
+                .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
+            .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
             CreateMap<SandboxResourceDto, SandboxResource>()

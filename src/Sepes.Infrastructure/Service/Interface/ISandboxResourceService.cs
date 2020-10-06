@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Service
 
 
         Task CreateSandboxResourceGroup(SandboxWithCloudResourcesDto dto);
-        Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type);
+        Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type, string resourceName);
 
 
         Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName);

@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Service
 {
     public interface IAzureBastionService : IHasProvisioningState, IHasTags, IPerformCloudResourceCRUD
     {      
-        Task<BastionHost> Create(Region region, string resourceGroupName, string sandboxName, string subnetId, Dictionary<string, string> tags);
+        Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags);
         Task Delete(string resourceGroupName, string bastionHostName);
     }
 }

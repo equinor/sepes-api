@@ -54,10 +54,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CreateResourceGroupForSandbox(SandboxWithCloudResourcesDto dto)
         {
-            var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.SandboxName);
-            // Create actual resource group in Azure.    
+            var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.StudyName, dto.SandboxName);
+         
             var azureResourceGroup = await _resourceGroupService.Create(resourceGroupName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
+
             // After Resource is created, mark entry in SandboxResourceOperations-table as "created/successful" and update Id in resource-table.
             _ = await UpdateResourceGroup(dto.ResourceGroup.Id.Value, dto.ResourceGroup);
             _ = await _sandboxResourceOperationService.UpdateStatus(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL);
@@ -74,20 +75,14 @@ namespace Sepes.Infrastructure.Service
             target.ResourceKey = source.Key;
         }
 
-
-        public async Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type)
-        {
-            //Create SandboxResource entry and add to database
-            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags);
-
-            //Order provisioning by adding to queue
-            //_azureQueueService.MessageToSandboxResourceOperation()
-            //Add resource to dto
-            //Update db with statuses, if relevant
+        public async Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type, string resourceName)
+        {      
+            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName);
+         
             return await GetByIdAsync(newResource.Id);
         }      
 
-        async Task<SandboxResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string,string> tags)
+        async Task<SandboxResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string,string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
@@ -101,7 +96,7 @@ namespace Sepes.Infrastructure.Service
                 ResourceGroupName = resourceGroupName,
                 ResourceType = type,
                 ResourceKey = "n/a",
-                ResourceName = "n/a",
+                ResourceName = resourceName,
                 ResourceId = "n/a",
                 Region = region,
                 Tags = tagsString,               

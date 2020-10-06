@@ -267,6 +267,10 @@ namespace Sepes.Infrastructure.Service
                 userDb = new User { EmailAddress = userFromAzure.Mail, FullName = userFromAzure.DisplayName, ObjectId = user.ObjectId };
                 _db.Users.Add(userDb);
             }
+            else
+            {
+                return await AddDbUserAsParticipantAsync(studyId, userDb.Id, role);
+            }
 
             if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
             {
