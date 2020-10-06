@@ -48,5 +48,5 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src/Sepes.Functions\Dockerfile -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
+          docker build src/Sepes.Functions/Dockerfile -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
           docker push ${{ secrets.ACR_URL }}${{ env.ciTagName }}
