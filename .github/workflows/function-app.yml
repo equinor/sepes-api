@@ -10,25 +10,34 @@ on:
       - src/Sepes.Functions/*
       - .github/workflows/function-app.yml
   push:
-      branches:
-        - master
-        - develop
-        - functionBuild
-      paths:
-        - src/Sepes.Functions/*
-        - .github/workflows/function-app.yml
+    branches:
+      - master
+      - develop
+      - functionBuild
+    paths:
+      - src/Sepes.Functions/*
+      - .github/workflows/function-app.yml
 
 jobs:
-    dockerbuild:
-      runs-on: ubuntu-latest
-      env:
-          environment: dev
-      steps:
-        # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-        - uses: actions/checkout@v2
+  GlobalVariables:
+      # Set dynamic variables for the worksflow
+    runs-on: ubuntu-latest
+    steps:
+    - name: set variables
+      shell: pwsh
+      run: |  
+        Write-Output "::set-env name=ciTagName::/function-app/ci/build:$GITHUB_RUN_ID"
 
-        # Builds the function app
-        - name: docker build
-          run: |
-            docker build src -t ${{ secrets.ACR_URL }}/function-app/ci/build:$GITHUB_RUN_ID
-          # docker push ${{ secrets.ACR_URL }}/function-app/CI/:$GITHUB_RUN_ID
+  dockerbuild:
+    runs-on: ubuntu-latest
+    env:
+        environment: CI
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
+        # docker push ${{ secrets.ACR_URL }}/function-app/CI/:$GITHUB_RUN_ID
