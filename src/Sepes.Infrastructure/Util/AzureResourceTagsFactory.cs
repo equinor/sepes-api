@@ -12,11 +12,21 @@ namespace Sepes.Infrastructure.Util
     {
         public static string MANAGED_BY_TAG_NAME = "ManagedBy";
 
-        public static Dictionary<string, string> CreateTags(string mangedByTagValue, string studyName, StudyDto study, SandboxDto sandbox)
+        public static Dictionary<string, string> CreateTags(IConfiguration config, string studyName, StudyDto study, SandboxDto sandbox)
         {
             var tags = CreateBaseTags(studyName);
-            tags.Add(MANAGED_BY_TAG_NAME, mangedByTagValue);
-            tags.Add("WBS", study.WbsCode);
+
+            //Adds a "managed by"-tag to Azure resources. Sepes won't change resources that are missing this tag
+            var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);
+            tags.Add(MANAGED_BY_TAG_NAME, managedByTagValue);
+
+            //Enables cost tracking of Azure resources. This should only be enabled in PROD with real WBS codes, because fake wbs codes used in DEV is causing pain for teams that track the costs.
+            var costAllocationTypeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_TYPE_TAG_NAME);
+            tags.Add(costAllocationTypeTagName, "WBS");
+
+            var costAllocationCodeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_CODE_TAG_NAME);
+            tags.Add(costAllocationCodeTagName, study.WbsCode);
+
             // TODO: Get Owner Name and Email from Roles!
             //tags.Add("StudyOwnerName", study.OwnerName);
             //tags.Add("StudyOwnerEmail", study.OwnerEmail);

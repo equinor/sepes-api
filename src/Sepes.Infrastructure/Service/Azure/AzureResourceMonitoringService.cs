@@ -121,14 +121,13 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
                 }
                 else
-                {
-                    var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.MANAGED_BY);
+                {                 
 
                     // Read info used to create tags from resourceGroup in DB
                     // These tags should be checked with the ones in Azure.
                     var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
                     var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
-                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(managedByTagValue, studyDto.Name, studyDto, sandboxDto);
+                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(_config, studyDto.Name, studyDto, sandboxDto);
 
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
