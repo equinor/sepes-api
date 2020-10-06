@@ -21,7 +21,7 @@ namespace Sepes.Infrastructure.Service
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue, IAzureResourceMonitoringService monitoringService )
+        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue, IAzureResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
@@ -44,6 +44,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
+            _logger.LogInformation($"Handling queue message: {queueParentItem.MessageId}");
+
             //One per child item in queue item
             SandboxResourceOperationDto currentResourceOperation = null;
 
@@ -52,15 +54,21 @@ namespace Sepes.Infrastructure.Service
 
             CloudResourceCRUDResult currentCrudResult = null;
 
-            try
+
+            foreach (var queueChildItem in queueParentItem.Children)
             {
-                foreach (var queueChildItem in queueParentItem.Children)
+                try
                 {
                     currentResourceOperation = await _sandboxResourceOperationService.GetByIdAsync(queueChildItem.SandboxResourceOperationId);
 
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Starting operation");
 
-                    if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount > 2)
+                    if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL )
+                    {
+                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Allready completed!");
+                        continue;
+                    }
+                    else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount > 2)
                     {
                         _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Retry count exceeded");
                         await HandleRetryCountExceeded(queueParentItem, queueChildItem, currentResourceOperation);
@@ -74,23 +82,31 @@ namespace Sepes.Infrastructure.Service
                     }
 
                     currentCrudResult = await HandleCRUD(queueParentItem, queueChildItem, currentResourceOperation, currentCrudInput, currentCrudResult);
+
                 }
-
-            }
-            catch (Exception ex)
-            {
-                //TODO: HANDLE FAILED OPERATION            
-
-                //Queue item get's visible again after a while
-
-                if (currentResourceOperation != null)
+                catch (Exception ex)
                 {
-                    await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCount(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+
+                    //TODO: HANDLE FAILED OPERATION            
+
+                    //Queue item get's visible again after a while
+
+                    if (currentResourceOperation != null)
+                    {
+                        await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCount(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+                    }
+                    else
+                    {
+                        var weird = 1;
+                    }
+
+                    return;
                 }
 
-                return;
             }
 
+
+            _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}. Deleting message");
 
             await _workQueue.DeleteMessageAsync(queueParentItem);
         }
@@ -105,7 +121,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
         {
-          
+
             var resource = currentResourceOperation.Resource;
             var resourceType = currentResourceOperation.Resource.ResourceType;
 
@@ -132,6 +148,7 @@ namespace Sepes.Infrastructure.Service
 
             currentCrudInput.ResetButKeepSharedVariables(currentCrudResult != null ? currentCrudResult.NewSharedVariables : null);
             currentCrudInput.Name = resource.ResourceName;
+            currentCrudInput.StudyName = resource.StudyName;
             currentCrudInput.SandboxName = resource.SandboxName;
             currentCrudInput.ResourceGrupName = resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(resource.Region);
@@ -143,7 +160,7 @@ namespace Sepes.Infrastructure.Service
             await _workQueue.IncreaseInvisibilityAsync(queueParentItem, increaseQueueItemInvisibilityBy);
 
             if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
-            {   
+            {
                 if (AllreadyCompleted(currentResourceOperation))
                 {
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Operation allready completed. Resource should exist. Getting provsioning state");
@@ -151,7 +168,7 @@ namespace Sepes.Infrastructure.Service
                 }
                 else
                 {
-                    _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: All looks fine. Proceeding with create");
+                    _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Initial checks succeeded. Proceeding with create");
                     currentCrudResult = await service.Create(currentCrudInput);
                 }
             }
@@ -212,12 +229,12 @@ namespace Sepes.Infrastructure.Service
                 if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                 {
 
-                    if(currentProvisioningState == "Succeeded")
+                    if (currentProvisioningState == "Succeeded")
                     {
                         return;
                     }
                 }
-            }           
+            }
 
             throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Aborting! Comnponent should have been created, but provisioning state is not as expexted: {currentProvisioningState}");
         }

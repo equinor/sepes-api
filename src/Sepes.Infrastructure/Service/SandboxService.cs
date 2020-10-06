@@ -100,7 +100,7 @@ namespace Sepes.Infrastructure.Service
             var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
 
             var user = _userService.GetCurrentUser();
-
+            sandbox.CreatedBy = user.UserName;
             sandbox.TechnicalContactName = user.FullName;
             sandbox.TechnicalContactEmail = user.EmailAddress;
 
@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
             //Her har vi mye info om sandboxen i Azure, men den har for mye info
-            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = AzureResourceNameUtil.Sandbox(studyFromDb.Name), Region = region, Tags = tags };
+            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags };
             await CreateBasicSandboxResourcesAsync(azureSandbox);
 
             return await GetSandboxDtoAsync(sandbox.Id);
@@ -179,7 +179,8 @@ namespace Sepes.Infrastructure.Service
 
         async Task ScheduleCreationOfDiagStorageAccount(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount);
+            var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount(dto.StudyName, dto.SandboxName);
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount, resourceName);
             dto.DiagnosticsStorage = resourceEntry;
         }
 
@@ -192,7 +193,9 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             //TODO: Add special network rules to resource
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork);
+            var networkName = AzureResourceNameUtil.VNet(dto.StudyName, dto.SandboxName);
+    
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork, networkName);
             dto.Network = resourceEntry;
         }
 
@@ -202,9 +205,9 @@ namespace Sepes.Infrastructure.Service
             dto.Bastion = resourceEntry;
         }
 
-        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType)
+        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
         {
-            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType);
+            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, resourceName);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = resourceEntry.Id.Value, SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
 
             return resourceEntry;
@@ -327,7 +330,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            if(queueParentItem.Children.Count == 0)
+            if (queueParentItem.Children.Count == 0)
             {
                 throw new Exception($"ReScheduleSandboxCreation. StudyId: {studyId}, SandboxId: {sandboxId}: Could not re-shedule creation. No relevant resource items found");
             }

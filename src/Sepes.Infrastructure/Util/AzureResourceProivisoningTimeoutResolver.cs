@@ -8,15 +8,15 @@ namespace Sepes.Infrastructure.Util
         {
             if(resourceType == AzureResourceType.StorageAccount)
             {
-                return 100;
+                return 180;
             }
             else if (resourceType == AzureResourceType.NetworkSecurityGroup)
             {
-                return 100;
+                return 180;
             }
             else if (resourceType == AzureResourceType.VirtualNetwork)
             {
-                return 100;
+                return 180;
             }
             else if (resourceType == AzureResourceType.ResourceGroup)
             {
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Util
             }
             else if (resourceType == AzureResourceType.Bastion)
             {
-                return 300;
+                return 600;
             }
 
             return 60;
