@@ -23,10 +23,10 @@ jobs:
       # Set dynamic variables for the worksflow
     runs-on: ubuntu-latest
     steps:
-    - name: set variables
-      shell: pwsh
-      run: |  
-        Write-Output "::set-env name=ciTagName::/function-app/ci/build:$GITHUB_RUN_ID"
+      - name: set variables
+        shell: pwsh
+        run: |  
+          Write-Output "::set-env name=ciTagName::/function-app/ci/build:$GITHUB_RUN_ID"
 
   dockerbuild:
     runs-on: ubuntu-latest
@@ -36,8 +36,17 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
 
+      # Docker login
+      - uses: actions/checkout@v2
+
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
-        # docker push ${{ secrets.ACR_URL }}/function-app/CI/:$GITHUB_RUN_ID
+          docker build src/Sepes.Functions\Dockerfile -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
+          docker push ${{ secrets.ACR_URL }}${{ env.ciTagName }}
