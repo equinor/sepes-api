@@ -37,8 +37,6 @@ jobs:
       - uses: actions/checkout@v2
 
       # Docker login
-      - uses: actions/checkout@v2
-
       - uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.ACR_URL }}
@@ -48,5 +46,5 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -f src/Sepes.Function/Dockerfile -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ secrets.ACR_URL }}${{ env.ciTagName }}
           docker push ${{ secrets.ACR_URL }}${{ env.ciTagName }}
