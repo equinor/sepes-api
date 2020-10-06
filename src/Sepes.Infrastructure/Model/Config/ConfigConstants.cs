@@ -31,5 +31,8 @@
         public const string STUDY_LOGO_STORAGE_CONSTRING = "StudyLogoStorageConnectionString";
 
         public const string MANAGED_BY = "ManagedBy";
+
+        public const string COST_ALLOCATION_TYPE_TAG_NAME = "CostAllocationTypeTagName";
+        public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";
     }
 }

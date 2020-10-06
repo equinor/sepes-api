@@ -107,14 +107,14 @@ namespace Sepes.Infrastructure.Service
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
-            var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.MANAGED_BY);
+           
 
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
             //TODO: Remember to consider templates specifed as argument
 
-            var tags = AzureResourceTagsFactory.CreateTags(managedByTagValue, studyFromDb.Name, studyDto, sandboxDto);
+            var tags = AzureResourceTagsFactory.CreateTags(_config, studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
