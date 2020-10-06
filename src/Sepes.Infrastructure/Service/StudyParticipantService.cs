@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service
                 return new List<ParticipantLookupDto>();
             }
             var usersFromAzureAdTask = _azureADUsersService.SearchUsersAsync(searchText, limit);
-            var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.Contains(searchText) || u.FullName.Contains(searchText) || u.ObjectId.Equals(searchText)).ToListAsync();
+            var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.StartsWith(searchText) || u.FullName.StartsWith(searchText) || u.ObjectId.Equals(searchText)).ToListAsync();
 
             await Task.WhenAll(usersFromAzureAdTask, usersFromDbTask);
 
