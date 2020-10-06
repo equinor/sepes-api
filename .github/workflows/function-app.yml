@@ -49,4 +49,4 @@ jobs:
       - name: docker build
         run: |
           docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}
-          docker push ${{ env.citTag }}
+          docker push ${{ env.ciTag }}
