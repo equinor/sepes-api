@@ -17,6 +17,8 @@ on:
     paths:
       - src/Sepes.Functions/*
       - .github/workflows/function-app.yml
+env:
+  ciTag: ${{ secrets.ACR_URL }}/function-app/ci:$GITHUB_RUN_ID
 
 jobs:
   GlobalVariables:
@@ -46,5 +48,5 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ secrets.ACR_URL }}/function-app/ci/build:$GITHUB_RUN_ID
-          docker push ${{ secrets.ACR_URL }}/function-app/ci/build:$GITHUB_RUN_ID
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.citTag }}
+          docker push ${{ env.citTag }}
