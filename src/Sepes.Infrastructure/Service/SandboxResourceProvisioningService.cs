@@ -94,11 +94,7 @@ namespace Sepes.Infrastructure.Service
                     if (currentResourceOperation != null)
                     {
                         await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCount(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
-                    }
-                    else
-                    {
-                        var weird = 1;
-                    }
+                    }                  
 
                     return;
                 }
