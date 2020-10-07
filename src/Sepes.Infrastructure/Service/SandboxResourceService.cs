@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;
             _mapper = mapper;
             _userService = userService;
-            _requestIdService = requestIdService;     
+            _requestIdService = requestIdService;
             _resourceGroupService = resourceGroupService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
         }
@@ -239,7 +239,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
-                                                                                                    .Include(sr=> sr.Operations)
+                                                                                                    .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
                                                                                                    .ToListAsync();
 
@@ -260,7 +260,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
-        {          
+        {
 
             if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
             {
@@ -282,7 +282,7 @@ namespace Sepes.Infrastructure.Service
 
             resourceFromDb.ResourceId = resourceIdInForeignSystem;
 
-            if(resourceFromDb.ResourceName != resourceNameInForeignSystem)
+            if (resourceFromDb.ResourceName != resourceNameInForeignSystem)
             {
                 resourceFromDb.ResourceName = resourceNameInForeignSystem;
             }
@@ -311,9 +311,9 @@ namespace Sepes.Infrastructure.Service
             return sandboxFromDb;
         }
 
-        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Where(sr => sr.Deleted.HasValue)
+        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
-      
+
     }
 }
