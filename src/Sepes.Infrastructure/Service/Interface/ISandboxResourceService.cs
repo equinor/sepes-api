@@ -32,5 +32,6 @@ namespace Sepes.Infrastructure.Service
         Task<List<SandboxResource>> GetActiveResources();
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
+   
     }
 }

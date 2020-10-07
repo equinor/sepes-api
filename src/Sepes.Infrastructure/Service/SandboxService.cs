@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
@@ -25,16 +26,19 @@ namespace Sepes.Infrastructure.Service
         readonly IMapper _mapper;
         readonly ILogger _logger;
         readonly IUserService _userService;
+        readonly IRequestIdService _requestIdService;
         readonly IStudyService _studyService;
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IResourceProvisioningQueueService _provisioningQueueService;
 
-        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
+
+        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;
             _logger = logger;
             _userService = userService;
+            _requestIdService = requestIdService;
             _studyService = studyService;
             _sandboxResourceService = sandboxResourceService;
             _provisioningQueueService = provisioningQueueService;
@@ -107,7 +111,7 @@ namespace Sepes.Infrastructure.Service
             studyFromDb.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
-           
+
 
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
@@ -119,7 +123,7 @@ namespace Sepes.Infrastructure.Service
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
             //Her har vi mye info om sandboxen i Azure, men den har for mye info
-            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags };
+            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
             await CreateBasicSandboxResourcesAsync(azureSandbox);
 
             return await GetSandboxDtoAsync(sandbox.Id);
@@ -170,8 +174,6 @@ namespace Sepes.Infrastructure.Service
 
             await _provisioningQueueService.SendMessageAsync(queueParentItem);
 
-            //Send notification to worker and tell it that dinner is ready?
-
             _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
 
             return dto;
@@ -194,7 +196,7 @@ namespace Sepes.Infrastructure.Service
         {
             //TODO: Add special network rules to resource
             var networkName = AzureResourceNameUtil.VNet(dto.StudyName, dto.SandboxName);
-    
+
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork, networkName);
             dto.Network = resourceEntry;
         }
@@ -222,55 +224,82 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
-            _logger.LogWarning(SepesEventId.SandboxDelete, "Deleting sandbox with id {0}, for study {1}", studyId, sandboxId);
+            _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
 
             // Run validations: (Check if ID is valid)
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
-            var sandboxFromDb = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
+            var sandboxFromDb = await _db.Sandboxes.Include(sb=> sb.Resources).ThenInclude(r=> r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            SetSandboxAsDeleted(sandboxFromDb);
-
-            await _db.SaveChangesAsync();
-
-            //Find resource group name
-            var resourceGroupForSandbox = sandboxFromDb.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.ResourceGroup);
-
-            if (resourceGroupForSandbox == null)
-            {
-                throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
-            }
-
-            _logger.LogInformation($"Terminating sandbox for study {studyFromDb.Name}. Sandbox name: { sandboxFromDb.Name}. Deleting Resource Group {resourceGroupForSandbox.ResourceGroupName} and all it's contents");
-            //TODO: Order instead of performing
-            //TODO: add to queue
-            //await _resourceGroupService.Delete(sandboxFromDb.Name, resourceGroupForSandbox.ResourceGroupName);
-
-            _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox with id {0} deleted", studyId);
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
-        }
-
-
-
-        void SetSandboxAsDeleted(Sandbox sandbox)
-        {
             var user = _userService.GetCurrentUser();
 
-            //Mark sandbox object as deleted
-            sandbox.Deleted = true;
-            sandbox.DeletedAt = DateTime.UtcNow;
-            sandbox.DeletedBy = user.UserName;
+            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 
-            //Mark all resources as deleted
-            foreach (var curResource in sandbox.Resources)
+            //Mark sandbox object as deleted
+            sandboxFromDb.Deleted = true;
+            sandboxFromDb.DeletedAt = DateTime.UtcNow;
+            sandboxFromDb.DeletedBy = user.UserName;
+
+            SandboxResource sandboxResourceGroup = null;
+
+            if(sandboxFromDb.Resources.Count > 0)
             {
-                curResource.Deleted = DateTime.UtcNow;
-                curResource.DeletedBy = user.UserName;
+
+                //Mark all resources as deleted
+                foreach (var curResource in sandboxFromDb.Resources)
+                {
+                    if (curResource.ResourceType == AzureResourceType.ResourceGroup)
+                    {
+                        sandboxResourceGroup = curResource;
+                    }
+
+                    curResource.Deleted = DateTime.UtcNow;
+                    curResource.DeletedBy = user.UserName;
+
+                    _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", studyId, sandboxId, curResource.Id);
+                }
+
+                if (sandboxResourceGroup == null)
+                {                   
+                    throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
+                }
+
+                _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
+
+                var deleteOperation = new SandboxResourceOperation()
+                {
+                    BatchId = Guid.NewGuid().ToString(),
+                    CreatedBySessionId = _requestIdService.GetRequestId(),
+                    OperationType = CloudResourceOperationType.DELETE,
+                    SandboxResourceId = sandboxResourceGroup.Id,
+                    Description = $"Delete resources for Sandbox {sandboxFromDb.Id}"
+                };
+
+                sandboxResourceGroup.Operations.Add(deleteOperation);
+
+                _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", studyId, sandboxId);
+
+                //Create queue item
+                var queueParentItem = new ProvisioningQueueParentDto();
+                queueParentItem.SandboxId = sandboxId;
+                queueParentItem.Description = $"Delete resources for Sandbox: {sandboxId}";
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = sandboxResourceGroup.Id, SandboxResourceOperationId = deleteOperation.Id });
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
             }
+            else
+            {
+                _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
+            }            
+
+            await _db.SaveChangesAsync();        
+
+            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
+
+            return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
         public async Task ReScheduleSandboxCreation(int studyId, int sandboxId)

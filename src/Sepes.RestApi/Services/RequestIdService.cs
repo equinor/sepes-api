@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Services
                 return requestId;
             }
 
-            throw new System.Exception("Unable to resolve Request Id from Application Insights");             
+            return "na";                       
         }
 
         bool PotentialRequestIdIsNotEmpty(string potentialRequestId, out string validRequestId)

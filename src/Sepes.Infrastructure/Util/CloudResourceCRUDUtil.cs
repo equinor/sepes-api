@@ -15,5 +15,10 @@ namespace Sepes.Infrastructure.Util
         {
             return new CloudResourceCRUDResult() { NetworkResource = resource, Success = true };
         }
+
+        public static CloudResourceCRUDResult CreateResultFromProvisioningState(string provisioningState)
+        {
+            return new CloudResourceCRUDResult() { CurrentProvisioningState = provisioningState, Success = true};
+        }
     }
 }

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,24 +14,53 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
     {
-        readonly IMapper _mapper; 
+        readonly IMapper _mapper;
 
         public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger, IMapper mapper)
-            :base(config, logger)
+            : base(config, logger)
         {
             _mapper = mapper;
         }
-      
+
+        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        {
+            _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            var resourceGroup = await CreateInternal(parameters.ResourceGrupName, parameters.Region, parameters.Tags);
+
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
+            crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
+            return crudResult;
+
+            _logger.LogInformation($"Done creating Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
+            return crudResult;
+        }
+
 
         public async Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
+        {
+            var resourceGroup = await CreateInternal(resourceGroupName, region, tags);
+            return MapToDto(resourceGroup);
+        }
+
+        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags)
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
                     .WithRegion(region)
                     .WithTags(tags)
-                    .CreateAsync();     
-            
-            return MapToDto(resourceGroup);
+                    .CreateAsync();
+
+            return resourceGroup;
+        }
+
+        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            await Delete(parameters.ResourceGrupName);
+
+            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            return crudResult;
         }
 
         AzureResourceGroupDto MapToDto(IResourceGroup resourceGroup)
@@ -45,7 +75,7 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
             return resource;
-        }  
+        }
 
         //public async Task<bool> Exists(string resourceGroupName) => await Exists(resourceGroupName, resourceGroupName);
 
@@ -57,18 +87,25 @@ namespace Sepes.Infrastructure.Service
             {
                 throw NotFoundException.CreateForAzureResource(resourceGroupName);
             }
-            
+
             return resource.ProvisioningState;
         }
 
         public async Task Delete(string resourceGroupName)
         {
-            var resource = await GetResourceAsync(resourceGroupName);
+            try
+            {
+                var resource = await GetResourceAsync(resourceGroupName);
+                //Ensure resource is is managed by this instance
+                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-            //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
-
-            await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
+                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
+            }
+            catch (System.Exception ex)
+            {
+                //Is resource group allready deleted?
+                throw;
+            }        
         }
 
         public async Task<IPagedCollection<IResourceGroup>> GetResourceGroupsAsList()
@@ -85,18 +122,20 @@ namespace Sepes.Infrastructure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var rg = await GetResourceAsync(resourceGroupName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);         
+            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName);   
+            var rg = await GetResourceAsync(resourceGroupName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, rg.Tags);
 
             _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
-                _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+            _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
+
+
     }
 }

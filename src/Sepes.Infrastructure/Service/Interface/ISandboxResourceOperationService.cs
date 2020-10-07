@@ -11,5 +11,7 @@ namespace Sepes.Infrastructure.Service
 
         Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCount(int id, string status);
         Task<SandboxResourceOperationDto> SetInProgress(int id, string requestId, string status);
+
+        Task<bool> ExistsPreceedingUnfinishedOperations(SandboxResourceOperationDto operationDto);
     }
 }

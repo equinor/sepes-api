@@ -32,6 +32,15 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
+        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            await DeleteSecurityGroup(parameters.ResourceGrupName, parameters.Name);
+
+            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            return crudResult;
+        }
+
         CloudResourceCRUDResult CreateResult(INetworkSecurityGroup nsg)
         {
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(nsg);

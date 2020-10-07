@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -84,6 +85,16 @@ namespace Sepes.Tests.Mocks.Azure
             }
 
             resourceGroup.Tags = newTagList;            
+        }
+
+        public Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
         }
     }
 }

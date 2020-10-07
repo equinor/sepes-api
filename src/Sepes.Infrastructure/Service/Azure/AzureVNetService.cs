@@ -141,6 +141,11 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
+        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
+
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
         //{

@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         //Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters);
 
-        //Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
     }
 
     public class CloudResourceCRUDInput

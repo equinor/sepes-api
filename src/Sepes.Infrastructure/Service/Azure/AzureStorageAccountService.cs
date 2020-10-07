@@ -150,5 +150,10 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
+
+        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

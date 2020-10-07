@@ -47,6 +47,15 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
+        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+          await Delete(parameters.ResourceGrupName, parameters.Name);
+
+            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            return crudResult;
+        }
+
 
         public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags)
         {
@@ -141,6 +150,8 @@ namespace Sepes.Infrastructure.Service
             resource.Tags[tag.Key] = tag.Value;
 
         }
+
+       
     }
 
 }
