@@ -15,7 +15,7 @@ namespace Sepes.Functions
         }
 
         [FunctionName("SandboxResourceMonitoring")]
-        public async Task Run([TimerTrigger("0 */1 * * * *")]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 * * * *")]TimerInfo myTimer, ILogger log)
         {
            await _resourceMonitoringService.StartMonitoringSession();
         }       

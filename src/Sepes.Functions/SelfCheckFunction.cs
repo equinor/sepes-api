@@ -8,7 +8,7 @@ namespace Sepes.Functions
     public static class SelfCheckFunction
     {
         [FunctionName("SelfCheck")]
-        public static void Run([TimerTrigger("0 */15 * * * *")]TimerInfo myTimer, ILogger log)
+        public static void Run([TimerTrigger("0 */30 * * * *")]TimerInfo myTimer, ILogger log)
         {
             var databaseOkay = true;
             var provisioningQueueOkay = true;
