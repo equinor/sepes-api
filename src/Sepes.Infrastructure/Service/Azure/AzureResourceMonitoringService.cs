@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -34,9 +34,44 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curRes in activeResources)
             {
+
                 try
-                {
-                    if (String.IsNullOrWhiteSpace(curRes.ResourceType)) _logger.LogCritical($"Resource type field empty in DB for resource id: {curRes.Id}");
+                {  
+                    if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    {
+                        _logger.LogInformation($"No valid foreign resource Id specified for {curRes.Id}. Foreign Id was {curRes.ResourceId}. Aborting monitoring");
+                        continue;
+                    }
+
+                    if (curRes.ResourceName == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    {
+                        _logger.LogInformation($"No valid name specified for {curRes.Id}. Name was {curRes.ResourceName}. Aborting monitoring");
+                        continue;
+                    }
+
+                    if (String.IsNullOrWhiteSpace(curRes.ResourceType))
+                    {
+                        _logger.LogInformation($"Resource type field empty in DB for resource id: {curRes.Id}");
+                        continue;
+                    }
+
+                    //First detect if monitoring should proceed
+                    if (curRes.Operations.Count == 0)
+                    {
+                        _logger.LogWarning($"No operations found for resource {curRes.Id}. Aborting monitoring");
+                        continue;
+                    }
+
+                    foreach(var curOperations in curRes.Operations)
+                    {
+                        if(curOperations.Status == CloudResourceOperationState.NOT_STARTED || curOperations.Status == CloudResourceOperationState.IN_PROGRESS)
+                        {
+                            _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
+                            continue;
+                        }
+                    }                
+
+                    _logger.LogInformation($"Initial checks passed. Performing monitoring for resource {curRes.Id}.");
 
                     await GetAndLogProvisioningState(curRes);
                     await CheckAndUpdateTags(curRes);
@@ -131,6 +166,11 @@ namespace Sepes.Infrastructure.Service
 
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
+                    if(tagsFromAzure == null)
+                    {
+                        _logger.LogWarning($"No tags found for resource {resource.Id}!");
+                        return;
+                    }
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
                     foreach (var tag in tagsFromAzure)

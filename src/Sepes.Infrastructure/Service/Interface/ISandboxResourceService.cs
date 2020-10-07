@@ -12,6 +12,7 @@ namespace Sepes.Infrastructure.Service
     public interface ISandboxResourceService
     {
 
+        Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string azureId, string azureName);
 
         Task CreateSandboxResourceGroup(SandboxWithCloudResourcesDto dto);
         Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type, string resourceName);
@@ -27,11 +28,11 @@ namespace Sepes.Infrastructure.Service
         Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated);
 
         Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync();
-      
+
 
         Task<List<SandboxResource>> GetActiveResources();
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
-   
+
     }
 }

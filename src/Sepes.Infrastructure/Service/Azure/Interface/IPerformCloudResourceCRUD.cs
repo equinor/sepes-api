@@ -78,6 +78,10 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         public bool Success;
         public string CurrentProvisioningState { get; set; }
 
+        public string IdInTargetSystem { get; set; }
+
+        public string NameInTargetSystem { get; set; }
+
         public IResource Resource { get; set; }
 
         public Microsoft.Rest.Azure.IResource NetworkResource { get; set; }
