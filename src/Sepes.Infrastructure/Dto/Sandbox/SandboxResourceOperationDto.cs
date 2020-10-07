@@ -1,13 +1,18 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿using System;
+
+namespace Sepes.Infrastructure.Dto
 {
     public class SandboxResourceOperationDto : UpdateableBaseDto
-    { 
+    {
+      
 
         public string OperationType { get; set; }
 
         public string Status { get; set; }
 
-        public int TryCount { get; set; }      
+        public int TryCount { get; set; }
+
+        public string BatchId { get; set; }
 
         public string CreatedBySessionId { get; set; }
 

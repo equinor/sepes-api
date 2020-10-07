@@ -42,9 +42,19 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
+        async Task<bool> HasUnfinishedPreceedingOperations(SandboxResourceOperationDto queueParentItem)
+        {
+
+            //Check for crated, not finished/inprogress and batchid!=
+            return await _sandboxResourceOperationService.ExistsPreceedingUnfinishedOperations(queueParentItem);
+
+
+        }
+
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation($"Handling queue message: {queueParentItem.MessageId}");
+
 
             //One per child item in queue item
             SandboxResourceOperationDto currentResourceOperation = null;
@@ -54,16 +64,15 @@ namespace Sepes.Infrastructure.Service
 
             CloudResourceCRUDResult currentCrudResult = null;
 
-
             foreach (var queueChildItem in queueParentItem.Children)
             {
                 try
                 {
                     currentResourceOperation = await _sandboxResourceOperationService.GetByIdAsync(queueChildItem.SandboxResourceOperationId);
-
+                    
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Starting operation");
 
-                    if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL )
+                    if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                     {
                         _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Allready completed!");
                         continue;
@@ -74,6 +83,10 @@ namespace Sepes.Infrastructure.Service
                         await HandleRetryCountExceeded(queueParentItem, queueChildItem, currentResourceOperation);
                         //cannot recover from this
                         return;
+                    }
+                    else if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && currentResourceOperation.Resource.Deleted.HasValue) {
+
+                        throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Resource appears to be deleted. Aborting!");
                     }
                     else if (MightBeInProgressByAnotherThread(currentResourceOperation))
                     {
@@ -87,14 +100,15 @@ namespace Sepes.Infrastructure.Service
                 catch (Exception ex)
                 {
 
-                    //TODO: HANDLE FAILED OPERATION            
+                    _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId} for resource {queueChildItem.SandboxResourceId}");
+
 
                     //Queue item get's visible again after a while
 
                     if (currentResourceOperation != null)
                     {
                         await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCount(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
-                    }                  
+                    }
 
                     return;
                 }
@@ -126,15 +140,6 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Setting operation to In Progress");
             currentResourceOperation = await _sandboxResourceOperationService.SetInProgress(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
 
-            //TODO: Update queue with relevant timeout + 1 min 
-
-
-
-            // TODO: Work out format on messages in Queue. How to decide what actions to take, and what service to use.
-            // Possibly implement an ActionResolver...
-            // Decide if it would be smart to have a reference to not only the resourceOperation but also the resource itself.
-
-            //Possible actions steps:
             var service = AzureResourceServiceResolver.GetCRUDService(_serviceProvider, resourceType);
 
             if (service == null)
@@ -174,7 +179,15 @@ namespace Sepes.Infrastructure.Service
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
-
+                if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
+                {
+                    currentCrudResult = await service.Delete(currentCrudInput);
+                }
+                else
+                {
+                    _logger.LogCritical($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Attempted to delete resource with type {currentCrudResult.Resource.Type}. Only deleting resource groups are supprorted.");
+                    throw new ArgumentException($"ResourceOperation {queueChildItem.SandboxResourceOperationId}: Unable to resolve CRUD service for type {resourceType}!");
+                }
             }
 
             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: finished with provisioningState: {currentCrudResult.CurrentProvisioningState}");

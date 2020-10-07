@@ -20,7 +20,16 @@ namespace Sepes.Infrastructure.Util
             }
             else if (resourceType == AzureResourceType.ResourceGroup)
             {
-                return 30;
+                if(operationType == CloudResourceOperationType.CREATE)
+                {
+                    return 60;
+                }
+                else if (operationType == CloudResourceOperationType.CREATE)
+                {
+                    return 600;
+                }
+
+
             }
             else if (resourceType == AzureResourceType.Bastion)
             {

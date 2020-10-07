@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -44,9 +46,9 @@ namespace Sepes.Infrastructure.Service
         {
             var entityFromDb = await _db.SandboxResourceOperations
                 .Include(o => o.Resource)
-                 .ThenInclude(o => o.Sandbox)
-                         .ThenInclude(o => o.Study)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                 .ThenInclude(r => r.Sandbox)
+                         .ThenInclude(sb => sb.Study)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entityFromDb == null)
             {
@@ -117,6 +119,11 @@ namespace Sepes.Infrastructure.Service
             }
 
             return entityFromDb;
+        }
+
+        public async Task<bool> ExistsPreceedingUnfinishedOperations(SandboxResourceOperationDto operationDto)
+        {
+           return await _db.SandboxResourceOperations.Where(o => o.SandboxResourceId == operationDto.Resource.Id.Value && o.BatchId != operationDto.BatchId && o.Created < operationDto.Created && (o.Status == CloudResourceOperationState.IN_PROGRESS || o.Status == CloudResourceOperationState.NOT_STARTED)).AnyAsync();
         }
     }
 }

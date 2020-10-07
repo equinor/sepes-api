@@ -26,36 +26,33 @@ namespace Sepes.Infrastructure.Service
         readonly IMapper _mapper;
         readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
-        readonly IAzureQueueService _azureQueueService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
 
-        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IRequestIdService requestIdService, IAzureQueueService azureQueueService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
+        public SandboxResourceService(SepesDbContext db, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IRequestIdService requestIdService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
         {
             _db = db;
             _logger = logger;
             _mapper = mapper;
             _userService = userService;
-            _requestIdService = requestIdService;
-            _azureQueueService = azureQueueService;
+            _requestIdService = requestIdService;     
             _resourceGroupService = resourceGroupService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
         }
 
         public async Task CreateSandboxResourceGroup(SandboxWithCloudResourcesDto dto)
         {
-            var sandboxResource = await AddInternal(dto.SandboxId, "not created", "not created", AzureResourceType.ResourceGroup, dto.Region.Name, dto.Tags);
-           
+            var sandboxResource = await AddInternal(dto.BatchId, dto.SandboxId, "not created", "not created", AzureResourceType.ResourceGroup, dto.Region.Name, dto.Tags);
+
             dto.ResourceGroup = MapEntityToDto(sandboxResource);
 
-            await CreateResourceGroupForSandbox(dto);         
-
+            await CreateResourceGroupForSandbox(dto);
         }
 
         public async Task CreateResourceGroupForSandbox(SandboxWithCloudResourcesDto dto)
         {
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.StudyName, dto.SandboxName);
-         
+
             var azureResourceGroup = await _resourceGroupService.Create(resourceGroupName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
 
@@ -76,13 +73,14 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type, string resourceName)
-        {      
-            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName);
-         
-            return await GetByIdAsync(newResource.Id);
-        }      
+        {
+            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName);
 
-        async Task<SandboxResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string,string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+            return await GetByIdAsync(newResource.Id);
+        }
+
+
+        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string, string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
@@ -99,10 +97,11 @@ namespace Sepes.Infrastructure.Service
                 ResourceName = resourceName,
                 ResourceId = "n/a",
                 Region = region,
-                Tags = tagsString,               
+                Tags = tagsString,
                 Operations = new List<SandboxResourceOperation> {
                     new SandboxResourceOperation()
                     {
+                    BatchId = batchId,
                     OperationType = CloudResourceOperationType.CREATE,
                     CreatedBySessionId = _requestIdService.GetRequestId()
                     }

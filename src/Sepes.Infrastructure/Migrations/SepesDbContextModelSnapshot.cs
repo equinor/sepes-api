@@ -248,6 +248,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<string>("BatchId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CarriedOutBySessionId")
                         .HasColumnType("nvarchar(max)");
 

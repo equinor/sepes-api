@@ -11,7 +11,9 @@ namespace Sepes.Infrastructure.Model
 
         public string Status { get; set; }
 
-        public int TryCount { get; set; }
+        public int TryCount { get; set; }        
+
+        public string BatchId { get; set; }
 
         public string CreatedBySessionId { get; set; }
 

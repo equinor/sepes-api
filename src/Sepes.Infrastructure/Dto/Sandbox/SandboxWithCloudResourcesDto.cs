@@ -14,6 +14,8 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public string ResourceGroupName { get { return ResourceGroup.ResourceGroupName; } }
 
+        public string BatchId { get; set; }
+
         public Region Region { get; set; }
 
         public Dictionary<string, string> Tags { get; set; }
