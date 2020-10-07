@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;
             _mapper = mapper;
             _userService = userService;
-            _requestIdService = requestIdService;     
+            _requestIdService = requestIdService;
             _resourceGroupService = resourceGroupService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
         }
@@ -239,6 +239,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
+                                                                                                    .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
                                                                                                    .ToListAsync();
 
@@ -257,6 +258,45 @@ namespace Sepes.Infrastructure.Service
             }
 
         }
+
+        public async Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
+        {
+
+            if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
+            {
+                throw new ArgumentNullException("azureId", $"Provided empty foreign system resource id for resource {resourceId} ");
+            }
+
+
+            if (String.IsNullOrWhiteSpace(resourceNameInForeignSystem))
+            {
+                throw new ArgumentNullException("azureId", $"Provided empty foreign system resource name for resource {resourceId} ");
+            }
+
+            var resourceFromDb = await GetOrThrowAsync(resourceId);
+
+            if (String.IsNullOrWhiteSpace(resourceFromDb.ResourceId) == false && resourceFromDb.ResourceId != AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+            {
+                throw new Exception($"Resource {resourceId} allredy has a foreign system id. This should not have occured ");
+            }
+
+            resourceFromDb.ResourceId = resourceIdInForeignSystem;
+
+            if (resourceFromDb.ResourceName != resourceNameInForeignSystem)
+            {
+                resourceFromDb.ResourceName = resourceNameInForeignSystem;
+            }
+
+            var currentUser = _userService.GetCurrentUser();
+
+            resourceFromDb.Updated = DateTime.UtcNow;
+            resourceFromDb.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+
+            return MapEntityToDto(resourceFromDb);
+
+        }
         private async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId)
         {
             var sandboxFromDb = await _db.Sandboxes
@@ -271,7 +311,9 @@ namespace Sepes.Infrastructure.Service
             return sandboxFromDb;
         }
 
-        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Where(sr => sr.Deleted.HasValue)
+        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
+
+
     }
 }

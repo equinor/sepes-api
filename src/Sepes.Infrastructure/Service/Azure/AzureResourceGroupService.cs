@@ -103,8 +103,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (System.Exception ex)
             {
-                //Is resource group allready deleted?
-                throw;
+                _logger.LogCritical(ex, $"Deleting resource group {resourceGroupName} failed");
             }        
         }
 

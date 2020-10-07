@@ -15,17 +15,20 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
         readonly IRequestIdService _requestIdService;
+        readonly ISandboxResourceService _sandboxResourceService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IResourceProvisioningQueueService _workQueue;
         readonly IAzureResourceMonitoringService _monitoringService;
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue, IAzureResourceMonitoringService monitoringService)
+        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceService sandboxResourceService, ISandboxResourceOperationService sandboxResourceOperationService, IResourceProvisioningQueueService workQueue, IAzureResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            
             _requestIdService = requestIdService;
+            _sandboxResourceService = sandboxResourceService ?? throw new ArgumentNullException(nameof(sandboxResourceService));
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
             _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
             _monitoringService = monitoringService;
@@ -69,13 +72,13 @@ namespace Sepes.Infrastructure.Service
                 try
                 {
                     currentResourceOperation = await _sandboxResourceOperationService.GetByIdAsync(queueChildItem.SandboxResourceOperationId);
-                    
+
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Starting operation");
 
-                    if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                    if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && currentResourceOperation.Resource.Deleted.HasValue)
                     {
-                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Allready completed!");
-                        continue;
+
+                        throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Resource appears to be deleted. Aborting!");
                     }
                     else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount > 2)
                     {
@@ -84,14 +87,15 @@ namespace Sepes.Infrastructure.Service
                         //cannot recover from this
                         return;
                     }
-                    else if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && currentResourceOperation.Resource.Deleted.HasValue) {
-
-                        throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Resource appears to be deleted. Aborting!");
-                    }
                     else if (MightBeInProgressByAnotherThread(currentResourceOperation))
                     {
                         //cannot recover from this
                         throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Aborting! In danger of picking up work in progress");
+                    }
+                    else if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                    {
+                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Allready completed!");
+                        continue;
                     }
 
                     currentCrudResult = await HandleCRUD(queueParentItem, queueChildItem, currentResourceOperation, currentCrudInput, currentCrudResult);
@@ -171,6 +175,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Initial checks succeeded. Proceeding with create");
                     currentCrudResult = await service.Create(currentCrudInput);
+                   await  _sandboxResourceService.UpdateMissingDetailsAfterCreation(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
                 }
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.UPDATE)

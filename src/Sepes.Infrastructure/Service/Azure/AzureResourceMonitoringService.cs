@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -30,16 +30,54 @@ namespace Sepes.Infrastructure.Service
 
         public async Task StartMonitoringSession()
         {
+            _logger.LogInformation($"Monitoring provisioning state and tags");
+
             var activeResources = await _sandboxResourceService.GetActiveResources();
 
             foreach (var curRes in activeResources)
             {
+
                 try
-                {
-                    if (String.IsNullOrWhiteSpace(curRes.ResourceType)) _logger.LogCritical($"Resource type field empty in DB for resource id: {curRes.Id}");
+                {  
+                    if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    {
+                        _logger.LogInformation($"No valid foreign resource Id specified for {curRes.Id}. Foreign Id was {curRes.ResourceId}. Aborting monitoring");
+                        continue;
+                    }
+
+                    if (curRes.ResourceName == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    {
+                        _logger.LogInformation($"No valid name specified for {curRes.Id}. Name was {curRes.ResourceName}. Aborting monitoring");
+                        continue;
+                    }
+
+                    if (String.IsNullOrWhiteSpace(curRes.ResourceType))
+                    {
+                        _logger.LogInformation($"Resource type field empty in DB for resource id: {curRes.Id}");
+                        continue;
+                    }
+
+                    //First detect if monitoring should proceed
+                    if (curRes.Operations.Count == 0)
+                    {
+                        _logger.LogWarning($"No operations found for resource {curRes.Id}. Aborting monitoring");
+                        continue;
+                    }
+
+                    foreach(var curOperations in curRes.Operations)
+                    {
+                        if(curOperations.Status == CloudResourceOperationState.NOT_STARTED || curOperations.Status == CloudResourceOperationState.IN_PROGRESS)
+                        {
+                            _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
+                            continue;
+                        }
+                    }                
+
+                    _logger.LogInformation($"Initial checks passed. Performing monitoring for resource {curRes.Id}.");
 
                     await GetAndLogProvisioningState(curRes);
                     await CheckAndUpdateTags(curRes);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -47,8 +85,10 @@ namespace Sepes.Infrastructure.Service
 
                 }
             }
-            //TODO: Check for orphan resources in Azure (Tag and report). (Resources that Exists in Azure, but are marked as deleted in DB.)
-            //await CheckForOrphanResources();
+
+            _logger.LogInformation($"Done monitoring provisioning state and tags");
+
+            await CheckForOrphanResources();
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
@@ -131,6 +171,11 @@ namespace Sepes.Infrastructure.Service
 
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
+                    if(tagsFromAzure == null)
+                    {
+                        _logger.LogWarning($"No tags found for resource {resource.Id}!");
+                        return;
+                    }
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
                     foreach (var tag in tagsFromAzure)
@@ -170,13 +215,16 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CheckForOrphanResources()
         {
+            _logger.LogInformation($"Looking for orphan resources");
+
             // Check that resources marked as deleted in db does not exist in Azure.
             var deletedResources = await _sandboxResourceService.GetDeletedResourcesAsync();
 
             foreach (var resource in deletedResources)
             {
                 try
-                {
+                {                   
+
                     var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, resource.ResourceType);
 
                     if (serviceForResource == null)
@@ -189,19 +237,22 @@ namespace Sepes.Infrastructure.Service
                         {
                             var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
 
-                            if (!String.IsNullOrWhiteSpace(provisioningState))
-                            {
-                                //TODO: VERIFY THAT THIS WORKS AND THAT IT TAKES INNTO ACCOUNT RESOURCES THAT HAS BEEN RECENTLY DELETED(LIKE 5 minutes ago)
-
-                                // TODO: Either remove Deleted tag in db or delete from Azure.
+                            if (String.IsNullOrWhiteSpace(provisioningState) == false)
+                            { 
+                                // TODO: What to do here in addition to logging? DO NOT REMOVE DELETE MARK FROM RESOURCE. Delete from Azure? Tag resource?
                                 _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
 
                             }
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
-                            //TODO: Handle not found exception, that would be a good sign
-                            throw;
+                            if(ex.Message.ToLower().Contains("could not be found") == false && ex.Message.ToLower().Contains("not found") == false)
+                            {
+                                throw;
+                               
+                            }
+
+                            //Do nothing, resource not found
                         }
 
                     }
@@ -211,6 +262,8 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogCritical(ex, $"Orphan check failed for resource: {resource.Id}");
                 }
             }
+
+            _logger.LogInformation($"Done looking for orphan resources");
         }
     }
 }

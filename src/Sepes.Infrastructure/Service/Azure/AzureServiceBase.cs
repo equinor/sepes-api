@@ -33,7 +33,7 @@ namespace Sepes.Infrastructure.Service
 
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
 
-            _logger.LogWarning($"Using Subscription Id {_subscriptionId}");
+           // _logger.LogInformation($"Using Subscription Id {_subscriptionId}");
 
             _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 

@@ -88,7 +88,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     Location = region.Name,
                     IpConfigurations = ipConfigs,
-
+                    Tags = tags
                 };
 
                 var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
