@@ -47,5 +47,27 @@ namespace Sepes.Tests.Util
 
         }
 
-    }
+        [Fact]
+        public void ResourceGroupName_ShouldFilterAwayNorwegianSpecialLetters()
+        {
+
+
+
+            var resourceName = AzureResourceNameUtil.ResourceGroup("A revolutional Støddy with a long name", "Bæste sandbåx ju kæn tink");
+            Assert.InRange(resourceName.Length, 4, 64);            
+            Assert.Contains("rg-study-arevolutionalstddywithalongname-bstesandbxjukntink-", resourceName);
+
+        }
+
+        [Fact]
+        public void DiagStorageAccountName_ShouldFilterAwayNorwegianSpecialLetters()
+        {
+            var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount("Støddy", "Bæste sandbåx");
+            Assert.InRange(resourceName.Length, 4, 24);
+     
+            Assert.Contains("stdiagstddybstesandbx", resourceName);
+   
+        }
+
+        }
 }

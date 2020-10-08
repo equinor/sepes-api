@@ -49,18 +49,18 @@ namespace Sepes.Infrastructure.Util
         public static string StorageAccount(string sandboxName)
         {
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
-            sandboxName = MakeStringAlphanumeric(sandboxName);
+            sandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
             if (sandboxName.Length > 18)
             {
                 return $"st{sandboxName.ToLower().Substring(0, 18)}{shortGuid}";
             }
             return $"st{sandboxName.ToLower()}{shortGuid}";
-        }
+        }      
 
         public static string DiagnosticsStorageAccount(string studyName, string sandboxName)
         {
-            var studyNameNormalized = MakeStringAlphanumeric(studyName);
-            var sanboxNameNormalized = MakeStringAlphanumeric(sandboxName);
+            var studyNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(studyName);
+            var sanboxNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
 
             return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, addUniqueEnding:true, avoidDash: true);
         }
@@ -116,14 +116,14 @@ namespace Sepes.Infrastructure.Util
         }
 
 
-        static string MakeStringAlphanumeric(string str) => new string((from c in str
-                                                                        where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)
-                                                                        select c
+        public static string MakeStringAlphanumericAndRemoveWhitespace(string str) => new string((from c in str
+                                                                        where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                                                                  select c
                                                                        ).ToArray());
 
-        static string StripWhitespace(string str) => new string((from c in str
-                                                                 where !char.IsWhiteSpace(c)
-                                                                 select c
+        public static string StripWhitespace(string str) => new string((from c in str
+                                                                 where !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                                        select c
                                                                 ).ToArray());
 
 
