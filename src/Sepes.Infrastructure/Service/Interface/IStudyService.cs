@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {
         
-        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null);
+        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null);
         Task<StudyDto> GetStudyByIdAsync(int studyId);
 
         Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
