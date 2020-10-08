@@ -62,13 +62,13 @@ namespace Sepes.Infrastructure.Util
             var studyNameNormalized = MakeStringAlphanumeric(studyName);
             var sanboxNameNormalized = MakeStringAlphanumeric(sandboxName);
 
-            return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, avoidDash: true);
+            return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, addUniqueEnding:true, avoidDash: true);
         }
 
         public static string VirtualMachine(string sandboxName) => StripWhitespace($"vm-{sandboxName}");
 
 
-        static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
+        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
             var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
@@ -101,7 +101,8 @@ namespace Sepes.Infrastructure.Util
                 if (charachtersLeft < 0)
                 {
                     var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
-                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - mustRemoveEach);
+                    var even = charachtersLeft % 2 == 0;
+                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - mustRemoveEach - (even ? 0 : 1));
                     normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - mustRemoveEach);
                 }
             }

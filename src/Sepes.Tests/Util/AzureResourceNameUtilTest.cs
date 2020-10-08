@@ -32,18 +32,18 @@ namespace Sepes.Tests.Util
         [Fact]
         public void DiagStorageAccountName_ShouldNotExceed24Characters()
         {
-            var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "The third test we are going to to");
+            var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "Strezztest1");
             Assert.InRange(resourceName.Length, 4, 24);
             Assert.Contains("stdiag", resourceName);
-            Assert.Contains("best", resourceName);
-            Assert.Contains("thethi", resourceName);
+            Assert.Contains("bestes", resourceName);
+            Assert.Contains("strezzte", resourceName);
 
 
             var resourceName2 = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "The third test we are going to too");
             Assert.InRange(resourceName2.Length, 4, 24);
             Assert.Contains("stdiag", resourceName2);
-            Assert.Contains("best", resourceName2);
-            Assert.Contains("thethi", resourceName2);
+            Assert.Contains("bestest", resourceName2);
+            Assert.Contains("thethird", resourceName2);
 
         }
 
