@@ -33,20 +33,19 @@ namespace Sepes.Infrastructure.Service
             _azureADUsersService = azureADUsersService;
         }
 
-        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
+        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null)
         {
             List<Study> studiesFromDb;
 
-            if (includeRestricted.HasValue && includeRestricted.Value)
+            if (excludeHidden.HasValue && excludeHidden.Value)
             {
-                var user = await _userService.GetCurrentUserFromDbAsync();
-
-                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
-                studiesFromDb = await studiesQueryable.ToListAsync();
+                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
             else
             {
-                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
+                var user = await _userService.GetCurrentUserFromDbAsync();
+                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
+                studiesFromDb = await studiesQueryable.ToListAsync();               
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
