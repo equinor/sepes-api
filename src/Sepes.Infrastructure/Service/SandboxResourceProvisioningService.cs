@@ -74,8 +74,9 @@ namespace Sepes.Infrastructure.Service
 
                         if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && currentResourceOperation.Resource.Deleted.HasValue)
                         {
-                            _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)} - Resource is marked for deletion in database, Aborting!");
-                            continue;
+                            //cannot recover from this
+                            await _workQueue.DeleteMessageAsync(queueParentItem);
+                            throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)} - Resource is marked for deletion in database, Aborting!"); 
                         }
                         else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount > 2)
                         {
