@@ -24,12 +24,10 @@ namespace Sepes.Infrastructure.Util
                 {
                     return 60;
                 }
-                else if (operationType == CloudResourceOperationType.CREATE)
+                else if (operationType == CloudResourceOperationType.DELETE)
                 {
                     return 600;
                 }
-
-
             }
             else if (resourceType == AzureResourceType.Bastion)
             {

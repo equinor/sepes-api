@@ -65,34 +65,44 @@ namespace Sepes.Infrastructure.Util
             return JsonSerializer.Deserialize<Dictionary<string, string>>(tags);
         }
 
-        public static bool ContainsTagWithValue(IDictionary<string, string> resourceTags, string tagName, string expectedTagValue)
+        public static void ContainsTagWithValueThrowIfError(IDictionary<string, string> resourceTags, string tagName, string expectedTagValue)
         {
             string actualTagValue;
 
             if (resourceTags.TryGetValue(tagName, out actualTagValue))
             {
-                if (!String.IsNullOrWhiteSpace(actualTagValue))
+                if (String.IsNullOrWhiteSpace(actualTagValue))
+                {
+                    throw new Exception($"Value of tag {tagName} was empty");
+                }
+                else
                 {
                     if (expectedTagValue == actualTagValue)
                     {
-                        return true;
+                        return;
+                    }
+                    else
+                    {
+                        throw new Exception($"Value of tag {tagName} was different. Expected value: {expectedTagValue}, Actual value: {actualTagValue}");
                     }
                 }
             }
+            else
+            {
+                throw new Exception($"Resource is missing tag: {tagName}");
+            }
 
-            return false;
+                     
         }
 
-        public static bool ResourceIsManagedByThisInstance(IConfiguration config, IDictionary<string, string> resourceTags)
+        public static void CheckIfResourceIsManagedByThisInstanceThrowIfNot(IConfiguration config, IDictionary<string, string> resourceTags)
         {
             var expectedTagValueFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);
 
-            if (AzureResourceTagsFactory.ContainsTagWithValue(resourceTags, MANAGED_BY_TAG_NAME, expectedTagValueFromConfig))
-            {
-                return true;
-            }
+            AzureResourceTagsFactory.ContainsTagWithValueThrowIfError(resourceTags, MANAGED_BY_TAG_NAME, expectedTagValueFromConfig);
+          
 
-            return false;
+        
 
         }
 
