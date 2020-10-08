@@ -56,10 +56,15 @@ namespace Sepes.Infrastructure.Service
 
         protected void CheckIfResourceHasCorrectManagedByTagThrowIfNot(string resourceName, IDictionary<string, string> resourceTags)
         {
-            if (AzureResourceTagsFactory.ResourceIsManagedByThisInstance(_config, resourceTags) == false)
+            try
             {
-                throw new Exception($"Attempting to modify Azure resource not managed by this instance: {resourceName} ");
+                AzureResourceTagsFactory.CheckIfResourceIsManagedByThisInstanceThrowIfNot(_config, resourceTags);
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Attempting to modify Azure resource not managed by this instance: {resourceName} ", ex);
+            }
+          
         }
 
 

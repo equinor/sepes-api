@@ -47,16 +47,13 @@ namespace Sepes.Infrastructure.Service
 
         async Task<bool> HasUnfinishedPreceedingOperations(SandboxResourceOperationDto queueParentItem)
         {
-
-            //Check for crated, not finished/inprogress and batchid!=
+            //Check for created, not finished/inprogress and batchid!=
             return await _sandboxResourceOperationService.ExistsPreceedingUnfinishedOperations(queueParentItem);
-
-
         }
 
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
-            _logger.LogInformation($"Handling queue message: {queueParentItem.MessageId}");
+            _logger.LogInformation($"Handling queue message: {queueParentItem.MessageId}. Descr: {queueParentItem.Description}");
 
 
             //One per child item in queue item
@@ -71,13 +68,14 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
+
+
                     currentResourceOperation = await _sandboxResourceOperationService.GetByIdAsync(queueChildItem.SandboxResourceOperationId);
 
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Starting operation");
 
                     if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && currentResourceOperation.Resource.Deleted.HasValue)
                     {
-
                         throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}: Resource appears to be deleted. Aborting!");
                     }
                     else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount > 2)
@@ -104,7 +102,7 @@ namespace Sepes.Infrastructure.Service
                 catch (Exception ex)
                 {
 
-                    _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId} for resource {queueChildItem.SandboxResourceId}");
+                    _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId} for resource {queueChildItem.SandboxResourceId}. Operation: {queueChildItem.SandboxResourceOperationId}");
 
 
                     //Queue item get's visible again after a while

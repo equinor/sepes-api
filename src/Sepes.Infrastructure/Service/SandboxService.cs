@@ -248,7 +248,6 @@ namespace Sepes.Infrastructure.Service
 
             if(sandboxFromDb.Resources.Count > 0)
             {
-
                 //Mark all resources as deleted
                 foreach (var curResource in sandboxFromDb.Resources)
                 {
@@ -281,6 +280,8 @@ namespace Sepes.Infrastructure.Service
 
                 sandboxResourceGroup.Operations.Add(deleteOperation);
 
+                await _db.SaveChangesAsync();
+
                 _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", studyId, sandboxId);
 
                 //Create queue item
@@ -293,9 +294,7 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
-            }            
-
-            await _db.SaveChangesAsync();        
+            }                 
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
 
