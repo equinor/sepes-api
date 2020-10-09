@@ -1,9 +1,9 @@
 ﻿using Sepes.Infrastructure.Dto;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IAzureResourceMonitoringService
+    public interface ISandboxResourceMonitoringService
     {        
         Task CheckForOrphanResources();
         Task StartMonitoringSession();

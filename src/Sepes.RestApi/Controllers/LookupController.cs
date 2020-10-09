@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.RestApi.Controller
 {

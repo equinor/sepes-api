@@ -29,10 +29,10 @@ namespace Sepes.Infrastructure.Service
         readonly IRequestIdService _requestIdService;
         readonly IStudyService _studyService;
         readonly ISandboxResourceService _sandboxResourceService;
-        readonly IResourceProvisioningQueueService _provisioningQueueService;
+        readonly IProvisioningQueueService _provisioningQueueService;
 
 
-        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
+        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;

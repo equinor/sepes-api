@@ -1,6 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {

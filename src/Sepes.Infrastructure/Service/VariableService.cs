@@ -3,10 +3,11 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
-{   
+{
 
     public class VariableService : IVariableService
     {

@@ -1,16 +1,17 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
-using Sepes.Infrastructure.Util;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using System.Collections.Generic;
+using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Util;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {

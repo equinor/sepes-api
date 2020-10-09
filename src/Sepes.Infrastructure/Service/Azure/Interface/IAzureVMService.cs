@@ -4,7 +4,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureVMService : IHasProvisioningState, IHasTags//, IHasExists
     {
