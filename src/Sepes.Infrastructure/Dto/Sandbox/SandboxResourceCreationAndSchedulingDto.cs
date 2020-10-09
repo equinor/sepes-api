@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
 {
-    public class SandboxWithCloudResourcesDto
+    public class SandboxResourceCreationAndSchedulingDto
     {
         public int SandboxId { get; set; }
         public string StudyName { get; set; }

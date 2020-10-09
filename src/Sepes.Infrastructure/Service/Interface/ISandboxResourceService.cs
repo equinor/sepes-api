@@ -11,8 +11,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string azureId, string azureName);
 
-        Task CreateSandboxResourceGroup(SandboxWithCloudResourcesDto dto);
-        Task<SandboxResourceDto> Create(SandboxWithCloudResourcesDto dto, string type, string resourceName);
+        Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto);
+        Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName);
 
         Task<SandboxResourceDto> GetByIdAsync(int id);
         Task<SandboxResourceDto> MarkAsDeletedByIdAsync(int id);

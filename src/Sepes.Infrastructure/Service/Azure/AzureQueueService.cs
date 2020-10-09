@@ -70,14 +70,11 @@ namespace Sepes.Infrastructure.Service
             await client.DeleteMessageAsync(messageId, popReceipt);
         }
 
-
-
         public async Task DeleteQueueAsync()
         {
             var client = await CreateQueueClient();
             _ = await client.DeleteIfExistsAsync();
         }
-
 
         // Helper method for creating queueClient
         async Task<QueueClient> CreateQueueClient()
@@ -90,18 +87,19 @@ namespace Sepes.Infrastructure.Service
             // Instantiate a QueueClient which will be used to create and manipulate the queue
             QueueClient queueClient = new QueueClient(_connectionString, _queueName);
 
-            // Create the queue if it doesn't already exist
-            await queueClient.CreateIfNotExistsAsync();
+            var logMessagePrefix = $"Ensuring queue '{queueClient.Name}' exists. ";
 
-            // Log creation
             if (await queueClient.ExistsAsync())
             {
-                _logger.LogInformation($"Queue '{queueClient.Name}' created");
+                _logger.LogInformation(logMessagePrefix + "Allready exists");
             }
             else
             {
-                _logger.LogInformation($"Queue '{queueClient.Name}' exists");
+                _logger.LogInformation(logMessagePrefix + "Did not exsist. Will create it");
             }
+
+            // Create the queue if it doesn't already exist
+            await queueClient.CreateIfNotExistsAsync();         
 
             return queueClient;
         }
@@ -118,8 +116,5 @@ namespace Sepes.Infrastructure.Service
             var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
             return System.Text.Encoding.UTF8.GetString(plainTextBytes);
         }
-
     }
-
-
 }

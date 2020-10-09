@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceProvisioningService
     {
-        Task LookForWork();
+        Task DequeueWorkAndPerformIfAny();
 
         Task HandleQueueItem(ProvisioningQueueParentDto work);
 

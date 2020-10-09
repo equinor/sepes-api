@@ -24,7 +24,7 @@ namespace Sepes.RestApi.Controllers
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> Work()
         {
-           await _service.LookForWork();
+           await _service.DequeueWorkAndPerformIfAny();
             return new OkResult();
         }   
 
