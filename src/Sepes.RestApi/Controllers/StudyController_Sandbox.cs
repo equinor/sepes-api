@@ -67,9 +67,9 @@ namespace Sepes.RestApi.Controller
 
         [HttpPut("{studyId}/sandboxes/{sandboxId}/rescheduleCreation")]
         [Authorize(Roles = AppRoles.Admin)]    
-        public async Task<IActionResult> GetTemplatesLookupAsync(int studyId, int sandboxId)
+        public async Task<IActionResult> ReScheduleCreation(int studyId, int sandboxId)
         {
-            await _sandboxService.ReScheduleSandboxCreation(studyId, sandboxId);
+            await _sandboxService.ReScheduleSandboxCreation(sandboxId);
             return new NoContentResult();
         }
 

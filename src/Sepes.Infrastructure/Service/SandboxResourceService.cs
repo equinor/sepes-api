@@ -117,33 +117,33 @@ namespace Sepes.Infrastructure.Service
             return newResource;
         }
 
-        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
-        {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+        //public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string resourceId, string resourceName)
+        //{
+        //    var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
-            var newResource = new SandboxResource()
-            {
-                ResourceGroupId = resourceGroupId,
-                ResourceGroupName = resourceGroupName,
-                ResourceType = type,
-                ResourceName = resourceName,
-                Status = ""
-            };
+        //    var newResource = new SandboxResource()
+        //    {
+        //        ResourceGroupId = resourceGroupId,
+        //        ResourceGroupName = resourceGroupName,
+        //        ResourceType = type,
+        //        ResourceName = resourceName,
+        //        Status = ""
+        //    };
 
-            sandboxFromDb.Resources.Add(newResource);
-            await _db.SaveChangesAsync();
+        //    sandboxFromDb.Resources.Add(newResource);
+        //    await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(newResource.Id);
-        }
+        //    return await GetByIdAsync(newResource.Id);
+        //}
 
-        public async Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type) =>
-            await Add(sandboxId, resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
+        //public async Task<SandboxResourceDto> AddResourceGroup(int sandboxId, string resourceGroupId, string resourceGroupName, string type) =>
+        //    await Add(sandboxId, resourceGroupId, resourceGroupName, type, resourceGroupId, resourceGroupName);
 
-        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, Microsoft.Azure.Management.Network.Models.Resource resource) =>
-            await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
+        //public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, Microsoft.Azure.Management.Network.Models.Resource resource) =>
+        //    await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
 
-        public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, IResource resource) =>
-            await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
+        //public async Task<SandboxResourceDto> Add(int sandboxId, string resourceGroupId, string resourceGroupName, IResource resource) =>
+        //    await Add(sandboxId, resourceGroupId, resourceGroupName, resource.Type, resource.Id, resource.Name);
 
         //ResourceGroup
         //Nsg

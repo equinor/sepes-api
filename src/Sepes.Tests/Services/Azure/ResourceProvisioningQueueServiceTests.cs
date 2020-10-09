@@ -19,8 +19,7 @@ namespace Sepes.Tests.Services.Azure
         {          
             Children = new System.Collections.Generic.List<ProvisioningQueueChildDto>() {
 
-                new ProvisioningQueueChildDto(){
-                  SandboxResourceId = 1,
+                new ProvisioningQueueChildDto(){            
                   SandboxResourceOperationId = 2                
                 }
             }
@@ -63,7 +62,6 @@ namespace Sepes.Tests.Services.Azure
 
             var messageChild = msgsAfter.Children.SingleOrDefault();
             Assert.NotNull(messageChild);
-            Assert.Equal(1, messageChild.SandboxResourceId);
             Assert.Equal(2, messageChild.SandboxResourceOperationId);       
      
 
