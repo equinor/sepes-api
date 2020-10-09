@@ -208,7 +208,7 @@ namespace Sepes.Infrastructure.Service
         async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
         {
             var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, resourceName);
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = resourceEntry.Id.Value, SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
 
             return resourceEntry;
         }
@@ -286,7 +286,7 @@ namespace Sepes.Infrastructure.Service
                 var queueParentItem = new ProvisioningQueueParentDto();
                 queueParentItem.SandboxId = sandboxId;
                 queueParentItem.Description = $"Delete resources for Sandbox: {sandboxId}";
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = sandboxResourceGroup.Id, SandboxResourceOperationId = deleteOperation.Id });
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = deleteOperation.Id });
                 await _provisioningQueueService.SendMessageAsync(queueParentItem);
             }
             else
@@ -348,7 +348,7 @@ namespace Sepes.Infrastructure.Service
                 }
                 else if (relevantOperation.Status == CloudResourceOperationState.NOT_STARTED  || relevantOperation.Status == CloudResourceOperationState.FAILED)
                 {
-                    queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceId = curResource.Id, SandboxResourceOperationId = relevantOperation.Id });
+                    queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
                 }
                 //else if(relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                 //{
