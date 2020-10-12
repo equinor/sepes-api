@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Config;
 using System;
@@ -20,8 +21,11 @@ namespace Sepes.Infrastructure.Util
                 GetOid(config, claimsPrincipal),
                 GetUsername(config, claimsPrincipal),
                 GetFullName(config, claimsPrincipal),
-                GetEmail(config, claimsPrincipal)
-        );
+                GetEmail(config, claimsPrincipal));
+
+            user.Admin = principal.IsInRole(AppRoles.Admin);
+            user.Sponsor = principal.IsInRole(AppRoles.Sponsor);
+            user.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
 
             return user;
         }

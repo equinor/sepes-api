@@ -26,6 +26,11 @@ namespace Sepes.Infrastructure.Service
         public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
         {
             return GetCurrentUser();
-        } 
+        }
+
+        public async Task<UserPermissionDto> GetUserPermissionsAsync()
+        {
+            return new UserPermissionDto ();
+        }
     }
 }
