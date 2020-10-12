@@ -4,7 +4,7 @@ using Sepes.Infrastructure.Dto;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureBlobStorageService
     {

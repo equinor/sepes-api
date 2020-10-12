@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Dto;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceOperationService
     {

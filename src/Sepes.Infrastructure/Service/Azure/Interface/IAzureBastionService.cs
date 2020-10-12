@@ -1,10 +1,9 @@
 ﻿using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureBastionService : IHasProvisioningState, IHasTags, IPerformCloudResourceCRUD
     {      

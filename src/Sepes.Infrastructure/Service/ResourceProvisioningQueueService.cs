@@ -3,11 +3,12 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class ResourceProvisioningQueueService : IResourceProvisioningQueueService
+    public class ResourceProvisioningQueueService : IProvisioningQueueService
     {
         readonly ILogger _logger;
         readonly IAzureQueueService _queueService;

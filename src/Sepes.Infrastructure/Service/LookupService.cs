@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Service

@@ -30,12 +30,10 @@ namespace Sepes.Infrastructure.Service
 
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
-            return crudResult;
 
             _logger.LogInformation($"Done creating Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
-            return crudResult;
+            return crudResult;   
         }
-
 
         public async Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
         {

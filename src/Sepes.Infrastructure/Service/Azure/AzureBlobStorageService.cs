@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;

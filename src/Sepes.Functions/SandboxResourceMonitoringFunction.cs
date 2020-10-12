@@ -1,15 +1,15 @@
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
 namespace Sepes.Functions
 {
     public class SandboxResourceMonitoringFunction
     {
-        readonly IAzureResourceMonitoringService _resourceMonitoringService;
+        readonly ISandboxResourceMonitoringService _resourceMonitoringService;
 
-        public SandboxResourceMonitoringFunction(IAzureResourceMonitoringService resourceMonitoringService)
+        public SandboxResourceMonitoringFunction(ISandboxResourceMonitoringService resourceMonitoringService)
         {
             _resourceMonitoringService = resourceMonitoringService;
         }

@@ -48,7 +48,7 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IStudyService, StudyService>();
 
             //Resource provisioning services
-            services.AddSingleton<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
+            services.AddSingleton<IProvisioningQueueService, ResourceProvisioningQueueService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
 

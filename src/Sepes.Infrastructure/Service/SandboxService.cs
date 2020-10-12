@@ -29,10 +29,10 @@ namespace Sepes.Infrastructure.Service
         readonly IRequestIdService _requestIdService;
         readonly IStudyService _studyService;
         readonly ISandboxResourceService _sandboxResourceService;
-        readonly IResourceProvisioningQueueService _provisioningQueueService;
+        readonly IProvisioningQueueService _provisioningQueueService;
 
 
-        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IResourceProvisioningQueueService provisioningQueueService)
+        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;
@@ -88,8 +88,6 @@ namespace Sepes.Infrastructure.Service
             // Verify that study with that id exists
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
-            //TODO: Verify that this user can create sandbox for study
-
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
             {
@@ -101,7 +99,9 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("Region not specified.");
             }
 
-            var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
+            //TODO: Remember to consider templates specifed as argument
+
+            var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);            
 
             var user = _userService.GetCurrentUser();
             sandbox.CreatedBy = user.UserName;
@@ -113,16 +113,16 @@ namespace Sepes.Infrastructure.Service
 
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
-            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
-            //TODO: Remember to consider templates specifed as argument
+            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);          
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, studyFromDb.Name, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-
-            //Her har vi mye info om sandboxen i Azure, men den har for mye info
-            var azureSandbox = new SandboxWithCloudResourcesDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
-            await CreateBasicSandboxResourcesAsync(azureSandbox);
+           
+            //This objects gets passed around
+            var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
+          
+            await CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
 
             return await GetSandboxDtoAsync(sandbox.Id);
         }
@@ -152,7 +152,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
-        async Task<SandboxWithCloudResourcesDto> CreateBasicSandboxResourcesAsync(SandboxWithCloudResourcesDto dto)
+        async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
         {
             _logger.LogInformation($"Ordering creation of basic sandbox resources for sandbox: {dto.SandboxName}");
 
@@ -177,20 +177,20 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        async Task ScheduleCreationOfDiagStorageAccount(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
+        async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount(dto.StudyName, dto.SandboxName);
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount, resourceName);
             dto.DiagnosticsStorage = resourceEntry;
         }
 
-        async Task ScheduleCreationOfNetworkSecurityGroup(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
+        async Task ScheduleCreationOfNetworkSecurityGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup);
             dto.NetworkSecurityGroup = resourceEntry;
         }
 
-        async Task ScheduleCreationOfVirtualNetwork(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
+        async Task ScheduleCreationOfVirtualNetwork(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             //TODO: Add special network rules to resource
             var networkName = AzureResourceNameUtil.VNet(dto.StudyName, dto.SandboxName);
@@ -199,13 +199,13 @@ namespace Sepes.Infrastructure.Service
             dto.Network = resourceEntry;
         }
 
-        async Task ScheduleCreationOfBastion(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem)
+        async Task ScheduleCreationOfBastion(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion);
             dto.Bastion = resourceEntry;
         }
 
-        async Task<SandboxResourceDto> CreateResource(SandboxWithCloudResourcesDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+        async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
         {
             var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, resourceName);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });

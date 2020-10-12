@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IHasProvisioningState
     {
