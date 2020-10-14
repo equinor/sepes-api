@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,9 +12,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string azureId, string azureName);
 
-        Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto);
-
-        Task<SandboxResourceDto> CreateVmEntryAsync(StudyDto study, SandboxDto sandbox, CreateVmUserInputDto newVmDto);
+        Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto);    
 
         Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null);
 
@@ -28,6 +26,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<SandboxResource>> GetActiveResources();
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
-
+        Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
     }
 }

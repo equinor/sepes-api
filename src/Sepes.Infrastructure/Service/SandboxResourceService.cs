@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -7,12 +8,10 @@ using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -61,52 +60,23 @@ namespace Sepes.Infrastructure.Service
             _ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
-        public async Task<SandboxResourceDto> CreateVmEntryAsync(StudyDto studyDto, SandboxDto sandboxDto, CreateVmUserInputDto userInput)
+        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
         {
             try
             {
-                var sandboxId = sandboxDto.Id.Value;
-
-                var virtualMachineName = AzureResourceNameUtil.VirtualMachine(studyDto.Name, sandboxDto.Name, userInput.Name);
-
-                var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
-
-                var region = RegionStringConverter.Convert(userInput.Region);
-
-                var resourceGroupId = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
-
-                //Make this dependent on bastion create operation to be completed, since bastion finishes last
-                var dependsOn = await SandboxResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
-
-                var vmSettingsString = await CreateVmSettingsString(sandboxId, userInput);
-
                 var resourceEntity = await AddInternal(Guid.NewGuid().ToString(),
                     sandboxId,
-                    resourceGroupId.ResourceGroupId, resourceGroupId.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, tags, resourceName: virtualMachineName, false, dependentOn: dependsOn, configString: vmSettingsString);
+                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, tags, resourceName: vmName, false, dependentOn: dependsOn, configString: configString);
 
                 return MapEntityToDto(resourceEntity);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to create database resource entry for Virtual Machine for Sandbox {sandboxDto.Id.Value}. See inner Exception for details", ex);
+                throw new Exception($"Unable to create database resource entry for Virtual Machine for Sandbox {sandboxId}. See inner Exception for details", ex);
             }
         }
 
-        async Task<string> CreateVmSettingsString(int sandboxId, CreateVmUserInputDto userInput)
-        {
-            var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var diagStorageResource = await SandboxResourceQueries.GetDiagStorageAccountEntry(_db, sandboxId);
-            vmSettings.DiagnosticStorageAccountName = diagStorageResource.ResourceName;
-
-            var networkResource = await SandboxResourceQueries.GetNetworkEntry(_db, sandboxId);
-            vmSettings.NetworkName = networkResource.ResourceName;
-
-            var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
-            vmSettings.SubnetName = networkSetting.SandboxSubnetName;
-
-            return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-        }
 
         public void ApplyPropertiesFromResourceGroup(AzureResourceGroupDto source, SandboxResourceDto target)
         {

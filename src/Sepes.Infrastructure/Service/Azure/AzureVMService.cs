@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -37,17 +38,23 @@ namespace Sepes.Infrastructure.Service
             string subnetName = vmSettings.SubnetName;
 
             string username = vmSettings.Username; 
-            string pw = vmSettings.Password;
+
+            string password = await GetPasswordFromKeyVault(vmSettings.Password);
 
             string performanceProfile = vmSettings.PerformanceProfile;
             string operatingSystem = vmSettings.OperatingSystem;
             string distro = vmSettings.Distro;
 
-            var createdVm = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkName, subnetName, username, pw, performanceProfile, operatingSystem, distro, parameters.Tags, diagStorageAccountName);
+            var createdVm = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkName, subnetName, username, password, performanceProfile, operatingSystem, distro, parameters.Tags, diagStorageAccountName);
             var result = CreateResult(createdVm);
 
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
+        }
+
+        async Task<string> GetPasswordFromKeyVault(string passwordId)
+        {          
+            return await KeyVaultSecretUtil.GetKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
         }
 
 
