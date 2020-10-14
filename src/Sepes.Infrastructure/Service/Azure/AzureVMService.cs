@@ -6,6 +6,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -18,31 +19,60 @@ namespace Sepes.Infrastructure.Service
     public class AzureVMService : AzureServiceBase, IAzureVMService
     {
         public AzureVMService(IConfiguration config, ILogger<AzureVMService> logger)
-            :base (config, logger)
-        {         
-          
-        }       
+            : base(config, logger)
+        {
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string sandboxName, INetwork primaryNetwork, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
+        }
+
+        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        {
+            _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            var vmSettings =  SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
+
+            string diagStorageAccountName = vmSettings.DiagnosticStorageAccountName;
+
+            string networkName = vmSettings.NetworkName;
+
+            string subnetName = vmSettings.SubnetName;
+
+            string username = vmSettings.Username; 
+            string pw = vmSettings.Password;
+
+            string performanceProfile = vmSettings.PerformanceProfile;
+            string operatingSystem = vmSettings.OperatingSystem;
+            string distro = vmSettings.Distro;
+
+            var createdVm = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkName, subnetName, username, pw, performanceProfile, operatingSystem, distro, parameters.Tags, diagStorageAccountName);
+            var result = CreateResult(createdVm);
+
+            _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
+            return result;
+        }
+
+
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
         {
             IVirtualMachine vm;
-            string virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandboxName);
+
             // Get diagnostic storage account reference for boot diagnostics
-            IStorageAccount diagStorage = _azure.StorageAccounts.GetByResourceGroup(resourceGroupName, diagStorageAccountName);
+            var diagStorage = _azure.StorageAccounts.GetByResourceGroup(resourceGroupName, diagStorageAccountName);
 
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, primaryNetworkName);
 
-            var vmCreatable = _azure.VirtualMachines.Define(virtualMachineName)
+            var vmCreatable = _azure.VirtualMachines.Define(vmName)
                                     .WithRegion(region)
                                     .WithExistingResourceGroup(resourceGroupName)
-                                    .WithExistingPrimaryNetwork(primaryNetwork)
+                                    .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
                                     .WithoutPrimaryPublicIPAddress();
 
             VirtualMachineSizeTypes machineSize;
+
             switch (vmPerformanceProfile.ToLower())
             {
-                case "general":
+                case "general":                  
                     machineSize = VirtualMachineSizeTypes.StandardDS3V2;
                     break;
                 case "cheap":
@@ -59,7 +89,7 @@ namespace Sepes.Infrastructure.Service
                     break;
                 default:
                     machineSize = VirtualMachineSizeTypes.StandardB1s;
-                    _logger.LogInformation($"Could not match vmPerformanceProfile argument: {vmPerformanceProfile}. Default will be chosen: StandardB1s");
+                    _logger.LogWarning($"Could not match vmPerformanceProfile argument: {vmPerformanceProfile}. Default will be chosen: StandardB1s");
                     break;
             }
             IWithCreate vmWithOS;
@@ -156,8 +186,20 @@ namespace Sepes.Infrastructure.Service
                 .WithNewDataDisk(sizeInGB);
 
             throw new NotImplementedException();
-                
+
         }
+
+        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            await Delete(parameters.ResourceGrupName, parameters.Name);
+
+            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            return crudResult;
+
+        }
+
+
 
         public async Task Delete(string resourceGroupName, string virtualMachineName)
         {
@@ -174,7 +216,7 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, resourceName);
             return resource;
-        }        
+        }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
@@ -191,7 +233,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var resource = await GetResourceAsync(resourceGroupName, resourceName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resource.Tags);         
+            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resource.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
@@ -203,6 +245,13 @@ namespace Sepes.Infrastructure.Service
 
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+        }
+
+        CloudResourceCRUDResult CreateResult(IVirtualMachine vm)
+        {
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(vm);
+            crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
+            return crudResult;
         }
     }
 }

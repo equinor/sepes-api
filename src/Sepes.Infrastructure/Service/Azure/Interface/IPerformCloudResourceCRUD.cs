@@ -19,6 +19,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         public string Name { get; set; }
 
         public string StudyName { get; set; }
+
+        public int SandboxId { get; set; }
         public string SandboxName { get; set; }
         public Region Region { get; set; }
 
@@ -43,6 +45,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         {
             ResourceGrupName = null;
             Name = null;
+            SandboxId = 0;
             SandboxName = null;
             Region = null; 
             CustomConfiguration = null;

@@ -66,7 +66,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
-        [HttpPost()]
+        [HttpPost]
         [Authorize(Roles = RoleSets.AdminOrSponsor)]
         public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
         {

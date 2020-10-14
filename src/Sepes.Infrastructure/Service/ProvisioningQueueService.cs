@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class ResourceProvisioningQueueService : IProvisioningQueueService
+    public class ProvisioningQueueService : IProvisioningQueueService
     {
         readonly ILogger _logger;
         readonly IAzureQueueService _queueService;
 
-        public ResourceProvisioningQueueService(IConfiguration config, ILogger<ResourceProvisioningQueueService> logger, IAzureQueueService queueService)
+        public ProvisioningQueueService(IConfiguration config, ILogger<ProvisioningQueueService> logger, IAzureQueueService queueService)
         {
             _logger = logger;
             _queueService = queueService;

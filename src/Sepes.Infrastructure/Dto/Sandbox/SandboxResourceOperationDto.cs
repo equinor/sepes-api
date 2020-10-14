@@ -3,8 +3,7 @@
 namespace Sepes.Infrastructure.Dto
 {
     public class SandboxResourceOperationDto : UpdateableBaseDto
-    {
-      
+    {     
 
         public string OperationType { get; set; }
 
@@ -16,7 +15,9 @@ namespace Sepes.Infrastructure.Dto
 
         public string CreatedBySessionId { get; set; }
 
-        public string CarriedOutBySessionId { get; set; }         
+        public string CarriedOutBySessionId { get; set; }
+
+        public int? DependentOn { get; set; }
 
         public SandboxResourceDto Resource { get; set; }
     }

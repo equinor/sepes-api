@@ -26,9 +26,9 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
-            var sandboxSubnetName = AzureResourceNameUtil.SubNet(parameters.StudyName, parameters.SandboxName);
+            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.CustomConfiguration);
 
-            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, sandboxSubnetName, parameters.Tags);
+            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags);
             var result = CreateResult(vNet);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");

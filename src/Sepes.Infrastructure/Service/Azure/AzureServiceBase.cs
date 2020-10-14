@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -65,6 +66,21 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Attempting to modify Azure resource not managed by this instance: {resourceName} ", ex);
             }
           
+        }
+
+        protected string GetSharedVariableThrowIfNotFoundOrEmpty(CloudResourceCRUDInput parameters, string variableName, string descriptionForErrorMessage)
+        {
+            string sharedVariableValue = null;
+
+            if (parameters.TryGetSharedVariable(variableName, out sharedVariableValue) == false)
+            {                
+                throw new ArgumentException($"{this.GetType().Name}: Missing {descriptionForErrorMessage} from input");
+            }
+            else if(String.IsNullOrWhiteSpace(sharedVariableValue)){
+                throw new ArgumentException($"{this.GetType().Name}: Empty {descriptionForErrorMessage} from input");
+            }
+
+            return sharedVariableValue;
         }
 
 

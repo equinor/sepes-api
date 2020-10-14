@@ -34,5 +34,7 @@
 
         public const string COST_ALLOCATION_TYPE_TAG_NAME = "CostAllocationTypeTagName";
         public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";
+
+        public const string DISABLE_MONITORING = "DisableMonitoring";
     }
 }

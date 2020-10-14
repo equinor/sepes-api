@@ -211,6 +211,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("ResourceType")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("SandboxControlled")
+                        .HasColumnType("bit");
+
                     b.Property<int>("SandboxId")
                         .HasColumnType("int");
 
@@ -266,6 +269,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("CreatedBySessionId")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("DependsOnOperationId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -291,6 +297,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DependsOnOperationId");
 
                     b.HasIndex("SandboxResourceId");
 
@@ -523,6 +531,11 @@ namespace Sepes.Infrastructure.Migrations
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResourceOperation", b =>
                 {
+                    b.HasOne("Sepes.Infrastructure.Model.SandboxResourceOperation", "DependsOnOperation")
+                        .WithMany("DependantOnThisOperation")
+                        .HasForeignKey("DependsOnOperationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Sepes.Infrastructure.Model.SandboxResource", "Resource")
                         .WithMany("Operations")
                         .HasForeignKey("SandboxResourceId")

@@ -12,9 +12,9 @@ namespace Sepes.Infrastructure.Util
     {
         public static string MANAGED_BY_TAG_NAME = "ManagedBy";
 
-        public static Dictionary<string, string> CreateTags(IConfiguration config, string studyName, StudyDto study, SandboxDto sandbox)
+        public static Dictionary<string, string> CreateTags(IConfiguration config, StudyDto study, SandboxDto sandbox)
         {
-            var tags = CreateBaseTags(studyName);
+            var tags = CreateBaseTags(study.Name);
 
             //Adds a "managed by"-tag to Azure resources. Sepes won't change resources that are missing this tag
             var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);

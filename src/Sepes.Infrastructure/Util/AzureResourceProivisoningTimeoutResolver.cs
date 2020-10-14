@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 
 namespace Sepes.Infrastructure.Util
 {
@@ -30,6 +31,10 @@ namespace Sepes.Infrastructure.Util
                 }
             }
             else if (resourceType == AzureResourceType.Bastion)
+            {
+                return 600;
+            }
+            else if (resourceType == AzureResourceType.VirtualMachine)
             {
                 return 600;
             }

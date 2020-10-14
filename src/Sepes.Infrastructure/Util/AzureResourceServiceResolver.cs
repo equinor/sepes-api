@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            //AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
             _ => null,
         };
     }

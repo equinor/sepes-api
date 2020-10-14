@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,20 +29,20 @@ namespace Sepes.Tests.Services.Azure
         public ResourceProvisioningQueueServiceTests()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            Services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
+            Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             ServiceProvider = Services.BuildServiceProvider();
         }    
 
-        async Task<IResourceProvisioningQueueService> InitAsync()
+        async Task<IProvisioningQueueService> InitAsync()
         {
-            var queueService = ServiceProvider.GetService<IResourceProvisioningQueueService>();
+            var queueService = ServiceProvider.GetService<IProvisioningQueueService>();
             await queueService.DeleteQueueAsync();
             return queueService;
         }
 
         async Task Cleanup()
         {
-            var queueService = ServiceProvider.GetService<IResourceProvisioningQueueService>();          
+            var queueService = ServiceProvider.GetService<IProvisioningQueueService>();          
             await queueService.DeleteQueueAsync();
         }
 

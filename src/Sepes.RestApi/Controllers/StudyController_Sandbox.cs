@@ -24,7 +24,7 @@ namespace Sepes.RestApi.Controller
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> GetSandbox(int studyId, int sandboxId)
         {
-            var sandboxes = await _sandboxService.GetSandbox(studyId, sandboxId);
+            var sandboxes = await _sandboxService.GetSandbox(sandboxId);
             return new JsonResult(sandboxes);
         }
 
