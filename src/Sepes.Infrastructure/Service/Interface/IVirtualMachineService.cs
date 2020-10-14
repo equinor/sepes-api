@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -10,6 +11,8 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<VmDto> UpdateAsync(int sandboxId, CreateVmUserInputDto newSandbox);
 
         Task<VmDto> DeleteAsync(int id);
+
+        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId);
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
     }

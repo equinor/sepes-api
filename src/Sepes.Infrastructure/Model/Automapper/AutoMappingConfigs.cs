@@ -110,6 +110,10 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                  .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
 
+            CreateMap<SandboxResource, VmDto>()
+           .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+            .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
+
         }
     }
 }

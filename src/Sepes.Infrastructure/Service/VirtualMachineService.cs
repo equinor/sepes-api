@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -46,7 +47,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            var sandbox = await _sandboxService.GetSandbox(sandboxId);
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
             var study = await _studyService.GetStudyByIdAsync(sandbox.StudyId);
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
@@ -97,12 +98,12 @@ namespace Sepes.Infrastructure.Service
 
         async Task<string> StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(int studyId, int sandboxId, string password)
         {
-            var keyVaultSecretName = $"newvmpassword-{studyId}-{sandboxId}-{Guid.NewGuid().ToString().Replace("-", "")}";      
+            var keyVaultSecretName = $"newvmpassword-{studyId}-{sandboxId}-{Guid.NewGuid().ToString().Replace("-", "")}";
 
-            await KeyVaultSecretUtil.AddKeyVaultSecret(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, keyVaultSecretName, password);          
+            await KeyVaultSecretUtil.AddKeyVaultSecret(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, keyVaultSecretName, password);
 
             return keyVaultSecretName;
-        }       
+        }
 
         public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
         {
@@ -123,6 +124,15 @@ namespace Sepes.Infrastructure.Service
         public string CalculateName(string studyName, string sandboxName, string userPrefix)
         {
             return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
+        }
+
+        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId)
+        {
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+
+            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
+
+            return _mapper.Map<List<VmDto>>(virtualMachines);
         }
     }
 }

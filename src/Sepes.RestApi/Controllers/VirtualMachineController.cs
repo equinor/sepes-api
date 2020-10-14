@@ -47,5 +47,12 @@ namespace Sepes.RestApi.Controllers
         {
             return _vmService.CalculateName(studyName, sandboxName, userSuffix);
         }
+
+        [HttpGet("forsandbox/{sandboxId}")]
+        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId)
+        {
+            var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId);
+            return new JsonResult(virtualMachinesForSandbox);
+        }
     }
 }

@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service
             _config = config;
         }
 
-        public async Task<SandboxDto> GetSandbox(int sandboxId)
+        public async Task<SandboxDto> GetSandboxAsync(int sandboxId)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
