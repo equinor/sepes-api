@@ -45,6 +45,8 @@ namespace Sepes.Infrastructure.Service
         async Task<SandboxResourceOperation> GetOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResourceOperations
+                .Include(o=> o.DependsOnOperation)
+                .ThenInclude(o=> o.Resource)
                 .Include(o => o.Resource)
                  .ThenInclude(r => r.Sandbox)
                          .ThenInclude(sb => sb.Study)

@@ -19,6 +19,9 @@ namespace Sepes.Infrastructure.Dto
 
         public int? DependsOnOperationId { get; set; }
 
+        public SandboxResourceOperationDto DependsOnOperation { get; set; }
+
+
         public SandboxResourceDto Resource { get; set; }
     }
 }

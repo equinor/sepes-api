@@ -5,7 +5,7 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceProivisoningTimeoutResolver
     {
-        public static int GetTimeoutForOperationInSeconds(string resourceType, string operationType)
+        public static int GetTimeoutForOperationInSeconds(string resourceType, string operationType = CloudResourceOperationType.CREATE)
         {
             if(resourceType == AzureResourceType.StorageAccount)
             {

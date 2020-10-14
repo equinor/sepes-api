@@ -58,6 +58,8 @@ namespace Sepes.Infrastructure.Service
 
             CloudResourceCRUDResult currentCrudResult = null;
 
+            var dequeueParentItemAfterCompletion = true;
+
             try
             {
                 foreach (var queueChildItem in queueParentItem.Children)
@@ -98,12 +100,13 @@ namespace Sepes.Infrastructure.Service
 
                             if (await _sandboxResourceOperationService.OperationIsFinishedAndSucceededAsync(currentResourceOperation.DependsOnOperationId.Value) == false)
                             {
-                                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}. Dependant operation {currentResourceOperation.DependsOnOperationId.Value} not finished. Increasing queue item invisibility time and aborting");
-                              
-                                //Increasing invisibility
-                                await _workQueue.IncreaseInvisibilityAsync(queueParentItem, CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED);
-                                continue;
+                                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}. Dependant operation {currentResourceOperation.DependsOnOperationId.Value} not finished. Queue item invisibility increased. Now aborting");
 
+                                var invisibilityIncrease = currentResourceOperation.DependsOnOperation != null ? AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(currentResourceOperation.DependsOnOperation.Resource.ResourceType) : CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
+
+                                await _workQueue.IncreaseInvisibilityAsync(queueParentItem, invisibilityIncrease);
+                                dequeueParentItemAfterCompletion = false;
+                                break;
                             }                            
                         }
 
@@ -122,7 +125,10 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}. Deleting message");
 
-                await _workQueue.DeleteMessageAsync(queueParentItem);
+                if (dequeueParentItemAfterCompletion)
+                {
+                    await _workQueue.DeleteMessageAsync(queueParentItem);
+                }             
 
             }
             catch (Exception ex)
