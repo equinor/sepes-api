@@ -19,7 +19,7 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.IN_PROGRESS;
             }
-            else if (lastOperation.OperationType == CloudResourceOperationType.CREATE && string.IsNullOrWhiteSpace(resource.Status))
+            else if (lastOperation.OperationType == CloudResourceOperationType.CREATE && string.IsNullOrWhiteSpace(lastOperation.Status))
             {
                 return CloudResourceStatus.IN_QUEUE;
             }

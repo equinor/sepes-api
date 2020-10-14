@@ -92,13 +92,13 @@ namespace Sepes.Infrastructure.Service
                             //cannot recover from this
                             throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}In danger of picking up work in progress, Aborting!");
                         }
-                        else if (currentResourceOperation.DependentOn.HasValue)
+                        else if (currentResourceOperation.DependsOnOperationId.HasValue)
                         {
-                            _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation is dependent on {currentResourceOperation.DependentOn.Value}, verifying if dependent operation is finished ");
+                            _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation is dependent on {currentResourceOperation.DependsOnOperationId.Value}, verifying if dependent operation is finished ");
 
-                            if (await _sandboxResourceOperationService.OperationIsFinishedAndSucceededAsync(currentResourceOperation.DependentOn.Value) == false)
+                            if (await _sandboxResourceOperationService.OperationIsFinishedAndSucceededAsync(currentResourceOperation.DependsOnOperationId.Value) == false)
                             {
-                                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}. Dependant operation {currentResourceOperation.DependentOn.Value} not finished. Increasing queue item invisibility time and aborting");
+                                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}. Dependant operation {currentResourceOperation.DependsOnOperationId.Value} not finished. Increasing queue item invisibility time and aborting");
                               
                                 //Increasing invisibility
                                 await _workQueue.IncreaseInvisibilityAsync(queueParentItem, CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED);
