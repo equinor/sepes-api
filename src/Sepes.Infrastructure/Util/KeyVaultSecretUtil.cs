@@ -34,5 +34,13 @@ namespace Sepes.Infrastructure.Util
 
             return secret.Value.Value;
         }
+
+        public static async Task<string> DeleteKeyVaultSecretValue(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName)
+        {
+            var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
+            var secret = await client.StartDeleteSecretAsync(secretName);
+
+            return secret.Value.Value;
+        }
     }
 }

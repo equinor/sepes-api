@@ -37,9 +37,10 @@ namespace Sepes.Infrastructure.Service
 
             string subnetName = vmSettings.SubnetName;
 
-            string username = vmSettings.Username; 
+            string username = vmSettings.Username;
 
-            string password = await GetPasswordFromKeyVault(vmSettings.Password);
+            var passwordReference = vmSettings.Password;
+            string password = await GetPasswordFromKeyVault(passwordReference);
 
             string performanceProfile = vmSettings.PerformanceProfile;
             string operatingSystem = vmSettings.OperatingSystem;
@@ -48,6 +49,8 @@ namespace Sepes.Infrastructure.Service
             var createdVm = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkName, subnetName, username, password, performanceProfile, operatingSystem, distro, parameters.Tags, diagStorageAccountName);
             var result = CreateResult(createdVm);
 
+            await DeletePasswordFromKeyVault(passwordReference);
+
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
         }
@@ -55,6 +58,11 @@ namespace Sepes.Infrastructure.Service
         async Task<string> GetPasswordFromKeyVault(string passwordId)
         {          
             return await KeyVaultSecretUtil.GetKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+        }
+
+        async Task<string> DeletePasswordFromKeyVault(string passwordId)
+        {
+            return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
         }
 
 
