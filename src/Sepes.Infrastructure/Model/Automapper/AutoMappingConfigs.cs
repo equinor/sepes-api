@@ -105,7 +105,11 @@ namespace Sepes.Infrastructure.Model.Automapper
 
 
             CreateMap<CreateVmUserInputDto, VmSettingsDto>();
-           
+
+            CreateMap<SandboxResourceDto, VmDto>()
+                .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+                 .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
+
         }
     }
 }

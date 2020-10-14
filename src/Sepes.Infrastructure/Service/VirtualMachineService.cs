@@ -72,7 +72,9 @@ namespace Sepes.Infrastructure.Service
 
             await _workQueue.SendMessageAsync(queueParentItem);
 
-            return new VmDto();
+            var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
+
+            return dtoMappedFromResource;
         }
 
         async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
