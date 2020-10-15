@@ -23,9 +23,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating Network Security Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
-
-            var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(parameters.StudyName, parameters.SandboxName);
-            var nsg = await CreateSecurityGroup(parameters.Region, parameters.ResourceGrupName, nsgName, parameters.Tags);
+          
+            var nsg = await CreateSecurityGroup(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags);
             var result = CreateResult(nsg);
 
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxName}! Id: {nsg.Id}");

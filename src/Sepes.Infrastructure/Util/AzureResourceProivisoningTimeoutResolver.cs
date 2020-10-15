@@ -1,10 +1,11 @@
 ﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 
 namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceProivisoningTimeoutResolver
     {
-        public static int GetTimeoutForOperationInSeconds(string resourceType, string operationType)
+        public static int GetTimeoutForOperationInSeconds(string resourceType, string operationType = CloudResourceOperationType.CREATE)
         {
             if(resourceType == AzureResourceType.StorageAccount)
             {
@@ -30,6 +31,10 @@ namespace Sepes.Infrastructure.Util
                 }
             }
             else if (resourceType == AzureResourceType.Bastion)
+            {
+                return 600;
+            }
+            else if (resourceType == AzureResourceType.VirtualMachine)
             {
                 return 600;
             }

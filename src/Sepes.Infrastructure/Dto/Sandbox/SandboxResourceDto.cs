@@ -29,7 +29,9 @@ namespace Sepes.Infrastructure.Dto
 
         public DateTime? Deleted { get; set; }
 
-        public string DeletedBy { get; set; }       
+        public string DeletedBy { get; set; }
+
+        public string ConfigString { get; set; }
 
         public Dictionary<string, string> Tags
         {

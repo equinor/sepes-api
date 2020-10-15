@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -32,6 +33,14 @@ namespace Sepes.Infrastructure.Service
         public async Task StartMonitoringSession()
         {
             _logger.LogInformation($"Monitoring provisioning state and tags");
+
+            var monitoringDisabled = _config[ConfigConstants.DISABLE_MONITORING];
+
+            if(!String.IsNullOrWhiteSpace(monitoringDisabled) && monitoringDisabled.ToLower() == "true")
+            {
+                _logger.LogWarning($"Monitoring is disabled, aborting!");
+                return;
+            }
 
             var activeResources = await _sandboxResourceService.GetActiveResources();
 
@@ -168,7 +177,7 @@ namespace Sepes.Infrastructure.Service
                     // These tags should be checked with the ones in Azure.
                     var studyDto = _mapper.Map<StudyDto>(resource.Sandbox.Study);
                     var sandboxDto = _mapper.Map<SandboxDto>(resource.Sandbox);
-                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(_config, studyDto.Name, studyDto, sandboxDto);
+                    var tagsFromDb = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
 
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 

@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Mocks;
 using Sepes.Tests.Mocks.Azure;
@@ -48,7 +49,7 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IStudyService, StudyService>();
 
             //Resource provisioning services
-            services.AddSingleton<IProvisioningQueueService, ResourceProvisioningQueueService>();
+            services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
 

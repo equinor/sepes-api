@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using System.Linq;
 
@@ -15,14 +15,25 @@ namespace Sepes.Infrastructure.Util
 
             var lastOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
 
-            if (lastOperation.Status == CloudResourceOperationState.IN_PROGRESS || lastOperation.Status == CloudResourceOperationState.FAILED)
+            if (lastOperation.Status == CloudResourceOperationState.IN_PROGRESS)
             {
                 return CloudResourceStatus.IN_PROGRESS;
             }
-            else if (lastOperation.OperationType == CloudResourceOperationType.CREATE && string.IsNullOrWhiteSpace(resource.LastKnownProvisioningState))
+            else if (lastOperation.OperationType == CloudResourceOperationType.CREATE && string.IsNullOrWhiteSpace(lastOperation.Status))
             {
-                return CloudResourceStatus.IN_PROGRESS;
+                return CloudResourceStatus.IN_QUEUE;
             }
+            else if (lastOperation.OperationType == CloudResourceOperationState.FAILED)
+            {
+                if(lastOperation.TryCount < CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+                {
+                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                }
+                else
+                {
+                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                }             
+            }          
             else if (lastOperation.OperationType == CloudResourceOperationType.DELETE && lastOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
             {
                 return CloudResourceStatus.DELETED;
@@ -33,7 +44,7 @@ namespace Sepes.Infrastructure.Util
                 return CloudResourceStatus.OK;
             }
 
-            return CloudResourceStatus.FAILED;           
+            return "n/a";
 
         }
     }
