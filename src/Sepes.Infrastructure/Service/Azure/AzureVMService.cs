@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
-            var vmSettings =  SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
 
             string diagStorageAccountName = vmSettings.DiagnosticStorageAccountName;
 
@@ -56,15 +56,30 @@ namespace Sepes.Infrastructure.Service
         }
 
         async Task<string> GetPasswordFromKeyVault(string passwordId)
-        {          
-            return await KeyVaultSecretUtil.GetKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+        {
+            try
+            {
+                return await KeyVaultSecretUtil.GetKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"VM Creation failed. Unable to get real VM password from Key Vault. See inner exception for details.", ex);
+            }
+
         }
 
         async Task<string> DeletePasswordFromKeyVault(string passwordId)
         {
-            return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+            try
+            {
+                return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+            }
         }
-
 
         public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
         {
@@ -87,7 +102,7 @@ namespace Sepes.Infrastructure.Service
 
             switch (vmPerformanceProfile.ToLower())
             {
-                case "general":                  
+                case "general":
                     machineSize = VirtualMachineSizeTypes.StandardDS3V2;
                     break;
                 case "cheap":
