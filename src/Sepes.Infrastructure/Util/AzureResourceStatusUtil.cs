@@ -27,11 +27,11 @@ namespace Sepes.Infrastructure.Util
             {
                 if(lastOperation.TryCount < CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
                 {
-                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT})";
                 }
                 else
                 {
-                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT})";
                 }             
             }          
             else if (lastOperation.OperationType == CloudResourceOperationType.DELETE && lastOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)

@@ -78,10 +78,10 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount >= CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
                         {
+                            _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
                             await HandleRetryCountExceeded(queueParentItem, queueChildItem, currentResourceOperation);
-
-                            //cannot recover from this
-                            throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
+                            dequeueParentItemAfterCompletion = false; //Has allreasdy been done
+                            break;
                         }                       
                         else if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                         {
