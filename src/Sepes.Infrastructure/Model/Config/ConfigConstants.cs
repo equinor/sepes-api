@@ -14,8 +14,7 @@
         public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";
         public const string KEY_VAULT = "KeyVault_Url";
 
-
-        public const string AZURE_VM_TEMP_PASSWORD_KEY_VAULT = "AzureVmTempPasswordStorageKeyVault_Url";
+  public const string AZURE_VM_TEMP_PASSWORD_KEY_VAULT = "AzureVmTempPasswordStorageKeyVault_Url";
 
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwnerConnectionString";
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRWConnectionString";
