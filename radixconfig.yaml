@@ -25,9 +25,7 @@ spec:
       environmentConfig:
         - environment: prod
           variables: 
-            SEPES_HttpOnly: "true",
-            CostAllocationTypeTagName: "CostAllocationType",
-            CostAllocationCodeTagName: "CostAllocationCode",
+            SEPES_HttpOnly: "true"
           replicas: 2
           monitoring: true
           resources:
@@ -39,9 +37,7 @@ spec:
               cpu: "400m"
         - environment: dev
           variables:
-            SEPES_HttpOnly: "true",
-            CostAllocationTypeTagName: "DEV-CostAllocationType",
-            CostAllocationCodeTagName: "DEV-CostAllocationCode",
+            SEPES_HttpOnly: "true"
           replicas: 2
           monitoring: true
           resources:
