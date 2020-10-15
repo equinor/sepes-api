@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -23,7 +25,7 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
         }
 
-        public async Task<SandboxResourceOperationDto> Add(int sandboxResourceId, SandboxResourceOperationDto operationDto)
+        public async Task<SandboxResourceOperationDto> AddAsync(int sandboxResourceId, SandboxResourceOperationDto operationDto)
         {
             var sandboxResourceFromDb = await GetSandboxResourceOrThrowAsync(sandboxResourceId);
             var newOperation = _mapper.Map<SandboxResourceOperation>(operationDto);
@@ -43,9 +45,12 @@ namespace Sepes.Infrastructure.Service
         async Task<SandboxResourceOperation> GetOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResourceOperations
+                .Include(o=> o.DependsOnOperation)
+                .ThenInclude(o=> o.Resource)
                 .Include(o => o.Resource)
-                 .ThenInclude(o => o.Sandbox)
-                .FirstOrDefaultAsync(s => s.Id == id);
+                 .ThenInclude(r => r.Sandbox)
+                         .ThenInclude(sb => sb.Study)
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entityFromDb == null)
             {
@@ -55,7 +60,7 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatus(int id, string status, string updatedProvisioningState = null)
+        public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -76,7 +81,7 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(itemFromDb.Id);
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCount(int id, string status)
+        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -90,11 +95,12 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(itemFromDb.Id);
         }
 
-        public async Task<SandboxResourceOperationDto> SetInProgress(int id, string requestId, string status)
+        public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
         {
             var currentUser = _userService.GetCurrentUser();
 
             var itemFromDb = await GetOrThrowAsync(id);
+            itemFromDb.TryCount++;
             itemFromDb.CarriedOutBySessionId = requestId;
             itemFromDb.Status = status;
             itemFromDb.Updated = DateTime.UtcNow;
@@ -116,6 +122,18 @@ namespace Sepes.Infrastructure.Service
             }
 
             return entityFromDb;
+        }
+
+        public async Task<bool> ExistsPreceedingUnfinishedOperationsAsync(SandboxResourceOperationDto operationDto)
+        {
+           return await _db.SandboxResourceOperations.Where(o => o.SandboxResourceId == operationDto.Resource.Id.Value && o.BatchId != operationDto.BatchId && o.Created < operationDto.Created && (o.Status == CloudResourceOperationState.IN_PROGRESS || o.Status == CloudResourceOperationState.NOT_STARTED)).AnyAsync();
+        }
+
+        public async Task<bool> OperationIsFinishedAndSucceededAsync(int operationId)
+        {
+            var itemFromDb = await GetOrThrowAsync(operationId);
+
+            return itemFromDb.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
         }
     }
 }

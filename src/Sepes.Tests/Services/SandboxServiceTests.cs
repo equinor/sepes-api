@@ -116,7 +116,7 @@ namespace Sepes.Tests.Services
             var provisioningService = ServiceProvider.GetService<ISandboxResourceProvisioningService>();
 
             
-            await provisioningService.LookForWork();
+            await provisioningService.DequeueWorkAndPerformIfAny();
 
 
             //Call the method that picks up work

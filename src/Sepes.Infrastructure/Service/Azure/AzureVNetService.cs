@@ -24,9 +24,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
-            _logger.LogInformation($"Creating Network for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
-            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.SandboxName, parameters.Tags);
+            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.CustomConfiguration);
+
+            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags);
             var result = CreateResult(vNet);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
@@ -40,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNet.SandboxSubnetName, vNet.Network.Name);       
 
-            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Id: {parameters.SandboxName}! Id: {vNet.Id}");
+            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNet.Id}");
 
             return result;
         }
@@ -53,17 +55,16 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags)
         {
-            var networkDto = new AzureVNetDto();
-            var networkName = AzureResourceNameUtil.VNet(sandboxName);
+            var networkDto = new AzureVNetDto();          
 
             var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
             var bastionSubnetName = "AzureBastionSubnet";
             var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255         
 
-            networkDto.SandboxSubnetName = AzureResourceNameUtil.SubNet(sandboxName);
+            networkDto.SandboxSubnetName = sandboxSubnetName;
             var sandboxSubnetAddress = "10.100.1.0/24";
 
             networkDto.Network = await _azure.Networks.Define(networkName)
@@ -86,6 +87,11 @@ namespace Sepes.Infrastructure.Service
             //Add the security group to a subnet.
             var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
             var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, nsg.Tags);
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+
             await network.Update()
                 .UpdateSubnet(subnetName)
                 .WithExistingNetworkSecurityGroup(nsg)
@@ -93,9 +99,11 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }      
 
-        public async Task Delete(string resourceGroupName, string vNetName)
+        public async Task Delete(string resourceGroupName, string networkName)
         {
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, vNetName);
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, networkName);
         }
 
         public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
@@ -125,9 +133,17 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
-            _ = await rg.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
+            _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+        }
+
+        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
         }
 
 

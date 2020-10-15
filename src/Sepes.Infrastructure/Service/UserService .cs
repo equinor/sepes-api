@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -15,14 +16,16 @@ namespace Sepes.Infrastructure.Service
 {
     public class UserService : IUserService
     {
-        readonly IConfiguration _config;
-        readonly IPrincipalService _principalService;
-        readonly SepesDbContext _db;
-        readonly IMapper _mapper;
         UserDto _cachedUser;
+
         bool userIsLoadedFromDb;
         bool userIsLoadedFromDbWithStudyParticipants;
 
+        readonly IConfiguration _config;
+        readonly IPrincipalService _principalService;
+        readonly SepesDbContext _db;
+        readonly IMapper _mapper; 
+        
         public UserService(IConfiguration config, SepesDbContext db, IPrincipalService principalService, IMapper mapper)
         {
             _config = config;
@@ -43,7 +46,7 @@ namespace Sepes.Infrastructure.Service
             if (userIsLoadedFromDb == false)
             {
                 var userFromDb = await EnsureDbUserExists(false);
-                _cachedUser = MapToDtoAndAttachPrincipal(userFromDb);
+                _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
                 userIsLoadedFromDb = true;
             }
           
@@ -55,7 +58,7 @@ namespace Sepes.Infrastructure.Service
             if (userIsLoadedFromDb == false || userIsLoadedFromDbWithStudyParticipants == false)
             {
                 var userFromDb = await EnsureDbUserExists(true);             
-                _cachedUser = MapToDtoAndAttachPrincipal(userFromDb);
+                _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
                 userIsLoadedFromDb = true;
                 userIsLoadedFromDbWithStudyParticipants = true;
             }
@@ -77,10 +80,48 @@ namespace Sepes.Infrastructure.Service
             return _principalService.GetPrincipal().IsInRole(AppRoles.DatasetAdmin);
         }
 
-        UserDto MapToDtoAndAttachPrincipal(User user)
+        public  async Task<UserPermissionDto> GetUserPermissionsAsync()
         {
-            var mapped = _mapper.Map<UserDto>(user);        
-            return mapped;
+            var userFromDb = await GetCurrentUserFromDbAsync();
+
+            var result = new UserPermissionDto();
+            result.Admin = userFromDb.Admin;
+            result.Sponsor = userFromDb.Sponsor;
+            result.DatasetAdmin = userFromDb.DatasetAdmin;
+
+            result.CanCreateStudy = userFromDb.Admin || userFromDb.Sponsor;
+            result.CanAdministerDatasets = userFromDb.Admin || userFromDb.DatasetAdmin;
+
+            return result;
+        }
+
+        UserDto MapToDtoAndPersistRelevantProperties(User user)
+        {
+            var userDto = _mapper.Map<UserDto>(user);
+
+            if(userDto.ObjectId != _cachedUser.ObjectId)
+            {
+                throw new Exception($"Error mapping user DTO from DB entry. ObjectId was not equal");
+            }
+
+            if (userDto.EmailAddress != _cachedUser.EmailAddress)
+            {
+                throw new Exception($"Error mapping user DTO from DB entry. EmailAddress was not equal");
+            }
+
+            if (userDto.UserName != _cachedUser.UserName)
+            {
+                throw new Exception($"Error mapping user DTO from DB entry. UserName was not equal");
+            }
+
+            //Reload information that comes from principal;
+            var principal = _principalService.GetPrincipal();
+
+            userDto.Admin = principal.IsInRole(AppRoles.Admin);
+            userDto.Sponsor = principal.IsInRole(AppRoles.Sponsor);
+            userDto.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
+     
+            return userDto;
         }
 
         UserDto CreateUserFromPrincipal()
@@ -128,6 +169,8 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
-        }       
+        }
+
+  
     }
 }

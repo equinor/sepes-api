@@ -1,4 +1,5 @@
 ﻿using Azure;
+using Azure.Storage.Queues.Models;
 using Sepes.Infrastructure.Dto.Azure;
 using System.Threading.Tasks;
 
@@ -23,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         // Updates the message in-place in the queue.
         // The message parameter is a message that has been fetched with RecieveMessage() or RecieveMessages()
-        Task<string> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30);
+        Task<UpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30);
 
         // Returns approximate number of messages in queue.
         // The number is not lower than the actual number of messages in the queue, but could be higher.

@@ -12,11 +12,11 @@ namespace Sepes.Infrastructure.Dto
         public string UserName { get; set; }
         public string EmailAddress { get; set; }
 
-        public bool Admin { get; private set; }
+        public bool Admin { get; set; }
 
-        public bool Sponsor { get; private set; }
+        public bool Sponsor { get; set; }
 
-        public bool DatasetAdmin { get; private set; }
+        public bool DatasetAdmin { get; set; }
 
 
         public List<StudyParticipantDto> StudyParticipants { get; set; }

@@ -34,23 +34,13 @@ namespace Sepes.Infrastructure.Util
 
         public static IPerformCloudResourceCRUD GetCRUDService(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
+            AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            //AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
             _ => null,
         };
-
-        //public static IHasExists GetServiceWithExistance(IServiceProvider serviceProvider, string resourceType) => resourceType switch
-        //{
-        //    AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
-        //    AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
-        //    AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNwSecurityGroupService>(),
-        //    AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
-        //    AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-        //    AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
-        //    _ => null,
-        //};
     }
 }

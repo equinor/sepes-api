@@ -48,5 +48,10 @@ namespace Sepes.Tests.Mocks
             dbUser.StudyParticipants.Add(new StudyParticipantDto() {  UserId = 1, StudyId = 1, EmailAddress = dbUser.EmailAddress, FullName = dbUser.FullName, Role = StudyRoles.StudyOwner });
             return dbUser;
         }
+
+        public Task<UserPermissionDto> GetUserPermissionsAsync()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

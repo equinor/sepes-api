@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 
@@ -79,10 +80,12 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureVNetService, AzureVNetService>();
             builder.Services.AddTransient<IAzureVMService, AzureVMService>();
             builder.Services.AddTransient<IAzureQueueService, AzureQueueService>();
-            builder.Services.AddTransient<IResourceProvisioningQueueService, ResourceProvisioningQueueService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-            builder.Services.AddTransient<IAzureResourceMonitoringService, AzureResourceMonitoringService>();
+                 builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
+            builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             }
+
     }
 }

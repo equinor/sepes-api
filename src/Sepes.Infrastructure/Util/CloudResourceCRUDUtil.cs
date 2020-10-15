@@ -8,12 +8,17 @@ namespace Sepes.Infrastructure.Util
     {
         public static CloudResourceCRUDResult CreateResultFromIResource(IResource resource)
         {
-            return new CloudResourceCRUDResult() { Resource = resource, Success = true };
+            return new CloudResourceCRUDResult() { Resource = resource, Success = true, IdInTargetSystem = resource.Id, NameInTargetSystem = resource.Name };
         }
 
         public static CloudResourceCRUDResult CreateResultFromIResource(Resource resource)
         {
-            return new CloudResourceCRUDResult() { NetworkResource = resource, Success = true };
+            return new CloudResourceCRUDResult() { NetworkResource = resource, Success = true, IdInTargetSystem = resource.Id, NameInTargetSystem = resource.Name };
+        }
+
+        public static CloudResourceCRUDResult CreateResultFromProvisioningState(string provisioningState)
+        {
+            return new CloudResourceCRUDResult() { CurrentProvisioningState = provisioningState, Success = true};
         }
     }
 }

@@ -1,0 +1,38 @@
+name: function app
+on:
+  repository_dispatch:
+  pull_request:
+    branches: 
+      - master
+      - develop
+    paths:
+      - src/Sepes.Functions/*
+      - .github/workflows/function-app.yml
+  push:
+    paths:
+      - src/Sepes.Functions/*
+      - .github/workflows/function-app.yml
+env:
+  ciTag: ${{ secrets.ACR_URL }}/function-app/ci
+
+jobs:
+  dockerbuild:
+    runs-on: ubuntu-latest
+    env:
+        environment: CI
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:$GITHUB_RUN_ID -t ${{ env.ciTag }}:latest
+          docker push ${{ env.ciTag }}

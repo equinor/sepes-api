@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         //Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters);
 
-        //Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
     }
 
     public class CloudResourceCRUDInput
@@ -18,6 +18,9 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         public string ResourceGrupName { get; set; }
         public string Name { get; set; }
 
+        public string StudyName { get; set; }
+
+        public int SandboxId { get; set; }
         public string SandboxName { get; set; }
         public Region Region { get; set; }
 
@@ -42,6 +45,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         {
             ResourceGrupName = null;
             Name = null;
+            SandboxId = 0;
             SandboxName = null;
             Region = null; 
             CustomConfiguration = null;
@@ -76,6 +80,10 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
     {
         public bool Success;
         public string CurrentProvisioningState { get; set; }
+
+        public string IdInTargetSystem { get; set; }
+
+        public string NameInTargetSystem { get; set; }
 
         public IResource Resource { get; set; }
 

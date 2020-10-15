@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -33,20 +34,19 @@ namespace Sepes.Infrastructure.Service
             _azureADUsersService = azureADUsersService;
         }
 
-        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? includeRestricted = null)
+        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null)
         {
             List<Study> studiesFromDb;
 
-            if (includeRestricted.HasValue && includeRestricted.Value)
+            if (excludeHidden.HasValue && excludeHidden.Value)
             {
-                var user = await _userService.GetCurrentUserFromDbAsync();
-
-                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
-                studiesFromDb = await studiesQueryable.ToListAsync();
+                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
             }
             else
             {
-                studiesFromDb = await _db.Studies.Where(s => !s.Restricted).ToListAsync();
+                var user = await _userService.GetCurrentUserFromDbAsync();
+                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
+                studiesFromDb = await studiesQueryable.ToListAsync();               
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
@@ -266,6 +266,10 @@ namespace Sepes.Infrastructure.Service
             {
                 userDb = new User { EmailAddress = userFromAzure.Mail, FullName = userFromAzure.DisplayName, ObjectId = user.ObjectId };
                 _db.Users.Add(userDb);
+            }
+            else
+            {
+                return await AddDbUserAsParticipantAsync(studyId, userDb.Id, role);
             }
 
             if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))

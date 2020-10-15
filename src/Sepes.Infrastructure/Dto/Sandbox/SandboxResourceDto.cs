@@ -8,6 +8,7 @@ namespace Sepes.Infrastructure.Dto
     {
         public int SandboxId { get; set; }
 
+        public string StudyName { get; set; }
         public string SandboxName { get; set; }
 
         public string ResourceId { get; set; }
@@ -26,9 +27,11 @@ namespace Sepes.Infrastructure.Dto
 
         public string ProvisioningState { get; set; }
 
-        public DateTime Deleted { get; set; }
+        public DateTime? Deleted { get; set; }
 
-        public string DeletedBy { get; set; }       
+        public string DeletedBy { get; set; }
+
+        public string ConfigString { get; set; }
 
         public Dictionary<string, string> Tags
         {

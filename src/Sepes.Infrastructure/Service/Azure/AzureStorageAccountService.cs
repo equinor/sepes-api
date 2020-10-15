@@ -20,10 +20,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
         {
-            _logger.LogInformation($"Creating Storage Account for sandbox with Id: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
-
-            string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(parameters.SandboxName);
-            var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
+            _logger.LogInformation($"Creating Storage Account for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");         
+        
+            var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(parameters.Name);
 
             if (!(bool)nameIsAvailable.IsAvailable)
             {
@@ -32,7 +31,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Create storage account
-            var account = await _azure.StorageAccounts.Define(storageAccountName)
+            var account = await _azure.StorageAccounts.Define(parameters.Name)
                 .WithRegion(parameters.Region)
                 .WithExistingResourceGroup(parameters.ResourceGrupName)
                 .WithAccessFromAllNetworks()
@@ -44,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
             var result = CreateResult(account);
 
-            _logger.LogInformation($"Done creating Storage Account for sandbox with Id: {parameters.SandboxName}! Id: {account.Id}");
+            _logger.LogInformation($"Done creating Storage Account for sandbox with Name: {parameters.SandboxName}! Id: {account.Id}");
 
             return result;
         }
@@ -83,31 +82,35 @@ namespace Sepes.Infrastructure.Service
             return account;
         }
 
-        public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
-        {
-            string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName);
-            var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
-            if (!(bool)nameIsAvailable.IsAvailable)
-            {
-                _logger.LogError($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
-                throw new ArgumentException($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
-            }
-            // Create storage account
-            var account = await _azure.StorageAccounts.Define(storageAccountName)
-                .WithRegion(region)
-                .WithExistingResourceGroup(resourceGroupName)
-                .WithAccessFromAllNetworks()
-                .WithGeneralPurposeAccountKindV2()
-                .WithOnlyHttpsTraffic()
-                .WithSku(StorageAccountSkuType.Standard_LRS)
-                .WithTags(tags)
-                .CreateAsync();
+        //public async Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
+        //{
+        //    string storageAccountName = AzureResourceNameUtil.DiagnosticsStorageAccount(sandboxName);
+        //    var nameIsAvailable = await _azure.StorageAccounts.CheckNameAvailabilityAsync(storageAccountName);
+        //    if (!(bool)nameIsAvailable.IsAvailable)
+        //    {
+        //        _logger.LogError($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+        //        throw new ArgumentException($"StorageAccountName not available/invalid. Message: {nameIsAvailable.Message}");
+        //    }
+        //    // Create storage account
+        //    var account = await _azure.StorageAccounts.Define(storageAccountName)
+        //        .WithRegion(region)
+        //        .WithExistingResourceGroup(resourceGroupName)
+        //        .WithAccessFromAllNetworks()
+        //        .WithGeneralPurposeAccountKindV2()
+        //        .WithOnlyHttpsTraffic()
+        //        .WithSku(StorageAccountSkuType.Standard_LRS)
+        //        .WithTags(tags)
+        //        .CreateAsync();
 
-            return account;
-        }
+        //    return account;
+        //}
 
         public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName)
         {
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName);
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
             await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName);
         }
 
@@ -138,9 +141,19 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
-            _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
-            _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+       
+            //Ensure resource is is managed by this instance
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+       
+            _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
+            _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+        }
+
+        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
         }
     }
 }

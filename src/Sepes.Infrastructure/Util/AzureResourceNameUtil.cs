@@ -6,24 +6,25 @@ namespace Sepes.Infrastructure.Util
     // Naming prefixes should follow these conventions https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging.
     public static class AzureResourceNameUtil
     {
-        public static string ResourceGroup(string sandboxName)
+        public const string AZURE_RESOURCE_INITIAL_NAME = "n/a";
+
+        public static string ResourceGroup(string studyName, string sandboxName)
         {
-            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
-            return StripWhitespace($"rg-study-{sandboxName}{shortGuid}");
+            return AzureResourceNameConstructor("rg-study-", studyName, sandboxName, maxLength: 64, addUniqueEnding: true);
         }
-        public static string Sandbox(string studyName) => StripWhitespace($"{studyName}-sandbox");
 
-        public static string VNet(string sandboxName) => StripWhitespace($"vnet-study-{sandboxName}");
+        public static string VNet(string studyName, string sandboxName) => AzureResourceNameConstructor("vnet-", studyName, sandboxName);
 
-        public static string SubNet(string sandboxName) => StripWhitespace($"snet-{sandboxName}");
 
-        public static string NetworkSecGroup(string sandboxName) => StripWhitespace($"nsg-{sandboxName}");
+        public static string SubNet(string studyName, string sandboxName) => AzureResourceNameConstructor("snet-", studyName, sandboxName);
 
-        public static string NetworkSecGroupSubnet(string sandboxName) => StripWhitespace($"nsg-snet-{sandboxName}");
+        public static string NetworkSecGroup(string studyName, string sandboxName) => AzureResourceNameConstructor("nsg-", studyName, sandboxName);
 
-        public static string Bastion(string sandboxName) => StripWhitespace($"bastion-{sandboxName}");
+        public static string NetworkSecGroupSubnet(string studyName, string sandboxName) => AzureResourceNameConstructor("nsg-snet-", studyName, sandboxName);
 
-        public static string BastionPublicIp(string sandboxName) => StripWhitespace($"pip-{sandboxName}-bastion");
+        public static string Bastion(string studyName, string sandboxName) => AzureResourceNameConstructor("bastion-", studyName, sandboxName);
+
+        public static string BastionPublicIp(string studyName, string sandboxName) => AzureResourceNameConstructor("pip-bastion-", studyName, sandboxName);
 
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
@@ -31,7 +32,7 @@ namespace Sepes.Infrastructure.Util
         public static string StorageAccount(string sandboxName)
         {
             var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
-            sandboxName = MakeStringAlphanumeric(sandboxName);
+            sandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
             if (sandboxName.Length > 18)
             {
                 return $"st{sandboxName.ToLower().Substring(0, 18)}{shortGuid}";
@@ -39,27 +40,94 @@ namespace Sepes.Infrastructure.Util
             return $"st{sandboxName.ToLower()}{shortGuid}";
         }
 
-        public static string DiagnosticsStorageAccount(string sandboxName)
+        public static string DiagnosticsStorageAccount(string studyName, string sandboxName)
         {
-            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
-            sandboxName = MakeStringAlphanumeric(sandboxName);
-            if (sandboxName.Length > 14)
-            {
-                return $"stdiag{sandboxName.ToLower().Substring(0, 14)}{shortGuid}";
-            }
-            return $"stdiag{sandboxName.ToLower()}{shortGuid}";
+            var studyNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(studyName);
+            var sanboxNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
+
+            return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, addUniqueEnding: true, avoidDash: true);
         }
 
-        public static string VirtualMachine(string sandboxName) => StripWhitespace($"vm-{sandboxName}");
+        public static string VirtualMachine(string studyName, string sandboxName, string userSuffix)
+        {
 
-        static string MakeStringAlphanumeric(string str) => new string((from c in str
-                                                                        where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c)
+            var studyNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(studyName, 10);
+            var sanboxNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(sandboxName, 10);
+            var userSuffixNormalized = MakeStringAlphanumericAndRemoveWhitespace(userSuffix);
+
+            var partWithoutUserSuffix = AzureResourceNameConstructor("vm-", studyNameNormalized, sanboxNameNormalized, maxLength: 64 - userSuffixNormalized.Length, addUniqueEnding: false, avoidDash: false);
+
+            return $"{partWithoutUserSuffix}-{userSuffixNormalized}";
+
+        }
+
+        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
+        {
+            var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
+            var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
+
+            var normalizedStudyName = Normalize(studyName);
+            var normalizedSanboxName = Normalize(sandboxName);
+
+            var charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+
+            if (charachtersLeft < 0)
+            {
+                var totalTrim = Math.Abs(charachtersLeft);
+
+                var nameLengthDiff = normalizedStudyName.Length - normalizedSanboxName.Length;
+                var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
+
+                if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
+                {
+                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - amountToTrimOff);
+                }
+                else // sandbox name is longer, trim it down to study length
+                {
+                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - amountToTrimOff);
+                }
+
+                //Both names are now equal in length, now we can equally remove from both
+
+                charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+
+                if (charachtersLeft < 0)
+                {
+                    var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
+                    var even = charachtersLeft % 2 == 0;
+                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - mustRemoveEach - (even ? 0 : 1));
+                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - mustRemoveEach);
+                }
+            }
+
+            return $"{prefix}{normalizedStudyName}{(avoidDash ? "" : "-")}{normalizedSanboxName}{shortUniquePart}";
+        }
+
+        static string Normalize(string input)
+        {
+            return StripWhitespace(input).ToLower();
+        }
+
+        public static string MakeStringAlphanumericAndRemoveWhitespace(string str, int limit = 0)
+        {
+
+            var alphaNummericString = new string((from c in str
+                                                  where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                  select c).ToArray());
+
+            if (limit > 0 && alphaNummericString.Length > limit)
+            {
+                return alphaNummericString.Substring(0, limit);
+            }
+
+            return alphaNummericString;
+        }
+
+        public static string StripWhitespace(string str) => new string((from c in str
+                                                                        where !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
                                                                         select c
-                                                                       ).ToArray());
-
-        static string StripWhitespace(string str) => new string((from c in str
-                                                                 where !char.IsWhiteSpace(c)
-                                                                 select c
                                                                 ).ToArray());
+
+
     }
 }

@@ -3,9 +3,9 @@ using Sepes.Infrastructure.Dto.Azure;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    public interface IAzureResourceGroupService : IHasProvisioningState, IHasTags
+    public interface IAzureResourceGroupService : IHasProvisioningState, IHasTags, IPerformCloudResourceCRUD
     {
         Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags);
 

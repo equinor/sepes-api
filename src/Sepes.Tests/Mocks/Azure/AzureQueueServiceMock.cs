@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Azure.Storage.Queues.Models;
+using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service;
 using System;
@@ -117,7 +118,7 @@ namespace Sepes.Tests.Mocks.Azure
             }
         }
 
-        public Task<string> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
+        public Task<UpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
         {
             throw new NotImplementedException();
         }

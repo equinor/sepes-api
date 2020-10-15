@@ -45,9 +45,9 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet]
         [Authorize(Roles = AppRoles.Admin)]
-        public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? includeRestricted)
+        public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
         {         
-            var studies = await _studyService.GetStudiesAsync(includeRestricted);
+            var studies = await _studyService.GetStudiesAsync(excludeHidden);
             return new JsonResult(studies);
         }
 
@@ -66,7 +66,7 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
-        [HttpPost()]
+        [HttpPost]
         [Authorize(Roles = RoleSets.AdminOrSponsor)]
         public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
         {

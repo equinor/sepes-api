@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Linq;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -46,7 +47,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
                  .ForMember(dest => dest.Resources,
-                    source => source.MapFrom(x => x.Resources));
+                    source => source.MapFrom(x => x.Resources))
+                     .ForMember(dest => dest.StudyName,
+                    source => source.MapFrom(x => x.Study.Name));
 
             CreateMap<SandboxDto, Sandbox>();
 
@@ -63,14 +66,16 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResource, SandboxResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
-                .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name));
+                .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
+            .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
             CreateMap<SandboxResourceDto, SandboxResource>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
 
-            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>()
-                .ReverseMap();
+            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>();           
+            CreateMap<SandboxResourceOperationDto, SandboxResourceOperation>();
+               
 
             //USERS/PARTICIPANTS
 
@@ -98,6 +103,18 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<IResourceGroup, AzureResourceGroupDto>()
                  .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
+
+
+            CreateMap<CreateVmUserInputDto, VmSettingsDto>();
+
+            CreateMap<SandboxResourceDto, VmDto>()
+                .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+                 .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
+
+            CreateMap<SandboxResource, VmDto>()
+           .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+            .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
+
         }
     }
 }

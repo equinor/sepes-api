@@ -11,5 +11,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<UserDto> GetCurrentUserWithStudyParticipantsAsync();
 
+        Task<UserPermissionDto> GetUserPermissionsAsync();
+
     }
 }

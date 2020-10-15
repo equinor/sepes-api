@@ -14,6 +14,8 @@
         public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";
         public const string KEY_VAULT = "KeyVault_Url";
 
+  public const string AZURE_VM_TEMP_PASSWORD_KEY_VAULT = "AzureVmTempPasswordStorageKeyVault_Url";
+
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwnerConnectionString";
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRWConnectionString";
 
@@ -30,12 +32,11 @@
 
         public const string STUDY_LOGO_STORAGE_CONSTRING = "StudyLogoStorageConnectionString";
 
-        
+        public const string MANAGED_BY = "ManagedBy";
 
+        public const string COST_ALLOCATION_TYPE_TAG_NAME = "CostAllocationTypeTagName";
+        public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";
 
-
-
-
-
+        public const string DISABLE_MONITORING = "DisableMonitoring";
     }
 }

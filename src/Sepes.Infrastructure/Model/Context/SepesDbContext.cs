@@ -5,8 +5,7 @@
 //Add-Migration <migration name> -Context SepesDbContext -StartupProject Sepes.RestApi -Project Sepes.Infrastructure
 
 namespace Sepes.Infrastructure.Model.Context
-{
-    public class SepesDbContext : DbContext
+{    public class SepesDbContext : DbContext
     {
         public SepesDbContext(DbContextOptions<SepesDbContext> options) : base(options) { }
 
@@ -43,13 +42,14 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
-            modelBuilder.Entity<StudyParticipant>().HasKey(sd => new { sd.StudyId, sd.UserId, sd.RoleName });
-            modelBuilder.Entity<SandboxResource>().HasKey(cr => cr.Id);
-            modelBuilder.Entity<SandboxResourceOperation>().HasKey(cro => cro.Id);
+            modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
+            modelBuilder.Entity<SandboxResource>().HasKey(r => r.Id);
+            modelBuilder.Entity<SandboxResourceOperation>().HasKey(o => o.Id);
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
         {
+            //STUDY / SANDBOX RELATION
             modelBuilder.Entity<Sandbox>()
                 .HasOne(s => s.Study)
                 .WithMany(s => s.Sandboxes)
@@ -89,6 +89,11 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(cr => cr.Resource)
                 .WithMany(d => d.Operations)
                 .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SandboxResourceOperation>()
+                .HasOne(o => o.DependsOnOperation)
+                .WithMany(o => o.DependantOnThisOperation)
+             .HasForeignKey(sd => sd.DependsOnOperationId).OnDelete(DeleteBehavior.Restrict);
         }
 
 
@@ -145,6 +150,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<SandboxResource>()
                 .Property(sr => sr.Created)
                 .HasDefaultValueSql("getutcdate()");
+
             modelBuilder.Entity<SandboxResource>()
                 .Property(sr => sr.Updated)
                 .HasDefaultValueSql("getutcdate()");
