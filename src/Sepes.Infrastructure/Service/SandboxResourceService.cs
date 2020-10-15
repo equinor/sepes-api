@@ -199,31 +199,40 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceDto> MarkAsDeletedByIdAsync(int id)
+        public async Task<SandboxResourceDto> MarkAsDeletedAndScheduleDeletion(int id)
         {
             var resourceFromDb = await MarkAsDeletedByIdInternalAsync(id);
+
+
+
+
             return MapEntityToDto(resourceFromDb);
         }
 
         async Task<SandboxResource> MarkAsDeletedByIdInternalAsync(int id)
         {
-            //WE DONT REALLY DELETE FROM THIS TABLE, WE "MARK AS DELETED" AND KEEP THE RECORDS FOR FUTURE REFERENCE
+            var resourceEntity = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
-            var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
-
-            if (entityFromDb == null)
+            if (resourceEntity == null)
             {
-                throw NotFoundException.CreateForEntity("AzureResource", id);
+                throw NotFoundException.CreateForEntity("SandboxResource", id);
             }
 
             var user = _userService.GetCurrentUser();
 
-            entityFromDb.DeletedBy = user.UserName;
-            entityFromDb.Deleted = DateTime.UtcNow;
+            MarkAsDeletedInternal(resourceEntity, user.UserName);       
 
             await _db.SaveChangesAsync();
 
-            return entityFromDb;
+            return resourceEntity;
+        }
+
+        SandboxResource MarkAsDeletedInternal(SandboxResource resource, string deletedBy)
+        {
+            resource.DeletedBy = deletedBy;
+            resource.Deleted = DateTime.UtcNow;      
+
+            return resource;
         }
 
         public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)

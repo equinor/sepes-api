@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
-            _logger.LogInformation($"Handling queue message: {queueParentItem.MessageId}. Descr: {queueParentItem.Description}");
+            _logger.LogInformation($"Handling message: {queueParentItem.MessageId}. Message description: {queueParentItem.Description}");
 
             //One per child item in queue item
             SandboxResourceOperationDto currentResourceOperation = null;
@@ -58,7 +58,7 @@ namespace Sepes.Infrastructure.Service
 
             CloudResourceCRUDResult currentCrudResult = null;
 
-            var dequeueParentItemAfterCompletion = true;
+            var deleteFromQueueAfterCompletion = true;
 
             try
             {
@@ -79,8 +79,10 @@ namespace Sepes.Infrastructure.Service
                         else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount >= CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
                         {
                             _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
-                            await HandleRetryCountExceeded(queueParentItem, queueChildItem, currentResourceOperation);
-                            dequeueParentItemAfterCompletion = false; //Has allreasdy been done
+
+                            currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+                            await _workQueue.DeleteMessageAsync(queueParentItem); 
+                            deleteFromQueueAfterCompletion = false; //Has allreasdy been done
                             break;
                         }                       
                         else if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
@@ -105,7 +107,7 @@ namespace Sepes.Infrastructure.Service
                                 var invisibilityIncrease = currentResourceOperation.DependsOnOperation != null ? AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(currentResourceOperation.DependsOnOperation.Resource.ResourceType) : CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 
                                 await _workQueue.IncreaseInvisibilityAsync(queueParentItem, invisibilityIncrease);
-                                dequeueParentItemAfterCompletion = false;
+                                deleteFromQueueAfterCompletion = false;
                                 break;
                             }                            
                         }
@@ -123,9 +125,9 @@ namespace Sepes.Infrastructure.Service
                     }
                 }
 
-                _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}. Deleting message");
+                _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}");
 
-                if (dequeueParentItemAfterCompletion)
+                if (deleteFromQueueAfterCompletion)
                 {
                     await _workQueue.DeleteMessageAsync(queueParentItem);
                 }             
@@ -135,14 +137,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}");
             }
-        }
-
-        async Task<SandboxResourceOperationDto> HandleRetryCountExceeded(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation)
-        {
-            currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
-            await _workQueue.DeleteMessageAsync(queueParentItem);
-            return currentResourceOperation;
-        }
+        }       
 
         async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
         {
@@ -198,6 +193,10 @@ namespace Sepes.Infrastructure.Service
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
                 if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
+                {
+                    currentCrudResult = await service.Delete(currentCrudInput);
+                }
+                else if(currentResourceOperation.Resource.ResourceType == AzureResourceType.VirtualMachine)
                 {
                     currentCrudResult = await service.Delete(currentCrudInput);
                 }

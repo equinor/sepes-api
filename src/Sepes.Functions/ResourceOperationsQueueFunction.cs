@@ -21,9 +21,8 @@ namespace Sepes.CloudResourceWorker
         [FunctionName("ResourceOperationsQueue")]
         [StorageAccount(ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING)]      
         public async Task Run([QueueTrigger(queueName: "sandbox-resource-operations-queue")] CloudQueueMessage myQueueItem, ILogger log)
-        {
-            //Deserialize to queueitem  
-            log.LogInformation($"C# Queue trigger function processed. Message Id: {myQueueItem.Id}, pop count: {myQueueItem.DequeueCount}, expiration: {myQueueItem.ExpirationTime}, nextVisibleTime: { myQueueItem.NextVisibleTime}");
+        {           
+            log.LogInformation($"Processing message: {myQueueItem.Id}, pop count: {myQueueItem.DequeueCount}, exp: {myQueueItem.ExpirationTime}, next visible: { myQueueItem.NextVisibleTime}");
 
             var transformedQueueItem = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(myQueueItem.AsString);
             transformedQueueItem.MessageId = myQueueItem.Id;
