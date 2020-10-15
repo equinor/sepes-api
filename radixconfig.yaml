@@ -21,6 +21,7 @@ spec:
         - AzureAd__ClientId
         - AzureAd__ClientSecret
         - KeyVault_Url
+        - AzureVmTempPasswordStorageKeyVault_Url
       environmentConfig:
         - environment: prod
           variables: 
