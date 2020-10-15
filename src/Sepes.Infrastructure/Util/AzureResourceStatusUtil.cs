@@ -8,9 +8,9 @@ namespace Sepes.Infrastructure.Util
     {
         public static string ResourceStatus(SandboxResource resource)
         {
-            if (resource.Operations == null || resource.Operations != null && resource.Operations.Count == 0)
+            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
             {
-                return "n/a";
+                return "No operations found";
             }
 
             var lastOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.IN_QUEUE;
             }
-            else if (lastOperation.OperationType == CloudResourceOperationState.FAILED)
+            else if (lastOperation.Status == CloudResourceOperationState.FAILED)
             {
                 if(lastOperation.TryCount < CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
                 {
