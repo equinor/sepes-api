@@ -76,7 +76,7 @@ namespace Sepes.Infrastructure.Service
 
                     foreach(var curOperations in curRes.Operations)
                     {
-                        if(curOperations.Status == CloudResourceOperationState.NOT_STARTED || curOperations.Status == CloudResourceOperationState.IN_PROGRESS)
+                        if(curOperations.Status == CloudResourceOperationState.NEW || curOperations.Status == CloudResourceOperationState.IN_PROGRESS)
                         {
                             _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
                             continue;

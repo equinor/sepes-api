@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
                 await HandleQueueItem(work);
                 work = await _workQueue.RecieveMessageAsync();
             }
-        }    
+        }
 
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
@@ -74,24 +74,18 @@ namespace Sepes.Infrastructure.Service
                         {
                             //cannot recover from this
                             await _workQueue.DeleteMessageAsync(queueParentItem);
-                            throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Resource is marked for deletion in database, Aborting!"); 
+                            throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Resource is marked for deletion in database, Aborting!");
                         }
                         else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount >= CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
                         {
                             _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
 
                             currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
-                            await _workQueue.DeleteMessageAsync(queueParentItem); 
+                            await _workQueue.DeleteMessageAsync(queueParentItem);
                             deleteFromQueueAfterCompletion = false; //Has allreasdy been done
                             break;
-                        }                       
-                        else if (currentResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
-                        {
-                            //TODO: Consider edge cases: Resource does not exist in azure, recreate?
-                            _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Allready completed, Aborting!");
-                            continue;
                         }
-                        else if (MightBeInProgressByAnotherThread(currentResourceOperation))
+                        else if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && MightBeInProgressByAnotherThread(currentResourceOperation))
                         {
                             //cannot recover from this
                             throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}In danger of picking up work in progress, Aborting!");
@@ -109,7 +103,7 @@ namespace Sepes.Infrastructure.Service
                                 await _workQueue.IncreaseInvisibilityAsync(queueParentItem, invisibilityIncrease);
                                 deleteFromQueueAfterCompletion = false;
                                 break;
-                            }                            
+                            }
                         }
 
                         currentCrudResult = await HandleCRUD(queueParentItem, queueChildItem, currentResourceOperation, currentCrudInput, currentCrudResult);
@@ -130,14 +124,28 @@ namespace Sepes.Infrastructure.Service
                 if (deleteFromQueueAfterCompletion)
                 {
                     await _workQueue.DeleteMessageAsync(queueParentItem);
-                }             
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}");
             }
-        }       
+        }
+
+        async Task<CloudResourceCRUDResult> HandleAllreadyCreated(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
+        {
+            var resource = currentResourceOperation.Resource;
+            var resourceType = currentResourceOperation.Resource.ResourceType;
+
+            var service = AzureResourceServiceResolver.GetCRUDService(_serviceProvider, resourceType);
+
+            if (service == null)
+            {
+                throw new NullReferenceException($"ResourceOperation {queueChildItem.SandboxResourceOperationId}Unable to resolve CRUD service for type {resourceType}!");
+            }
+
+        }
 
         async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
         {
@@ -177,7 +185,7 @@ namespace Sepes.Infrastructure.Service
                 if (AllreadyCompleted(currentResourceOperation))
                 {
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation allready completed. Resource should exist. Getting provsioning state");
-                    await ThrowIfUnexpectedProvisioningStateAsync(currentResourceOperation);     //cannot recover from this                 
+                    await ThrowIfUnexpectedProvisioningStateAsync(currentResourceOperation);     //cannot recover from this  
                 }
                 else
                 {
@@ -196,7 +204,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     currentCrudResult = await service.Delete(currentCrudInput);
                 }
-                else if(currentResourceOperation.Resource.ResourceType == AzureResourceType.VirtualMachine)
+                else if (currentResourceOperation.Resource.ResourceType == AzureResourceType.VirtualMachine)
                 {
                     currentCrudResult = await service.Delete(currentCrudInput);
                 }

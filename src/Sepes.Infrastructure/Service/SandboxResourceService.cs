@@ -32,8 +32,9 @@ namespace Sepes.Infrastructure.Service
         readonly IRequestIdService _requestIdService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly IProvisioningQueueService _provisioningQueueService;
 
-        public SandboxResourceService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IRequestIdService requestIdService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService)
+        public SandboxResourceService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService, IRequestIdService requestIdService, IAzureResourceGroupService resourceGroupService, ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _config = config;
@@ -43,6 +44,7 @@ namespace Sepes.Infrastructure.Service
             _requestIdService = requestIdService;
             _resourceGroupService = resourceGroupService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
+            _provisioningQueueService = provisioningQueueService;
         }
 
         public async Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto)
@@ -189,7 +191,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources.Include(r=> r.Operations).FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
@@ -201,10 +203,54 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> MarkAsDeletedAndScheduleDeletion(int id)
         {
-            var resourceFromDb = await MarkAsDeletedByIdInternalAsync(id);
+            var user = _userService.GetCurrentUser();
 
+            var resourceFromDb =  await GetOrThrowAsync(id);
 
+            var deleteOperationDescription = $"Delete resource {id} ({resourceFromDb.ResourceType})";
 
+            _logger.LogInformation($"{deleteOperationDescription}: Abort all other operations for Resource");
+
+            await _sandboxResourceOperationService.AbortAllUnfinishedCreateOrUpdateOperations(id);
+
+            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);          
+
+            if (deleteOperation == null)
+            {
+                _logger.LogInformation($"{deleteOperationDescription}: Creating delete operation");
+
+                deleteOperation = new SandboxResourceOperation()
+                {
+                    CreatedBy = user.UserName,
+                    BatchId = Guid.NewGuid().ToString(),
+                    CreatedBySessionId = _requestIdService.GetRequestId(),
+                    OperationType = CloudResourceOperationType.DELETE,
+                    SandboxResourceId = resourceFromDb.Id,
+                    Description = deleteOperationDescription
+                };
+
+                resourceFromDb.Operations.Add(deleteOperation);
+            }
+            else
+            {
+                _logger.LogInformation($"{deleteOperationDescription}: Existing delete operation found, re-queueing that");
+                deleteOperation.TryCount = 0;
+            }
+
+            MarkAsDeletedInternal(resourceFromDb, user.UserName);
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation($"{deleteOperationDescription}: Enqueing delete operation");
+
+            //Create queue item
+            var queueParentItem = new ProvisioningQueueParentDto();
+            queueParentItem.SandboxId = resourceFromDb.SandboxId;
+            queueParentItem.Description = deleteOperationDescription;
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = deleteOperation.Id });
+            await _provisioningQueueService.SendMessageAsync(queueParentItem);
+
+            _logger.LogInformation($"{deleteOperationDescription}: Done!");
 
             return MapEntityToDto(resourceFromDb);
         }

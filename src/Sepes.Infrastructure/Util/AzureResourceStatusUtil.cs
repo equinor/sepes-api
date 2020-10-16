@@ -43,6 +43,10 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.OK;
             }
+            else if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.DELETED)
+            {
+                return CloudResourceStatus.DELETED;
+            }
 
             return "n/a";
 

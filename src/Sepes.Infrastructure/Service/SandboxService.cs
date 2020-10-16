@@ -348,7 +348,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     throw new NullReferenceException($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}, ResourceId: {curResource.Id}: Could not locate ANY database entry for ResourceGroupOperation");
                 }
-                else if (relevantOperation.Status == CloudResourceOperationState.NOT_STARTED  || relevantOperation.Status == CloudResourceOperationState.FAILED || String.IsNullOrWhiteSpace(relevantOperation.Status))
+                else if (relevantOperation.Status == CloudResourceOperationState.NEW  || relevantOperation.Status == CloudResourceOperationState.FAILED || String.IsNullOrWhiteSpace(relevantOperation.Status))
                 {
                     queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
                 }
