@@ -23,12 +23,12 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await db.Studies
                 .Include(s => s.StudyDatasets)
-                    .ThenInclude(sd => sd.Dataset)
-                .Include(s => s.Sandboxes)
+                    .ThenInclude(sd => sd.Dataset)                      
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)
                     .ThenInclude(sp => sp.Resources)
+                         .ThenInclude(sb => sb.Operations)
                 .FirstOrDefaultAsync(s => s.Id == studyId);
 
             if (studyFromDb == null)

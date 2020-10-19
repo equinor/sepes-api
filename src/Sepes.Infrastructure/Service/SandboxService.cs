@@ -98,7 +98,7 @@ namespace Sepes.Infrastructure.Service
 
             //TODO: Remember to consider templates specifed as argument
 
-            var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);            
+            var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
 
             var user = _userService.GetCurrentUser();
             sandbox.CreatedBy = user.UserName;
@@ -110,15 +110,15 @@ namespace Sepes.Infrastructure.Service
 
             // Get Dtos for arguments to sandboxWorkerService
             var studyDto = await _studyService.GetStudyByIdAsync(studyId);
-            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);          
+            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
 
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-           
+
             //This objects gets passed around
             var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
-          
+
             await CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
 
             return await GetSandboxDtoAsync(sandbox.Id);
@@ -151,7 +151,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
         {
-            _logger.LogInformation($"Creating basic sandbox resources for sandbox: {dto.SandboxName}. First creating Resource Group, other resources are created by worker");          
+            _logger.LogInformation($"Creating basic sandbox resources for sandbox: {dto.SandboxName}. First creating Resource Group, other resources are created by worker");
 
             await _sandboxResourceService.CreateSandboxResourceGroup(dto);
 
@@ -160,7 +160,7 @@ namespace Sepes.Infrastructure.Service
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = dto.SandboxId;
             queueParentItem.Description = $"Create basic resources for Sandbox: {dto.SandboxId}";
-          
+
             await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
             await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
             await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
@@ -176,15 +176,17 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount(dto.StudyName, dto.SandboxName);
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount, sandboxControlled: true, resourceName: resourceName);
+            var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id.Value;
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount, sandboxControlled: true, resourceName: resourceName, dependsOn: resourceGroupCreateOperation);
             dto.DiagnosticsStorage = resourceEntry;
+
         }
 
         async Task ScheduleCreationOfNetworkSecurityGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(dto.StudyName, dto.SandboxName);
-
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup, sandboxControlled: true, resourceName: nsgName);
+            var diagStorageAccountCreateOperation = dto.DiagnosticsStorage.Operations.FirstOrDefault().Id.Value;
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup, sandboxControlled: true, resourceName: nsgName, dependsOn: diagStorageAccountCreateOperation);
             dto.NetworkSecurityGroup = resourceEntry;
         }
 
@@ -197,19 +199,25 @@ namespace Sepes.Infrastructure.Service
             var networkSettings = new NetworkSettingsDto() { SandboxSubnetName = sandboxSubnetName };
             var networkSettingsString = SandboxResourceConfigStringSerializer.Serialize(networkSettings);
 
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork, sandboxControlled: true, resourceName: networkName, configString: networkSettingsString);
+            var nsgCreateOperation = dto.NetworkSecurityGroup.Operations.FirstOrDefault().Id.Value;
+
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork, sandboxControlled: true, resourceName: networkName, configString: networkSettingsString, dependsOn: nsgCreateOperation);
             dto.Network = resourceEntry;
         }
 
         async Task ScheduleCreationOfBastion(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string configString = null)
         {
-            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion, sandboxControlled: true, configString: configString);
-            dto.Bastion = resourceEntry;
-        }    
+            var vNetCreateOperation = dto.Network.Operations.FirstOrDefault().Id.Value;
 
-        async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, string configString = null)
+            var bastionName = AzureResourceNameUtil.Bastion(dto.StudyName, dto.SandboxName);
+
+            var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.Bastion, sandboxControlled: true, resourceName: bastionName, configString: configString, dependsOn: vNetCreateOperation);
+            dto.Bastion = resourceEntry;
+        }
+
+        async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, string configString = null, int dependsOn = 0)
         {
-            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString);
+            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
 
             return resourceEntry;
@@ -228,7 +236,7 @@ namespace Sepes.Infrastructure.Service
 
             // Run validations: (Check if ID is valid)
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
-            var sandboxFromDb = await _db.Sandboxes.Include(sb=> sb.Resources).ThenInclude(r=> r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
+            var sandboxFromDb = await _db.Sandboxes.Include(sb => sb.Resources).ThenInclude(r => r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
             {
@@ -246,7 +254,7 @@ namespace Sepes.Infrastructure.Service
 
             SandboxResource sandboxResourceGroup = null;
 
-            if(sandboxFromDb.Resources.Count > 0)
+            if (sandboxFromDb.Resources.Count > 0)
             {
                 //Mark all resources as deleted
                 foreach (var curResource in sandboxFromDb.Resources)
@@ -263,7 +271,7 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 if (sandboxResourceGroup == null)
-                {                   
+                {
                     throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
                 }
 
@@ -275,7 +283,8 @@ namespace Sepes.Infrastructure.Service
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
                     SandboxResourceId = sandboxResourceGroup.Id,
-                    Description = $"Delete resources for Sandbox {sandboxFromDb.Id}"
+                    Description = $"Delete resources for Sandbox {sandboxFromDb.Id}",
+                    MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
                 sandboxResourceGroup.Operations.Add(deleteOperation);
@@ -294,7 +303,7 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
-            }                 
+            }
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
 
@@ -315,18 +324,18 @@ namespace Sepes.Infrastructure.Service
 
             if (resourceGroupResource == null)
             {
-                throw new NullReferenceException($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}: Could not locate database entry for ResourceGroup");
+                throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate database entry for ResourceGroup"));
             }
 
             var resourceGroupResourceOperation = resourceGroupResource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
 
             if (resourceGroupResourceOperation == null)
             {
-                throw new NullReferenceException($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}: Could not locate ANY database entry for ResourceGroupOperation");
+                throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate ANY database entry for ResourceGroupOperation"));
             }
             else if (resourceGroupResourceOperation.OperationType != CloudResourceOperationType.CREATE && resourceGroupResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
             {
-                throw new Exception($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}: Could not locate RELEVANT database entry for ResourceGroupOperation");
+                throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate RELEVANT database entry for ResourceGroupOperation"));
             }
 
             //Rest of resources must have failed, cannot handle partial creation yet
@@ -346,30 +355,48 @@ namespace Sepes.Infrastructure.Service
 
                 if (relevantOperation == null)
                 {
-                    throw new NullReferenceException($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}, ResourceId: {curResource.Id}: Could not locate ANY database entry for ResourceGroupOperation");
+                    throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate ANY database entry for ResourceGroupOperation", curResource.Id));
                 }
-                else if (relevantOperation.Status == CloudResourceOperationState.NEW  || relevantOperation.Status == CloudResourceOperationState.FAILED || String.IsNullOrWhiteSpace(relevantOperation.Status))
+                else if (String.IsNullOrWhiteSpace(relevantOperation.Status) || relevantOperation.Status == CloudResourceOperationState.NEW || relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                 {
+                    _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Re-queing item. Previous status was {relevantOperation.Status}", curResource.Id));
                     queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
                 }
-                //else if(relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
-                //{
-                //    //Resource might be under creation or finished
-                //}
+                else if (relevantOperation.Status == CloudResourceOperationState.FAILED)
+                {
+                    _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Increasing retry count and re-queing item. Previous status was {relevantOperation.Status}", curResource.Id));
+                    relevantOperation.MaxTryCount += 3;
+                    await _db.SaveChangesAsync();
+                    queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
+                }
                 else
                 {
-                    throw new Exception($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}, ResourceId: {curResource.Id}: Could not locate RELEVANT database entry for ResourceGroupOperation");
+                    throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Could not locate RELEVANT database entry for ResourceGroupOperation", curResource.Id));
                 }
             }
 
             if (queueParentItem.Children.Count == 0)
             {
-                throw new Exception($"ReScheduleSandboxCreation. StudyId: {sandboxFromDb.StudyId}, SandboxId: {sandboxId}: Could not re-shedule creation. No relevant resource items found");
+                throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Could not re-shedule creation. No relevant resource items found"));
             }
             else
             {
                 await _provisioningQueueService.SendMessageAsync(queueParentItem);
             }
+        }
+
+        string ReScheduleLogPrefix(int studyId, int sandboxId, string logText, int resourceId = 0)
+        {
+            var logMessage = $"ReScheduleSandboxCreation | Study {studyId} | Sandbox {sandboxId}";
+
+            if (resourceId > 0)
+            {
+                logMessage += $" | Resource: {resourceId}";
+            }
+
+            logMessage += $" | {logText}";
+
+            return logMessage;
         }
 
         //public Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync()

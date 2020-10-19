@@ -21,15 +21,25 @@ namespace Sepes.Infrastructure.Service
           
         }
 
-
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
             var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.CustomConfiguration);
 
-            var vNet = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags);
-            var result = CreateResult(vNet);
+            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGrupName, parameters.Name);
+
+            if (vNetDto == null)
+            {
+                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags);
+            }
+            else
+            {
+                throw new NotImplementedException("Update Network not implemented");
+            }
+
+          
+            var crudResult = CreateResult(vNetDto);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
@@ -40,11 +50,19 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
 
-            await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNet.SandboxSubnetName, vNet.Network.Name);       
+            await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);       
 
-            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNet.Id}");
+            _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
-            return result;
+            return crudResult;
+        }
+
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CreateResult(vNetDto);
+            return crudResult;
+
         }
 
         CloudResourceCRUDResult CreateResult(AzureVNetDto networkDto)
@@ -112,6 +130,20 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
+        async Task<AzureVNetDto> GetResourceWrappedInDtoAsync(string resourceGroupName, string resourceName)
+        {
+            var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
+
+            if(resource == null)
+            {
+                return null;
+            }
+
+            var dto = new AzureVNetDto() { Network = resource, ProvisioningState = resource.Inner.ProvisioningState.Value };
+
+            return dto;
+        }
+
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
@@ -145,6 +177,8 @@ namespace Sepes.Infrastructure.Service
         {
             throw new NotImplementedException();
         }
+
+       
 
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)

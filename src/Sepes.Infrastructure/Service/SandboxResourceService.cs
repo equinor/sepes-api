@@ -92,13 +92,14 @@ namespace Sepes.Infrastructure.Service
             target.ResourceKey = source.Key;
         }
 
-        public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null)
+        public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
         {
-            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled, configString: configString);
+            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled,dependentOn: dependsOn, configString: configString);       
 
-            return await GetByIdAsync(newResource.Id);
+            var mappedToDto = MapEntityToDto(newResource);          
+
+            return mappedToDto;
         }
-
 
         async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string, string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
         {
@@ -128,6 +129,7 @@ namespace Sepes.Infrastructure.Service
                     OperationType = CloudResourceOperationType.CREATE,
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     DependsOnOperationId = dependentOn != 0 ? dependentOn: default(int?),
+                    MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                     }
                 },
                 CreatedBy = currentUser.UserName,
@@ -226,7 +228,8 @@ namespace Sepes.Infrastructure.Service
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
                     SandboxResourceId = resourceFromDb.Id,
-                    Description = deleteOperationDescription
+                    Description = deleteOperationDescription,
+                    MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
                 resourceFromDb.Operations.Add(deleteOperation);
@@ -303,7 +306,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<SandboxResourceDto> UpdateMissingDetailsAfterCreation(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
+        public async Task<SandboxResourceDto> UpdateResourceIdAndName(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
         {
 
             if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
@@ -319,10 +322,10 @@ namespace Sepes.Infrastructure.Service
 
             var resourceFromDb = await GetOrThrowAsync(resourceId);
 
-            if (String.IsNullOrWhiteSpace(resourceFromDb.ResourceId) == false && resourceFromDb.ResourceId != AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
-            {
-                throw new Exception($"Resource {resourceId} allredy has a foreign system id. This should not have occured ");
-            }
+            //if (String.IsNullOrWhiteSpace(resourceFromDb.ResourceId) == false && resourceFromDb.ResourceId != AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+            //{
+            //    throw new Exception($"Resource {resourceId} allredy has a foreign system id. This should not have occured ");
+            //}
 
             resourceFromDb.ResourceId = resourceIdInForeignSystem;
 

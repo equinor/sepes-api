@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -46,11 +46,18 @@ namespace Sepes.Infrastructure.Service
                 vmSettings.Username, password,
                 performanceProfile, operatingSystem, distro, parameters.Tags,
                 vmSettings.DiagnosticStorageAccountName);
+
             var result = CreateResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
 
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
+            return result;
+        }
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var vm = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var result = CreateResult(vm);
             return result;
         }
 
@@ -239,7 +246,7 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");
-                provisioningState = CloudResourceProvisioningStates.DELETED;
+                provisioningState = CloudResourceProvisioningStates.NOTFOUND;
                 //Probably allready deleted
 
             }
@@ -275,10 +282,20 @@ namespace Sepes.Infrastructure.Service
             //Delete all the disks
             await DeleteDiskById(vm.OSDiskId);
 
+            foreach (var curNic in vm.NetworkInterfaceIds)
+            {
+                await DeleteNic(curNic);
+            }
+
             foreach (var curDiskKvp in vm.DataDisks)
             {
                await  DeleteDiskById(curDiskKvp.Value.Id);
             }           
+        }
+
+        public async Task DeleteNic(string id)
+        {
+            await _azure.NetworkInterfaces.DeleteByIdAsync(id);
         }
 
         public async Task DeleteDiskById(string id)
@@ -327,5 +344,6 @@ namespace Sepes.Infrastructure.Service
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
+
     }
 }

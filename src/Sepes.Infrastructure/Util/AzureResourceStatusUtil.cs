@@ -25,13 +25,13 @@ namespace Sepes.Infrastructure.Util
             }
             else if (lastOperation.Status == CloudResourceOperationState.FAILED)
             {
-                if(lastOperation.TryCount < CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+                if(lastOperation.TryCount < lastOperation.MaxTryCount)
                 {
-                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT})";
+                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{lastOperation.MaxTryCount})";
                 }
                 else
                 {
-                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT})";
+                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{lastOperation.MaxTryCount})";
                 }             
             }          
             else if (lastOperation.OperationType == CloudResourceOperationType.DELETE && lastOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.OK;
             }
-            else if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.DELETED)
+            else if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.NOTFOUND)
             {
                 return CloudResourceStatus.DELETED;
             }
