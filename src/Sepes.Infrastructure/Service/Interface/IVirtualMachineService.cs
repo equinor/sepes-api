@@ -15,5 +15,9 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId);
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
+
+        Task<List<VmSizeDto>> AvailableSizes();
+
+        Task<List<VmDiskDto>> AvailableDisks();
     }
 }

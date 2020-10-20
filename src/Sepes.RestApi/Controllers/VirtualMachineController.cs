@@ -54,5 +54,19 @@ namespace Sepes.RestApi.Controllers
             var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId);
             return new JsonResult(virtualMachinesForSandbox);
         }
+
+        [HttpGet("sizes/")]
+        public async Task<IActionResult> GetAvailableVmSizes()
+        {
+            var availableSizes = await _vmService.AvailableSizes();
+            return new JsonResult(availableSizes);
+        }
+
+        [HttpGet("disks/")]
+        public async Task<IActionResult> GetAvailableDisks()
+        {
+            var availableSizes = await _vmService.AvailableDisks();
+            return new JsonResult(availableSizes);
+        }
     }
 }
