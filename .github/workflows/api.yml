@@ -1,34 +1,39 @@
-# This is a basic workflow to help you get started with Actions
-
-name: CI
-
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
+name: API
 on:
   repository_dispatch:
   pull_request:
-  push:
-    branches:
+    branches: 
       - master
+      - develop
+    paths:
+      - src/Sepes.RestApi/*
+      - .github/workflows/api.yml
+      - Database/*
+      - src/Dockerfile
+      - tools/*
+  push:
+    paths:
+      - src/Sepes.RestApi/*
+      - .github/workflows/api.yml
+      - Database/*
+      - src/Dockerfile
+      - tools/*
 
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
+    # Docker login
     - uses: azure/docker-login@v1
       with:
         login-server: ${{ secrets.ACR_URL }}
         username: ${{ secrets.ACR_USERNAME }}
         password: ${{ secrets.ACR_PASSWORD }}
+
+    # Builds the Sepes API
     - name: docker build
       run: |
         docker build src -t ${{ secrets.ACR_URL }}/sepes-api:latest

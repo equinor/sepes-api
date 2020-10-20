@@ -20,14 +20,32 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
-            _logger.LogInformation($"Creating Network Security Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+
+            var nsg = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+
+            if(nsg == null)
+            {
+                _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}. Creating!");
+
+                nsg = await CreateSecurityGroup(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags);
+            }          
           
-            var nsg = await CreateSecurityGroup(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags);
             var result = CreateResult(nsg);
 
-            _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxName}! Id: {nsg.Id}");
+            _logger.LogInformation($"Done ensuring Network Security Group exists for sandbox with Id: {parameters.SandboxName}! Id: {nsg.Id}");
+
+            return result;
+        }
+
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var nsg = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+
+            var result = CreateResult(nsg);
+
             return result;
         }
 
@@ -112,5 +130,7 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
+
+     
     }
 }

@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Util
 
         public static string Bastion(string studyName, string sandboxName) => AzureResourceNameConstructor("bastion-", studyName, sandboxName);
 
-        public static string BastionPublicIp(string studyName, string sandboxName) => AzureResourceNameConstructor("pip-bastion-", studyName, sandboxName);
+        public static string BastionPublicIp(string bastionName) => EnsureMaxLength($"pip-{bastionName}", 64);
 
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
@@ -38,6 +38,16 @@ namespace Sepes.Infrastructure.Util
                 return $"st{sandboxName.ToLower().Substring(0, 18)}{shortGuid}";
             }
             return $"st{sandboxName.ToLower()}{shortGuid}";
+        }
+
+        public static string EnsureMaxLength(string potentialName, int maxLength)
+        {
+            if(potentialName.Length > maxLength)
+            {
+                return potentialName.Substring(0, maxLength);
+            }
+
+            return potentialName;
         }
 
         public static string DiagnosticsStorageAccount(string studyName, string sandboxName)

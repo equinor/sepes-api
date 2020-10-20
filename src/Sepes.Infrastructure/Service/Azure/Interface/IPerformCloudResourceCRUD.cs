@@ -6,7 +6,9 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IPerformCloudResourceCRUD
     {
-        Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters);
+
+        Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters);
 
         //Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters);
 

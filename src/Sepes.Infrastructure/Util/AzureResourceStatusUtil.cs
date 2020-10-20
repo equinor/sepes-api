@@ -8,9 +8,9 @@ namespace Sepes.Infrastructure.Util
     {
         public static string ResourceStatus(SandboxResource resource)
         {
-            if (resource.Operations == null || resource.Operations != null && resource.Operations.Count == 0)
+            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
             {
-                return "n/a";
+                return "No operations found";
             }
 
             var lastOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
@@ -23,15 +23,15 @@ namespace Sepes.Infrastructure.Util
             {
                 return CloudResourceStatus.IN_QUEUE;
             }
-            else if (lastOperation.OperationType == CloudResourceOperationState.FAILED)
+            else if (lastOperation.Status == CloudResourceOperationState.FAILED)
             {
-                if(lastOperation.TryCount < CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+                if(lastOperation.TryCount < lastOperation.MaxTryCount)
                 {
-                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                    return $"{CloudResourceStatus.RETRYING} ({lastOperation.TryCount}/{lastOperation.MaxTryCount})";
                 }
                 else
                 {
-                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{CloudResourceConstants.RESOURCE_MAX_TRY_COUNT}";
+                    return $"{CloudResourceStatus.FAILED} ({lastOperation.TryCount}/{lastOperation.MaxTryCount})";
                 }             
             }          
             else if (lastOperation.OperationType == CloudResourceOperationType.DELETE && lastOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
@@ -42,6 +42,10 @@ namespace Sepes.Infrastructure.Util
             if(resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
             {
                 return CloudResourceStatus.OK;
+            }
+            else if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.NOTFOUND)
+            {
+                return CloudResourceStatus.DELETED;
             }
 
             return "n/a";

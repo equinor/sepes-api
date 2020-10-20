@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -33,10 +33,17 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
 
-            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.StudyName, parameters.SandboxName, subnetId, parameters.Tags);
+            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, subnetId, parameters.Tags);
             var result = CreateResult(bastionHost);
 
             _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
+            return result;
+        }
+
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var bastion = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var result = CreateResult(bastion);
             return result;
         }
 
@@ -49,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-          await Delete(parameters.ResourceGrupName, parameters.Name);
+            await Delete(parameters.ResourceGrupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
             var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
@@ -57,9 +64,9 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string studyName, string sandboxName, string subnetId, Dictionary<string, string> tags)
+        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags)
         {
-            var publicIpName = AzureResourceNameUtil.BastionPublicIp(studyName, sandboxName);
+            var publicIpName = AzureResourceNameUtil.BastionPublicIp(bastionName);
 
             var pip = await _azure.PublicIPAddresses.Define(publicIpName)
              .WithRegion(region)
@@ -72,8 +79,6 @@ namespace Sepes.Infrastructure.Service
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
-
-                var bastionName = AzureResourceNameUtil.Bastion(studyName, sandboxName);
 
                 var ipConfigs = new List<BastionHostIPConfiguration> { new BastionHostIPConfiguration()
                         {
@@ -151,7 +156,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-       
+
     }
 
 }
