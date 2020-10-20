@@ -75,6 +75,11 @@ namespace Sepes.Infrastructure.Service
                 itemFromDb.Resource.LastKnownProvisioningState = updatedProvisioningState;
                 itemFromDb.Resource.Updated = DateTime.UtcNow;
                 itemFromDb.Resource.UpdatedBy = currentUser.UserName;
+
+                if(updatedProvisioningState == CloudResourceOperationState.DONE_SUCCESSFUL)
+                {
+                    itemFromDb.LatestError = null;
+                }
             }
 
             await _db.SaveChangesAsync();
@@ -82,7 +87,7 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(itemFromDb.Id);
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status)
+        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status, string errorMessage = null)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -91,6 +96,12 @@ namespace Sepes.Infrastructure.Service
             itemFromDb.TryCount++;
             itemFromDb.Updated = DateTime.UtcNow;
             itemFromDb.UpdatedBy = currentUser.UserName;
+
+            if (!String.IsNullOrWhiteSpace(errorMessage))
+            {
+                itemFromDb.LatestError = errorMessage;
+            }
+
             await _db.SaveChangesAsync();
 
             return await GetByIdAsync(itemFromDb.Id);

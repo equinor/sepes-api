@@ -275,6 +275,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("LatestError")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MaxTryCount")
                         .HasColumnType("int");
 

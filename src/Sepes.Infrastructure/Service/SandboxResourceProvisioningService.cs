@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Service
 
                             currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
                             await _workQueue.DeleteMessageAsync(queueParentItem);
-                            deleteFromQueueAfterCompletion = false; //Has allreasdy been done
+                            deleteFromQueueAfterCompletion = false; //Has allready been done
                             break;
                         }
                         else if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && MightBeInProgressByAnotherThread(currentResourceOperation))
@@ -112,7 +112,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (currentResourceOperation != null)
                         {
-                            await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCountAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+                            await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCountAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED, AzureResourceUtil.CreateResourceOperationErrorMessage(ex));
                         }
 
                         throw;
