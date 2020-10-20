@@ -1,4 +1,5 @@
-﻿using Azure.Storage.Queues.Models;
+﻿
+using Azure.Storage.Queues.Models;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service;

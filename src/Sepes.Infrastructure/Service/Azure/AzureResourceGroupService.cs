@@ -3,8 +3,8 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -33,6 +33,14 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Done creating Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
             return crudResult;   
+        }
+
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var resourceGroup = await GetResourceAsync(parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
+            crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
+            return crudResult;
         }
 
         public async Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
@@ -56,8 +64,8 @@ namespace Sepes.Infrastructure.Service
         {
             await Delete(parameters.ResourceGrupName);
 
-            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            //var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
             return crudResult;
         }
 
@@ -83,7 +91,7 @@ namespace Sepes.Infrastructure.Service
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceGroupName);
+                return CloudResourceProvisioningStates.NOTFOUND;
             }
 
             return resource.ProvisioningState;
@@ -101,7 +109,15 @@ namespace Sepes.Infrastructure.Service
             }
             catch (System.Exception ex)
             {
-                _logger.LogCritical(ex, $"Deleting resource group {resourceGroupName} failed");
+                if(ex.Message.ToLower().Contains("could not be found"))
+                {
+                    //Allready deleted
+                    _logger.LogWarning(ex, $"Deleting resource group {resourceGroupName} failed because it was not found. Assuming allready deleted");
+                }
+                else
+                {
+                    throw;
+                }               
             }        
         }
 
@@ -133,6 +149,6 @@ namespace Sepes.Infrastructure.Service
             _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-
+      
     }
 }

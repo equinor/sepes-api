@@ -7,6 +7,7 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -25,19 +26,11 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> Create(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
         {
             _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
-
-            string diagStorageAccountName = vmSettings.DiagnosticStorageAccountName;
-
-            string networkName = vmSettings.NetworkName;
-
-            string subnetName = vmSettings.SubnetName;
-
-            string username = vmSettings.Username;
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);           
 
             var passwordReference = vmSettings.Password;
             string password = await GetPasswordFromKeyVault(passwordReference);
@@ -46,12 +39,25 @@ namespace Sepes.Infrastructure.Service
             string operatingSystem = vmSettings.OperatingSystem;
             string distro = vmSettings.Distro;
 
-            var createdVm = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkName, subnetName, username, password, performanceProfile, operatingSystem, distro, parameters.Tags, diagStorageAccountName);
+            var createdVm = await Create(parameters.Region,
+                parameters.ResourceGrupName,
+                parameters.Name,
+                vmSettings.NetworkName, vmSettings.SubnetName,
+                vmSettings.Username, password,
+                performanceProfile, operatingSystem, distro, parameters.Tags,
+                vmSettings.DiagnosticStorageAccountName);
+
             var result = CreateResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
 
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
+            return result;
+        }
+        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            var vm = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var result = CreateResult(vm);
             return result;
         }
 
@@ -88,7 +94,11 @@ namespace Sepes.Infrastructure.Service
             // Get diagnostic storage account reference for boot diagnostics
             var diagStorage = _azure.StorageAccounts.GetByResourceGroup(resourceGroupName, diagStorageAccountName);
 
+            AzureResourceUtil.ThrowIfResourceIsNull(diagStorage, AzureResourceType.StorageAccount, diagStorageAccountName, "Create VM failed");
+
             var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, primaryNetworkName);
+
+            AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
                                     .WithRegion(region)
@@ -123,6 +133,7 @@ namespace Sepes.Infrastructure.Service
                     break;
             }
             IWithCreate vmWithOS;
+
             if (os.ToLower().Equals("windows"))
             {
                 vmWithOS = CreateWindowsVm(vmCreatable, distro, userName, password);
@@ -137,6 +148,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var vmWithSize = vmWithOS.WithSize(machineSize);
+
             vm = await vmWithSize
                 .WithBootDiagnostics(diagStorage)
                 .WithTags(tags)
@@ -221,25 +233,74 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-            await Delete(parameters.ResourceGrupName, parameters.Name);
+            string provisioningState = null;
 
-            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
-            return crudResult;
+            try
+            {
+                await Delete(parameters.ResourceGrupName, parameters.Name);
+
+                //Also remember to delete osdisk
+                provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+              
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");
+                provisioningState = CloudResourceProvisioningStates.NOTFOUND;
+                //Probably allready deleted
+
+            }
+
+           return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);        
 
         }
-
 
 
         public async Task Delete(string resourceGroupName, string virtualMachineName)
         {
             var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
 
+            if(vm == null)
+            {
+                _logger.LogWarning($"Virtual Machine {virtualMachineName} not found in RG {resourceGroupName}");
+                return;
+            }           
+
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
 
+           //var disksToDelete = new List<string>();
+           // disksToDelete.Add(vm.OSDiskId);
+            
+           // foreach(var curDiskKvp in vm.DataDisks)
+           // {
+           //     disksToDelete.Add(curDiskKvp.Value.Id);
+           // }
+
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
-            return;
+
+            //Delete all the disks
+            await DeleteDiskById(vm.OSDiskId);
+
+            foreach (var curNic in vm.NetworkInterfaceIds)
+            {
+                await DeleteNic(curNic);
+            }
+
+            foreach (var curDiskKvp in vm.DataDisks)
+            {
+               await  DeleteDiskById(curDiskKvp.Value.Id);
+            }           
+        }
+
+        public async Task DeleteNic(string id)
+        {
+            await _azure.NetworkInterfaces.DeleteByIdAsync(id);
+        }
+
+        public async Task DeleteDiskById(string id)
+        {
+            await _azure.Disks.DeleteByIdAsync(id);
         }
 
         public async Task<IVirtualMachine> GetResourceAsync(string resourceGroupName, string resourceName)
@@ -283,5 +344,6 @@ namespace Sepes.Infrastructure.Service
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
+
     }
 }

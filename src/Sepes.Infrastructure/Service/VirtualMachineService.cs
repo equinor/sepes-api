@@ -118,14 +118,13 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public Task<VmDto> DeleteAsync(int id)
+        public async Task<VmDto> DeleteAsync(int id)
         {
-            //Remove sandbox resource (mark as deleted)
-            //Remember to add to queue
-            //Remember to check dependency in queue
-            //Also remember to delete osdisk
+           var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
+     
+            var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
 
-            throw new NotImplementedException();
+            return dtoMappedFromResource;
         }
 
 

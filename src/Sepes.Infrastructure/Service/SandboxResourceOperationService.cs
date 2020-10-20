@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -126,7 +127,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<bool> ExistsPreceedingUnfinishedOperationsAsync(SandboxResourceOperationDto operationDto)
         {
-           return await _db.SandboxResourceOperations.Where(o => o.SandboxResourceId == operationDto.Resource.Id.Value && o.BatchId != operationDto.BatchId && o.Created < operationDto.Created && (o.Status == CloudResourceOperationState.IN_PROGRESS || o.Status == CloudResourceOperationState.NOT_STARTED)).AnyAsync();
+            var querable = GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(operationDto.Resource.Id.Value, operationDto.BatchId, operationDto.Created);
+            return await querable.AnyAsync();            
         }
 
         public async Task<bool> OperationIsFinishedAndSucceededAsync(int operationId)
@@ -134,6 +136,51 @@ namespace Sepes.Infrastructure.Service
             var itemFromDb = await GetOrThrowAsync(operationId);
 
             return itemFromDb.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
+        }
+    
+        public async Task<List<SandboxResourceOperation>> GetUnfinishedOperations(int resourceId)
+        {
+            var preceedingOpsQueryable = GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(resourceId);
+            return await preceedingOpsQueryable.ToListAsync();
+        }
+
+        public async Task<List<SandboxResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId)
+        {
+            var unfinishedOps = await GetUnfinishedOperations(resourceId);
+
+            if(unfinishedOps != null && unfinishedOps.Count > 0)
+            {
+                var currentUser = _userService.GetCurrentUser();
+
+                foreach (var curOps in unfinishedOps)
+                {
+                    curOps.Status = CloudResourceOperationState.ABORTED;
+                    curOps.Updated = DateTime.UtcNow;
+                    curOps.UpdatedBy = currentUser.UserName;
+                }
+
+                await _db.SaveChangesAsync();
+            }          
+
+            return unfinishedOps;
+        }
+
+        public async Task<SandboxResourceOperation> GetUnfinishedDeleteOperation(int resourceId)
+        {
+            return await _db.SandboxResourceOperations
+               .Where(o => o.SandboxResourceId == resourceId           
+               && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
+               ).FirstOrDefaultAsync();
+        }
+
+        IQueryable<SandboxResourceOperation> GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
+        {
+            return _db.SandboxResourceOperations
+                .Where(o => o.SandboxResourceId == resourceId
+                && (batchId == null || (batchId != null && o.BatchId != batchId))
+                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
+                );
         }
     }
 }
