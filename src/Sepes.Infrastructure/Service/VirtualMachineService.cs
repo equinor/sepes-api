@@ -50,6 +50,8 @@ namespace Sepes.Infrastructure.Service
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
 
+            await _sandboxResourceService.ValidateNameThrowIfInvalid(virtualMachineName);
+
             var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
 
             var region = RegionStringConverter.Convert(userInput.Region);

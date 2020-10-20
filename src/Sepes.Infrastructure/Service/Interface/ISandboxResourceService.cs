@@ -28,5 +28,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
         Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
+
+        Task ValidateNameThrowIfInvalid(string resourceName);
     }
 }

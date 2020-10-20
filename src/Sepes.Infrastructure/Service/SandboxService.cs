@@ -85,6 +85,12 @@ namespace Sepes.Infrastructure.Service
             // Verify that study with that id exists
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
+            //Check uniqueness of name
+            if(_db.Sandboxes.Where(sb=> sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).Any())
+            {
+                throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists");
+            }
+
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
             {

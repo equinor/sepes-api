@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Service
         public async Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto)
         {
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.StudyName, dto.SandboxName);
-            var resourceEntity = await AddInternal(dto.BatchId, dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, dto.Tags, resourceName: resourceGroupName);
+            var resourceEntity = await AddInternal(dto.BatchId, dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, resourceGroupName, dto.Tags);
 
             var resourceCreateOperation = resourceEntity.Operations.FirstOrDefault();
             await _sandboxResourceOperationService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var resourceEntity = await AddInternal(Guid.NewGuid().ToString(),
                     sandboxId,
-                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, tags, resourceName: vmName, false, dependentOn: dependsOn, configString: configString);
+                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, vmName, tags, false, dependentOn: dependsOn, configString: configString);
 
                 return MapEntityToDto(resourceEntity);
             }
@@ -94,15 +94,25 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
         {
-            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString);
+            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, resourceName, dto.Tags, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString);
 
             var mappedToDto = MapEntityToDto(newResource);
 
             return mappedToDto;
         }
 
-        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string, string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
+        public async Task ValidateNameThrowIfInvalid(string resourceName)
         {
+            if(await _db.SandboxResources.Where(r=> r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
+            {
+                throw new Exception($"Resource with name {resourceName} allready exists!");
+            }
+        }
+
+        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, string resourceName, Dictionary<string, string> tags, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
+        {
+           await ValidateNameThrowIfInvalid(resourceName);
+
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
