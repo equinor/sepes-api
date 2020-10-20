@@ -279,11 +279,12 @@ namespace Sepes.Infrastructure.Service
 
                 var deleteOperation = new SandboxResourceOperation()
                 {
-                    BatchId = Guid.NewGuid().ToString(),
+                    CreatedBy = user.UserName,
+                BatchId = Guid.NewGuid().ToString(),
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = sandboxResourceGroup.Id,
-                    Description = $"Delete resources for Sandbox {sandboxFromDb.Id}",
+                    SandboxResourceId = sandboxResourceGroup.Id,             
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType, CloudResourceOperationType.DELETE, sandboxResourceGroup.SandboxId) + ". (Delete of SandBox resource group and all resources within)",
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 

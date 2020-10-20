@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
             var resourceCreateOperation = resourceEntity.Operations.FirstOrDefault();
             await _sandboxResourceOperationService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
 
-            dto.ResourceGroup = MapEntityToDto(resourceEntity);          
+            dto.ResourceGroup = MapEntityToDto(resourceEntity);
 
             var azureResourceGroup = await _resourceGroupService.Create(resourceEntity.ResourceName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
@@ -94,9 +94,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
         {
-            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled,dependentOn: dependsOn, configString: configString);       
+            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString);
 
-            var mappedToDto = MapEntityToDto(newResource);          
+            var mappedToDto = MapEntityToDto(newResource);
 
             return mappedToDto;
         }
@@ -125,8 +125,10 @@ namespace Sepes.Infrastructure.Service
                 Operations = new List<SandboxResourceOperation> {
                     new SandboxResourceOperation()
                     {
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(type, CloudResourceOperationType.CREATE, sandboxId),
                     BatchId = batchId,
                     OperationType = CloudResourceOperationType.CREATE,
+                    CreatedBy = currentUser.UserName,
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     DependsOnOperationId = dependentOn != 0 ? dependentOn: default(int?),
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
@@ -193,7 +195,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResources.Include(r=> r.Operations).FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources.Include(r => r.Operations).FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
@@ -207,7 +209,7 @@ namespace Sepes.Infrastructure.Service
         {
             var user = _userService.GetCurrentUser();
 
-            var resourceFromDb =  await GetOrThrowAsync(id);
+            var resourceFromDb = await GetOrThrowAsync(id);
 
             var deleteOperationDescription = $"Delete resource {id} ({resourceFromDb.ResourceType})";
 
@@ -215,7 +217,7 @@ namespace Sepes.Infrastructure.Service
 
             await _sandboxResourceOperationService.AbortAllUnfinishedCreateOrUpdateOperations(id);
 
-            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);          
+            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);
 
             if (deleteOperation == null)
             {
@@ -223,12 +225,12 @@ namespace Sepes.Infrastructure.Service
 
                 deleteOperation = new SandboxResourceOperation()
                 {
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(resourceFromDb.ResourceType, CloudResourceOperationType.DELETE, resourceFromDb.SandboxId, id),
                     CreatedBy = user.UserName,
-                    BatchId = Guid.NewGuid().ToString(),
+                    BatchId = Guid.NewGuid().ToString(),                   
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = resourceFromDb.Id,
-                    Description = deleteOperationDescription,
+                    SandboxResourceId = resourceFromDb.Id,                   
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
@@ -269,7 +271,7 @@ namespace Sepes.Infrastructure.Service
 
             var user = _userService.GetCurrentUser();
 
-            MarkAsDeletedInternal(resourceEntity, user.UserName);       
+            MarkAsDeletedInternal(resourceEntity, user.UserName);
 
             await _db.SaveChangesAsync();
 
@@ -279,7 +281,7 @@ namespace Sepes.Infrastructure.Service
         SandboxResource MarkAsDeletedInternal(SandboxResource resource, string deletedBy)
         {
             resource.DeletedBy = deletedBy;
-            resource.Deleted = DateTime.UtcNow;      
+            resource.Deleted = DateTime.UtcNow;
 
             return resource;
         }

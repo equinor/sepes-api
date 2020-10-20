@@ -184,6 +184,8 @@ namespace Sepes.Infrastructure.Service
             }          
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
+                currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+
                 if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
                 {
                     currentCrudResult = await service.Delete(currentCrudInput);
