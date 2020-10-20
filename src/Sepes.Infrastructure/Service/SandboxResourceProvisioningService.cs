@@ -129,7 +129,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}");
+                _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}, message description: {queueParentItem.Description}. See exception info for details ");
             }
         }       
 

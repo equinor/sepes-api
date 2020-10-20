@@ -111,9 +111,9 @@ namespace Sepes.Infrastructure.Service
         {
             var result = new List<VmSizeDto>();
 
-            result.Add(new VmSizeDto() { Key = "Standard_E2_v4", DisplayValue = "Standard_E2_v4",  Description ="Description goes here", Category = "Memory" });
-            result.Add(new VmSizeDto() { Key = "Standard_E4_v4", DisplayValue = "Standard_E4_v4", Description = "Description goes here", Category = "Memory" });
-            result.Add(new VmSizeDto() { Key = "Standard_E8_v4", DisplayValue = "Standard_E8_v4", Description = "Description goes here", Category = "Memory" });
+            result.Add(new VmSizeDto() { Key = "Standard_E2_v3", DisplayValue = "Standard_E2_v3",  Description ="Description goes here", Category = "Memory" });
+            result.Add(new VmSizeDto() { Key = "Standard_E4_v3", DisplayValue = "Standard_E4_v3", Description = "Description goes here", Category = "Memory" });
+            result.Add(new VmSizeDto() { Key = "Standard_E8_v3", DisplayValue = "Standard_E8_v3", Description = "Description goes here", Category = "Memory" });
 
             result.Add(new VmSizeDto() { Key = "Standard_NV8as_v4", DisplayValue = "Standard_NV8as_v4", Description = "Description goes here", Category = "Gpu" });
 
