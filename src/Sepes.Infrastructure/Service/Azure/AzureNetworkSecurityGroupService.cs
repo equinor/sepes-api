@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -20,7 +21,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -30,7 +31,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}. Creating!");
 
-                nsg = await CreateSecurityGroup(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags);
+                nsg = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags, cancellationToken);
             }          
           
             var result = CreateResult(nsg);
@@ -51,7 +52,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-            await DeleteSecurityGroup(parameters.ResourceGrupName, parameters.Name);
+            await Delete(parameters.ResourceGrupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
             var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
@@ -72,21 +73,21 @@ namespace Sepes.Infrastructure.Service
         //    return await CreateSecurityGroup(region, resourceGroupName, nsgName, tags);
         //}
 
-        public async Task<INetworkSecurityGroup> CreateSecurityGroup(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags)
+        public async Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {
             var nsg = await _azure.NetworkSecurityGroups
                 .Define(nsgName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithTags(tags)
-                .CreateAsync();
+                .CreateAsync(cancellationToken);
             return nsg;
 
             //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
             // await this.NsgApplyBaseRules(nsg);
         }
 
-        public async Task DeleteSecurityGroup(string resourceGroupName, string securityGroupName)
+        public async Task Delete(string resourceGroupName, string securityGroupName)
         {
             var resource = await GetResourceAsync(resourceGroupName, securityGroupName);
 

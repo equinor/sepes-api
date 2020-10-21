@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +11,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
                 vmSettings.NetworkName, vmSettings.SubnetName,
                 vmSettings.Username, password,
                 vmSize, operatingSystem, distro, parameters.Tags,
-                vmSettings.DiagnosticStorageAccountName);
+                vmSettings.DiagnosticStorageAccountName, cancellationToken);
 
             if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
             {
@@ -100,7 +100,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IVirtualMachine vm;
 
@@ -142,7 +142,7 @@ namespace Sepes.Infrastructure.Service
             vm = await vmWithSize
                 .WithBootDiagnostics(diagStorage)
                 .WithTags(tags)
-                .CreateAsync();
+                .CreateAsync(cancellationToken);
 
             return vm;
         

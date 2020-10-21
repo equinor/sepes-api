@@ -373,6 +373,21 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
+        public async Task<bool> ResourceIsDeleted(int resourceId)
+        {
+            var resource = await _db.SandboxResources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
 
+            if(resource == null)
+            {
+                return true;
+            }
+
+            if (resource.Deleted.HasValue || !String.IsNullOrWhiteSpace(resource.DeletedBy) )
+            {
+                return true;
+            } 
+            
+            return false;
+        }
     }
 }

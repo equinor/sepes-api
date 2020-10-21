@@ -4,6 +4,8 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Interface;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -20,10 +22,10 @@ namespace Sepes.Infrastructure.Service
             _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
-        public async Task SendMessageAsync(ProvisioningQueueParentDto message)
+        public async Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Queue: Adding message: {message.Description}, having {message.Children.Count} children");
-            await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message);
+            await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message, visibilityTimeout, cancellationToken);
         }
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.

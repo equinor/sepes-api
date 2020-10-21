@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -131,7 +132,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}, message description: {queueParentItem.Description}. See exception info for details ");
             }
-        }       
+        }
 
         async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
         {
@@ -142,7 +143,7 @@ namespace Sepes.Infrastructure.Service
             //Update operation with request id and "in progress" state
 
             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Setting operation to In Progress");
-          
+
 
             var service = AzureResourceServiceResolver.GetCRUDService(_serviceProvider, resourceType);
 
@@ -178,10 +179,26 @@ namespace Sepes.Infrastructure.Service
                 {
                     currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with create");
-                    currentCrudResult = await service.EnsureCreatedAndConfigured(currentCrudInput);
+
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    var currentCrudResultTask = service.EnsureCreatedAndConfigured(currentCrudInput, cancellationTokenSource.Token);
+
+                    while (!currentCrudResultTask.IsCompleted)
+                    { 
+                        if (await _sandboxResourceService.ResourceIsDeleted(resource.Id.Value))
+                        {
+                            cancellationTokenSource.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                    }
+
+                    currentCrudResult = currentCrudResultTask.Result;
+
                     await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
                 }
-            }          
+            }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
                 currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);

@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -18,7 +19,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -45,7 +46,7 @@ namespace Sepes.Infrastructure.Service
                     .WithOnlyHttpsTraffic()
                     .WithSku(StorageAccountSkuType.Standard_LRS)
                     .WithTags(parameters.Tags)
-                    .CreateAsync();
+                    .CreateAsync(cancellationToken);
 
                 _logger.LogInformation($"Done creating storage account");
             }           

@@ -30,5 +30,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
 
         Task ValidateNameThrowIfInvalid(string resourceName);
+
+        Task<bool> ResourceIsDeleted(int resourceId);
     }
 }

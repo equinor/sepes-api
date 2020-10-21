@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -22,7 +23,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -33,7 +34,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
 
-            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, subnetId, parameters.Tags);
+            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
             var result = CreateResult(bastionHost);
 
             _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
@@ -64,7 +65,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags)
+        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {
             var publicIpName = AzureResourceNameUtil.BastionPublicIp(bastionName);
 
@@ -74,7 +75,7 @@ namespace Sepes.Infrastructure.Service
              .WithStaticIP()
              .WithSku(PublicIPSkuType.Standard)
              .WithTags(tags)
-             .CreateAsync();
+             .CreateAsync(cancellationToken);
 
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
@@ -96,7 +97,7 @@ namespace Sepes.Infrastructure.Service
                     Tags = tags
                 };
 
-                var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion);
+                var createdBastion = await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastionName, bastion, cancellationToken);
 
                 return createdBastion;
             }
