@@ -145,7 +145,10 @@ namespace Sepes.Infrastructure.Service
                 .CreateAsync();
 
             return vm;
+        
         }
+
+
 
         private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
@@ -254,15 +257,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
-
-            //var disksToDelete = new List<string>();
-            // disksToDelete.Add(vm.OSDiskId);
-
-            // foreach(var curDiskKvp in vm.DataDisks)
-            // {
-            //     disksToDelete.Add(curDiskKvp.Value.Id);
-            // }
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);        
 
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
 

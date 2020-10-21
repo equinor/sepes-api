@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -86,7 +87,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
             //Check uniqueness of name
-            if(_db.Sandboxes.Where(sb=> sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).Any())
+            if (_db.Sandboxes.Where(sb => sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).Any())
             {
                 throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists");
             }
@@ -237,10 +238,11 @@ namespace Sepes.Infrastructure.Service
             var resourcesFiltered = sandboxFromDb.Resources
                 .Where(r => !r.Deleted.HasValue
                 || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
-                
+
                 ).ToList();
 
-            var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);           
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);
+                       
 
             return resourcesMapped;
         }
@@ -295,10 +297,10 @@ namespace Sepes.Infrastructure.Service
                 var deleteOperation = new SandboxResourceOperation()
                 {
                     CreatedBy = user.UserName,
-                BatchId = Guid.NewGuid().ToString(),
+                    BatchId = Guid.NewGuid().ToString(),
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = sandboxResourceGroup.Id,             
+                    SandboxResourceId = sandboxResourceGroup.Id,
                     Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType, CloudResourceOperationType.DELETE, sandboxResourceGroup.SandboxId) + ". (Delete of SandBox resource group and all resources within)",
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };

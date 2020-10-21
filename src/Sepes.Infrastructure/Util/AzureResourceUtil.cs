@@ -1,4 +1,7 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Text;
@@ -45,6 +48,24 @@ namespace Sepes.Infrastructure.Util
             }
 
             return messageBuilder.ToString();
+        }
+
+        public static string CreateResourceLink(IConfiguration config, SandboxResource resource)
+        {
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
+
+            if (String.IsNullOrWhiteSpace(resource.ResourceId))
+            {
+                throw new Exception($"Id is empty for Resource {resource.ResourceId}");
+            }
+
+            return CreateResourceLink(domain, resource.ResourceId);
+        }
+
+        public static string CreateResourceLink(string domain, string resourceId)
+        {
+            var azureUrlPart = "https://portal.azure.com/#@";
+            return $"{azureUrlPart}{domain}/resource{resourceId}";
         }
     }
 }
