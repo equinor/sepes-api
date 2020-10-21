@@ -26,8 +26,7 @@ namespace Sepes.Infrastructure.Util
             }
 
             if (string.IsNullOrWhiteSpace(operation.Status) || operation.Status == CloudResourceOperationState.NEW)
-            {
-                //Creating (queued) or Updating (queued) or "Deleting (queued)"
+            {                
                 status = $"{resourceBaseStatus} (queued)";     
                 return true;
             }
@@ -40,13 +39,26 @@ namespace Sepes.Infrastructure.Util
                 }
                 else
                 {
-                    status = $"{resourceBaseStatus} (attempt {operation.TryCount}/{operation.MaxTryCount})";
+                    status = $"{resourceBaseStatus} ({operation.TryCount}/{operation.MaxTryCount})";
                     return true;
                 }
             }
             else if (operation.Status == CloudResourceOperationState.FAILED)
             {
-                status = $"{resourceBaseStatus}, {CloudResourceStatus.FAILED} after {operation.TryCount} attempts";
+                if (operation.OperationType == CloudResourceOperationType.CREATE)
+                {
+                    resourceBaseStatus = CloudResourceStatus.CREATE;
+                }
+                else if (operation.OperationType == CloudResourceOperationType.UPDATE)
+                {
+                    resourceBaseStatus = CloudResourceStatus.UPDATE;
+                }
+                else if (operation.OperationType == CloudResourceOperationType.DELETE)
+                {
+                    resourceBaseStatus = CloudResourceStatus.DELETE;
+                }
+
+                status = $"{resourceBaseStatus} {CloudResourceStatus.FAILED} ({operation.TryCount}/{operation.MaxTryCount})";
                 return true;
             }
 

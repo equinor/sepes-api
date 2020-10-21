@@ -76,7 +76,7 @@ namespace Sepes.Infrastructure.Service
                             await _workQueue.DeleteMessageAsync(queueParentItem);
                             throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Resource is marked for deletion in database, Aborting!");
                         }
-                        else if (currentResourceOperation.Status == CloudResourceOperationState.FAILED && currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
+                        else if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
                         {
                             _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
 

@@ -12,5 +12,9 @@
         public bool SandboxControlled { get; set; }
 
         public string LastKnownProvisioningState { get; set; }
+
+        public string LinkToExternalSystem { get; set; }
+
+        
     }
 }

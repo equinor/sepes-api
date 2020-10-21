@@ -13,5 +13,13 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
         public string Region { get; set; }
 
         public string LastKnownProvisioningState { get; set; }
+
+        //Todo:
+        //Add OS, Distro
+        //Status
+        //Disks
+        //Created, updated
+        //Nic
+        
     }
 }

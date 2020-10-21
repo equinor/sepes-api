@@ -19,5 +19,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<VmSizeDto>> AvailableSizes();
 
         Task<List<VmDiskDto>> AvailableDisks();
+
+        Task<List<VmOsDto>> AvailableOperatingSystems();
     }
 }

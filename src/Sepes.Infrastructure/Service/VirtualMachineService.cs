@@ -134,6 +134,15 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
+        public async Task<List<VmOsDto>> AvailableOperatingSystems()
+        {
+            var result = new List<VmOsDto>();
+
+            result.Add(new VmOsDto() { Key = "WindowsXP", DisplayValue = "Windass XP" });
+
+            return result;
+        }
+
         async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
@@ -169,6 +178,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-       
+      
     }
 }

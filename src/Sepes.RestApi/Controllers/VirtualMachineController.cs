@@ -68,5 +68,12 @@ namespace Sepes.RestApi.Controllers
             var availableSizes = await _vmService.AvailableDisks();
             return new JsonResult(availableSizes);
         }
+
+        [HttpGet("operatingsystems/")]
+        public async Task<IActionResult> GetAvailableOperatingSystems()
+        {
+            var availableSizes = await _vmService.AvailableOperatingSystems();
+            return new JsonResult(availableSizes);
+        }
     }
 }
