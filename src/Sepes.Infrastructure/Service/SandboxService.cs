@@ -232,8 +232,17 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.StudyReadOwnRestricted);
-            var resources = _mapper.Map<List<SandboxResourceLightDto>>(sandboxFromDb.Resources);
-            return resources;
+
+            //Filter out deleted resources
+            var resourcesFiltered = sandboxFromDb.Resources
+                .Where(r => !r.Deleted.HasValue
+                || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+                
+                ).ToList();
+
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);           
+
+            return resourcesMapped;
         }
 
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
