@@ -138,7 +138,17 @@ namespace Sepes.Infrastructure.Service
         {
             var result = new List<VmOsDto>();
 
-            result.Add(new VmOsDto() { Key = "WindowsXP", DisplayValue = "Windass XP" });
+            //Windows
+            result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2012r2datacenter", DisplayValue = "Windows Server 2012 Datacenter R2", Category = "windows" });
+
+            //Linux
+            result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
 
             return result;
         }
