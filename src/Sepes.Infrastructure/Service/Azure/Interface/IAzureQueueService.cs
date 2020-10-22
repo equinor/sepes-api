@@ -1,6 +1,7 @@
-﻿using Azure;
-using Azure.Storage.Queues.Models;
+﻿using Azure.Storage.Queues.Models;
 using Sepes.Infrastructure.Dto.Azure;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -9,9 +10,9 @@ namespace Sepes.Infrastructure.Service
     {
         void Init(string connectionString, string queueName);
 
-        Task SendMessageAsync(string messageText);
+        Task SendMessageAsync(string messageText, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task SendMessageAsync<T>(T messageObj);
+        Task SendMessageAsync<T>(T messageObj, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken));
 
         // Gets first message without removing from queue, but makes it invisible for 30 seconds.
         Task<QueueStorageItemDto> RecieveMessageAsync();

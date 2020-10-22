@@ -41,7 +41,15 @@ namespace Sepes.Infrastructure.Query
 
         public static IQueryable<SandboxResource> GetSandboxResourcesByType(SepesDbContext db, int sandboxId, string resourceType)
         {
-            var resourceQuerable = db.SandboxResources.Include(r => r.Operations).Where(r => r.SandboxId == sandboxId && r.ResourceType == resourceType && !r.Deleted.HasValue );          
+            var resourceQuerable = db
+                .SandboxResources
+                .Include(r => r.Operations)
+                .Where(r => r.SandboxId == sandboxId
+                && r.ResourceType == resourceType
+                && (!r.Deleted.HasValue || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false))); 
+            
+
+
             return resourceQuerable;
         }
 

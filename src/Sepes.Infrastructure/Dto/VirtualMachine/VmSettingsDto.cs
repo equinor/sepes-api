@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto.VirtualMachine
+﻿using System.Collections.Generic;
+
+namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
     public class VmSettingsDto
     {
@@ -8,7 +10,9 @@
 
         public string SubnetName { get; set; }
 
-        public string PerformanceProfile { get; set; }
+        public string Size { get; set; }
+
+        public List<string> DataDisks { get; set; }
 
         public string OperatingSystem { get; set; }
 

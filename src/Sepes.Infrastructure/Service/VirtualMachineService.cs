@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
@@ -52,9 +50,11 @@ namespace Sepes.Infrastructure.Service
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
 
+            await _sandboxResourceService.ValidateNameThrowIfInvalid(virtualMachineName);
+
             var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
 
-            var region = RegionStringConverter.Convert(userInput.Region);
+            var region = RegionStringConverter.Convert(sandbox.Region);
 
             var vmSettingsString = await CreateVmSettingsString(study.Id.Value, sandboxId, userInput);
 
@@ -76,6 +76,88 @@ namespace Sepes.Infrastructure.Service
             var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
 
             return dtoMappedFromResource;
+        }
+
+      
+
+        public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<VmDto> DeleteAsync(int id)
+        {
+           var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
+     
+            var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
+
+            return dtoMappedFromResource;
+        }
+
+
+        public string CalculateName(string studyName, string sandboxName, string userPrefix)
+        {
+            return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
+        }
+
+        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId)
+        {
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+
+            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
+
+            return _mapper.Map<List<VmDto>>(virtualMachines);
+        }
+
+        public async Task<List<VmSizeDto>> AvailableSizes()
+        {
+            var result = new List<VmSizeDto>();
+
+            result.Add(new VmSizeDto() { Key = "Standard_E2_v3", DisplayValue = "Standard_E2_v3",  Description ="Description goes here", Category = "Memory" });
+            result.Add(new VmSizeDto() { Key = "Standard_E4_v3", DisplayValue = "Standard_E4_v3", Description = "Description goes here", Category = "Memory" });
+            result.Add(new VmSizeDto() { Key = "Standard_E8_v3", DisplayValue = "Standard_E8_v3", Description = "Description goes here", Category = "Memory" });
+
+            //result.Add(new VmSizeDto() { Key = "Standard_NV8as_v4", DisplayValue = "Standard_NV8as_v4", Description = "Description goes here", Category = "Gpu" });
+
+            //result.Add(new VmSizeDto() { Key = "Standard_F2s_v2", DisplayValue = "Standard_F2s_v2", Description = "Description goes here", Category = "Compute" });
+            //result.Add(new VmSizeDto() { Key = "Standard_F8s_v2", DisplayValue = "Standard_F8s_v2", Description = "Description goes here", Category = "Compute" });
+
+            return result;
+        }
+
+        public async Task<List<VmDiskDto>> AvailableDisks()
+        {
+            var result = new List<VmDiskDto>();
+
+            result.Add(new VmDiskDto() { Key = "64", DisplayValue = "64 GB" });
+            result.Add(new VmDiskDto() { Key = "128", DisplayValue=  "128 GB" });
+            result.Add(new VmDiskDto() { Key = "256", DisplayValue = "256 GB" });
+            result.Add(new VmDiskDto() { Key = "512", DisplayValue = "512 GB" });
+            result.Add(new VmDiskDto() { Key = "1024", DisplayValue = "1024 GB" });
+            result.Add(new VmDiskDto() { Key = "2048", DisplayValue = "2048 GB" });
+            result.Add(new VmDiskDto() { Key = "4096", DisplayValue = "4096 GB" });
+            result.Add(new VmDiskDto() { Key = "8192", DisplayValue = "8192 GB" });
+
+            return result;
+        }
+
+        public async Task<List<VmOsDto>> AvailableOperatingSystems()
+        {
+            var result = new List<VmOsDto>();
+
+            //Windows
+            result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2012r2datacenter", DisplayValue = "Windows Server 2012 Datacenter R2", Category = "windows" });
+
+            //Linux
+            result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
+
+            return result;
         }
 
         async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
@@ -110,36 +192,9 @@ namespace Sepes.Infrastructure.Service
             {
 
                 throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
-            }      
+            }
         }
 
-        public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<VmDto> DeleteAsync(int id)
-        {
-           var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
-     
-            var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
-
-            return dtoMappedFromResource;
-        }
-
-
-        public string CalculateName(string studyName, string sandboxName, string userPrefix)
-        {
-            return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
-        }
-
-        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId)
-        {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
-
-            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
-
-            return _mapper.Map<List<VmDto>>(virtualMachines);
-        }
+      
     }
 }

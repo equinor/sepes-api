@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -22,7 +23,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -49,13 +50,13 @@ namespace Sepes.Infrastructure.Service
             return MapToDto(resourceGroup);
         }
 
-        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags)
+        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
                     .WithRegion(region)
                     .WithTags(tags)
-                    .CreateAsync();
+                    .CreateAsync(cancellationToken);
 
             return resourceGroup;
         }

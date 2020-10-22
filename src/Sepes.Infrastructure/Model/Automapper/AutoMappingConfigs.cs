@@ -1,22 +1,23 @@
 ﻿using AutoMapper;
-using Microsoft.Graph;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Util;
-using System.Collections.Generic;
-using System.Linq;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Util;
+using System.Linq;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
     public class AutoMappingConfigs : Profile
     {
+     
+
         public AutoMappingConfigs()
-        {
+        {          
+
             //STUDY
             CreateMap<Study, StudyListItemDto>();
 
@@ -59,7 +60,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
-              .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)));
+              .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
+                .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())              
+              ;
              
 
             //CLOUD RESOURCE
@@ -113,7 +116,10 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxResource, VmDto>()
            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
-            .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
+            .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name))
+            .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
+            .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => AzureVmUtil.GetOsName(x)))
+            ;
 
         }
     }

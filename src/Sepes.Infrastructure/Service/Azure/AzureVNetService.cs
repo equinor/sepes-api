@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -21,7 +22,7 @@ namespace Sepes.Infrastructure.Service
           
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
 
@@ -31,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vNetDto == null)
             {
-                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags);
+                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
             }
             else
             {
@@ -73,7 +74,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags)
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {
             var networkDto = new AzureVNetDto();          
 
@@ -93,7 +94,7 @@ namespace Sepes.Infrastructure.Service
                 .WithSubnet(bastionSubnetName, bastionSubnetAddress)
                 .WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  
                 .WithTags(tags)
-                .CreateAsync();
+                .CreateAsync(cancellationToken);
 
             networkDto.ProvisioningState = networkDto.Network.Inner.ProvisioningState.ToString();
 

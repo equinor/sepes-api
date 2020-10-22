@@ -1,12 +1,13 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IPerformCloudResourceCRUD
     {
-        Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken));
 
         Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters);
 
