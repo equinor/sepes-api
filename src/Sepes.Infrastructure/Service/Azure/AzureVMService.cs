@@ -83,7 +83,7 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
 
-                throw new Exception($"VM Creation failed. Unable to get real VM password from Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to get VM password from Key Vault. See inner exception for details.", ex);
             }
 
         }
@@ -96,7 +96,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to delete VM password from Key Vault after use. See inner exception for details.", ex);
             }
         }
 
@@ -147,8 +147,6 @@ namespace Sepes.Infrastructure.Service
             return vm;
         
         }
-
-
 
         private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
