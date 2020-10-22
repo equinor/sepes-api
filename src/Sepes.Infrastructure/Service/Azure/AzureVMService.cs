@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGrupName}");
 
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
 

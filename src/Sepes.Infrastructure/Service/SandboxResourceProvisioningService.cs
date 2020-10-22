@@ -100,6 +100,7 @@ namespace Sepes.Infrastructure.Service
                                 _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}. Dependant operation {currentResourceOperation.DependsOnOperationId.Value} not finished. Queue item invisibility increased. Now aborting");
 
                                 var invisibilityIncrease = currentResourceOperation.DependsOnOperation != null ? AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(currentResourceOperation.DependsOnOperation.Resource.ResourceType) : CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
+                                if (invisibilityIncrease > 180) invisibilityIncrease = 180;
 
                                 await _workQueue.IncreaseInvisibilityAsync(queueParentItem, invisibilityIncrease);
                                 deleteFromQueueAfterCompletion = false;
