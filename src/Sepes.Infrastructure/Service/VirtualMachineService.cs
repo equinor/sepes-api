@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
 
-            var region = RegionStringConverter.Convert(userInput.Region);
+            var region = RegionStringConverter.Convert(sandbox.Region);
 
             var vmSettingsString = await CreateVmSettingsString(study.Id.Value, sandboxId, userInput);
 

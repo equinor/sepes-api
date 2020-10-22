@@ -3,8 +3,7 @@
 namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
     public class CreateVmUserInputDto
-    {
-        public string Region { get; set; }
+    {    
 
         public string Name { get; set; }
 
