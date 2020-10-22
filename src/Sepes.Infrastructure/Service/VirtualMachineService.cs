@@ -117,10 +117,10 @@ namespace Sepes.Infrastructure.Service
             result.Add(new VmSizeDto() { Key = "Standard_E4_v3", DisplayValue = "Standard_E4_v3", Description = "Description goes here", Category = "Memory" });
             result.Add(new VmSizeDto() { Key = "Standard_E8_v3", DisplayValue = "Standard_E8_v3", Description = "Description goes here", Category = "Memory" });
 
-            result.Add(new VmSizeDto() { Key = "Standard_NV8as_v4", DisplayValue = "Standard_NV8as_v4", Description = "Description goes here", Category = "Gpu" });
+            //result.Add(new VmSizeDto() { Key = "Standard_NV8as_v4", DisplayValue = "Standard_NV8as_v4", Description = "Description goes here", Category = "Gpu" });
 
-            result.Add(new VmSizeDto() { Key = "Standard_F2s_v2", DisplayValue = "Standard_F2s_v2", Description = "Description goes here", Category = "Compute" });
-            result.Add(new VmSizeDto() { Key = "Standard_F8s_v2", DisplayValue = "Standard_F8s_v2", Description = "Description goes here", Category = "Compute" });
+            //result.Add(new VmSizeDto() { Key = "Standard_F2s_v2", DisplayValue = "Standard_F2s_v2", Description = "Description goes here", Category = "Compute" });
+            //result.Add(new VmSizeDto() { Key = "Standard_F8s_v2", DisplayValue = "Standard_F8s_v2", Description = "Description goes here", Category = "Compute" });
 
             return result;
         }
@@ -129,7 +129,14 @@ namespace Sepes.Infrastructure.Service
         {
             var result = new List<VmDiskDto>();
 
-            result.Add(new VmDiskDto() { Key = "256", DisplayValue=  "256 GB" });
+            result.Add(new VmDiskDto() { Key = "64", DisplayValue = "64 GB" });
+            result.Add(new VmDiskDto() { Key = "128", DisplayValue=  "128 GB" });
+            result.Add(new VmDiskDto() { Key = "256", DisplayValue = "256 GB" });
+            result.Add(new VmDiskDto() { Key = "512", DisplayValue = "512 GB" });
+            result.Add(new VmDiskDto() { Key = "1024", DisplayValue = "1024 GB" });
+            result.Add(new VmDiskDto() { Key = "2048", DisplayValue = "2048 GB" });
+            result.Add(new VmDiskDto() { Key = "4096", DisplayValue = "4096 GB" });
+            result.Add(new VmDiskDto() { Key = "8192", DisplayValue = "8192 GB" });
 
             return result;
         }
