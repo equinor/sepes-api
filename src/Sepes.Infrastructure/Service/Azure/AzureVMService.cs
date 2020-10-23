@@ -1,10 +1,13 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
+using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -325,5 +328,22 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
+        public async Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default)
+        {
+            using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+
+                var sizes = await client.VirtualMachineSizes.ListWithHttpMessagesAsync(region, cancellationToken: cancellationToken);
+                var sizesResponseText = await sizes.Response.Content.ReadAsStringAsync();
+                var deserialized = JsonConvert.DeserializeObject<AzureVirtualMachineSizeResponse>(sizesResponseText);
+
+             
+
+
+                    return deserialized.Value;
+
+            }
+        }
     }
 }
