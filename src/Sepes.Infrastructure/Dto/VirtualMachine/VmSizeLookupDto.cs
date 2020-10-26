@@ -1,11 +1,7 @@
 ﻿namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
-    public class VmDiskDto
+    public class VmSizeLookupDto : LookupDto
     {
-        public string Name { get; set; }
-
-        public int CapacityGb { get; set; }
-
         public string Category { get; set; }
     }
 }

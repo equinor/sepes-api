@@ -13,13 +13,15 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmDto> DeleteAsync(int id);
 
-        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId);
+        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<VmExtendedDto> GetExtendedInfo(int vmId);
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
 
-        Task<List<VmSizeDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<List<VmDiskDto>> AvailableDisks();
+        Task<List<VmDiskLookupDto>> AvailableDisks();
 
         Task<List<VmOsDto>> AvailableOperatingSystems();
     }

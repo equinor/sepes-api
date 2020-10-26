@@ -1,7 +1,21 @@
-﻿namespace Sepes.Infrastructure.Dto.VirtualMachine
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
-    public class VmSizeDto : LookupDto
+    public class VmSizeDto
     {
-        public string Category { get; set; }
+        public string Name { get; set; }
+
+        public int NumberOfCores { get; set; }
+
+        public int OsDiskSizeInMB { get; set; }
+
+        public int ResourceDiskSizeInMB { get; set; }
+
+        public int MemoryInMB { get; set; }
+
+        public int MaxDataDiskCount { get; set; }
     }
 }

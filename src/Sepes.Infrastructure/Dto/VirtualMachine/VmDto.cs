@@ -10,20 +10,13 @@
 
         public string LastKnownProvisioningState { get; set; }
 
-        public string OperatingSystem { get; set; }    
-
+        public string OperatingSystem { get; set; }         
+        
         public string Status { get; set; }         
 
         public string Created { get; set; }
 
         public string CreatedBy { get; set; }
-
-
-        //Todo:       
-
-        //Disks
-        //Created, updated
-        //Nic
-
+   
     }
 }

@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.Compute.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
@@ -11,7 +14,6 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,8 +85,6 @@ namespace Sepes.Infrastructure.Service
             return dtoMappedFromResource;
         }
 
-
-
         public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
         {
             throw new NotImplementedException();
@@ -105,30 +105,45 @@ namespace Sepes.Infrastructure.Service
             return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
         }
 
-        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId)
+        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
             var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
 
-            return _mapper.Map<List<VmDto>>(virtualMachines);
+            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);          
+
+            return virtualMachinesMapped;
         }
 
-        public async Task<List<VmSizeDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<VmExtendedDto> GetExtendedInfo(int vmId)
         {
-            List<VmSizeDto> result = null;
+            var vmResourceQueryable = SandboxResourceQueries.GetSandboxResource(_db, vmId);
+            var vmResource = await vmResourceQueryable.SingleOrDefaultAsync();
+
+            if(vmResource == null)
+            {
+                throw NotFoundException.CreateForSandboxResource(vmId);
+            }
+
+            return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);  
+        }
+
+        public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            List<VmSizeLookupDto> result = null;
 
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
             try
-            {             
-                var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);             
+            {
+                var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
 
                 var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
-                new VmSizeDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextSizeForDropdown(sz), Category = AzureVmUtil.GetSizeCategory(sz.Name) })
+                new VmSizeLookupDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextSizeForDropdown(sz), Category = AzureVmUtil.GetSizeCategory(sz.Name) })
                     .ToList();
 
-                result = vmSizesWithCategory.Where(s => s.Category != "unknowncategory" && (s.Category != "gpu" || (s.Category == "gpu" && s.Key == "Standard_NV8as_v4"))).ToList();               
+                result = vmSizesWithCategory.Where(s => s.Category != "unknowncategory" && (s.Category != "gpu" || (s.Category == "gpu" && s.Key == "Standard_NV8as_v4"))).ToList();
             }
             catch (Exception ex)
             {
@@ -138,18 +153,18 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<List<VmDiskDto>> AvailableDisks()
+        public async Task<List<VmDiskLookupDto>> AvailableDisks()
         {
-            var result = new List<VmDiskDto>();
+            var result = new List<VmDiskLookupDto>();
 
-            result.Add(new VmDiskDto() { Key = "64", DisplayValue = "64 GB" });
-            result.Add(new VmDiskDto() { Key = "128", DisplayValue = "128 GB" });
-            result.Add(new VmDiskDto() { Key = "256", DisplayValue = "256 GB" });
-            result.Add(new VmDiskDto() { Key = "512", DisplayValue = "512 GB" });
-            result.Add(new VmDiskDto() { Key = "1024", DisplayValue = "1024 GB" });
-            result.Add(new VmDiskDto() { Key = "2048", DisplayValue = "2048 GB" });
-            result.Add(new VmDiskDto() { Key = "4096", DisplayValue = "4096 GB" });
-            result.Add(new VmDiskDto() { Key = "8192", DisplayValue = "8192 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" });
+            result.Add(new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" });
 
             return result;
         }
