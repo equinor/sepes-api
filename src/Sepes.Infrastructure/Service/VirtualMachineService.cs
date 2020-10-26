@@ -6,11 +6,14 @@ using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -27,8 +30,9 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxService _sandboxService;
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IProvisioningQueueService _workQueue;
+        readonly IAzureVMService _azureVmService;
 
-        public VirtualMachineService(ILogger<VirtualMachineService> logger, IConfiguration config, SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxService sandboxService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService workQueue)
+        public VirtualMachineService(ILogger<VirtualMachineService> logger, IConfiguration config, SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxService sandboxService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService workQueue, IAzureVMService azureVmService)
         {
             _logger = logger;
             _db = db;
@@ -39,6 +43,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxService = sandboxService;
             _sandboxResourceService = sandboxResourceService;
             _workQueue = workQueue;
+            _azureVmService = azureVmService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
@@ -78,7 +83,7 @@ namespace Sepes.Infrastructure.Service
             return dtoMappedFromResource;
         }
 
-      
+
 
         public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
         {
@@ -87,8 +92,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> DeleteAsync(int id)
         {
-           var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
-     
+            var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
+
             var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
 
             return dtoMappedFromResource;
@@ -109,18 +114,26 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<List<VmDto>>(virtualMachines);
         }
 
-        public async Task<List<VmSizeDto>> AvailableSizes()
+        public async Task<List<VmSizeDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = new List<VmSizeDto>();
+            List<VmSizeDto> result = null;
 
-            result.Add(new VmSizeDto() { Key = "Standard_E2_v3", DisplayValue = "Standard_E2_v3",  Description ="Description goes here", Category = "Memory" });
-            result.Add(new VmSizeDto() { Key = "Standard_E4_v3", DisplayValue = "Standard_E4_v3", Description = "Description goes here", Category = "Memory" });
-            result.Add(new VmSizeDto() { Key = "Standard_E8_v3", DisplayValue = "Standard_E8_v3", Description = "Description goes here", Category = "Memory" });
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
-            //result.Add(new VmSizeDto() { Key = "Standard_NV8as_v4", DisplayValue = "Standard_NV8as_v4", Description = "Description goes here", Category = "Gpu" });
+            try
+            {             
+                var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);             
 
-            //result.Add(new VmSizeDto() { Key = "Standard_F2s_v2", DisplayValue = "Standard_F2s_v2", Description = "Description goes here", Category = "Compute" });
-            //result.Add(new VmSizeDto() { Key = "Standard_F8s_v2", DisplayValue = "Standard_F8s_v2", Description = "Description goes here", Category = "Compute" });
+                var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
+                new VmSizeDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextSizeForDropdown(sz), Category = AzureVmUtil.GetSizeCategory(sz.Name) })
+                    .ToList();
+
+                result = vmSizesWithCategory.Where(s => s.Category != "unknowncategory" && (s.Category != "gpu" || (s.Category == "gpu" && s.Key == "Standard_NV8as_v4"))).ToList();               
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Unable to get available VM sizes from azure for region {sandbox.Region}");
+            }
 
             return result;
         }
@@ -130,7 +143,7 @@ namespace Sepes.Infrastructure.Service
             var result = new List<VmDiskDto>();
 
             result.Add(new VmDiskDto() { Key = "64", DisplayValue = "64 GB" });
-            result.Add(new VmDiskDto() { Key = "128", DisplayValue=  "128 GB" });
+            result.Add(new VmDiskDto() { Key = "128", DisplayValue = "128 GB" });
             result.Add(new VmDiskDto() { Key = "256", DisplayValue = "256 GB" });
             result.Add(new VmDiskDto() { Key = "512", DisplayValue = "512 GB" });
             result.Add(new VmDiskDto() { Key = "1024", DisplayValue = "1024 GB" });
@@ -164,6 +177,9 @@ namespace Sepes.Infrastructure.Service
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
+            var availableOs = await AvailableOperatingSystems();
+            vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
+
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 
             var diagStorageResource = await SandboxResourceQueries.GetDiagStorageAccountEntry(_db, sandboxId);
@@ -195,6 +211,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-      
+
     }
 }

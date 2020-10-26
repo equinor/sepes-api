@@ -1,10 +1,13 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
+using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -34,15 +37,14 @@ namespace Sepes.Infrastructure.Service
             string password = await GetPasswordFromKeyVault(passwordReference);
 
             string vmSize = vmSettings.Size;
-            string operatingSystem = vmSettings.OperatingSystem;
-            string distro = vmSettings.Distro;
+        
 
             var createdVm = await Create(parameters.Region,
                 parameters.ResourceGrupName,
                 parameters.Name,
                 vmSettings.NetworkName, vmSettings.SubnetName,
                 vmSettings.Username, password,
-                vmSize, operatingSystem, distro, parameters.Tags,
+                vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
                 vmSettings.DiagnosticStorageAccountName, cancellationToken);
 
             if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
@@ -51,16 +53,16 @@ namespace Sepes.Infrastructure.Service
                 {
                     var sizeAsInt = Convert.ToInt32(curDisk);
 
-                    if(sizeAsInt == 0)
+                    if (sizeAsInt == 0)
                     {
-                        throw new Exception($"Illegal data disk size: {curDisk}" );
+                        throw new Exception($"Illegal data disk size: {curDisk}");
                     }
 
-                   await ApplyVmDataDisks(parameters.ResourceGrupName, parameters.Name, sizeAsInt);
+                    await ApplyVmDataDisks(parameters.ResourceGrupName, parameters.Name, sizeAsInt);
                 }
             }
 
-            var result = CreateResult(createdVm);
+            var result = CreateCRUDResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
 
@@ -70,7 +72,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
             var vm = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
-            var result = CreateResult(vm);
+            var result = CreateCRUDResult(vm);
             return result;
         }
 
@@ -83,7 +85,7 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
 
-                throw new Exception($"VM Creation failed. Unable to get real VM password from Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to get VM password from Key Vault. See inner exception for details.", ex);
             }
 
         }
@@ -96,11 +98,11 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to delete VM password from Key Vault after use. See inner exception for details.", ex);
             }
         }
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IVirtualMachine vm;
 
@@ -121,20 +123,20 @@ namespace Sepes.Infrastructure.Service
                                     .WithPrimaryPrivateIPAddressDynamic()
                                     .WithoutPrimaryPublicIPAddress();
 
-            
+
             IWithCreate vmWithOS;
 
-            if (os.ToLower().Equals("windows"))
+            if (osCategory.ToLower().Equals("windows"))
             {
-                vmWithOS = CreateWindowsVm(vmCreatable, distro, userName, password);
+                vmWithOS = CreateWindowsVm(vmCreatable, osName, userName, password);
             }
-            else if (os.ToLower().Equals("linux"))
+            else if (osCategory.ToLower().Equals("linux"))
             {
-                vmWithOS = CreateLinuxVm(vmCreatable, distro, userName, password);
+                vmWithOS = CreateLinuxVm(vmCreatable, osName, userName, password);
             }
             else
             {
-                throw new ArgumentException($"Argument 'os' needs to be either 'windows' or 'linux'. Current value: {os}");
+                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {osCategory}");
             }
 
             var vmWithSize = vmWithOS.WithSize(vmSize);
@@ -145,10 +147,8 @@ namespace Sepes.Infrastructure.Service
                 .CreateAsync(cancellationToken);
 
             return vm;
-        
+
         }
-
-
 
         private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
@@ -257,7 +257,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);        
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
 
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
 
@@ -320,12 +320,24 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        CloudResourceCRUDResult CreateResult(IVirtualMachine vm)
+        CloudResourceCRUDResult CreateCRUDResult(IVirtualMachine vm)
         {
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(vm);
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
 
+        public async Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default)
+        {
+            using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+
+                var sizes = await client.VirtualMachineSizes.ListWithHttpMessagesAsync(region, cancellationToken: cancellationToken);
+                var sizesResponseText = await sizes.Response.Content.ReadAsStringAsync();
+                var deserialized = JsonConvert.DeserializeObject<AzureVirtualMachineSizeResponse>(sizesResponseText);
+                return deserialized.Value;
+            }
+        }
     }
 }
