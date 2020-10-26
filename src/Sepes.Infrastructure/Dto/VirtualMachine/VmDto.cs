@@ -10,7 +10,19 @@
 
         public string LastKnownProvisioningState { get; set; }
 
-        public string OperatingSystem { get; set; }    
+        public string OperatingSystem { get; set; }  
+
+        public string Size { get; set; }
+      
+        public int NumberOfCores { get; set; }       
+    
+        public int OsDiskSizeInMB { get; set; }
+      
+        public int ResourceDiskSizeInMB { get; set; }
+   
+        public int MemoryInMB { get; set; }
+
+        public int MaxDataDiskCount { get; set; }
 
         public string Status { get; set; }         
 
@@ -18,8 +30,9 @@
 
         public string CreatedBy { get; set; }
 
+        //Todo:  
+        
 
-        //Todo:       
 
         //Disks
         //Created, updated

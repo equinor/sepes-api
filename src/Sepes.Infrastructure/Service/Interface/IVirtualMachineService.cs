@@ -17,9 +17,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
 
-        Task<List<VmSizeDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<List<VmDiskDto>> AvailableDisks();
+        Task<List<VmDiskLookupDto>> AvailableDisks();
 
         Task<List<VmOsDto>> AvailableOperatingSystems();
     }
