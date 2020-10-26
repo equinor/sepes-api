@@ -8,12 +8,14 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -37,7 +39,7 @@ namespace Sepes.Infrastructure.Service
             string password = await GetPasswordFromKeyVault(passwordReference);
 
             string vmSize = vmSettings.Size;
-        
+
 
             var createdVm = await Create(parameters.Region,
                 parameters.ResourceGrupName,
@@ -71,7 +73,7 @@ namespace Sepes.Infrastructure.Service
         }
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var vm = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var vm = await GetAsync(parameters.ResourceGrupName, parameters.Name);
             var result = CreateCRUDResult(vm);
             return result;
         }
@@ -211,7 +213,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ApplyVmDataDisks(string resourceGroupName, string virtualMachineName, int sizeInGB)
         {
-            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+            var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
@@ -248,7 +250,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task Delete(string resourceGroupName, string virtualMachineName)
         {
-            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+            var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
             if (vm == null)
             {
@@ -285,7 +287,7 @@ namespace Sepes.Infrastructure.Service
             await _azure.Disks.DeleteByIdAsync(id);
         }
 
-        public async Task<IVirtualMachine> GetResourceAsync(string resourceGroupName, string resourceName)
+        public async Task<IVirtualMachine> GetAsync(string resourceGroupName, string resourceName)
         {
             var resource = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, resourceName);
             return resource;
@@ -293,7 +295,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
 
             if (resource == null)
             {
@@ -305,13 +307,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
             return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resource.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
@@ -339,5 +341,88 @@ namespace Sepes.Infrastructure.Service
                 return deserialized.Value;
             }
         }
+
+        public async Task<VmExtendedDto> GetExtendedInfo(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
+        {
+            var vm = await GetAsync(resourceGroupName, resourceName);
+
+            if (vm == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceGroupName, resourceName);
+            }
+
+            var result = new VmExtendedDto();
+
+            result.PowerState = AzureVmUtil.GetPowerState(vm);
+
+            result.OsType = AzureVmUtil.GetOsType(vm);
+
+            result.SizeName = vm.Size.ToString();
+          
+            var availableSizes = await GetAvailableVmSizes(vm.RegionName, cancellationToken);
+
+            var availableSizesDict = availableSizes.ToDictionary(s => s.Name, s => s);
+
+            VirtualMachineSize curSize = null;
+
+            if (availableSizesDict.TryGetValue(result.SizeName, out curSize))
+            {
+                result.Size = new VmSizeDto() { Name = result.SizeName, MemoryInMB = curSize.MemoryInMB.Value, MaxDataDiskCount = curSize.MaxDataDiskCount.Value, NumberOfCores = curSize.NumberOfCores.Value, OsDiskSizeInMB = curSize.OsDiskSizeInMB.Value, ResourceDiskSizeInMB = curSize.ResourceDiskSizeInMB.Value };
+            }            
+
+            result.NICs.Add(await CreateNicDto(vm.PrimaryNetworkInterfaceId));
+
+            foreach (var curNic in vm.NetworkInterfaceIds)
+            {
+                result.NICs.Add(await CreateNicDto(curNic));
+            }
+
+            result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true));
+
+            foreach (var curDiskKvp in vm.DataDisks.Values)
+            {
+                result.Disks.Add(CreateDiskDto(curDiskKvp, false));
+            }
+
+            return result;
+        }
+
+
+
+        async Task<VmNicDto> CreateNicDto(string nicId)
+        {
+            var nic = await _azure.NetworkInterfaces.GetByIdAsync(nicId);
+
+            if (nic == null)
+            {
+                throw NotFoundException.CreateForAzureResourceById(nicId);
+            }
+
+            var result = new VmNicDto() { Name = nic.Name };
+            return result;
+        }
+
+        async Task<VmDiskDto> CreateDiskDto(string diskId, bool isOs)
+        {
+            var disk = await _azure.Disks.GetByIdAsync(diskId);
+
+            if (disk == null)
+            {
+                throw NotFoundException.CreateForAzureResourceById(diskId);
+            }
+
+            var result = new VmDiskDto() { Name = disk.Name, CapacityGb = disk.SizeInGB, Category = isOs ? "os" : "data" };
+
+            return result;
+        }
+
+        VmDiskDto CreateDiskDto(IVirtualMachineDataDisk disk, bool isOs)
+        {
+            var result = new VmDiskDto() { Name = disk.Name, CapacityGb = disk.Size, Category = isOs ? "os" : "data" };
+
+            return result;
+        }
+
+
     }
 }

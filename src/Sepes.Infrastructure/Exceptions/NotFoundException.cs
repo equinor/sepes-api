@@ -28,7 +28,14 @@ namespace Sepes.Infrastructure.Exceptions
         public static NotFoundException CreateForEntityByOtherFieldName(string entityName, string field, string fieldValue, Exception inner = null)
         {
             return new NotFoundException($"{entityName} with {field} = {fieldValue} not found!", inner);
-        }      
+        }
+
+        public static NotFoundException CreateForSandboxResource(int id, Exception inner = null)
+        {
+            var sbExMessage = new StringBuilder($"SandboxResource with id {id} not found");         
+
+            return new NotFoundException(sbExMessage.ToString(), inner);
+        }
 
 
         public static NotFoundException CreateForAzureResource(string resourceName, string resourceGroupName = null, Exception inner = null)
@@ -41,6 +48,13 @@ namespace Sepes.Infrastructure.Exceptions
             }
 
             sbExMessage.Append(" not found");
+
+            return new NotFoundException(sbExMessage.ToString(), inner);
+        }
+
+        public static NotFoundException CreateForAzureResourceById(string resourceId, Exception inner = null)
+        {
+            var sbExMessage = new StringBuilder($"Azure resource with id {resourceId} not found");           
 
             return new NotFoundException(sbExMessage.ToString(), inner);
         }

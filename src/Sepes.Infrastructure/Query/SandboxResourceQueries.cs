@@ -46,9 +46,20 @@ namespace Sepes.Infrastructure.Query
                 .Include(r => r.Operations)
                 .Where(r => r.SandboxId == sandboxId
                 && r.ResourceType == resourceType
-                && (!r.Deleted.HasValue || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false))); 
-            
+                && (!r.Deleted.HasValue || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));            
 
+
+            return resourceQuerable;
+        }
+
+        public static IQueryable<SandboxResource> GetSandboxResource(SepesDbContext db, int resourceId)
+        {
+            var resourceQuerable = db
+                .SandboxResources
+                .Include(r => r.Sandbox)
+                .Include(r => r.Operations)
+                .Where(r => r.Id == resourceId            
+                && (!r.Deleted.HasValue || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));
 
             return resourceQuerable;
         }

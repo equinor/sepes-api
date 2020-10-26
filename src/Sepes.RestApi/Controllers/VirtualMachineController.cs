@@ -50,11 +50,18 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpGet("forsandbox/{sandboxId}")]
-        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId)
+        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId);
+            var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId, cancellationToken);
             return new JsonResult(virtualMachinesForSandbox);
-        }    
+        }
+
+        [HttpGet("{vmId}/extended")]
+        public async Task<IActionResult> GetVmExtendedInfo(int vmId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var virtualMachinesForSandbox = await _vmService.GetExtendedInfo(vmId);
+            return new JsonResult(virtualMachinesForSandbox);
+        }
 
         [HttpGet("{sandboxId}/sizes")]
         public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)

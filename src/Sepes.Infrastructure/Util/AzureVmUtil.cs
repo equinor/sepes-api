@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.Compute.Models;
+﻿using Microsoft.Azure.Management.Compute.Fluent;
+using Microsoft.Azure.Management.Compute.Models;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using System;
@@ -54,6 +55,26 @@ namespace Sepes.Infrastructure.Util
             }
 
             return foundOs.Category;
+        }
+
+        public static string GetPowerState(IVirtualMachine vm)
+        {
+           if(vm != null)
+            {
+                return vm.PowerState.Value.ToLower().Replace("powerstate/", "");
+            }          
+
+            return "not found";          
+        }
+
+        public static string GetOsType(IVirtualMachine vm)
+        {
+            if (vm != null)
+            {
+                return vm.OSType.ToString().ToLower();
+            }
+
+            return "not found";
         }
     }
 }

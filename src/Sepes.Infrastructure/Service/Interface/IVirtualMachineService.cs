@@ -13,7 +13,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmDto> DeleteAsync(int id);
 
-        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId);
+        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<VmExtendedDto> GetExtendedInfo(int vmId);
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
 
