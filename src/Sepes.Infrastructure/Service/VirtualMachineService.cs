@@ -125,7 +125,7 @@ namespace Sepes.Infrastructure.Service
                 var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);             
 
                 var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
-                new VmSizeDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextForDropdown(sz), Category = AzureVmUtil.GetCategory(sz.Name) })
+                new VmSizeDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextSizeForDropdown(sz), Category = AzureVmUtil.GetSizeCategory(sz.Name) })
                     .ToList();
 
                 result = vmSizesWithCategory.Where(s => s.Category != "unknowncategory" && (s.Category != "gpu" || (s.Category == "gpu" && s.Key == "Standard_NV8as_v4"))).ToList();               
@@ -176,6 +176,9 @@ namespace Sepes.Infrastructure.Service
         async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
+
+            var availableOs = await AvailableOperatingSystems();
+            vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 

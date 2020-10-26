@@ -1,5 +1,9 @@
 ﻿using Microsoft.Azure.Management.Compute.Models;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.Infrastructure.Util
 {
@@ -11,13 +15,13 @@ namespace Sepes.Infrastructure.Util
 
             if(vmSettings != null)
             {
-                return vmSettings.Distro;
+                return vmSettings.OperatingSystem;
             }
 
             return null;
         }
 
-        public static string GetCategory(string vmName)
+        public static string GetSizeCategory(string vmName)
         {
             if (vmName.ToLower().Contains("standard_e"))
             {
@@ -35,9 +39,21 @@ namespace Sepes.Infrastructure.Util
             return "unknowncategory";
         }
 
-        public static string GetDisplayTextForDropdown(VirtualMachineSize vmSizeInfo)
+        public static string GetDisplayTextSizeForDropdown(VirtualMachineSize vmSizeInfo)
         {
             return $"{vmSizeInfo.Name} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryInMB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
+        }
+
+        public static string GetOsCategory(List<VmOsDto> osList, string operatingSystemName)
+        {
+            var foundOs = osList.Where(os => os.Key == operatingSystemName).FirstOrDefault();
+
+            if(foundOs == null)
+            {
+                throw new Exception("Unable to find Operating System record in list of available");
+            }
+
+            return foundOs.Category;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
 
         public string OperatingSystem { get; set; }
 
-        public string Distro{ get; set; }
+        public string OperatingSystemCategory { get; set; }
 
         public string Username { get; set; }
 

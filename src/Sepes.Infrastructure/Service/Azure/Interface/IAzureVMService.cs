@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task Delete(string resourceGroupName, string virtualMachineName);
 
         
-        Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default);
+        Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default);        
     }
 }
 
