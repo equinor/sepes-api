@@ -11,9 +11,7 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
 
         public List<string> DataDisks { get; set; }
 
-        public string OperatingSystem { get; set; }
-
-        public string Distro { get; set; }
+        public string OperatingSystem { get; set; }  
 
         public string Username { get; set; }
 

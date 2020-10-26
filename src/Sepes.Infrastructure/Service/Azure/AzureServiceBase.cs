@@ -32,21 +32,13 @@ namespace Sepes.Infrastructure.Service
             var clientId = config[ConfigConstants.AZ_CLIENT_ID];
             var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
 
-            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
-
-           // _logger.LogInformation($"Using Subscription Id {_subscriptionId}");
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];        
 
             _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
                 .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
-                .Authenticate(_credentials).WithSubscription(_subscriptionId);
-
-
-            // _joinNetworkRoleName = config[ConfigConstants.JOIN_NETWORK_ROLE_NAME];
-
-
-
+                .Authenticate(_credentials).WithSubscription(_subscriptionId);  
         }
 
         protected void CheckIfResourceHasCorrectManagedByTagThrowIfNot(string resourceName, IReadOnlyDictionary<string, string> resourceTags)

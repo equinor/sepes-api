@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Mocks.Azure
@@ -125,6 +126,16 @@ namespace Sepes.Tests.Mocks.Azure
         }
 
         public Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendMessageAsync(string messageText, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SendMessageAsync<T>(T messageObj, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

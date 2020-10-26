@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controllers
@@ -53,12 +54,12 @@ namespace Sepes.RestApi.Controllers
         {
             var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId);
             return new JsonResult(virtualMachinesForSandbox);
-        }
+        }    
 
-        [HttpGet("sizes/")]
-        public async Task<IActionResult> GetAvailableVmSizes()
+        [HttpGet("{sandboxId}/sizes")]
+        public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmService.AvailableSizes();
+            var availableSizes = await _vmService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
             return new JsonResult(availableSizes);
         }
 

@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto.VirtualMachine;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -16,7 +17,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         string CalculateName(string studyName, string sandboxName, string userPrefix);
 
-        Task<List<VmSizeDto>> AvailableSizes();
+        Task<List<VmSizeDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
 
         Task<List<VmDiskDto>> AvailableDisks();
 

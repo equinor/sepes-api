@@ -3,6 +3,7 @@ using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Mocks.Azure
@@ -97,6 +98,11 @@ namespace Sepes.Tests.Mocks.Azure
         }
 
         public Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
