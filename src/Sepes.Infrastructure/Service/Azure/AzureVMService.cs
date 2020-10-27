@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.Compute.Models;
+using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -349,18 +350,20 @@ namespace Sepes.Infrastructure.Service
         {
             var vm = await GetAsync(resourceGroupName, resourceName);
 
-            var result = new VmExtendedDto();
-
-            if (vm == null)
-            {
-               return result;
-            }         
+            var result = new VmExtendedDto();                 
 
             result.PowerState = AzureVmUtil.GetPowerState(vm);
 
             result.OsType = AzureVmUtil.GetOsType(vm);
 
+            if (vm == null)
+            {
+                return result;
+            }          
+
             result.SizeName = vm.Size.ToString();
+
+            await DecorateWithNetworkProperties(vm, result, cancellationToken);          
           
             var availableSizes = await GetAvailableVmSizes(vm.RegionName, cancellationToken);
 
@@ -373,14 +376,7 @@ namespace Sepes.Infrastructure.Service
                 result.Size = new VmSizeDto() { Name = result.SizeName, MemoryInMB = curSize.MemoryInMB.Value, MaxDataDiskCount = curSize.MaxDataDiskCount.Value, NumberOfCores = curSize.NumberOfCores.Value, OsDiskSizeInMB = curSize.OsDiskSizeInMB.Value, ResourceDiskSizeInMB = curSize.ResourceDiskSizeInMB.Value };
             }            
 
-            result.NICs.Add(await CreateNicDto(vm.PrimaryNetworkInterfaceId));
-
-            foreach (var curNic in vm.NetworkInterfaceIds)
-            {
-                result.NICs.Add(await CreateNicDto(curNic));
-            }
-
-            result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true));
+            result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true, cancellationToken));
 
             foreach (var curDiskKvp in vm.DataDisks.Values)
             {
@@ -391,23 +387,58 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-
-        async Task<VmNicDto> CreateNicDto(string nicId)
+        async Task DecorateWithNetworkProperties(IVirtualMachine vm, VmExtendedDto vmDto, CancellationToken cancellationToken)        
         {
-            var nic = await _azure.NetworkInterfaces.GetByIdAsync(nicId);
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(vm.PrimaryNetworkInterfaceId, cancellationToken);
+           
+            vmDto.PrivateIp = primaryNic.PrimaryPrivateIP;
+
+            try
+            {   
+                if (primaryNic.PrimaryIPConfiguration != null)
+                {
+                    var pip = await _azure.PublicIPAddresses.GetByResourceGroupAsync(vm.ResourceGroupName, primaryNic.PrimaryIPConfiguration.Name, cancellationToken);
+
+                    if (pip != null)
+                    {
+                        vmDto.PublicIp = pip.IPAddress;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Unable to fetch public IP settings for VM {vm.Name}");
+            }                   
+
+            vmDto.NICs.Add(CreateNicDto(primaryNic));
+
+            foreach (var curNic in vm.NetworkInterfaceIds)
+            {
+                vmDto.NICs.Add(await CreateNicDto(curNic, cancellationToken));
+            }           
+        }
+
+        VmNicDto CreateNicDto(INetworkInterface nic)
+        { 
+            var result = new VmNicDto() { Name = nic.Name };
+            return result;
+        }
+
+        async Task<VmNicDto> CreateNicDto(string nicId, CancellationToken cancellationToken)
+        {
+            var nic = await _azure.NetworkInterfaces.GetByIdAsync(nicId, cancellationToken);
 
             if (nic == null)
             {
                 throw NotFoundException.CreateForAzureResourceById(nicId);
             }
 
-            var result = new VmNicDto() { Name = nic.Name };
-            return result;
+            return CreateNicDto(nic);          
         }
 
-        async Task<VmDiskDto> CreateDiskDto(string diskId, bool isOs)
+        async Task<VmDiskDto> CreateDiskDto(string diskId, bool isOs, CancellationToken cancellationToken)
         {
-            var disk = await _azure.Disks.GetByIdAsync(diskId);
+            var disk = await _azure.Disks.GetByIdAsync(diskId, cancellationToken);
 
             if (disk == null)
             {
