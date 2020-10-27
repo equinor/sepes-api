@@ -33,8 +33,19 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVMService _azureVmService;
+        readonly IAzureCostManagementService _costService;
 
-        public VirtualMachineService(ILogger<VirtualMachineService> logger, IConfiguration config, SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxService sandboxService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService workQueue, IAzureVMService azureVmService)
+        public VirtualMachineService(ILogger<VirtualMachineService> logger,
+            IConfiguration config,
+            SepesDbContext db,
+            IMapper mapper,
+            IUserService userService,
+            IStudyService studyService,
+            ISandboxService sandboxService,
+            ISandboxResourceService sandboxResourceService,
+            IProvisioningQueueService workQueue,
+            IAzureVMService azureVmService,
+            IAzureCostManagementService costService)
         {
             _logger = logger;
             _db = db;
@@ -46,15 +57,18 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceService = sandboxResourceService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
+            _costService = costService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
+         
+
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
             var study = await _studyService.GetStudyByIdAsync(sandbox.StudyId);
-
+            await _costService.GetVmPrice(sandbox.Region, userInput.Size);
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
 
             await _sandboxResourceService.ValidateNameThrowIfInvalid(virtualMachineName);
