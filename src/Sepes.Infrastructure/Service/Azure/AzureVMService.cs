@@ -158,17 +158,20 @@ namespace Sepes.Infrastructure.Service
             switch (distro.ToLower())
             {
                 case "win2019datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2019DataCenter.Publisher, AzureVMUtils.Windows.Server2019DataCenter.Offer, AzureVMUtils.Windows.Server2019DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
+                    break;
+                case "win2019datacentercore":
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Sku);
                     break;
                 case "win2016datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2016DataCenter.Publisher, AzureVMUtils.Windows.Server2016DataCenter.Offer, AzureVMUtils.Windows.Server2016DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Sku);
                     break;
-                case "win2012r2datacenter":
-                    withOS = vmCreatable.WithPopularWindowsImage(KnownWindowsVirtualMachineImage.WindowsServer2012R2Datacenter);
+                case "win2016datacentercore":
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Sku);
                     break;
                 default:
                     _logger.LogInformation("Could not match distro argument. Default will be chosen: Windows Server 2019");
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2019DataCenter.Publisher, AzureVMUtils.Windows.Server2019DataCenter.Offer, AzureVMUtils.Windows.Server2019DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
                     break;
             }
             var vm = withOS
@@ -183,23 +186,23 @@ namespace Sepes.Infrastructure.Service
             switch (distro.ToLower())
             {
                 case "ubuntults":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.UbuntuServer1804LTS.Publisher, AzureVMUtils.Linux.UbuntuServer1804LTS.Offer, AzureVMUtils.Linux.UbuntuServer1804LTS.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
                     break;
                 case "ubuntu16lts":
                     withOS = vmCreatable.WithPopularLinuxImage(KnownLinuxVirtualMachineImage.UbuntuServer16_04_Lts);
                     break;
                 case "rhel":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.RedHat7LVM.Publisher, AzureVMUtils.Linux.RedHat7LVM.Offer, AzureVMUtils.Linux.RedHat7LVM.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Publisher, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Offer, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Sku);
                     break;
                 case "debian":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.Debian10.Publisher, AzureVMUtils.Linux.Debian10.Offer, AzureVMUtils.Linux.Debian10.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.Debian10.Publisher, AzureVmOperatingSystemConstants.Linux.Debian10.Offer, AzureVmOperatingSystemConstants.Linux.Debian10.Sku);
                     break;
                 case "centos":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.CentOS75.Publisher, AzureVMUtils.Linux.CentOS75.Offer, AzureVMUtils.Linux.CentOS75.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.CentOS75.Publisher, AzureVmOperatingSystemConstants.Linux.CentOS75.Offer, AzureVmOperatingSystemConstants.Linux.CentOS75.Sku);
                     break;
                 default:
                     _logger.LogInformation("Could not match distro argument. Default will be chosen: Ubuntu 18.04-LTS");
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.UbuntuServer1804LTS.Publisher, AzureVMUtils.Linux.UbuntuServer1804LTS.Offer, AzureVMUtils.Linux.UbuntuServer1804LTS.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
                     break;
             }
             var vm = withOS
@@ -346,12 +349,12 @@ namespace Sepes.Infrastructure.Service
         {
             var vm = await GetAsync(resourceGroupName, resourceName);
 
+            var result = new VmExtendedDto();
+
             if (vm == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceGroupName, resourceName);
-            }
-
-            var result = new VmExtendedDto();
+               return result;
+            }         
 
             result.PowerState = AzureVmUtil.GetPowerState(vm);
 

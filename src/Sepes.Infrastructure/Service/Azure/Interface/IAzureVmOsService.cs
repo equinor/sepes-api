@@ -7,6 +7,6 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureVmOsService
     {
-        Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

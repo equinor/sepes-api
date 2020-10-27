@@ -80,7 +80,7 @@ namespace Sepes.Infrastructure.Service
 
             var region = RegionStringConverter.Convert(sandbox.Region);
 
-            var vmSettingsString = await CreateVmSettingsString(study.Id.Value, sandboxId, userInput);
+            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, study.Id.Value, sandboxId, userInput);
 
             var resourceGroup = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
@@ -154,6 +154,8 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
+              
+
                 var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
 
                 var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
@@ -186,30 +188,53 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<List<VmOsDto>> AvailableOperatingSystems(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(cancellationToken); // new List<VmOsDto>();
+            List<VmOsDto> result = null;
 
-            ////Windows
-            //result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
-            //result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
-            //result.Add(new VmOsDto() { Key = "win2012r2datacenter", DisplayValue = "Windows Server 2012 Datacenter R2", Category = "windows" });
+            try
+            {
+                var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
-            ////Linux
-            //result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
-            //result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
-            //result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
-            //result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
-            //result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
+                result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Unable to get available OS from azure for sandbox {sandboxId}");
+            }
 
             return result;
         }
 
-        async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
+        public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
+          
+            var result = new List<VmOsDto>();
+
+            ////Windows
+            result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2019datacentercore", DisplayValue = "Windows Server 2019 Datacenter Core", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2016datacentercore", DisplayValue = "Windows Server 2016 Datacenter Core", Category = "windows" });
+
+            //Linux
+            result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
+            result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
+
+            return result;
+        }
+
+        async Task<string> CreateVmSettingsString(string region, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var availableOs = await AvailableOperatingSystems();
+            var availableOs = await AvailableOperatingSystems(region);
             vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);

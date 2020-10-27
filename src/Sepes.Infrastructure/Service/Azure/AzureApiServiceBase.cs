@@ -5,9 +5,11 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Identity.Web;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
@@ -16,6 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure
         protected readonly ILogger _logger;
         protected readonly IConfiguration _config;
         protected readonly AzureCredentials _credentials;
+        protected readonly ITokenAcquisition _tokenAcquisition;
 
         readonly string _tokenUrl;
         readonly string _tenantId;
@@ -26,11 +29,11 @@ namespace Sepes.Infrastructure.Service.Azure
         protected readonly string _subscriptionId;
 
 
-        public AzureApiServiceBase(IConfiguration config, ILogger logger)
+        public AzureApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
+            _tokenAcquisition = tokenAcquisition;
             _tenantId = config[ConfigConstants.AZ_TENANT_ID];
             _clientId = config[ConfigConstants.AZ_CLIENT_ID];
             _clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
@@ -47,18 +50,19 @@ namespace Sepes.Infrastructure.Service.Azure
             //    .Authenticate(_credentials).WithSubscription(_subscriptionId);
         }
 
-        protected async Task<string> AquireToken(CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<string> AquireTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
+
                 using (var tokenClient = new HttpClient())
                 {
-                    var tokenRequestBodyObject = new { grant_type = "client_credentials", client_id = _clientId, client_secret = _clientSecret, resource = _clientId };
+                    var tokenRequestBodyObject = new { grant_type = "client_credentials", client_id = _clientId, client_secret = _clientSecret, resource = "https://management.azure.com/" };
                     var tokenRequestBodyJson = new StringContent(JsonConvert.SerializeObject(tokenRequestBodyObject), Encoding.UTF8, "application/json");
 
                     var tokenResponseMessage = await tokenClient.PostAsync(_tokenUrl, tokenRequestBodyJson, cancellationToken);
 
-                   var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(await tokenResponseMessage.Content.ReadAsStringAsync());
+                    var tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(await tokenResponseMessage.Content.ReadAsStringAsync());
 
                     if (String.IsNullOrWhiteSpace(tokenResponse.access_token))
                     {
@@ -74,6 +78,32 @@ namespace Sepes.Infrastructure.Service.Azure
             }
         }
 
+
+
+        protected async Task<T> GetResponse<T>(string url, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
+                //var token = await AquireTokenAsync(cancellationToken);
+                string[] scopes = new string[] { "https://management.azure.com/.default" };
+                var token = await _tokenAcquisition.GetAccessTokenForAppAsync(scopes);
+
+                using (var apiRequestClient = new HttpClient())
+                {
+                    apiRequestClient.DefaultRequestHeaders.Authorization =new AuthenticationHeaderValue("Bearer", token);
+
+                    var responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+
+                    var deserializedResponse = JsonConvert.DeserializeObject<T>(await responseMessage.Content.ReadAsStringAsync());
+
+                    return deserializedResponse;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{this.GetType()}: GetResponse for the url {url} failed", ex);
+            }
+        }
     }
 
     class TokenResponse

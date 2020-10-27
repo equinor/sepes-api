@@ -77,10 +77,10 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(availableSizes);
         }
 
-        [HttpGet("operatingsystems/")]
-        public async Task<IActionResult> GetAvailableOperatingSystems()
+        [HttpGet("{sandboxId}/operatingsystems")]
+        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmService.AvailableOperatingSystems();
+            var availableSizes = await _vmService.AvailableOperatingSystems(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
     }
