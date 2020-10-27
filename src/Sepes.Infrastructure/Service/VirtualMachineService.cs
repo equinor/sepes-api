@@ -146,6 +146,15 @@ namespace Sepes.Infrastructure.Service
             return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);  
         }
 
+        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
+        {
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+
+            var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size);
+
+            return vmPrice;
+        }
+
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<VmSizeLookupDto> result = null;
@@ -268,6 +277,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
+       
     }
 }

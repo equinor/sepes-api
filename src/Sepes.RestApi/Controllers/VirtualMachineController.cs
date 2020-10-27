@@ -29,6 +29,13 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
+        [HttpPost("{sandboxId}/calculatedprice")]
+        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
+        {
+            var createdVm = await _vmService.CalculatePrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
         //[HttpPut("{vmId}")]
         //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
         //{

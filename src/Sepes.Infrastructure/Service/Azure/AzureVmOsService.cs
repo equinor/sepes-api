@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service.Azure
         async Task<List<VirtualMachineImageResource>> GetImages(string region, string publisher, string offer, string skus, CancellationToken cancellationToken = default(CancellationToken))
         {
             var imagesUrl = $"https://management.azure.com/subscriptions/{_subscriptionId}/providers/Microsoft.Compute/locations/{region}/publishers/{publisher}/artifacttypes/vmimage/offers/{offer}/skus/{skus}/versions?api-version=2020-06-01";
-            var images = await GetResponse<List<VirtualMachineImageResource>>(imagesUrl, cancellationToken);
+            var images = await GetResponse<List<VirtualMachineImageResource>>(imagesUrl, cancellationToken: cancellationToken);
             return images;
         }
 

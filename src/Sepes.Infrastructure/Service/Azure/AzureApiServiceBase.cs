@@ -80,19 +80,28 @@ namespace Sepes.Infrastructure.Service.Azure
 
 
 
-        protected async Task<T> GetResponse<T>(string url, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
-                //var token = await AquireTokenAsync(cancellationToken);
-                string[] scopes = new string[] { "https://management.azure.com/.default" };
-                var token = await _tokenAcquisition.GetAccessTokenForAppAsync(scopes);
+                string token = null;
+
+                if (needsAuth)
+                {
+                    string[] scopes = new string[] { "https://management.azure.com/.default" };
+                    token = await _tokenAcquisition.GetAccessTokenForAppAsync(scopes);
+                }
 
                 using (var apiRequestClient = new HttpClient())
                 {
-                    apiRequestClient.DefaultRequestHeaders.Authorization =new AuthenticationHeaderValue("Bearer", token);
+                    if (needsAuth)
+                    {
+                        apiRequestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    }                   
 
                     var responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+
+                    var responseString = await responseMessage.Content.ReadAsStringAsync();
 
                     var deserializedResponse = JsonConvert.DeserializeObject<T>(await responseMessage.Content.ReadAsStringAsync());
 
