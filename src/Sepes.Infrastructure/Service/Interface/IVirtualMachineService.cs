@@ -23,6 +23,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<VmDiskLookupDto>> AvailableDisks();
 
-        Task<List<VmOsDto>> AvailableOperatingSystems();
+        Task<List<VmOsDto>> AvailableOperatingSystems(CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -146,6 +146,11 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IAzureADUsersService, AzureADUsersService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+            services.AddTransient<IAzureVmOsService, AzureVmOsService>();
+
+            
+
+
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
 
 
