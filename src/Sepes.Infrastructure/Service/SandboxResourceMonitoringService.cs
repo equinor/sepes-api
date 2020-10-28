@@ -49,13 +49,13 @@ namespace Sepes.Infrastructure.Service
 
                 try
                 {  
-                    if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
                     {
                         _logger.LogInformation($"No valid foreign resource Id specified for {curRes.Id}. Foreign Id was {curRes.ResourceId}. Aborting monitoring");
                         continue;
                     }
 
-                    if (curRes.ResourceName == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME)
+                    if (curRes.ResourceName == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
                     {
                         _logger.LogInformation($"No valid name specified for {curRes.Id}. Name was {curRes.ResourceName}. Aborting monitoring");
                         continue;

@@ -1,6 +1,8 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿using Sepes.Infrastructure.Dto.Interfaces;
+
+namespace Sepes.Infrastructure.Dto
 {
-    public class SandboxResourceLightDto
+    public class SandboxResourceLightDto : IHasLinkToExtSystem
     {  
         public string Name { get; set; }
 
