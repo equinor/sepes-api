@@ -33,8 +33,21 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceService _sandboxResourceService;
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVMService _azureVmService;
+        readonly IAzureVmOsService _azureOsService;
+        readonly IAzureCostManagementService _costService;
 
-        public VirtualMachineService(ILogger<VirtualMachineService> logger, IConfiguration config, SepesDbContext db, IMapper mapper, IUserService userService, IStudyService studyService, ISandboxService sandboxService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService workQueue, IAzureVMService azureVmService)
+        public VirtualMachineService(ILogger<VirtualMachineService> logger,
+            IConfiguration config,
+            SepesDbContext db,
+            IMapper mapper,
+            IUserService userService,
+            IStudyService studyService,
+            ISandboxService sandboxService,
+            ISandboxResourceService sandboxResourceService,
+            IProvisioningQueueService workQueue,
+            IAzureVMService azureVmService,
+            IAzureCostManagementService costService,
+            IAzureVmOsService azureOsService)
         {
             _logger = logger;
             _db = db;
@@ -46,10 +59,14 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceService = sandboxResourceService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
+            _azureOsService = azureOsService;
+            _costService = costService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
+         
+
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
@@ -63,7 +80,7 @@ namespace Sepes.Infrastructure.Service
 
             var region = RegionStringConverter.Convert(sandbox.Region);
 
-            var vmSettingsString = await CreateVmSettingsString(study.Id.Value, sandboxId, userInput);
+            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, study.Id.Value, sandboxId, userInput);
 
             var resourceGroup = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
@@ -129,6 +146,15 @@ namespace Sepes.Infrastructure.Service
             return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);  
         }
 
+        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
+        {
+            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+
+            var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size);
+
+            return vmPrice;
+        }
+
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
             List<VmSizeLookupDto> result = null;
@@ -137,6 +163,8 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
+              
+
                 var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
 
                 var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
@@ -169,14 +197,37 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<List<VmOsDto>> AvailableOperatingSystems()
+        public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
+            List<VmOsDto> result = null;
+
+            try
+            {
+                var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+
+                result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical($"Unable to get available OS from azure for sandbox {sandboxId}");
+            }
+
+            return result;
+        }
+
+        public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
+          
             var result = new List<VmOsDto>();
 
-            //Windows
+            ////Windows
             result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2019datacentercore", DisplayValue = "Windows Server 2019 Datacenter Core", Category = "windows" });
             result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2012r2datacenter", DisplayValue = "Windows Server 2012 Datacenter R2", Category = "windows" });
+            result.Add(new VmOsDto() { Key = "win2016datacentercore", DisplayValue = "Windows Server 2016 Datacenter Core", Category = "windows" });
 
             //Linux
             result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
@@ -188,11 +239,11 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        async Task<string> CreateVmSettingsString(int studyId, int sandboxId, CreateVmUserInputDto userInput)
+        async Task<string> CreateVmSettingsString(string region, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var availableOs = await AvailableOperatingSystems();
+            var availableOs = await AvailableOperatingSystems(region);
             vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
@@ -226,6 +277,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
+       
     }
 }

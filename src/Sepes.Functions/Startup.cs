@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
@@ -23,9 +24,9 @@ namespace Sepes.CloudResourceWorker
 
         string GetConfigValue(string key, bool throwIfEmpty = false)
         {
-           var value = System.Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
+            var value = System.Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
 
-            if(throwIfEmpty && String.IsNullOrWhiteSpace(value))
+            if (throwIfEmpty && String.IsNullOrWhiteSpace(value))
             {
                 throw new NullReferenceException($"Configuration {key} is null or empty");
             }
@@ -34,7 +35,7 @@ namespace Sepes.CloudResourceWorker
         }
         public override void Configure(IFunctionsHostBuilder builder)
         {
-        var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
+            var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
             Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
              = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
             // Disables adaptive sampling.
@@ -54,10 +55,10 @@ namespace Sepes.CloudResourceWorker
                       sqlOptions.EnableRetryOnFailure(
                       maxRetryCount: 3,
                       maxRetryDelay: TimeSpan.FromSeconds(30),
-                      errorNumbersToAdd: null);                    
+                      errorNumbersToAdd: null);
                   }
-                  )           
-           
+                  )
+
               );
 
             builder.Services.AddHttpContextAccessor();
@@ -83,9 +84,9 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-                 builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
+            builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            }
-
+            builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
+        }
     }
 }

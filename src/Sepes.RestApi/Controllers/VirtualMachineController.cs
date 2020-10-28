@@ -29,6 +29,13 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
+        [HttpPost("{sandboxId}/calculatedprice")]
+        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
+        {
+            var createdVm = await _vmService.CalculatePrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
         //[HttpPut("{vmId}")]
         //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
         //{
@@ -77,10 +84,10 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(availableSizes);
         }
 
-        [HttpGet("operatingsystems/")]
-        public async Task<IActionResult> GetAvailableOperatingSystems()
+        [HttpGet("{sandboxId}/operatingsystems")]
+        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmService.AvailableOperatingSystems();
+            var availableSizes = await _vmService.AvailableOperatingSystems(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
     }

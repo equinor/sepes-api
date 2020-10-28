@@ -23,6 +23,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<VmDiskLookupDto>> AvailableDisks();
 
-        Task<List<VmOsDto>> AvailableOperatingSystems();
+
+        Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken));
+
+        Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput);
     }
 }
