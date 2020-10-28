@@ -1,11 +1,9 @@
-﻿using Microsoft.Azure.Management.Compute.Models;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +22,14 @@ namespace Sepes.Infrastructure.Service.Azure
             
             var prices = await GetResponse<AzurePriceResponseDto>(priceUrl, false, cancellationToken);
 
-            var relevantPrice = prices.Items.Where(p => p.effectiveStartDate <= DateTime.UtcNow).OrderByDescending(p => p.retailPrice).FirstOrDefault();
+            var relevantPriceItem = prices.Items.Where(p => p.effectiveStartDate <= DateTime.UtcNow).OrderByDescending(p => p.retailPrice).FirstOrDefault();
 
-            return relevantPrice.retailPrice * 730; //Prices are per hour
+            if(relevantPriceItem == null)
+            {
+                return 0.0;
+            }
+
+            return relevantPriceItem.retailPrice * 730; //Prices are per hour, azure defaults to 730 hours/month in their web interface
         }       
     }
 }
