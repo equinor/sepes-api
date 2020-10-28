@@ -1,6 +1,8 @@
-﻿namespace Sepes.Infrastructure.Dto.VirtualMachine
+﻿using Sepes.Infrastructure.Dto.Interfaces;
+
+namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
-    public class VmDto
+    public class VmDto : IHasLinkToExtSystem
     {
         public int Id { get; set; }
 
@@ -17,6 +19,8 @@
         public string Created { get; set; }
 
         public string CreatedBy { get; set; }
-   
+
+        public string LinkToExternalSystem { get; set; }
+
     }
 }

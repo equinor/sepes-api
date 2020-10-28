@@ -56,7 +56,12 @@ namespace Sepes.Infrastructure.Util
 
             if (String.IsNullOrWhiteSpace(resource.ResourceId))
             {
-                throw new Exception($"Id is empty for Resource {resource.ResourceId}");
+                return null;
+            }
+
+            if (resource.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
+            {
+                return null;
             }
 
             return CreateResourceLink(domain, resource.ResourceId);

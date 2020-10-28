@@ -6,7 +6,7 @@ namespace Sepes.Infrastructure.Util
     // Naming prefixes should follow these conventions https://docs.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/naming-and-tagging.
     public static class AzureResourceNameUtil
     {
-        public const string AZURE_RESOURCE_INITIAL_NAME = "n/a";
+        public const string AZURE_RESOURCE_INITIAL_ID_OR_NAME = "n/a";
 
         public static string ResourceGroup(string studyName, string sandboxName)
         {
