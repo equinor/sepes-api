@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
             var relevantPrice = prices.Items.Where(p => p.effectiveStartDate <= DateTime.UtcNow).OrderByDescending(p => p.retailPrice).FirstOrDefault();
 
-            return relevantPrice.retailPrice * 24 * 30; 
+            return relevantPrice.retailPrice * 730; //Prices are per hour
         }       
     }
 }
