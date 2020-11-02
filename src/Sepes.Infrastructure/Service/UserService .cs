@@ -169,8 +169,6 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
-        }
-
-  
+        }  
     }
 }

@@ -27,7 +27,6 @@ namespace Sepes.Tests.Setup
              .AddJsonFile("appsettings.Development.json", optional: true)
              .AddEnvironmentVariables().Build();
 
-
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
             services.AddSingleton<IConfiguration>(config);
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
@@ -42,6 +41,7 @@ namespace Sepes.Tests.Setup
             services.AddTransient<SandboxResourceOperationService>();
             services.AddTransient<IUserService, UserServiceMock>();
             services.AddTransient<IRequestIdService, HasRequestIdMock>();
+            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
 
             //Sepes Services
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
@@ -63,8 +63,10 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();                 
 
             return services;
-        }
+        } 
     }
+
+  
 
     public class ConnectionStrings
     {

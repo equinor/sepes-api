@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IUserService
-    {
+    {     
         UserDto GetCurrentUser();
 
         Task<UserDto> GetCurrentUserFromDbAsync();
@@ -12,6 +12,5 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<UserDto> GetCurrentUserWithStudyParticipantsAsync();
 
         Task<UserPermissionDto> GetUserPermissionsAsync();
-
     }
 }

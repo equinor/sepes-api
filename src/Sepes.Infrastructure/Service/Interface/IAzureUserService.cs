@@ -1,16 +1,14 @@
 ﻿using Microsoft.Graph;
-using Sepes.Infrastructure.Dto;
-using System;
+using Sepes.Infrastructure.Dto.Azure;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IAzureADUsersService
+    public interface IAzureUserService
     {
         Task<List<Microsoft.Graph.User>> SearchUsersAsync(string search, int limit);
 
-        Task<User> GetUser(string id);
+        Task<AzureUserDto> GetUser(string id);
     }
 }

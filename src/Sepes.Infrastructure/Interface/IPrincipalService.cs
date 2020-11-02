@@ -4,6 +4,6 @@ namespace Sepes.Infrastructure.Interface
 {
     public interface IPrincipalService
     {
-        IPrincipal GetPrincipal();
+        IPrincipal GetPrincipal();    
     }
 }

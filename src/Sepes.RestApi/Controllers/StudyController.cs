@@ -32,13 +32,15 @@ namespace Sepes.RestApi.Controller
     public partial class StudyController : StudyControllerBase
     {        
         readonly IStudyService _studyService;
+        readonly IStudyParticipantService _studyParticipantService;
         readonly ISandboxService _sandboxService;
         readonly IDatasetService _datasetService;    
 
 
-        public StudyController(IStudyService studyService, ISandboxService sandboxService, IDatasetService datasetService)
+        public StudyController(IStudyService studyService, IStudyParticipantService studyParticipantService, ISandboxService sandboxService, IDatasetService datasetService)
         {
             _studyService = studyService;
+            _studyParticipantService = studyParticipantService;
             _sandboxService = sandboxService;
             _datasetService = datasetService;    
         }       
@@ -86,8 +88,8 @@ namespace Sepes.RestApi.Controller
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            var study = await _studyService.DeleteStudyAsync(studyId);
-            return new JsonResult(study);
+            var deletedStudy = await _studyService.DeleteStudyAsync(studyId);
+            return new JsonResult(deletedStudy);
         }
        
        

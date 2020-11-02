@@ -1,20 +1,19 @@
 ﻿using AutoMapper;
 using Microsoft.Graph;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureADUsersService : IAzureADUsersService
+    public class AzureUserService : IAzureUserService
     {
-        private readonly IGraphServiceProvider _graphServiceProvider;
-        private readonly IMapper _mapper;
+        readonly IMapper _mapper;
+        readonly IGraphServiceProvider _graphServiceProvider;      
 
-        public AzureADUsersService(IGraphServiceProvider graphServiceProvider, IMapper mapper)
+        public AzureUserService(IMapper mapper, IGraphServiceProvider graphServiceProvider)
         {
             _mapper = mapper;
             _graphServiceProvider = graphServiceProvider;
@@ -51,19 +50,16 @@ namespace Sepes.Infrastructure.Service
             return listUsers;
 
         }
-        public async Task<User> GetUser(string id)
+        public async Task<AzureUserDto> GetUser(string id)
         {
             // Initialize the GraphServiceClient. 
             GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });
 
-            var result = await graphClient.Users.Request().Filter($"Id eq '{id}'").GetAsync();
+            var response = await graphClient.Users.Request().Filter($"Id eq '{id}'").GetAsync();
 
-            return result.FirstOrDefault();
-        }
+            var firstResponseItem = response.FirstOrDefault();
 
-        public Task<IEnumerable<User>> SearchUsersAsync2(string search, int limit)
-        {
-            throw new System.NotImplementedException();
-        }
+            return _mapper.Map<AzureUserDto>(firstResponseItem);
+        }      
     }
 }
