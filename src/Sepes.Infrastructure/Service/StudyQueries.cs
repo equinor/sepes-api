@@ -9,21 +9,22 @@ namespace Sepes.Infrastructure.Service
 {
     public static class StudyQueries
     {
-        public static IQueryable<Study> GetQueryableForStudiesLookup(SepesDbContext db)
+
+        public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
-            return db.Studies
-            .Include(s => s.StudyDatasets)
-                .ThenInclude(sd => sd.Dataset)
-            .Include(s => s.Sandboxes)
-            .Include(s => s.StudyParticipants)
-                .ThenInclude(sp => sp.User);
+            return db.Studies.Where(s => s.DeletedAt.HasValue == false);
+        }     
+
+        public static IQueryable<Study> UnHiddenStudiesQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesBaseQueryable(db).Where(s => !s.Restricted); ;
         }
 
         public static async Task<Study> GetStudyOrThrowAsync(int studyId, SepesDbContext db)
         {
-            var studyFromDb = await db.Studies
+            var studyFromDb = await ActiveStudiesBaseQueryable(db)
                 .Include(s => s.StudyDatasets)
-                    .ThenInclude(sd => sd.Dataset)                      
+                    .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)
@@ -36,9 +37,17 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Study", studyId);
             }
 
-
-
             return studyFromDb;
+        }
+
+        public static IQueryable<Study> ActiveStudiesLookupQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesBaseQueryable(db)
+            .Include(s => s.StudyDatasets)
+                .ThenInclude(sd => sd.Dataset)
+            .Include(s => s.Sandboxes)
+            .Include(s => s.StudyParticipants)
+                .ThenInclude(sp => sp.User);
         }
     }
 }

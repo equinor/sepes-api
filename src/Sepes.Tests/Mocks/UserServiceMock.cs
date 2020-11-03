@@ -8,24 +8,15 @@ namespace Sepes.Tests.Mocks
 {
     public class UserServiceMock : IUserService
     {
-        public bool CurrentUserIsAdmin()
-        {
-            return true;
-        }
+        public static string OBJECT_ID = "objectId";
+        public static string USERNAME = "testuser";
+        public static string FULLNAME = "Test User";
+        public static string EMAIL = "testuser@equinor.com";
+      
 
-        public bool CurrentUserIsDatasetAdmin()
+        UserDto GetBaseUser()
         {
-            return true;
-        }
-
-        public bool CurrentUserIsSponsor()
-        {
-            return true;
-        }
-
-        public UserDto GetBaseUser()
-        {
-            return new UserDto("objectId", "testuser", "Test User", "testuser@equinor.com");
+            return new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL);
         }
 
         public UserDto GetCurrentUser()

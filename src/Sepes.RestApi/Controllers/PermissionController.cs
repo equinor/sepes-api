@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controllers
 {
@@ -17,17 +13,17 @@ namespace Sepes.RestApi.Controllers
     [Authorize] //Todo: Need wider access, but restricted for now
     public class PermissionController : ControllerBase
     {
-        readonly IUserService _userService;
+        readonly IUserPermissionService _service;
 
-        public PermissionController(IUserService userService)
+        public PermissionController(IUserPermissionService userService)
         {
-            _userService = userService;
+            _service = userService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetPermissions()
         {
-          var permissions = await _userService.GetUserPermissionsAsync();
+          var permissions = await _service.GetUserPermissionsAsync();
 
             return new JsonResult(permissions);
         }

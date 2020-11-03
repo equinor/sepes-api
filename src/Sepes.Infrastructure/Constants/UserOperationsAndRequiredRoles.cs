@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Constants
                     { UserOperations.StudyAddRemoveParticipant, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
                     { UserOperations.StudyAddRemoveSandbox, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
                     { UserOperations.StudyClose, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
-                    { UserOperations.StudyDelete, new HashSet<string> { } },
+                    { UserOperations.StudyDelete, new HashSet<string> { StudyRoles.StudyOwner } },
                      
                     //Sandbox details and editation
                     { UserOperations.SandboxEdit, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },

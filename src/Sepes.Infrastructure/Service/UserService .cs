@@ -18,8 +18,8 @@ namespace Sepes.Infrastructure.Service
     {
         UserDto _cachedUser;
 
-        bool userIsLoadedFromDb;
-        bool userIsLoadedFromDbWithStudyParticipants;
+        bool _userIsLoadedFromDb;
+        bool _userIsLoadedFromDbWithStudyParticipants;
 
         readonly IConfiguration _config;
         readonly IPrincipalService _principalService;
@@ -43,11 +43,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<UserDto> GetCurrentUserFromDbAsync()
         {
-            if (userIsLoadedFromDb == false)
+            if (_userIsLoadedFromDb == false)
             {
                 var userFromDb = await EnsureDbUserExists(false);
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
-                userIsLoadedFromDb = true;
+                _userIsLoadedFromDb = true;
             }
           
             return _cachedUser;
@@ -55,45 +55,15 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
         {
-            if (userIsLoadedFromDb == false || userIsLoadedFromDbWithStudyParticipants == false)
+            if (_userIsLoadedFromDb == false || _userIsLoadedFromDbWithStudyParticipants == false)
             {
                 var userFromDb = await EnsureDbUserExists(true);             
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
-                userIsLoadedFromDb = true;
-                userIsLoadedFromDbWithStudyParticipants = true;
+                _userIsLoadedFromDb = true;
+                _userIsLoadedFromDbWithStudyParticipants = true;
             }
             return _cachedUser;
-        }
-
-        public bool CurrentUserIsAdmin()
-        {
-            return _principalService.GetPrincipal().IsInRole(AppRoles.Admin);
-        }
-
-        public bool CurrentUserIsSponsor()
-        {
-            return _principalService.GetPrincipal().IsInRole(AppRoles.Sponsor);
-        }
-
-        public bool CurrentUserIsDatasetAdmin()
-        {
-            return _principalService.GetPrincipal().IsInRole(AppRoles.DatasetAdmin);
-        }
-
-        public  async Task<UserPermissionDto> GetUserPermissionsAsync()
-        {
-            var userFromDb = await GetCurrentUserFromDbAsync();
-
-            var result = new UserPermissionDto();
-            result.Admin = userFromDb.Admin;
-            result.Sponsor = userFromDb.Sponsor;
-            result.DatasetAdmin = userFromDb.DatasetAdmin;
-
-            result.CanCreateStudy = userFromDb.Admin || userFromDb.Sponsor;
-            result.CanAdministerDatasets = userFromDb.Admin || userFromDb.DatasetAdmin;
-
-            return result;
-        }
+        }  
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)
         {
@@ -169,8 +139,6 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
-        }
-
-  
+        }  
     }
 }

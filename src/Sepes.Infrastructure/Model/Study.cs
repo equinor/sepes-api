@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
@@ -24,6 +25,10 @@ namespace Sepes.Infrastructure.Model
 
         public string LogoUrl { get; set; }
 
+        public DateTime? DeletedAt{ get; set; }
+
+        public string DeletedBy { get; set; }
+
         public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
         public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
@@ -32,8 +37,4 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<SandboxResource> CloudResources { get; set; }
     }
-
-
-
-
 }

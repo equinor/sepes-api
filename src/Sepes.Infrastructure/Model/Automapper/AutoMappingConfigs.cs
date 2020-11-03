@@ -60,8 +60,7 @@ namespace Sepes.Infrastructure.Model.Automapper
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
-                .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
-              ;
+                .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
 
 
             //CLOUD RESOURCE
@@ -87,6 +86,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                     .ForMember(dest => dest.Source, source => source.MapFrom(s => ParticipantSource.Db))
                     .ForMember(dest => dest.DatabaseId, source => source.MapFrom(s => s.Id));
 
+            CreateMap<Microsoft.Graph.User, AzureUserDto>();
+
             CreateMap<Microsoft.Graph.User, ParticipantLookupDto>()
                     .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))
                     .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail))
@@ -98,7 +99,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.User.EmailAddress))
                 .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.User.FullName))
                 .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
-                .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
+                .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName))
+                    .ForMember(dest => dest.Study, source => source.MapFrom(x => x.Study)); ;
 
             //AZURE
             CreateMap<IResource, AzureResourceDto>();
