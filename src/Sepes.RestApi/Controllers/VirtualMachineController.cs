@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controllers
@@ -28,6 +29,13 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
+        [HttpPost("{sandboxId}/calculatedprice")]
+        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
+        {
+            var createdVm = await _vmService.CalculatePrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
         //[HttpPut("{vmId}")]
         //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
         //{
@@ -49,10 +57,38 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpGet("forsandbox/{sandboxId}")]
-        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId)
+        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId);
+            var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId, cancellationToken);
             return new JsonResult(virtualMachinesForSandbox);
+        }
+
+        [HttpGet("{vmId}/extended")]
+        public async Task<IActionResult> GetVmExtendedInfo(int vmId, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            var virtualMachinesForSandbox = await _vmService.GetExtendedInfo(vmId);
+            return new JsonResult(virtualMachinesForSandbox);
+        }
+
+        [HttpGet("{sandboxId}/sizes")]
+        public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
+        {
+            var availableSizes = await _vmService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
+            return new JsonResult(availableSizes);
+        }
+
+        [HttpGet("disks/")]
+        public async Task<IActionResult> GetAvailableDisks()
+        {
+            var availableSizes = await _vmService.AvailableDisks();
+            return new JsonResult(availableSizes);
+        }
+
+        [HttpGet("{sandboxId}/operatingsystems")]
+        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
+        {
+            var availableSizes = await _vmService.AvailableOperatingSystems(sandboxId, cancellationToken);
+            return new JsonResult(availableSizes);
         }
     }
 }

@@ -13,6 +13,7 @@ using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
@@ -121,6 +122,7 @@ namespace Sepes.RestApi
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserPermissionService, UserPermissionService>();            
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<ILookupService, LookupService>();
@@ -143,10 +145,16 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
-            services.AddTransient<IAzureADUsersService, AzureADUsersService>();
+            services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+            services.AddTransient<IAzureVmOsService, AzureVmOsService>();
+
             
-            
+
+
+            services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
+
+
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {

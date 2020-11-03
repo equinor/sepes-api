@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Util
             return db.Studies
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
-                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any());
+                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any() && s.DeletedAt.HasValue == false);
         }
 
 

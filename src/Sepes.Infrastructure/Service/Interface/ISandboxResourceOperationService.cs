@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<SandboxResourceOperationDto> GetByIdAsync(int id);
         Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null);
 
-        Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status);
+        Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status, string errorMessage = null);
         Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status);
 
         Task<bool> ExistsPreceedingUnfinishedOperationsAsync(SandboxResourceOperationDto operationDto);

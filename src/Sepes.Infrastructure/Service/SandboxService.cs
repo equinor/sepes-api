@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -84,6 +85,12 @@ namespace Sepes.Infrastructure.Service
         {
             // Verify that study with that id exists
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+
+            //Check uniqueness of name
+            if (_db.Sandboxes.Where(sb => sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).Any())
+            {
+                throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists");
+            }
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -215,7 +222,7 @@ namespace Sepes.Infrastructure.Service
             dto.Bastion = resourceEntry;
         }
 
-        async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, string configString = null, int dependsOn = 0)
+        async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, string configString = null, int dependsOn = 0)
         {
             var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
@@ -226,8 +233,18 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.StudyReadOwnRestricted);
-            var resources = _mapper.Map<List<SandboxResourceLightDto>>(sandboxFromDb.Resources);
-            return resources;
+
+            //Filter out deleted resources
+            var resourcesFiltered = sandboxFromDb.Resources
+                .Where(r => !r.Deleted.HasValue
+                || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+
+                ).ToList();
+
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);
+                       
+
+            return resourcesMapped;
         }
 
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
@@ -266,6 +283,7 @@ namespace Sepes.Infrastructure.Service
 
                     curResource.Deleted = DateTime.UtcNow;
                     curResource.DeletedBy = user.UserName;
+                    curResource.UpdatedBy = "Faen";
 
                     _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", studyId, sandboxId, curResource.Id);
                 }
@@ -279,11 +297,12 @@ namespace Sepes.Infrastructure.Service
 
                 var deleteOperation = new SandboxResourceOperation()
                 {
+                    CreatedBy = user.UserName,
                     BatchId = Guid.NewGuid().ToString(),
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
                     SandboxResourceId = sandboxResourceGroup.Id,
-                    Description = $"Delete resources for Sandbox {sandboxFromDb.Id}",
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType, CloudResourceOperationType.DELETE, sandboxResourceGroup.SandboxId) + ". (Delete of SandBox resource group and all resources within)",
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
@@ -298,7 +317,7 @@ namespace Sepes.Infrastructure.Service
                 queueParentItem.SandboxId = sandboxId;
                 queueParentItem.Description = $"Delete resources for Sandbox: {sandboxId}";
                 queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = deleteOperation.Id });
-                await _provisioningQueueService.SendMessageAsync(queueParentItem);
+                await _provisioningQueueService.SendMessageAsync(queueParentItem, visibilityTimeout: TimeSpan.FromSeconds(10));
             }
             else
             {

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sepes.Infrastructure.Util
+﻿namespace Sepes.Infrastructure.Constants
 {
-    public static class AzureVMUtils
+    public static class AzureVmOperatingSystemConstants
     {
         public static class Windows
         {
@@ -14,11 +10,23 @@ namespace Sepes.Infrastructure.Util
                 public const string Offer = "WindowsServer";
                 public const string Sku = "2019-Datacenter";
             }
+            public static class Server2019DataCenterCore
+            {
+                public const string Publisher = "MicrosoftWindowsServer";
+                public const string Offer = "WindowsServer";
+                public const string Sku = "2019-Datacenter-Core";
+            }
             public static class Server2016DataCenter
             {
                 public const string Publisher = "MicrosoftWindowsServer";
                 public const string Offer = "WindowsServer";
                 public const string Sku = "2016-Datacenter";
+            }
+            public static class Server2016DataCenterCore
+            {
+                public const string Publisher = "MicrosoftWindowsServer";
+                public const string Offer = "WindowsServer";
+                public const string Sku = "2016-Datacenter-Server-Core";
             }
         }
 

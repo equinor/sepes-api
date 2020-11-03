@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Sepes.Infrastructure.Dto.VirtualMachine;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
@@ -34,9 +33,6 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         {
 
         }
-        public SandboxResourceCreationAndSchedulingDto(int sandboxId, string sandboxName, string studyName, CreateVmUserInputDto newVmDto)
-        {
-
-        }
+      
     }
 }

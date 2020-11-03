@@ -26,6 +26,8 @@ namespace Sepes.Infrastructure.Model
 
         public string Description { get; set; }
 
+        public string LatestError { get; set; }
+
         public SandboxResource Resource { get; set; }
         
         public SandboxResourceOperation DependsOnOperation { get; set; }

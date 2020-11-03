@@ -275,6 +275,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("LatestError")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("MaxTryCount")
                         .HasColumnType("int");
 
@@ -323,6 +326,12 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");

@@ -50,12 +50,12 @@ namespace Sepes.Infrastructure.Service
         public async Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto)
         {
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.StudyName, dto.SandboxName);
-            var resourceEntity = await AddInternal(dto.BatchId, dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, dto.Tags, resourceName: resourceGroupName);
+            var resourceEntity = await AddInternal(dto.BatchId, dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, resourceGroupName, dto.Tags);
 
             var resourceCreateOperation = resourceEntity.Operations.FirstOrDefault();
             await _sandboxResourceOperationService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
 
-            dto.ResourceGroup = MapEntityToDto(resourceEntity);          
+            dto.ResourceGroup = MapEntityToDto(resourceEntity);
 
             var azureResourceGroup = await _resourceGroupService.Create(resourceEntity.ResourceName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var resourceEntity = await AddInternal(Guid.NewGuid().ToString(),
                     sandboxId,
-                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, tags, resourceName: vmName, false, dependentOn: dependsOn, configString: configString);
+                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, vmName, tags, false, dependentOn: dependsOn, configString: configString);
 
                 return MapEntityToDto(resourceEntity);
             }
@@ -94,15 +94,25 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
         {
-            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, dto.Tags, resourceName, sandboxControlled: sandboxControlled,dependentOn: dependsOn, configString: configString);       
+            var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, resourceName, dto.Tags, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString);
 
-            var mappedToDto = MapEntityToDto(newResource);          
+            var mappedToDto = MapEntityToDto(newResource);
 
             return mappedToDto;
         }
 
-        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, Dictionary<string, string> tags, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_NAME, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
+        public async Task ValidateNameThrowIfInvalid(string resourceName)
         {
+            if(await _db.SandboxResources.Where(r=> r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
+            {
+                throw new Exception($"Resource with name {resourceName} allready exists!");
+            }
+        }
+
+        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, string resourceName, Dictionary<string, string> tags, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
+        {
+           await ValidateNameThrowIfInvalid(resourceName);
+
             var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
 
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
@@ -114,9 +124,9 @@ namespace Sepes.Infrastructure.Service
                 ResourceGroupId = resourceGroupId,
                 ResourceGroupName = resourceGroupName,
                 ResourceType = type,
-                ResourceKey = "n/a",
+                ResourceKey = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
                 ResourceName = resourceName,
-                ResourceId = "n/a",
+                ResourceId = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
                 SandboxControlled = sandboxControlled,
                 Region = region,
                 Tags = tagsString,
@@ -125,8 +135,10 @@ namespace Sepes.Infrastructure.Service
                 Operations = new List<SandboxResourceOperation> {
                     new SandboxResourceOperation()
                     {
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(type, CloudResourceOperationType.CREATE, sandboxId),
                     BatchId = batchId,
                     OperationType = CloudResourceOperationType.CREATE,
+                    CreatedBy = currentUser.UserName,
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     DependsOnOperationId = dependentOn != 0 ? dependentOn: default(int?),
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
@@ -193,7 +205,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResources.Include(r=> r.Operations).FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources.Include(r => r.Operations).FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {
@@ -207,7 +219,7 @@ namespace Sepes.Infrastructure.Service
         {
             var user = _userService.GetCurrentUser();
 
-            var resourceFromDb =  await GetOrThrowAsync(id);
+            var resourceFromDb = await GetOrThrowAsync(id);
 
             var deleteOperationDescription = $"Delete resource {id} ({resourceFromDb.ResourceType})";
 
@@ -215,7 +227,7 @@ namespace Sepes.Infrastructure.Service
 
             await _sandboxResourceOperationService.AbortAllUnfinishedCreateOrUpdateOperations(id);
 
-            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);          
+            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);
 
             if (deleteOperation == null)
             {
@@ -223,12 +235,12 @@ namespace Sepes.Infrastructure.Service
 
                 deleteOperation = new SandboxResourceOperation()
                 {
+                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(resourceFromDb.ResourceType, CloudResourceOperationType.DELETE, resourceFromDb.SandboxId, id),
                     CreatedBy = user.UserName,
-                    BatchId = Guid.NewGuid().ToString(),
+                    BatchId = Guid.NewGuid().ToString(),                   
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = resourceFromDb.Id,
-                    Description = deleteOperationDescription,
+                    SandboxResourceId = resourceFromDb.Id,                   
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
@@ -269,7 +281,7 @@ namespace Sepes.Infrastructure.Service
 
             var user = _userService.GetCurrentUser();
 
-            MarkAsDeletedInternal(resourceEntity, user.UserName);       
+            MarkAsDeletedInternal(resourceEntity, user.UserName);
 
             await _db.SaveChangesAsync();
 
@@ -279,7 +291,7 @@ namespace Sepes.Infrastructure.Service
         SandboxResource MarkAsDeletedInternal(SandboxResource resource, string deletedBy)
         {
             resource.DeletedBy = deletedBy;
-            resource.Deleted = DateTime.UtcNow;      
+            resource.Deleted = DateTime.UtcNow;
 
             return resource;
         }
@@ -361,6 +373,21 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
+        public async Task<bool> ResourceIsDeleted(int resourceId)
+        {
+            var resource = await _db.SandboxResources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
 
+            if(resource == null)
+            {
+                return true;
+            }
+
+            if (resource.Deleted.HasValue || !String.IsNullOrWhiteSpace(resource.DeletedBy) )
+            {
+                return true;
+            } 
+            
+            return false;
+        }
     }
 }

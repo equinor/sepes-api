@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿using System.Collections.Generic;
+
+namespace Sepes.Infrastructure.Dto
 {
     public class StudyParticipantDto
     {
@@ -8,5 +10,7 @@
         public string Role { get; set; }
         public int UserId { get; set; }
         public int StudyId { get; set; }
+
+        public StudyDto Study { get; set; }
     }
 }

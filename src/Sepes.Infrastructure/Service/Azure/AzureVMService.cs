@@ -1,19 +1,23 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
+using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -26,28 +30,42 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating VM: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGrupName}");
 
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);           
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
 
             var passwordReference = vmSettings.Password;
             string password = await GetPasswordFromKeyVault(passwordReference);
 
-            string performanceProfile = vmSettings.PerformanceProfile;
-            string operatingSystem = vmSettings.OperatingSystem;
-            string distro = vmSettings.Distro;
+            string vmSize = vmSettings.Size;
+
 
             var createdVm = await Create(parameters.Region,
                 parameters.ResourceGrupName,
                 parameters.Name,
                 vmSettings.NetworkName, vmSettings.SubnetName,
                 vmSettings.Username, password,
-                performanceProfile, operatingSystem, distro, parameters.Tags,
-                vmSettings.DiagnosticStorageAccountName);
+                vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
+                vmSettings.DiagnosticStorageAccountName, cancellationToken);
 
-            var result = CreateResult(createdVm);
+            if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
+            {
+                foreach (var curDisk in vmSettings.DataDisks)
+                {
+                    var sizeAsInt = Convert.ToInt32(curDisk);
+
+                    if (sizeAsInt == 0)
+                    {
+                        throw new Exception($"Illegal data disk size: {curDisk}");
+                    }
+
+                    await ApplyVmDataDisks(parameters.ResourceGrupName, parameters.Name, sizeAsInt);
+                }
+            }
+
+            var result = CreateCRUDResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
 
@@ -56,8 +74,8 @@ namespace Sepes.Infrastructure.Service
         }
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var vm = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
-            var result = CreateResult(vm);
+            var vm = await GetAsync(parameters.ResourceGrupName, parameters.Name);
+            var result = CreateCRUDResult(vm);
             return result;
         }
 
@@ -70,7 +88,7 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
 
-                throw new Exception($"VM Creation failed. Unable to get real VM password from Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to get VM password from Key Vault. See inner exception for details.", ex);
             }
 
         }
@@ -83,11 +101,11 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+                throw new Exception($"VM Creation failed. Unable to delete VM password from Key Vault after use. See inner exception for details.", ex);
             }
         }
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmPerformanceProfile, string os, string distro, IDictionary<string, string> tags, string diagStorageAccountName)
+        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IVirtualMachine vm;
 
@@ -108,53 +126,31 @@ namespace Sepes.Infrastructure.Service
                                     .WithPrimaryPrivateIPAddressDynamic()
                                     .WithoutPrimaryPublicIPAddress();
 
-            VirtualMachineSizeTypes machineSize;
 
-            switch (vmPerformanceProfile.ToLower())
-            {
-                case "general":
-                    machineSize = VirtualMachineSizeTypes.StandardDS3V2;
-                    break;
-                case "cheap":
-                    machineSize = VirtualMachineSizeTypes.StandardB1s;
-                    break;
-                case "high_compute":
-                    machineSize = VirtualMachineSizeTypes.StandardH8;
-                    break;
-                case "high_memory":
-                    machineSize = VirtualMachineSizeTypes.StandardM64s;
-                    break;
-                case "gpu":
-                    machineSize = VirtualMachineSizeTypes.StandardND6s;
-                    break;
-                default:
-                    machineSize = VirtualMachineSizeTypes.StandardB1s;
-                    _logger.LogWarning($"Could not match vmPerformanceProfile argument: {vmPerformanceProfile}. Default will be chosen: StandardB1s");
-                    break;
-            }
             IWithCreate vmWithOS;
 
-            if (os.ToLower().Equals("windows"))
+            if (osCategory.ToLower().Equals("windows"))
             {
-                vmWithOS = CreateWindowsVm(vmCreatable, distro, userName, password);
+                vmWithOS = CreateWindowsVm(vmCreatable, osName, userName, password);
             }
-            else if (os.ToLower().Equals("linux"))
+            else if (osCategory.ToLower().Equals("linux"))
             {
-                vmWithOS = CreateLinuxVm(vmCreatable, distro, userName, password);
+                vmWithOS = CreateLinuxVm(vmCreatable, osName, userName, password);
             }
             else
             {
-                throw new ArgumentException($"Argument 'os' needs to be either 'windows' or 'linux'. Current value: {os}");
+                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {osCategory}");
             }
 
-            var vmWithSize = vmWithOS.WithSize(machineSize);
+            var vmWithSize = vmWithOS.WithSize(vmSize);
 
             vm = await vmWithSize
                 .WithBootDiagnostics(diagStorage)
                 .WithTags(tags)
-                .CreateAsync();
+                .CreateAsync(cancellationToken);
 
             return vm;
+
         }
 
         private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
@@ -163,17 +159,20 @@ namespace Sepes.Infrastructure.Service
             switch (distro.ToLower())
             {
                 case "win2019datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2019DataCenter.Publisher, AzureVMUtils.Windows.Server2019DataCenter.Offer, AzureVMUtils.Windows.Server2019DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
+                    break;
+                case "win2019datacentercore":
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Sku);
                     break;
                 case "win2016datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2016DataCenter.Publisher, AzureVMUtils.Windows.Server2016DataCenter.Offer, AzureVMUtils.Windows.Server2016DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Sku);
                     break;
-                case "win2012r2datacenter":
-                    withOS = vmCreatable.WithPopularWindowsImage(KnownWindowsVirtualMachineImage.WindowsServer2012R2Datacenter);
+                case "win2016datacentercore":
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Sku);
                     break;
                 default:
                     _logger.LogInformation("Could not match distro argument. Default will be chosen: Windows Server 2019");
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVMUtils.Windows.Server2019DataCenter.Publisher, AzureVMUtils.Windows.Server2019DataCenter.Offer, AzureVMUtils.Windows.Server2019DataCenter.Sku);
+                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
                     break;
             }
             var vm = withOS
@@ -188,23 +187,23 @@ namespace Sepes.Infrastructure.Service
             switch (distro.ToLower())
             {
                 case "ubuntults":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.UbuntuServer1804LTS.Publisher, AzureVMUtils.Linux.UbuntuServer1804LTS.Offer, AzureVMUtils.Linux.UbuntuServer1804LTS.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
                     break;
                 case "ubuntu16lts":
                     withOS = vmCreatable.WithPopularLinuxImage(KnownLinuxVirtualMachineImage.UbuntuServer16_04_Lts);
                     break;
                 case "rhel":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.RedHat7LVM.Publisher, AzureVMUtils.Linux.RedHat7LVM.Offer, AzureVMUtils.Linux.RedHat7LVM.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Publisher, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Offer, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Sku);
                     break;
                 case "debian":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.Debian10.Publisher, AzureVMUtils.Linux.Debian10.Offer, AzureVMUtils.Linux.Debian10.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.Debian10.Publisher, AzureVmOperatingSystemConstants.Linux.Debian10.Offer, AzureVmOperatingSystemConstants.Linux.Debian10.Sku);
                     break;
                 case "centos":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.CentOS75.Publisher, AzureVMUtils.Linux.CentOS75.Offer, AzureVMUtils.Linux.CentOS75.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.CentOS75.Publisher, AzureVmOperatingSystemConstants.Linux.CentOS75.Offer, AzureVmOperatingSystemConstants.Linux.CentOS75.Sku);
                     break;
                 default:
                     _logger.LogInformation("Could not match distro argument. Default will be chosen: Ubuntu 18.04-LTS");
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVMUtils.Linux.UbuntuServer1804LTS.Publisher, AzureVMUtils.Linux.UbuntuServer1804LTS.Offer, AzureVMUtils.Linux.UbuntuServer1804LTS.Sku);
+                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
                     break;
             }
             var vm = withOS
@@ -216,18 +215,15 @@ namespace Sepes.Infrastructure.Service
 
 
 
-        public async Task ApplyVMStorageSettings(string resourceGroupName, string virtualMachineName, int sizeInGB, string type)
+        public async Task ApplyVmDataDisks(string resourceGroupName, string virtualMachineName, int sizeInGB)
         {
-            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+            var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
 
-            // Not finished
-            vm.Update()
-                .WithNewDataDisk(sizeInGB);
-
-            throw new NotImplementedException();
+            var updatedVm = await vm.Update()
+                 .WithNewDataDisk(sizeInGB).ApplyAsync();
 
         }
 
@@ -241,7 +237,7 @@ namespace Sepes.Infrastructure.Service
 
                 //Also remember to delete osdisk
                 provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
-              
+
             }
             catch (Exception ex)
             {
@@ -251,31 +247,23 @@ namespace Sepes.Infrastructure.Service
 
             }
 
-           return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);        
+            return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
 
         }
 
 
         public async Task Delete(string resourceGroupName, string virtualMachineName)
         {
-            var vm = await GetResourceAsync(resourceGroupName, virtualMachineName);
+            var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
-            if(vm == null)
+            if (vm == null)
             {
                 _logger.LogWarning($"Virtual Machine {virtualMachineName} not found in RG {resourceGroupName}");
                 return;
-            }           
+            }
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
-
-           //var disksToDelete = new List<string>();
-           // disksToDelete.Add(vm.OSDiskId);
-            
-           // foreach(var curDiskKvp in vm.DataDisks)
-           // {
-           //     disksToDelete.Add(curDiskKvp.Value.Id);
-           // }
 
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
 
@@ -289,8 +277,8 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDiskKvp in vm.DataDisks)
             {
-               await  DeleteDiskById(curDiskKvp.Value.Id);
-            }           
+                await DeleteDiskById(curDiskKvp.Value.Id);
+            }
         }
 
         public async Task DeleteNic(string id)
@@ -303,7 +291,7 @@ namespace Sepes.Infrastructure.Service
             await _azure.Disks.DeleteByIdAsync(id);
         }
 
-        public async Task<IVirtualMachine> GetResourceAsync(string resourceGroupName, string resourceName)
+        public async Task<IVirtualMachine> GetAsync(string resourceGroupName, string resourceName)
         {
             var resource = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, resourceName);
             return resource;
@@ -311,7 +299,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
 
             if (resource == null)
             {
@@ -323,13 +311,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
             return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resource.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
@@ -338,12 +326,137 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        CloudResourceCRUDResult CreateResult(IVirtualMachine vm)
+        CloudResourceCRUDResult CreateCRUDResult(IVirtualMachine vm)
         {
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(vm);
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
+
+        public async Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default)
+        {
+            using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+
+                var sizes = await client.VirtualMachineSizes.ListWithHttpMessagesAsync(region, cancellationToken: cancellationToken);
+                var sizesResponseText = await sizes.Response.Content.ReadAsStringAsync();
+                var deserialized = JsonConvert.DeserializeObject<AzureVirtualMachineSizeResponse>(sizesResponseText);
+                return deserialized.Value;
+            }
+        }
+
+        public async Task<VmExtendedDto> GetExtendedInfo(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
+        {
+            var vm = await GetAsync(resourceGroupName, resourceName);
+
+            var result = new VmExtendedDto();                 
+
+            result.PowerState = AzureVmUtil.GetPowerState(vm);
+
+            result.OsType = AzureVmUtil.GetOsType(vm);
+
+            if (vm == null)
+            {
+                return result;
+            }          
+
+            result.SizeName = vm.Size.ToString();
+
+            await DecorateWithNetworkProperties(vm, result, cancellationToken);          
+          
+            var availableSizes = await GetAvailableVmSizes(vm.RegionName, cancellationToken);
+
+            var availableSizesDict = availableSizes.ToDictionary(s => s.Name, s => s);
+
+            VirtualMachineSize curSize = null;
+
+            if (availableSizesDict.TryGetValue(result.SizeName, out curSize))
+            {
+                result.Size = new VmSizeDto() { Name = result.SizeName, MemoryInMB = curSize.MemoryInMB.Value, MaxDataDiskCount = curSize.MaxDataDiskCount.Value, NumberOfCores = curSize.NumberOfCores.Value, OsDiskSizeInMB = curSize.OsDiskSizeInMB.Value, ResourceDiskSizeInMB = curSize.ResourceDiskSizeInMB.Value };
+            }            
+
+            result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true, cancellationToken));
+
+            foreach (var curDiskKvp in vm.DataDisks.Values)
+            {
+                result.Disks.Add(CreateDiskDto(curDiskKvp, false));
+            }
+
+            return result;
+        }
+
+
+        async Task DecorateWithNetworkProperties(IVirtualMachine vm, VmExtendedDto vmDto, CancellationToken cancellationToken)        
+        {
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(vm.PrimaryNetworkInterfaceId, cancellationToken);
+           
+            vmDto.PrivateIp = primaryNic.PrimaryPrivateIP;
+
+            try
+            {   
+                if (primaryNic.PrimaryIPConfiguration != null)
+                {
+                    var pip = await _azure.PublicIPAddresses.GetByResourceGroupAsync(vm.ResourceGroupName, primaryNic.PrimaryIPConfiguration.Name, cancellationToken);
+
+                    if (pip != null)
+                    {
+                        vmDto.PublicIp = pip.IPAddress;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"Unable to fetch public IP settings for VM {vm.Name}");
+            }                   
+
+            vmDto.NICs.Add(CreateNicDto(primaryNic));
+
+            foreach (var curNic in vm.NetworkInterfaceIds)
+            {
+                vmDto.NICs.Add(await CreateNicDto(curNic, cancellationToken));
+            }           
+        }
+
+        VmNicDto CreateNicDto(INetworkInterface nic)
+        { 
+            var result = new VmNicDto() { Name = nic.Name };
+            return result;
+        }
+
+        async Task<VmNicDto> CreateNicDto(string nicId, CancellationToken cancellationToken)
+        {
+            var nic = await _azure.NetworkInterfaces.GetByIdAsync(nicId, cancellationToken);
+
+            if (nic == null)
+            {
+                throw NotFoundException.CreateForAzureResourceById(nicId);
+            }
+
+            return CreateNicDto(nic);          
+        }
+
+        async Task<VmDiskDto> CreateDiskDto(string diskId, bool isOs, CancellationToken cancellationToken)
+        {
+            var disk = await _azure.Disks.GetByIdAsync(diskId, cancellationToken);
+
+            if (disk == null)
+            {
+                throw NotFoundException.CreateForAzureResourceById(diskId);
+            }
+
+            var result = new VmDiskDto() { Name = disk.Name, CapacityGb = disk.SizeInGB, Category = isOs ? "os" : "data" };
+
+            return result;
+        }
+
+        VmDiskDto CreateDiskDto(IVirtualMachineDataDisk disk, bool isOs)
+        {
+            var result = new VmDiskDto() { Name = disk.Name, CapacityGb = disk.Size, Category = isOs ? "os" : "data" };
+
+            return result;
+        }
+
 
     }
 }
