@@ -194,11 +194,10 @@ namespace Sepes.Infrastructure.Service
                 role.Equals(StudyRoles.StudyOwner) ||
                 role.Equals(StudyRoles.StudyViewer) ||
                 role.Equals(StudyRoles.VendorAdmin) ||
-                role.Equals(StudyRoles.VendorContributor) == false))
+                role.Equals(StudyRoles.VendorContributor)) == false)
             {
                 throw new ArgumentException($"Invalid Role supplied: {role}");
-            }
-          
+            }          
         }
     }
 }
