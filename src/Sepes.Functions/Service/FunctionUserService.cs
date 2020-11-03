@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class UserServiceForWorker : IUserService
+    public class FunctionUserService : IUserService
     {
         UserDto _cachedUser;
         
-        public UserServiceForWorker()
+        public FunctionUserService()
         {
             _cachedUser = new UserDto("9b0c65cf-9f14-4476-8796-b2de016e1af1", "workeruser@equinor.com", "Worker User", "workeruser@equinor.com", false, false, false);
         }
@@ -28,9 +28,6 @@ namespace Sepes.Infrastructure.Service
             return GetCurrentUser();
         }
 
-        public async Task<UserPermissionDto> GetUserPermissionsAsync()
-        {
-            return new UserPermissionDto ();
-        }
+       
     }
 }

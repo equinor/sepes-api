@@ -40,7 +40,7 @@
 //            RefreshTestDb();
 //            var db = ServiceProvider.GetService<SepesDbContext>();
 
-//           var currentUser = UserPopulator.Add(db, "currentuserobjectid", "currentuser", "currentuser@somedomain.com", "Current User");
+//            var currentUser = UserPopulator.Add(db, "currentuserobjectid", "currentuser", "currentuser@somedomain.com", "Current User");
 
 //            StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", currentUser.Id);
 
@@ -66,7 +66,7 @@
 //            var userObjectId = "somenewuserobjectId";
 //            var userName = "newUserUsername";
 //            var userEmail = userName + "@somedomain.com";
-//            var userFullName = "Hey I Am The New User";          
+//            var userFullName = "Hey I Am The New User";
 
 //            //SETUP
 //            var adUserServiceMock = new Mock<IAzureUserService>();
@@ -78,7 +78,7 @@
 //            var mapper = ServiceProvider.GetService<IMapper>();
 
 //            var studyParticipantService = ServiceProvider.GetService<IStudyParticipantService>();
-                       
+
 
 //            ParticipantLookupDto newParticipant = null;
 
@@ -99,7 +99,7 @@
 //                };
 //            }
 
-      
+
 //            var createdParticipant = await studyParticipantService.HandleAddParticipantAsync(studyId, newParticipant, role);
 
 //            var createdStudyAsDto = await studyService.GetStudyByIdAsync(studyId);

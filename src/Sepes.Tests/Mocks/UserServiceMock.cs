@@ -12,21 +12,7 @@ namespace Sepes.Tests.Mocks
         public static string USERNAME = "testuser";
         public static string FULLNAME = "Test User";
         public static string EMAIL = "testuser@equinor.com";
-
-        public bool CurrentUserIsAdmin()
-        {
-            return true;
-        }
-
-        public bool CurrentUserIsDatasetAdmin()
-        {
-            return true;
-        }
-
-        public bool CurrentUserIsSponsor()
-        {
-            return true;
-        }
+      
 
         UserDto GetBaseUser()
         {

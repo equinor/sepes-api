@@ -122,6 +122,7 @@ namespace Sepes.RestApi
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IUserPermissionService, UserPermissionService>();            
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<ILookupService, LookupService>();
