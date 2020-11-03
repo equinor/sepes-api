@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureUserService _azureADUsersService;
 
         public StudyParticipantService(SepesDbContext db, IMapper mapper, IUserService userService, IAzureUserService azureADUsersService)
-        {            
+        {
             _db = db;
             _mapper = mapper;
             _userService = userService;
@@ -46,7 +46,7 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curUserFromDb in usersFromDb)
             {
-                if(string.IsNullOrWhiteSpace(curUserFromDb.ObjectId))
+                if (string.IsNullOrWhiteSpace(curUserFromDb.ObjectId))
                 {
                     continue;
                 }
@@ -55,17 +55,17 @@ namespace Sepes.Infrastructure.Service
                 {
                     usersFromDbAsDictionary.Add(curUserFromDb.ObjectId, curUserFromDb);
                 }
-            }     
+            }
 
             var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
 
             foreach (var curAzureUser in usersFromAzureAd)
             {
-                if(usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId) == false)
+                if (usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId) == false)
                 {
                     usersFromDbAsDictionary.Add(curAzureUser.ObjectId, curAzureUser);
-                }               
-            }      
+                }
+            }
 
             return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);
         }
@@ -93,6 +93,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
+            ValidateRoleNameThrowIfInvalid(role);
+
             if (user.Source == ParticipantSource.Db)
             {
                 return await AddDbUserAsParticipantAsync(studyId, user.DatabaseId.Value, role);
@@ -104,11 +106,10 @@ namespace Sepes.Infrastructure.Service
 
             throw new ArgumentException($"Unknown source for user {user.UserName}");
         }
-      
 
-       async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
+
+        async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
-            // Run validations: (Check if both id's are valid)
             var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
 
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
@@ -127,7 +128,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyParticipants.AddAsync(studyParticipant);
             await _db.SaveChangesAsync();
 
-            return _mapper.Map<StudyParticipantDto>(studyParticipant);          
+            return _mapper.Map<StudyParticipantDto>(studyParticipant);
         }
 
         async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
@@ -163,7 +164,7 @@ namespace Sepes.Infrastructure.Service
             userDb.StudyParticipants = new List<StudyParticipant> { newStudyParticipant };
 
             await _db.SaveChangesAsync();
-            return _mapper.Map<StudyParticipantDto>(newStudyParticipant);   
+            return _mapper.Map<StudyParticipantDto>(newStudyParticipant);
         }
 
 
@@ -185,6 +186,19 @@ namespace Sepes.Infrastructure.Service
             }
 
             return false;
+        }
+
+        void ValidateRoleNameThrowIfInvalid(string role)
+        {
+            if ((role.Equals(StudyRoles.SponsorRep) ||
+                role.Equals(StudyRoles.StudyOwner) ||
+                role.Equals(StudyRoles.StudyViewer) ||
+                role.Equals(StudyRoles.VendorAdmin) ||
+                role.Equals(StudyRoles.VendorContributor) == false))
+            {
+                throw new ArgumentException($"Invalid Role supplied: {role}");
+            }
+          
         }
     }
 }

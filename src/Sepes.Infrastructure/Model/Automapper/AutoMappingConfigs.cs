@@ -99,7 +99,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.User.EmailAddress))
                 .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.User.FullName))
                 .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.User.UserName))
-                .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName));
+                .ForMember(dest => dest.Role, source => source.MapFrom(x => x.RoleName))
+                    .ForMember(dest => dest.Study, source => source.MapFrom(x => x.Study)); ;
 
             //AZURE
             CreateMap<IResource, AzureResourceDto>();

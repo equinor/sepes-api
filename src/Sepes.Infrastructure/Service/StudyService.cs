@@ -265,17 +265,6 @@ namespace Sepes.Infrastructure.Service
         //    return await GetStudyByIdAsync(studyId);
         //}
 
-        private bool checkIfRoleExists(string Role)
-        {
-            if (Role.Equals(StudyRoles.SponsorRep) ||
-                Role.Equals(StudyRoles.StudyOwner) ||
-                Role.Equals(StudyRoles.StudyViewer) ||
-                Role.Equals(StudyRoles.VendorAdmin) ||
-                Role.Equals(StudyRoles.VendorContributor))
-            {
-                return true;
-            }
-            return false;
-        }
+      
     }
 }
