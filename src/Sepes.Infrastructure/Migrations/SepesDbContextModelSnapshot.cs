@@ -293,6 +293,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("TryCount")
                         .HasColumnType("int");
 
+                    b.Property<string>("UpdateConfigString")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")

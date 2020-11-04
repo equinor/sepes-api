@@ -70,6 +70,29 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(virtualMachinesForSandbox);
         }
 
+        [HttpPost("{vmId}/rules")]
+        public async Task<IActionResult> AddRule(int vmId, VmRuleDto input)
+        {
+            var newRule = await _vmService.AddRule(vmId, input);
+            return new JsonResult(newRule);
+        }
+
+        [HttpPut("{vmId}/rules")]
+        public async Task<IActionResult> UpdateRule(int vmId, VmRuleDto input)
+        {
+            var newRule = await _vmService.UpdateRule(vmId, input);
+            return new JsonResult(newRule);
+        }
+
+        [HttpDelete("{vmId}/rules/{ruleid}")]
+        public async Task<IActionResult> DeleteRule(int vmId, string ruleId)
+        {
+            var newRule = await _vmService.DeleteRule(vmId, ruleId);
+            return new JsonResult(newRule);
+        }
+
+        //Lookup endpoints
+
         [HttpGet("{sandboxId}/sizes")]
         public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
         {

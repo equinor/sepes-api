@@ -28,6 +28,8 @@ namespace Sepes.Infrastructure.Model
 
         public string LatestError { get; set; }
 
+        public string UpdateConfigString { get; set; }
+
         public SandboxResource Resource { get; set; }
         
         public SandboxResourceOperation DependsOnOperation { get; set; }

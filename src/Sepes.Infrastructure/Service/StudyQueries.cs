@@ -9,27 +9,50 @@ namespace Sepes.Infrastructure.Service
 {
     public static class StudyQueries
     {
-
         public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
             return db.Studies.Where(s => s.DeletedAt.HasValue == false);
-        }     
+        }
 
         public static IQueryable<Study> UnHiddenStudiesQueryable(SepesDbContext db)
         {
-            return ActiveStudiesBaseQueryable(db).Where(s => !s.Restricted); ;
+            return ActiveStudiesBaseQueryable(db).Where(s => !s.Restricted);
         }
 
-        public static async Task<Study> GetStudyOrThrowAsync(int studyId, SepesDbContext db)
+        public static IQueryable<Study> ActiveStudiesWithIncludesQueryable(SepesDbContext db)
         {
-            var studyFromDb = await ActiveStudiesBaseQueryable(db)
-                .Include(s => s.StudyDatasets)
+            return ActiveStudiesBaseQueryable(db)
+                 .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)
                     .ThenInclude(sp => sp.Resources)
-                         .ThenInclude(sb => sb.Operations)
+                         .ThenInclude(sb => sb.Operations);
+        }
+
+        public static async Task<int> GetStudyIdByResourceIdAsync(SepesDbContext db, int resourceId)
+        {
+            var sandboxId = await GetSandboxIdByResourceIdAsync(db, resourceId);
+            var studyId = await GetStudyIdBySandboxIdAsync(db, sandboxId);
+            return studyId;
+        }
+
+        public static async Task<int> GetStudyIdBySandboxIdAsync(SepesDbContext db, int sandboxId)
+        {
+            var studyId = await db.Sandboxes.Where(sb => sb.Id == sandboxId).Select(sr => sr.StudyId).SingleOrDefaultAsync();
+            return studyId;
+        }
+
+        public static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
+        {
+            var sandboxId = await db.SandboxResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
+            return sandboxId;
+        }
+
+        public static async Task<Study> GetStudyByIdOrThrowAsync(SepesDbContext db, int studyId)
+        {
+            var studyFromDb = await ActiveStudiesWithIncludesQueryable(db)
                 .FirstOrDefaultAsync(s => s.Id == studyId);
 
             if (studyFromDb == null)
@@ -38,6 +61,18 @@ namespace Sepes.Infrastructure.Service
             }
 
             return studyFromDb;
+        }
+
+        public static async Task<Study> GetStudyBySandboxIdOrThrowAsync(SepesDbContext db, int sandboxId)
+        {
+            var studyId = await GetStudyIdBySandboxIdAsync(db, sandboxId);
+            return await GetStudyByIdOrThrowAsync(db, studyId);           
+        }
+
+        public static async Task<Study> GetStudyByResourceIdOrThrowAsync(SepesDbContext db, int resourceId)
+        {
+            var studyId = await GetStudyIdByResourceIdAsync(db, resourceId);
+            return await GetStudyByIdOrThrowAsync(db, studyId);
         }
 
         public static IQueryable<Study> ActiveStudiesLookupQueryable(SepesDbContext db)

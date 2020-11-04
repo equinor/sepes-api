@@ -80,8 +80,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
-
         public void ApplyPropertiesFromResourceGroup(AzureResourceGroupDto source, SandboxResourceDto target)
         {
             target.ResourceId = source.Id;
@@ -170,7 +168,7 @@ namespace Sepes.Infrastructure.Service
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
-            var retVal = await GetByIdAsync(resourceId);
+            var retVal = await GetDtoByIdAsync(resourceId);
             return retVal;
         }
 
@@ -188,14 +186,19 @@ namespace Sepes.Infrastructure.Service
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
-            var retVal = await GetByIdAsync(resourceId);
+            var retVal = await GetDtoByIdAsync(resourceId);
             return retVal;
         }
 
-        public async Task<SandboxResourceDto> GetByIdAsync(int id)
+        public async Task<SandboxResource> GetByIdAsync(int id)
         {
             var entityFromDb = await GetOrThrowAsync(id);
+            return entityFromDb;
+        }
 
+        public async Task<SandboxResourceDto> GetDtoByIdAsync(int id)
+        {
+            var entityFromDb = await GetByIdAsync(id);
             var dto = MapEntityToDto(entityFromDb);
 
             return dto;
@@ -320,12 +323,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> UpdateResourceIdAndName(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
         {
-
             if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
             {
                 throw new ArgumentNullException("azureId", $"Provided empty foreign system resource id for resource {resourceId} ");
             }
-
 
             if (String.IsNullOrWhiteSpace(resourceNameInForeignSystem))
             {

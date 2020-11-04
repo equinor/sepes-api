@@ -58,7 +58,7 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
             //TODO: Require a role for this?
-            var study = await _studyService.GetStudyByIdAsync(studyId);
+            var study = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
 
             if(study.Restricted && CanViewRestrictedStudy() == false)
             {
@@ -123,25 +123,20 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
         {
-            var study = await _studyService.GetStudyByIdAsync(studyId);
-
-            if (study.Restricted && CanViewRestrictedStudy() == false)
-            {
-                return new ForbidResult();
-            }
+            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);           
 
             byte[] logo = await _studyService.GetLogoAsync(studyId);
-            var studyDtoFromDb = await _studyService.GetStudyByIdAsync(studyId);
-            string fileType = studyDtoFromDb.LogoUrl.Split('.').Last();
+      
+            string fileType = studyDto.LogoUrl.Split('.').Last();
+
             if (fileType.Equals("jpg"))
             {
                 fileType = "jpeg";
             }
-            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
-            //return new ObjectResult(logo);
-        }     
 
-          
+            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
+       
+        }    
     }
 
 }

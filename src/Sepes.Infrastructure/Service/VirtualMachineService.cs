@@ -3,9 +3,12 @@ using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
@@ -31,6 +34,7 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyService _studyService;
         readonly ISandboxService _sandboxService;
         readonly ISandboxResourceService _sandboxResourceService;
+        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVMService _azureVmService;
         readonly IAzureVmOsService _azureOsService;
@@ -44,6 +48,7 @@ namespace Sepes.Infrastructure.Service
             IStudyService studyService,
             ISandboxService sandboxService,
             ISandboxResourceService sandboxResourceService,
+            ISandboxResourceOperationService sandboxResourceOperationService,
             IProvisioningQueueService workQueue,
             IAzureVMService azureVmService,
             IAzureCostManagementService costService,
@@ -57,6 +62,7 @@ namespace Sepes.Infrastructure.Service
             _studyService = studyService;
             _sandboxService = sandboxService;
             _sandboxResourceService = sandboxResourceService;
+            _sandboxResourceOperationService = sandboxResourceOperationService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
             _azureOsService = azureOsService;
@@ -65,12 +71,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-         
-
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
-            var study = await _studyService.GetStudyByIdAsync(sandbox.StudyId);
+            var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperations.SandboxEdit);
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
 
@@ -128,7 +132,7 @@ namespace Sepes.Infrastructure.Service
 
             var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
 
-            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);          
+            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);
 
             return virtualMachinesMapped;
         }
@@ -138,21 +142,79 @@ namespace Sepes.Infrastructure.Service
             var vmResourceQueryable = SandboxResourceQueries.GetSandboxResource(_db, vmId);
             var vmResource = await vmResourceQueryable.SingleOrDefaultAsync();
 
-            if(vmResource == null)
+            if (vmResource == null)
             {
                 throw NotFoundException.CreateForSandboxResource(vmId);
             }
 
-            return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);  
+            return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
         }
 
-        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
+        async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperations operation)
+        {
+            var studyFromDb = await StudyAccessUtil.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
+            var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
+
+            return vmResource;
+        }
+
+            public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
         {
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
             var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size);
 
             return vmPrice;
+        }      
+
+   
+
+        public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        {
+            if (await ValidateRule(vmId, input))
+            {
+                var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+                //TODO: Serialize input 
+                var configString = "";
+
+                var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id, configString);          
+
+
+                await _db.SaveChangesAsync();
+
+                //TODO: Create real response
+                return new VmRuleDto();
+                             
+              
+                //Serialize config string
+                //Add resource operation
+                //Add queue item
+            }
+            else
+            {
+                throw new Exception($"Cannot apply rule to VM {vmId}");
+            }
+        }
+
+        public Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        async Task<bool> ValidateRule(int vmId, VmRuleDto input)
+        {
+            return true;
         }
 
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
@@ -163,7 +225,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-              
+
 
                 var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
 
@@ -220,7 +282,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken))
         {
             //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
-          
+
             var result = new List<VmOsDto>();
 
             ////Windows
@@ -277,6 +339,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-       
+     
     }
 }
