@@ -8,6 +8,8 @@
         public string Description { get; set; }  
         public string Protocol { get; set; }
         public string Ip { get; set; }
+
+        public bool UseClientIp { get; set; }
         public int Port { get; set; }      
     }
 }
