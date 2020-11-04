@@ -24,15 +24,15 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.CustomConfiguration);
+            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
 
-            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGrupName, parameters.Name);
+            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
 
             if (vNetDto == null)
             {
-                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGrupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
+                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
             }
             else
             {
@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
 
-            await ApplySecurityGroup(parameters.ResourceGrupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);       
+            await ApplySecurityGroup(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);       
 
             _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGrupName, parameters.Name);
+            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
             var crudResult = CreateResult(vNetDto);
             return crudResult;
 
@@ -179,7 +179,12 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-       
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
+
+
 
 
         //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)

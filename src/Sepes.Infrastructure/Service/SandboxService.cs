@@ -157,9 +157,11 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Ordering other resources");
 
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = dto.SandboxId;
-            queueParentItem.Description = $"Create basic resources for Sandbox: {dto.SandboxId}";
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                SandboxId = dto.SandboxId,
+                Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
+            };
 
             await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
             await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
@@ -314,6 +316,7 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
+                await _db.SaveChangesAsync();
             }
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);

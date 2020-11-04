@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<SandboxResourceOperationDto> AddAsync(int sandboxResourceId, SandboxResourceOperationDto operationDto);
 
-        Task<SandboxResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string configString, int dependsOn = 0, string batchId = null);
+        Task<SandboxResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, int dependsOn = 0, string batchId = null);
 
         Task<SandboxResourceOperationDto> GetByIdAsync(int id);
         Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null);

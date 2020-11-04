@@ -77,6 +77,18 @@ namespace Sepes.Infrastructure.Util
             return "not found";
         }
 
+        public static bool IsSameRule(VmRuleDto rule1, VmRuleDto rule2)
+        {
+            if(rule1.Direction == rule2.Direction
+                && rule1.Protocol == rule2.Protocol
+                && rule1.Ip == rule2.Ip
+                 && rule1.Port == rule2.Port)
+            {
+                return true;
+            }
+            return false;
+        }
+
       
     }
 }

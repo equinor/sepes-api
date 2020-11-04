@@ -47,27 +47,16 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
+          
 
             studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }
 
-        public async Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation)
+        async Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation)
         {
-            try
-            {
-                return await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation);
-            }
-            catch (Exception ex)
-            {
-
-                throw;
-            }
-      
-          
-        
+            return await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation);
         }
-
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation)
         {
@@ -142,7 +131,7 @@ namespace Sepes.Infrastructure.Service
 
             foreach(var curSandbox in studyFromDb.Sandboxes)
             {
-                if(curSandbox.DeletedAt.HasValue == false)
+                if(curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
                 {
                     throw new Exception($"Cannot delete study {studyId}, it has open sandboxes that must be deleted first");
                 }

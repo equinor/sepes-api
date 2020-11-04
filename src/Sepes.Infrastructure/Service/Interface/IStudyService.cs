@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,8 +9,6 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {        
         Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null);
-
-        //Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation);
         Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation);
 
         Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);

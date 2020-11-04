@@ -37,6 +37,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default(CancellationToken));
 
+        Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default(CancellationToken));
+
         Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default(CancellationToken));
     }
 }

@@ -158,11 +158,10 @@ namespace Sepes.Infrastructure.Service
             currentCrudInput.StudyName = resource.StudyName;
             currentCrudInput.SandboxId = resource.SandboxId;
             currentCrudInput.SandboxName = resource.SandboxName;
-            currentCrudInput.ResourceGrupName = resource.ResourceGroupName;
+            currentCrudInput.ResourceGroupName = resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(resource.Region);
             currentCrudInput.Tags = resource.Tags;
-            currentCrudInput.CustomConfiguration = resource.ConfigString;
-
+            currentCrudInput.ConfigurationString = resource.ConfigString;
             currentCrudResult = null;
 
             var increaseQueueItemInvisibilityBy = AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(resourceType, currentResourceOperation.OperationType);

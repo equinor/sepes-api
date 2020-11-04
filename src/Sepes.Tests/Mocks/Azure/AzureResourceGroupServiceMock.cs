@@ -106,5 +106,10 @@ namespace Sepes.Tests.Mocks.Azure
         {
             throw new NotImplementedException();
         }
+
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

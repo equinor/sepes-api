@@ -25,9 +25,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var resourceGroup = await CreateInternal(parameters.ResourceGrupName, parameters.Region, parameters.Tags);
+            var resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
 
             var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-            await Delete(parameters.ResourceGrupName);
+            await Delete(parameters.ResourceGroupName);
 
             //var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
             var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
@@ -150,6 +150,9 @@ namespace Sepes.Infrastructure.Service
             _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-      
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

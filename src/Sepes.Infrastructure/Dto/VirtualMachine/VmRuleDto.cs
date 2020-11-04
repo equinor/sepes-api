@@ -8,6 +8,6 @@
         public string Description { get; set; }  
         public string Protocol { get; set; }
         public string Ip { get; set; }
-        public int Port { get; set; }
+        public int Port { get; set; }      
     }
 }

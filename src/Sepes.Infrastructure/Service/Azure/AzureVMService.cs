@@ -32,9 +32,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.CustomConfiguration);
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
             var passwordReference = vmSettings.Password;
             string password = await GetPasswordFromKeyVault(passwordReference);
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
 
             var createdVm = await Create(parameters.Region,
-                parameters.ResourceGrupName,
+                parameters.ResourceGroupName,
                 parameters.Name,
                 vmSettings.NetworkName, vmSettings.SubnetName,
                 vmSettings.Username, password,
@@ -61,7 +61,7 @@ namespace Sepes.Infrastructure.Service
                         throw new Exception($"Illegal data disk size: {curDisk}");
                     }
 
-                    await ApplyVmDataDisks(parameters.ResourceGrupName, parameters.Name, sizeAsInt);
+                    await ApplyVmDataDisks(parameters.ResourceGroupName, parameters.Name, sizeAsInt);
                 }
             }
 
@@ -72,9 +72,38 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
         }
+
+        public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        {
+            var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);           
+
+            //if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_CREATE)
+            //{
+            //    //Add rule to persisted config
+            //      //Enforce rule
+
+            //}
+            //else if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_UPDATE)
+            //{
+            //    //Update rule in persisted config
+            //    //Var get rule id
+            //    //Upate rule
+            //}
+            //else if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_DELETE)
+            //{
+            //    //Delete rule from persised config
+            //    //Var get rule id
+            //    //Delete rule
+            //}
+
+            var result = CreateCRUDResult(vm);
+
+            return result;
+        }      
+
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var vm = await GetAsync(parameters.ResourceGrupName, parameters.Name);
+            var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);
             var result = CreateCRUDResult(vm);
             return result;
         }
@@ -233,10 +262,10 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await Delete(parameters.ResourceGrupName, parameters.Name);
+                await Delete(parameters.ResourceGroupName, parameters.Name);
 
                 //Also remember to delete osdisk
-                provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+                provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
 
             }
             catch (Exception ex)
@@ -350,11 +379,11 @@ namespace Sepes.Infrastructure.Service
         {
             var vm = await GetAsync(resourceGroupName, resourceName);
 
-            var result = new VmExtendedDto();                 
-
-            result.PowerState = AzureVmUtil.GetPowerState(vm);
-
-            result.OsType = AzureVmUtil.GetOsType(vm);
+            var result = new VmExtendedDto
+            {
+                PowerState = AzureVmUtil.GetPowerState(vm),
+                OsType = AzureVmUtil.GetOsType(vm)
+            };
 
             if (vm == null)
             {
@@ -457,6 +486,6 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-
+      
     }
 }

@@ -20,6 +20,7 @@ namespace Sepes.Infrastructure.Dto
         public string CarriedOutBySessionId { get; set; }
 
         public int? DependsOnOperationId { get; set; }
+    
 
         public SandboxResourceOperationDto DependsOnOperation { get; set; }
 

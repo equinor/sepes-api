@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
             return await GetByIdAsync(newOperation.Id);
         }
 
-        public async Task<SandboxResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string configString, int dependsOn = 0, string batchId = null)
+        public async Task<SandboxResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, int dependsOn = 0, string batchId = null)
         {
             var sandboxResourceFromDb = await GetSandboxResourceOrThrowAsync(sandboxResourceId);
 
@@ -68,8 +68,7 @@ namespace Sepes.Infrastructure.Service
                 Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, CloudResourceOperationType.UPDATE, sandboxResourceId),
                 BatchId = batchId,
                 OperationType = CloudResourceOperationType.UPDATE,
-                CreatedBy = currentUser.UserName,
-                UpdateConfigString = configString,
+                CreatedBy = currentUser.UserName,            
                 CreatedBySessionId = _requestIdService.GetRequestId(),
                 DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?),
                 MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT

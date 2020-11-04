@@ -70,6 +70,20 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(virtualMachinesForSandbox);
         }
 
+        [HttpGet("{vmId}/rules")]
+        public async Task<IActionResult> GetRules(int vmId)
+        {
+            var newRule = await _vmService.GetRules(vmId);
+            return new JsonResult(newRule);
+        }
+
+        [HttpGet("{vmId}/rules/{ruleId}")]
+        public async Task<IActionResult> GetRules(int vmId, string ruleId)
+        {
+            var rule = await _vmService.GetRuleById(vmId, ruleId);
+            return new JsonResult(rule);
+        }
+
         [HttpPost("{vmId}/rules")]
         public async Task<IActionResult> AddRule(int vmId, VmRuleDto input)
         {
@@ -80,15 +94,15 @@ namespace Sepes.RestApi.Controllers
         [HttpPut("{vmId}/rules")]
         public async Task<IActionResult> UpdateRule(int vmId, VmRuleDto input)
         {
-            var newRule = await _vmService.UpdateRule(vmId, input);
-            return new JsonResult(newRule);
+            var updatedRule = await _vmService.UpdateRule(vmId, input);
+            return new JsonResult(updatedRule);
         }
 
-        [HttpDelete("{vmId}/rules/{ruleid}")]
+        [HttpDelete("{vmId}/rules/{ruleId}")]
         public async Task<IActionResult> DeleteRule(int vmId, string ruleId)
         {
-            var newRule = await _vmService.DeleteRule(vmId, ruleId);
-            return new JsonResult(newRule);
+            var deletedRule = await _vmService.DeleteRule(vmId, ruleId);
+            return new JsonResult(deletedRule);
         }
 
         //Lookup endpoints

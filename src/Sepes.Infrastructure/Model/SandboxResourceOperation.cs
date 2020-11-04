@@ -10,6 +10,7 @@ namespace Sepes.Infrastructure.Model
 
         public int? DependsOnOperationId { get; set; }
 
+        [MaxLength(32)]
         public string OperationType { get; set; }
 
         public string Status { get; set; }
@@ -26,9 +27,7 @@ namespace Sepes.Infrastructure.Model
 
         public string Description { get; set; }
 
-        public string LatestError { get; set; }
-
-        public string UpdateConfigString { get; set; }
+        public string LatestError { get; set; }    
 
         public SandboxResource Resource { get; set; }
         

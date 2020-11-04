@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
@@ -158,63 +156,181 @@ namespace Sepes.Infrastructure.Service
             return vmResource;
         }
 
-            public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
+        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
         {
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
             var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size);
 
             return vmPrice;
-        }      
+        }
 
-   
+        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto rule)
+        {
+            if (vmSettings.Rules != null)
+            {
+
+                foreach (var curExistingRule in vmSettings.Rules)
+                {
+                    if (AzureVmUtil.IsSameRule(rule, curExistingRule))
+                    {
+                        throw new Exception($"Same rule allready exists");
+                    }
+                }
+            }
+        }
 
         public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
         {
-            if (await ValidateRule(vmId, input))
+            await ValidateRuleThrowIfInvalid(vmId, input);
+
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            ThrowIfRuleExists(vmSettings, input);
+
+            input.Id = Guid.NewGuid().ToString();
+
+            if (vmSettings.Rules == null)
             {
-                var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-                //TODO: Serialize input 
-                var configString = "";
-
-                var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id, configString);          
-
-
-                await _db.SaveChangesAsync();
-
-                //TODO: Create real response
-                return new VmRuleDto();
-                             
-              
-                //Serialize config string
-                //Add resource operation
-                //Add queue item
+                vmSettings.Rules = new List<VmRuleDto>();
             }
-            else
+
+            vmSettings.Rules.Add(input);
+
+            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+            await _db.SaveChangesAsync();
+
+            await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
+
+            return input;
+        }
+
+
+
+        public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
+        {
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            if (vmSettings.Rules != null)
             {
-                throw new Exception($"Cannot apply rule to VM {vmId}");
+                foreach (var curExistingRule in vmSettings.Rules)
+                {
+                    if (curExistingRule.Id == ruleId)
+                    {
+                        return curExistingRule;
+                    }
+                }
             }
+
+            throw new NotFoundException($"Rule with id {ruleId} does not exist");
         }
 
-        public Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            if (vmSettings.Rules != null)
+            {
+
+                VmRuleDto ruleToRemove = null;
+
+                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Id, r => r);
+
+                if (rulesDictionary.TryGetValue(input.Id, out ruleToRemove))
+                {
+                    vmSettings.Rules.Remove(ruleToRemove);
+
+                    ThrowIfRuleExists(vmSettings, input);
+
+                    vmSettings.Rules.Add(input);
+
+                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+                    await _db.SaveChangesAsync();
+
+                    await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
+
+                    return input;
+                }
+            }
+
+            throw new NotFoundException($"Rule with id {input.Id} does not exist");
         }
 
-        public Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
+        public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            return vmSettings.Rules;
         }
 
-        public Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
+        public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            if (vmSettings.Rules != null)
+            {
+
+                VmRuleDto ruleToRemove = null;
+
+                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Id, r => r);
+
+                if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
+                {
+                    vmSettings.Rules.Remove(ruleToRemove);
+
+                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+                    await _db.SaveChangesAsync();
+
+                    await CreateUpdateOperationAndAddQueueItem(vm, "Delete rule");
+
+                    return ruleToRemove;
+                }
+            }
+
+            throw new NotFoundException($"Rule with id {ruleId} does not exist");
         }
 
-        async Task<bool> ValidateRule(int vmId, VmRuleDto input)
+        async Task ValidateRuleThrowIfInvalid(int vmId, VmRuleDto input)
         {
-            return true;
+            if (true)
+            {
+                return;
+            }
+
+            throw new Exception($"Cannot apply rule to VM {vmId}");
+        }
+
+        async Task<SandboxResourceOperationDto> CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
+        {
+            var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id);
+
+            var queueParentItem = new ProvisioningQueueParentDto();
+            queueParentItem.SandboxId = vm.SandboxId;
+            queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
+
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id.Value });
+
+            await _workQueue.SendMessageAsync(queueParentItem);
+
+            return vmUpdateOperation;
         }
 
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
@@ -339,6 +455,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-     
+
     }
 }

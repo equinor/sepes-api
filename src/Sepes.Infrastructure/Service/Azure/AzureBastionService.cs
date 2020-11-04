@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
         {
-            _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
             string subnetId = null;
 
@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
 
-            var bastionHost = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
+            var bastionHost = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
             var result = CreateResult(bastionHost);
 
             _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var bastion = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var bastion = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
             var result = CreateResult(bastion);
             return result;
         }
@@ -57,9 +57,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-            await Delete(parameters.ResourceGrupName, parameters.Name);
+            await Delete(parameters.ResourceGroupName, parameters.Name);
 
-            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
             var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
             return crudResult;
         }
@@ -157,7 +157,10 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        {
+            throw new NotImplementedException();
+        }
     }
 
 }
