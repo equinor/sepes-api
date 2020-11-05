@@ -51,7 +51,15 @@ namespace Sepes.Infrastructure.Util
         }
         
         public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
-        { 
+        {
+            if (operation == UserOperations.StudyCreate)
+            {
+                if (userService.GetCurrentUser().Admin || userService.GetCurrentUser().Sponsor)
+                {
+                    return study;
+                }
+            }
+
             //Sponsors should be able to add sandbox
             //TODO: Verify that they should have access to create sandbox for restricted studies in which they don't own
             if (operation == UserOperations.StudyAddRemoveSandbox)
