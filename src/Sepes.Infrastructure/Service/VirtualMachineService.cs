@@ -232,6 +232,11 @@ namespace Sepes.Infrastructure.Service
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
         }
 
+        public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> currentRules, CancellationToken cancellationToken = default)
+        {
+            return currentRules;
+        }
+
         public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
@@ -455,6 +460,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
+      
     }
 }

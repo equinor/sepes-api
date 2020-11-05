@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -85,10 +86,10 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpPost("{vmId}/rules")]
-        public async Task<IActionResult> AddRule(int vmId, VmRuleDto input)
+        public async Task<IActionResult> AddRule(int vmId, List<VmRuleDto> updatedRuleSet)
         {
-            var newRule = await _vmService.AddRule(vmId, input);
-            return new JsonResult(newRule);
+            var allRules = await _vmService.SetRules(vmId, updatedRuleSet);
+            return new JsonResult(allRules);
         }
 
         [HttpPut("{vmId}/rules")]

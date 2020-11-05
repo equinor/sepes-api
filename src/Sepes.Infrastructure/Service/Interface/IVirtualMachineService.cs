@@ -31,14 +31,16 @@ namespace Sepes.Infrastructure.Service.Interface
         
         //RULES
         
-        Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default(CancellationToken));
+        Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
 
-        Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default(CancellationToken));
+        Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
 
-        Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> currentRules, CancellationToken cancellationToken = default);
 
-        Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default);
 
-        Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default);
+
+        Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default);
     }
 }
