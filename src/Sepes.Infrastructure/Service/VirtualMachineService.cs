@@ -165,14 +165,18 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
-        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto rule)
+        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
         {
-            if (vmSettings.Rules != null)
-            {
+            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);        
+        }
 
-                foreach (var curExistingRule in vmSettings.Rules)
+        void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
+        {
+            if (rules != null)
+            {
+                foreach (var curExistingRule in rules)
                 {
-                    if (AzureVmUtil.IsSameRule(rule, curExistingRule))
+                    if (AzureVmUtil.IsSameRule(ruleToCompare, curExistingRule))
                     {
                         throw new Exception($"Same rule allready exists");
                     }
@@ -232,9 +236,58 @@ namespace Sepes.Infrastructure.Service
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
         }
 
-        public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> currentRules, CancellationToken cancellationToken = default)
+        public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
-            return currentRules;
+
+            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+
+            //Get config string
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            bool saveAfterwards = false;
+
+            if (updatedRuleSet == null || updatedRuleSet != null && updatedRuleSet.Count == 0) //Easy, all rules should be deleted
+            {
+                vmSettings.Rules = null;
+                saveAfterwards = true;
+            }
+            else
+            {
+                foreach(var curRule in updatedRuleSet)
+                {
+                    await ValidateRuleThrowIfInvalid(vmId, curRule);
+                }
+
+                var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Id)).ToList();
+                var existingRules = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Id)).ToList();
+
+                foreach(var curNew in newRules)
+                {
+                    ThrowIfRuleExists(existingRules, curNew);
+                }
+
+                foreach (var curNewRule in updatedRuleSet)
+                {
+                    if (String.IsNullOrWhiteSpace(curNewRule.Id))
+                    {
+                        curNewRule.Id = Guid.NewGuid().ToString();
+                    }
+                }
+
+                vmSettings.Rules = updatedRuleSet;
+                saveAfterwards = true;
+            }  
+            
+            if (saveAfterwards)
+            {
+                vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+                await _db.SaveChangesAsync();
+
+                await CreateUpdateOperationAndAddQueueItem(vm, "Updated rules");
+            }
+
+            return updatedRuleSet;
         }
 
         public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
@@ -460,6 +513,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-      
+
     }
 }
