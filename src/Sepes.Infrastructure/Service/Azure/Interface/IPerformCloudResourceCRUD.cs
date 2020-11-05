@@ -7,11 +7,11 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IPerformCloudResourceCRUD
     {
-        Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken));
+        Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default);
 
         Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters);
 
-        Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default);
 
         Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
     }

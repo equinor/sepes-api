@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
@@ -73,9 +73,11 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
-            var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);           
+            var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);
+
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
             //if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_CREATE)
             //{

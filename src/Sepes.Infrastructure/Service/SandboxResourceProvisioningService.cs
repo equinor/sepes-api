@@ -181,10 +181,20 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with create");
 
                     var cancellationTokenSource = new CancellationTokenSource();
-                    var currentCrudResultTask = service.EnsureCreatedAndConfigured(currentCrudInput, cancellationTokenSource.Token);
+                    Task<CloudResourceCRUDResult> currentCrudResultTask = null;
+
+                    if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
+                    {
+                        currentCrudResultTask = service.EnsureCreated(currentCrudInput, cancellationTokenSource.Token);
+                    }
+                    else
+                    {
+                        currentCrudResultTask = service.Update(currentCrudInput, cancellationTokenSource.Token);
+                    }
+
 
                     while (!currentCrudResultTask.IsCompleted)
-                    { 
+                    {
                         if (await _sandboxResourceService.ResourceIsDeleted(resource.Id.Value))
                         {
                             cancellationTokenSource.Cancel();
@@ -196,7 +206,10 @@ namespace Sepes.Infrastructure.Service
 
                     currentCrudResult = currentCrudResultTask.Result;
 
-                    await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                    if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
+                    {
+                        await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                    }
                 }
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)

@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
@@ -150,7 +150,7 @@ namespace Sepes.Infrastructure.Service
             _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters)
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
