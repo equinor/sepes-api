@@ -60,6 +60,9 @@ jobs:
       with:
         name: 'Test Run'
         path: ${{github.workspace}}/${{env.file_name}}
+
+    - name: DEBUG
+    run: echo ${{env.file_name}}
       
       # add report as PR comment (if PR)
     - name: Add PR comment
