@@ -55,6 +55,7 @@ jobs:
       
       # upload report as build artifact
     - name: Upload a Build Artifact
+      working-directory: src/Sepes.Tests    
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
@@ -63,6 +64,7 @@ jobs:
       
       # add report as PR comment (if PR)
     - name: comment PR
+      working-directory: src/Sepes.Tests 
       uses: machine-learning-apps/pr-comment@master
       if: ${{ github.event_name == 'pull_request' }}
       env:
