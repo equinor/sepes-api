@@ -32,14 +32,12 @@ jobs:
       run: dotnet build --configuration $config --no-restore
       
     - name: set pr build number (if pr)
-      working-directory: src/Sepes.Tests
       id: PRNUMBER
       if: ${{ github.event_name == 'pull_request' }}
       uses: kkak10/pr-number-action@v1.3
       
       # set report file and title 
     - name: Set Test Title
-      working-directory: src/Sepes.Tests
       run: | 
             if ${{ github.event_name == 'pull_request' }}
             then
@@ -57,7 +55,6 @@ jobs:
       
       # upload report as build artifact
     - name: Upload a Build Artifact
-      working-directory: src/Sepes.Tests    
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
@@ -66,7 +63,6 @@ jobs:
       
       # add report as PR comment (if PR)
     - name: comment PR
-      working-directory: src/Sepes.Tests 
       uses: machine-learning-apps/pr-comment@master
       if: ${{ github.event_name == 'pull_request' }}
       env:
