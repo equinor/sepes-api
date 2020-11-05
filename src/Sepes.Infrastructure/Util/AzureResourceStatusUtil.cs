@@ -8,6 +8,69 @@ namespace Sepes.Infrastructure.Util
     public static class AzureResourceStatusUtil
     {     
 
+       
+
+        public static string ResourceStatus(SandboxResource resource)
+        {
+            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
+            {
+                return "No operations found";
+            }
+
+            SandboxResourceOperation baseStatusOnThisOperation = null;
+
+            foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
+            {
+
+                if (curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                {
+                    if (baseStatusOnThisOperation == null)
+                    {
+                        baseStatusOnThisOperation = curOperation;
+                    }
+
+                    break;
+                }
+                else if(curOperation.Status == CloudResourceOperationState.FAILED)
+                {
+                    baseStatusOnThisOperation = curOperation;
+                    break;
+                }
+                else
+                {
+                    baseStatusOnThisOperation = curOperation;
+                }
+            }
+                      
+
+            string unfinishedWorkStatus = null;
+           
+            if (AbleToCreateStatusForOngoingWork(baseStatusOnThisOperation, out unfinishedWorkStatus))
+            {
+                return unfinishedWorkStatus;
+            }            
+
+            if (!string.IsNullOrWhiteSpace(baseStatusOnThisOperation.Status))
+            {
+                if (baseStatusOnThisOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                {
+                    if (baseStatusOnThisOperation.OperationType == CloudResourceOperationType.DELETE)
+                    {
+                        return CloudResourceStatus.DELETED;
+                    }
+                    else
+                    {
+                        if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
+                        {
+                            return CloudResourceStatus.OK;
+                        }
+                    }
+                }
+            }
+
+            return "n/a";     
+           
+        }
         static bool AbleToCreateStatusForOngoingWork(SandboxResourceOperation operation, out string status)
         {
             string resourceBaseStatus = null;
@@ -26,8 +89,8 @@ namespace Sepes.Infrastructure.Util
             }
 
             if (string.IsNullOrWhiteSpace(operation.Status) || operation.Status == CloudResourceOperationState.NEW)
-            {                
-                status = $"{resourceBaseStatus} (queued)";     
+            {
+                status = $"{resourceBaseStatus} (queued)";
                 return true;
             }
             else if (operation.Status == CloudResourceOperationState.IN_PROGRESS)
@@ -64,44 +127,6 @@ namespace Sepes.Infrastructure.Util
 
             status = null;
             return false;
-        }
-
-        public static string ResourceStatus(SandboxResource resource)
-        {
-            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
-            {
-                return "No operations found";
-            }
-
-            var operation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
-
-            string unfinishedWorkStatus = null;
-           
-            if (AbleToCreateStatusForOngoingWork(operation, out unfinishedWorkStatus))
-            {
-                return unfinishedWorkStatus;
-            }            
-
-            if (!string.IsNullOrWhiteSpace(operation.Status))
-            {
-                if (operation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
-                {
-                    if (operation.OperationType == CloudResourceOperationType.DELETE)
-                    {
-                        return CloudResourceStatus.DELETED;
-                    }
-                    else
-                    {
-                        if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
-                        {
-                            return CloudResourceStatus.OK;
-                        }
-                    }
-                }
-            }
-
-            return "n/a";     
-           
         }
     }
 }
