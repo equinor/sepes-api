@@ -32,12 +32,14 @@ jobs:
       run: dotnet build --configuration $config --no-restore
       
     - name: set pr build number (if pr)
+      working-directory: src/Sepes.Tests
       id: PRNUMBER
       if: ${{ github.event_name == 'pull_request' }}
       uses: kkak10/pr-number-action@v1.3
       
       # set report file and title 
     - name: Set Test Title
+      working-directory: src/Sepes.Tests
       run: | 
             if ${{ github.event_name == 'pull_request' }}
             then
