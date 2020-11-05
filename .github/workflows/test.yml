@@ -28,6 +28,7 @@ jobs:
       
       # build project
     - name: Build
+      working-directory: src/Sepes.Tests
       run: dotnet build --configuration $config --no-restore
       
     - name: set pr build number (if pr)
