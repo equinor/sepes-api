@@ -64,9 +64,6 @@ jobs:
       # add report as PR comment (if PR)
     - name: Add PR comment
       uses: machine-learning-apps/pr-comment@master
-      echo: "polse"
-      echo: ${{ github.event_name == 'pull_request' }}
-      if: ${{ github.event_name == 'pull_request' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
