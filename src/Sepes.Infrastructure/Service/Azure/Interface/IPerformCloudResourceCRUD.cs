@@ -7,18 +7,18 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IPerformCloudResourceCRUD
     {
-        Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken));
+        Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default);
 
         Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters);
 
-        //Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters);
+        Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default);
 
         Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters);
     }
 
     public class CloudResourceCRUDInput
     {
-        public string ResourceGrupName { get; set; }
+        public string ResourceGroupName { get; set; }
         public string Name { get; set; }
 
         public string StudyName { get; set; }
@@ -29,7 +29,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         public Dictionary<string, string> Tags;
 
-        public string CustomConfiguration { get; set; }
+        public string ConfigurationString { get; set; }
+      
 
         Dictionary<string, string> _sharedVariables = new Dictionary<string, string>();
 
@@ -46,12 +47,12 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         void ClearProperties()
         {
-            ResourceGrupName = null;
+            ResourceGroupName = null;
             Name = null;
             SandboxId = 0;
             SandboxName = null;
             Region = null; 
-            CustomConfiguration = null;
+            ConfigurationString = null;
 
             if(Tags != null)
             {

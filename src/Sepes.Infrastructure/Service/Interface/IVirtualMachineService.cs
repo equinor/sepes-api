@@ -28,5 +28,19 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken));
 
         Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput);
+        
+        //RULES
+        
+        Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
+
+        Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
+
+        Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> currentRules, CancellationToken cancellationToken = default);
+
+        Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default);
+
+        Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default);
+
+        Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default);
     }
 }

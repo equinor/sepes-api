@@ -16,7 +16,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0);
 
-        Task<SandboxResourceDto> GetByIdAsync(int id);
+        Task<SandboxResource> GetByIdAsync(int id);
+        Task<SandboxResourceDto> GetDtoByIdAsync(int id);
         Task<SandboxResourceDto> MarkAsDeletedAndScheduleDeletion(int resourceId);      
 
         Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated);

@@ -3,7 +3,7 @@
     public enum UserOperations
     {
         //Study overview
-        StudyReadOwnRestricted,
+        StudyRead,
 
         //Study details and editation
         StudyCreate,

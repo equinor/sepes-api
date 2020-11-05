@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Util
             return JsonConvert.SerializeObject(obj);
         }
 
-        static T DeserializeInternal<T>(string settings)
+        public static T DeserializeInternal<T>(string settings)
         {
             return JsonConvert.DeserializeObject<T>(settings);
         }

@@ -64,12 +64,5 @@ namespace Sepes.Tests.Setup
 
             return services;
         } 
-    }
-
-  
-
-    public class ConnectionStrings
-    {
-        public string AzureStorageConnectionString { get; set; }
-    }  
+    } 
 }

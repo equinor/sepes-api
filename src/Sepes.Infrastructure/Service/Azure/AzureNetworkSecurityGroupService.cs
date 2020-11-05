@@ -21,17 +21,17 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var nsg = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
             if(nsg == null)
             {
-                _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}. Creating!");
+                _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}. Creating!");
 
-                nsg = await Create(parameters.Region, parameters.ResourceGrupName, parameters.Name, parameters.Tags, cancellationToken);
+                nsg = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, parameters.Tags, cancellationToken);
             }          
           
             var result = CreateResult(nsg);
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var nsg = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
             var result = CreateResult(nsg);
 
@@ -52,9 +52,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
-            await Delete(parameters.ResourceGrupName, parameters.Name);
+            await Delete(parameters.ResourceGroupName, parameters.Name);
 
-            var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
             var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
             return crudResult;
         }
@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
         //    return await CreateSecurityGroup(region, resourceGroupName, nsgName, tags);
         //}
 
-        public async Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var nsg = await _azure.NetworkSecurityGroups
                 .Define(nsgName)
@@ -132,6 +132,9 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-     
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

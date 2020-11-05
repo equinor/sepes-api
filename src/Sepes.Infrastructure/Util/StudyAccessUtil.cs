@@ -32,36 +32,45 @@ namespace Sepes.Infrastructure.Util
                 .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any() && s.DeletedAt.HasValue == false);
         }
 
-
-        public static async Task<Study> GetStudyAndCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)
+        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)
         {
-            var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, db);
+            var studyFromDb = await StudyQueries.GetStudyByIdOrThrowAsync(db, studyId);
+            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+        }
 
-            ////TODO: remove and fix
-            //if (userService.CurrentUserIsAdmin())
-            //{
-            //    return studyFromDb;
-            //}
+        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperations operation)
+        {
+            var studyFromDb = await StudyQueries.GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
+            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+        }
 
+        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperations operation)
+        {
+            var studyFromDb = await StudyQueries.GetStudyByResourceIdOrThrowAsync(db, resourceId);
+            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+        }
+        
+        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
+        { 
             //Sponsors should be able to add sandbox
             //TODO: Verify that they should have access to create sandbox for restricted studies in which they don't own
             if (operation == UserOperations.StudyAddRemoveSandbox)
             {
                 if (userService.GetCurrentUser().Sponsor) {
 
-                    return studyFromDb;
+                    return study;
                 } 
             }
 
             //No study specific roles required
-            if (operation == UserOperations.StudyReadOwnRestricted && studyFromDb.Restricted == false)
+            if (operation == UserOperations.StudyRead && study.Restricted == false)
             {
-                return studyFromDb;
+                return study;
             }
 
-            await ThrowIfOperationNotAllowed(userService, studyFromDb, operation);
+            await ThrowIfOperationNotAllowed(userService, study, operation);
 
-            return studyFromDb;
+            return study;
         }
 
 
