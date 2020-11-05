@@ -23,7 +23,7 @@ jobs:
       
       # restore dependencies  
     - name: Install dependencies
-      working-directory: .src/Sepes.Tests
+      working-directory: src/Sepes.Tests
       run: dotnet restore
       
       # build project
