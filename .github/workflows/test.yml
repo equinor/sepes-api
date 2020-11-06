@@ -32,9 +32,6 @@ jobs:
       id: PRNUMBER
       if: ${{ github.event_name == 'pull_request' }}
       uses: kkak10/pr-number-action@v1.3
-
-    - name: runechobefore
-      run: echo "${{env.file_name}}"
       
       # set report file and title 
     - name: Set Test Title
@@ -56,12 +53,11 @@ jobs:
     # add report as PR comment (if PR)
     - name: Add PR comment
       uses: machine-learning-apps/pr-comment@master
-      if: always()
+      if: ${{always() && github.event_name == 'pull_request'}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        path: ${{env.file_name}}
-      
+        path: ${{env.file_name}}      
 
       # upload report as build artifact
     - name: Upload a Build Artifact
