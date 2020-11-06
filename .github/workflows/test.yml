@@ -35,6 +35,14 @@ jobs:
 
     - name: runechobefore
       run: echo "${{env.file_name}}"
+
+         # add report as PR comment (if PR)
+    - name: Add PR comment
+      uses: machine-learning-apps/pr-comment@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        path: ${{env.file_name}}
       
       # set report file and title 
     - name: Set Test Title
@@ -64,8 +72,4 @@ jobs:
         name: 'Test Run'
         path: ${{github.workspace}}/${{env.file_name}}
       
-      # add report as PR comment (if PR)
-    - name: Add PR comment
-      uses: machine-learning-apps/pr-comment@master
-      with:
-        path: ${{env.file_name}}
+   
