@@ -6,19 +6,19 @@ namespace Sepes.Infrastructure.Model
     public class Dataset : UpdateableBaseModel
     {
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string StorageAccountName { get; set; }
 
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Location { get; set; }
 
         [MaxLength(32)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Classification { get; set; }
 
         public int LRAId { get; set; }

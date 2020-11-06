@@ -1,16 +1,11 @@
-using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Tests.Mocks;
 using Sepes.Tests.Setup;
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services
@@ -70,6 +65,8 @@ namespace Sepes.Tests.Services
         }
 
         [Theory]
+        [InlineData(null, "")]
+        [InlineData("", "null")]
         [InlineData(null, "Bouvet")]
         [InlineData("", "Bouvet")]
         [InlineData("TestStudy", null)]
@@ -94,10 +91,8 @@ namespace Sepes.Tests.Services
                 Name = name,
                 Vendor = vendor
             };
-
-            var updatedStudy = await studyService.UpdateStudyDetailsAsync(studyId, studyWithoutReqFields);
-
-            Assert.NotEqual<StudyDto>(createdStudy, updatedStudy);
+          
+            await Assert.ThrowsAsync<ArgumentException>(() => studyService.UpdateStudyDetailsAsync(studyId, studyWithoutReqFields));          
         }
 
         [Theory]
