@@ -1,8 +1,8 @@
 # sepes-api
+![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg?event=push)
 
 A platform that allows vendors prove their solutions on your data in a sandbox
 
-![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg?event=push)
 
 ## Making commits
 
