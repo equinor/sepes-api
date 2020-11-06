@@ -67,7 +67,5 @@ jobs:
       # add report as PR comment (if PR)
     - name: Add PR comment
       uses: machine-learning-apps/pr-comment@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         path: ${{env.file_name}}
