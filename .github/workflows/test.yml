@@ -34,9 +34,7 @@ jobs:
       uses: kkak10/pr-number-action@v1.3
 
     - name: runechobefore
-      env:
-        ZEH_PATH: ${{env.file_name}}
-      run: echo $ZEH_PATH
+      run: echo "${{env.file_name}}"
       
       # set report file and title 
     - name: Set Test Title
@@ -55,10 +53,8 @@ jobs:
       working-directory: src/Sepes.Tests    
       run: dotnet test --no-restore --no-build --configuration $config --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};"
       
-    - name: runecho
-      env:
-        ZEH_PATH: ${{env.file_name}}
-      run: echo $ZEH_PATH
+    - name: runechoafter
+      run: echo "${{env.file_name}}"
 
       # upload report as build artifact
     - name: Upload a Build Artifact
