@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class ProvisioningQueueChildDto
     { 

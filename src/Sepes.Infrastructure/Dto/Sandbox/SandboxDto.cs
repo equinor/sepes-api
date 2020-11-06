@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxDto : UpdateableBaseDto
     {
@@ -20,6 +20,6 @@ namespace Sepes.Infrastructure.Dto
 
         public List<SandboxResourceLightDto> Resources { get; set; }
 
-
+        public List<SandboxDatasetsDto> Datasets { get; set; }
     }
 }
