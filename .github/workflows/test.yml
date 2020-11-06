@@ -59,7 +59,9 @@ jobs:
         path: ${{github.workspace}}/${{env.file_name}}
 
     - name: runecho
-      run: echo "test"
+      env:
+        ZEH_PATH: ${{env.file_name}}
+      run: echo "$ZEH_PATH"
       
       # add report as PR comment (if PR)
     - name: Add PR comment
