@@ -24,9 +24,8 @@ namespace Sepes.Tests.Util
             var resourceGroupName = AzureResourceNameUtil.ResourceGroup("Very Very Secret Software Inc", "First attempt at finding good data");
             Assert.InRange(resourceGroupName.Length, 6, 64);
             Assert.Contains("rg-study-", resourceGroupName);
-            Assert.Contains("veryverysecretsoftwarei", resourceGroupName);
-            Assert.Contains("firstattemptatfindinggoodda", resourceGroupName);
-
+            Assert.Contains("veryverysecretsoftwareinc", resourceGroupName);
+            Assert.Contains("firstattemptatfindinggood", resourceGroupName);
         }
 
         [Fact]
@@ -50,13 +49,9 @@ namespace Sepes.Tests.Util
         [Fact]
         public void ResourceGroupName_ShouldFilterAwayNorwegianSpecialLetters()
         {
-
-
-
             var resourceName = AzureResourceNameUtil.ResourceGroup("A revolutional Støddy with a long name", "Bæste sandbåx ju kæn tink");
             Assert.InRange(resourceName.Length, 4, 64);            
             Assert.Contains("rg-study-arevolutionalstddywithalongname-bstesandbxjukntink-", resourceName);
-
         }
 
         [Fact]

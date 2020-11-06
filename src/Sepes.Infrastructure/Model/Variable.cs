@@ -5,7 +5,7 @@ namespace Sepes.Infrastructure.Model
     public class Variable : UpdateableBaseModel
     {
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
         [MaxLength(256)]

@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
             var newStudyId = await Add(studyDb);
-            return await GetStudyDtoByIdAsync(newStudyId, UserOperations.StudyCreate);
+            return await GetStudyDtoByIdAsync(newStudyId, UserOperations.StudyRead);
         }
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
@@ -86,7 +86,7 @@ namespace Sepes.Infrastructure.Service
 
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata);
 
-            if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
+            if (updatedStudy.Name != studyFromDb.Name)
             {
                 studyFromDb.Name = updatedStudy.Name;
             }
@@ -96,7 +96,7 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.Description = updatedStudy.Description;
             }
 
-            if (!String.IsNullOrWhiteSpace(updatedStudy.Vendor) && updatedStudy.Vendor != studyFromDb.Vendor)
+            if (updatedStudy.Vendor != studyFromDb.Vendor)
             {
                 studyFromDb.Vendor = updatedStudy.Vendor;
             }
