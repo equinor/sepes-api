@@ -287,7 +287,7 @@ namespace Sepes.Infrastructure.Service
                 await CreateUpdateOperationAndAddQueueItem(vm, "Updated rules");
             }
 
-            return updatedRuleSet;
+            return updatedRuleSet != null? updatedRuleSet : new List<VmRuleDto>();
         }
 
         public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
@@ -332,7 +332,7 @@ namespace Sepes.Infrastructure.Service
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
-            return vmSettings.Rules;
+            return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
         }
 
         public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
@@ -399,8 +399,6 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-
-
                 var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
 
                 var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
