@@ -2,6 +2,8 @@
 
 A platform that allows vendors prove their solutions on your data in a sandbox
 
+![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg)
+
 ## Making commits
 
 We use [commitizen](http://commitizen.github.io/cz-cli) (and [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)) to make our commits. Tip:  run "npx git-cz" to make commits. 
