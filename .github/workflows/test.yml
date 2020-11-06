@@ -56,11 +56,12 @@ jobs:
     # add report as PR comment (if PR)
     - name: Add PR comment
       uses: machine-learning-apps/pr-comment@master
+      if: always()
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         path: ${{env.file_name}}
-      continue-on-error: true
+      
 
       # upload report as build artifact
     - name: Upload a Build Artifact
