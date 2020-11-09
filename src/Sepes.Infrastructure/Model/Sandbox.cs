@@ -6,16 +6,16 @@ namespace Sepes.Infrastructure.Model
 {
     public class Sandbox : UpdateableBaseModel
     { 
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string TechnicalContactName { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string TechnicalContactEmail { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Region { get; set; }
 
         public Study Study { get; set; }
@@ -29,5 +29,7 @@ namespace Sepes.Infrastructure.Model
         public string DeletedBy { get; set; }
 
         public List<SandboxResource> Resources{ get; set; }
+
+        public List<SandboxDataset> SandboxDatasets { get; set; }
     }
 }

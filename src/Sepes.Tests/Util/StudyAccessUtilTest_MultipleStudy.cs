@@ -49,7 +49,7 @@ namespace Sepes.Tests.Util
             Assert.Equal(7, studiesForUser7.Count);
 
             var studiesForUser8 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 8).ToListAsync();
-            Assert.Equal(8, studiesForUser8.Count);
+            Assert.Equal(7, studiesForUser8.Count);
         }
 
     }

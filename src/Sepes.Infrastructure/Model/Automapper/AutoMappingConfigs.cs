@@ -4,6 +4,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -39,6 +40,11 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DataSetsForStudyDto>();
 
+            CreateMap<SandboxDataset, SandboxDatasetDto>()
+                .ForMember(dest => dest.DatasetId,source => source.MapFrom(x => x.Dataset.Id))
+                .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
+                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
+
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
@@ -46,10 +52,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources,
-                    source => source.MapFrom(x => x.Resources))
-                     .ForMember(dest => dest.StudyName,
-                    source => source.MapFrom(x => x.Study.Name));
+                 .ForMember(dest => dest.Resources,source => source.MapFrom(x => x.Resources))
+                     .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+                         .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets));
 
             CreateMap<SandboxDto, Sandbox>();
 

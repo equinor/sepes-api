@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -48,21 +47,22 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
+          
 
             studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }
 
-
-        public async Task<StudyDto> GetStudyByIdAsync(int studyId)
+        async Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation)
         {
-            //var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
+            return await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation);
+        }
 
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
-
+        public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation)
+        {
+            var studyFromDb = await GetStudyByIdAsync(studyId, userOperation);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
-
             studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
 
             return studyDto;
@@ -70,24 +70,23 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
+            //TODO: Validate action
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
             var newStudyId = await Add(studyDb);
-            return await GetStudyByIdAsync(newStudyId);
+            return await GetStudyDtoByIdAsync(newStudyId, UserOperations.StudyRead);
         }
-
-
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata);
 
-            if (!String.IsNullOrWhiteSpace(updatedStudy.Name) && updatedStudy.Name != studyFromDb.Name)
+            if (updatedStudy.Name != studyFromDb.Name)
             {
                 studyFromDb.Name = updatedStudy.Name;
             }
@@ -97,7 +96,7 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.Description = updatedStudy.Description;
             }
 
-            if (!String.IsNullOrWhiteSpace(updatedStudy.Vendor) && updatedStudy.Vendor != studyFromDb.Vendor)
+            if (updatedStudy.Vendor != studyFromDb.Vendor)
             {
                 studyFromDb.Vendor = updatedStudy.Vendor;
             }
@@ -123,16 +122,16 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetStudyByIdAsync(studyFromDb.Id);
+            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
         }
       
         public async Task<StudyDto> DeleteStudyAsync(int studyId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
 
             foreach(var curSandbox in studyFromDb.Sandboxes)
             {
-                if(curSandbox.DeletedAt.HasValue == false)
+                if(curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
                 {
                     throw new Exception($"Cannot delete study {studyId}, it has open sandboxes that must be deleted first");
                 }
@@ -167,7 +166,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
 
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -184,14 +183,14 @@ namespace Sepes.Infrastructure.Service
                 _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
-            return await GetStudyByIdAsync(studyFromDb.Id);
+            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
         }
 
         public async Task<byte[]> GetLogoAsync(int studyId)
         {
             try
             {
-                var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
+                var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead);
                 string logoUrl = studyFromDb.LogoUrl;
                 var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
                 return await logo;
@@ -203,12 +202,6 @@ namespace Sepes.Infrastructure.Service
             }
 
         }
-
-
-
-
-
-
 
         void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {
@@ -228,43 +221,5 @@ namespace Sepes.Infrastructure.Service
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
         }
-
-        //public async Task<StudyDto> AddNewParticipantToStudyAsync(int studyId, UserCreateDto user)
-        //{
-        //    if(!checkIfRoleExists(user.Role))
-        //    {
-        //        throw new ArgumentException("Role " + user.Role + " does not exist");
-        //    }
-        //    if(String.IsNullOrWhiteSpace(user.FullName))
-        //    {
-        //        throw new ArgumentException("Name is empty");
-        //    }
-        //    if (String.IsNullOrWhiteSpace(user.EmailAddress))
-        //    {
-        //        throw new ArgumentException("Email is empty");
-        //    }
-        //    if (String.IsNullOrWhiteSpace(user.Role))
-        //    {
-        //        throw new ArgumentException("Role is empty");
-        //    }
-
-        //    var userDb = _mapper.Map<User>(user);
-
-        //    var studyFromDb = await StudyQueries.GetStudyOrThrowAsync(studyId, _db);
-
-        //    userDb.StudyParticipants = new List<StudyParticipant> { new StudyParticipant { StudyId = studyFromDb.Id, RoleName = user.Role } };
-
-        //    var test = _db.StudyParticipants.ToList();
-        //    _db.Users.Add(userDb);
-        //    await _db.SaveChangesAsync();
-
-        //    //Check that association does not allready exist
-
-        //    //await VerifyRoleOrThrowAsync(role);
-
-        //    return await GetStudyByIdAsync(studyId);
-        //}
-
-      
     }
 }

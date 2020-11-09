@@ -17,8 +17,9 @@ namespace Sepes.Infrastructure.Constants
             {
                 _operations = new Dictionary<UserOperations, HashSet<string>>() {
 
+                    { UserOperations.StudyCreate, new HashSet<string> {  } }, 
                     //Study overview and read
-                    { UserOperations.StudyReadOwnRestricted, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.SponsorRep } }, 
+                    { UserOperations.StudyRead, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.SponsorRep } }, 
                     
                     //Study details and editation
                     { UserOperations.StudyUpdateMetadata, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },

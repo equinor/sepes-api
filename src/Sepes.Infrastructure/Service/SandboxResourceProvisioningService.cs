@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -158,11 +159,10 @@ namespace Sepes.Infrastructure.Service
             currentCrudInput.StudyName = resource.StudyName;
             currentCrudInput.SandboxId = resource.SandboxId;
             currentCrudInput.SandboxName = resource.SandboxName;
-            currentCrudInput.ResourceGrupName = resource.ResourceGroupName;
+            currentCrudInput.ResourceGroupName = resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(resource.Region);
             currentCrudInput.Tags = resource.Tags;
-            currentCrudInput.CustomConfiguration = resource.ConfigString;
-
+            currentCrudInput.ConfigurationString = resource.ConfigString;
             currentCrudResult = null;
 
             var increaseQueueItemInvisibilityBy = AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(resourceType, currentResourceOperation.OperationType);
@@ -182,10 +182,20 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with create");
 
                     var cancellationTokenSource = new CancellationTokenSource();
-                    var currentCrudResultTask = service.EnsureCreatedAndConfigured(currentCrudInput, cancellationTokenSource.Token);
+                    Task<CloudResourceCRUDResult> currentCrudResultTask = null;
+
+                    if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
+                    {
+                        currentCrudResultTask = service.EnsureCreated(currentCrudInput, cancellationTokenSource.Token);
+                    }
+                    else
+                    {
+                        currentCrudResultTask = service.Update(currentCrudInput, cancellationTokenSource.Token);
+                    }
+
 
                     while (!currentCrudResultTask.IsCompleted)
-                    { 
+                    {
                         if (await _sandboxResourceService.ResourceIsDeleted(resource.Id.Value))
                         {
                             cancellationTokenSource.Cancel();
@@ -197,7 +207,10 @@ namespace Sepes.Infrastructure.Service
 
                     currentCrudResult = currentCrudResultTask.Result;
 
-                    await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                    if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
+                    {
+                        await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                    }
                 }
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)

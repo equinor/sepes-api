@@ -162,6 +162,29 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("Sandboxes");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxDataset", b =>
+                {
+                    b.Property<int>("SandboxId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DatasetId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Added")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("AddedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SandboxId", "DatasetId");
+
+                    b.HasIndex("DatasetId");
+
+                    b.ToTable("SandboxDatasets");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
                 {
                     b.Property<int>("Id")
@@ -282,7 +305,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("OperationType")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(32);
 
                     b.Property<int>("SandboxResourceId")
                         .HasColumnType("int");
@@ -524,6 +548,21 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
                         .WithMany("Sandboxes")
                         .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxDataset", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Dataset", "Dataset")
+                        .WithMany()
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
+                        .WithMany()
+                        .HasForeignKey("SandboxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

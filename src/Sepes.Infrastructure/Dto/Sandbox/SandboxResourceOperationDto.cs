@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxResourceOperationDto : UpdateableBaseDto
     {
@@ -20,6 +20,7 @@ namespace Sepes.Infrastructure.Dto
         public string CarriedOutBySessionId { get; set; }
 
         public int? DependsOnOperationId { get; set; }
+    
 
         public SandboxResourceOperationDto DependsOnOperation { get; set; }
 

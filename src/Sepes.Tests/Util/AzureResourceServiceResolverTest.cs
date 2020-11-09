@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Setup;
 using System;
@@ -35,20 +36,20 @@ namespace Sepes.Tests.Util
             var resourceGroupService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.ResourceGroup);
 
             Assert.NotNull(resourceGroupService);
-            Assert.IsType<AzureResourceGroupService>(resourceGroupService);
+            Assert.IsAssignableFrom<IAzureResourceGroupService>(resourceGroupService);
 
             //Trying VNet
-            var vNetService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "Network");
+            var vNetService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.VirtualNetwork);
 
             Assert.NotNull(vNetService);
-            Assert.IsType<AzureVNetService>(vNetService);
+            Assert.IsAssignableFrom<IAzureVNetService>(vNetService);
 
 
             //Trying Bastion
-            var bastionService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "Bastion");
+            var bastionService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.Bastion);
 
             Assert.NotNull(bastionService);
-            Assert.IsType<AzureBastionService>(bastionService);
+            Assert.IsAssignableFrom<IAzureBastionService>(bastionService);
         }
     }
 }

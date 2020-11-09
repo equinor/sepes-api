@@ -1,9 +1,7 @@
-﻿using Azure.Storage.Queues.Models;
-using Newtonsoft.Json;
-using Sepes.Infrastructure.Dto.Azure;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class ProvisioningQueueParentDto
     {

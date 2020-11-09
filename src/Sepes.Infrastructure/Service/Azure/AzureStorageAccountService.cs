@@ -19,11 +19,11 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGrupName}");
+            _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
             if(diagnosticStorageAccount == null)
             {
@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
                 // Create storage account
                 diagnosticStorageAccount = await _azure.StorageAccounts.Define(parameters.Name)
                     .WithRegion(parameters.Region)
-                    .WithExistingResourceGroup(parameters.ResourceGrupName)
+                    .WithExistingResourceGroup(parameters.ResourceGroupName)
                     .WithAccessFromAllNetworks()
                     .WithGeneralPurposeAccountKindV2()
                     .WithOnlyHttpsTraffic()
@@ -58,7 +58,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
-            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGrupName, parameters.Name);
+            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
             var result = CreateResult(diagnosticStorageAccount);
 
@@ -148,6 +148,11 @@ namespace Sepes.Infrastructure.Service
         public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
             throw new NotImplementedException();
-        }     
+        }
+
+        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

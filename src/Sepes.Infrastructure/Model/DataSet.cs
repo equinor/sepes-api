@@ -6,19 +6,19 @@ namespace Sepes.Infrastructure.Model
     public class Dataset : UpdateableBaseModel
     {
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string StorageAccountName { get; set; }
 
         [MaxLength(64)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Location { get; set; }
 
         [MaxLength(32)]
-        [Required]
+        [Required(AllowEmptyStrings =false)]
         public string Classification { get; set; }
 
         public int LRAId { get; set; }
@@ -35,6 +35,8 @@ namespace Sepes.Infrastructure.Model
         // Attributes used for linking.
         // ------------------------------
         public ICollection<StudyDataset> StudyDatasets { get; set; }
+
+        public ICollection<SandboxDataset> SandboxDatasets { get; set; }
 
         //StudyID is only populated if dataset is StudySpecific.
         //This is accounted for in API calls.

@@ -9,7 +9,6 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -48,19 +47,14 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> GetSandboxAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
-
-            //if (sandboxFromDb.StudyId != studyId)
-            //{
-            //    throw new ArgumentException($"Sandbox with id {sandboxId} does not belong to study with id {studyId}");
-            //}        
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);              
 
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
+            var studyFromDb = StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
@@ -68,55 +62,40 @@ namespace Sepes.Infrastructure.Service
             return sandboxDTOs;
         }
 
-
-        // TODO Validate azure things
-        public async Task<StudyDto> ValidateSandboxAsync(int studyId, SandboxDto newSandbox)
-        {
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyReadOwnRestricted);
-            return await ValidateSandboxAsync(studyFromDb, newSandbox);
-        }
-
-        Task<StudyDto> ValidateSandboxAsync(Study study, SandboxDto newSandbox)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
-        {
-            // Verify that study with that id exists
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
-
-            //Check uniqueness of name
-            if (_db.Sandboxes.Where(sb => sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).Any())
-            {
-                throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists");
-            }
-
-            // Check that study has WbsCode.
-            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
-            {
-                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
-            }
-
+        {  
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
                 throw new ArgumentException("Region not specified.");
             }
 
-            //TODO: Remember to consider templates specifed as argument
+            // Verify that study with that id exists
+            var study = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
+            // Check that study has WbsCode.
+            if (String.IsNullOrWhiteSpace(study.WbsCode))
+            {
+                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
+            }
+
+            //Check uniqueness of name
+            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).AnyAsync())
+            {
+                throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
+            }  
+            
             var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
-
+         
             var user = _userService.GetCurrentUser();
             sandbox.CreatedBy = user.UserName;
             sandbox.TechnicalContactName = user.FullName;
             sandbox.TechnicalContactEmail = user.EmailAddress;
-
-            studyFromDb.Sandboxes.Add(sandbox);
+           
+            study.Sandboxes.Add(sandbox);
             await _db.SaveChangesAsync();
 
             // Get Dtos for arguments to sandboxWorkerService
-            var studyDto = await _studyService.GetStudyByIdAsync(studyId);
+            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyAddRemoveSandbox);
             var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
@@ -124,7 +103,7 @@ namespace Sepes.Infrastructure.Service
             var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
             //This objects gets passed around
-            var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = sandbox.Id, StudyName = studyFromDb.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
+            var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = sandbox.Id, StudyName = studyDto.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
 
             await CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
 
@@ -132,9 +111,11 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.StudyReadOwnRestricted)
-        {
+        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
+        { 
             var sandboxFromDb = await _db.Sandboxes
+                .Include(sb=> sb.SandboxDatasets)
+                    .ThenInclude(sd=> sd.Dataset)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
                 .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
@@ -144,8 +125,8 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            //Check that relevant access to Study is present
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
+            //Ensure user is allowed to perform this action
+            _ = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
 
             return sandboxFromDb;
         }
@@ -164,9 +145,11 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Ordering other resources");
 
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = dto.SandboxId;
-            queueParentItem.Description = $"Create basic resources for Sandbox: {dto.SandboxId}";
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                SandboxId = dto.SandboxId,
+                Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
+            };
 
             await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
             await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
@@ -232,7 +215,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.StudyReadOwnRestricted);
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
@@ -250,9 +233,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
-
-            // Run validations: (Check if ID is valid)
-            var studyFromDb = await StudyAccessUtil.GetStudyAndCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+         
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox); 
             var sandboxFromDb = await _db.Sandboxes.Include(sb => sb.Resources).ThenInclude(r => r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
@@ -322,6 +304,7 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
+                await _db.SaveChangesAsync();
             }
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
@@ -331,7 +314,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ReScheduleSandboxCreation(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.StudyReadOwnRestricted);
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxFromDb.Id;
