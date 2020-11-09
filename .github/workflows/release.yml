@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository. By setting `fetch-depth: 0`, this fetch will include all history and tags
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      # Configure git identity with the user set in last log entrance
+      - name: Configure Git identity
+        run: |
+          git config --local user.email "$(git log --format='%ae' HEAD^!)"
+          git config --local user.name "$(git log --format='%an' HEAD^!)"
+
+      # Bump version with standard-version, remove prefixes from version tag
+      - name: Bump version
+        run: npx standard-version --tag-prefix=
+      
+      # Add the remote repository and push the bumped version and changelog
+      - name: Commit changes
+        run: |
+          git remote add gh-origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          git push --force gh-origin HEAD:master --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Set the new version number to an environment variable
+      - name: Retrieve new version
+        id: tag
+        run: |
+          echo "::set-output name=version::$(git describe HEAD)"
+
+      # Creates a release 
+      - name: Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.tag.outputs.version }}
