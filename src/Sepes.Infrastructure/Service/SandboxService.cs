@@ -47,12 +47,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> GetSandboxAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
-
-            //if (sandboxFromDb.StudyId != studyId)
-            //{
-            //    throw new ArgumentException($"Sandbox with id {sandboxId} does not belong to study with id {studyId}");
-            //}        
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);              
 
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
@@ -119,6 +114,8 @@ namespace Sepes.Infrastructure.Service
         async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
         { 
             var sandboxFromDb = await _db.Sandboxes
+                .Include(sb=> sb.SandboxDatasets)
+                    .ThenInclude(sd=> sd.Dataset)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
                 .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
@@ -128,17 +125,8 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            try
-            {
-               _ = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
-                
-            }
-            catch (Exception)
-            {
-
-                throw;
-            }
-           
+            //Ensure user is allowed to perform this action
+            _ = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
 
             return sandboxFromDb;
         }

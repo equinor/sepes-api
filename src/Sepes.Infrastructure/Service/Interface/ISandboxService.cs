@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Dto.Sandbox;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -14,7 +14,5 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId);
         Task ReScheduleSandboxCreation(int studyId);
-
-        //Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync();
     }
 }

@@ -16,6 +16,7 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<Dataset> Datasets { get; set; }
 
         public virtual DbSet<StudyDataset> StudyDatasets { get; set; }
+        public virtual DbSet<SandboxDataset> SandboxDatasets { get; set; }
 
         public virtual DbSet<User> Users { get; set; }
 
@@ -42,6 +43,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
+            modelBuilder.Entity<SandboxDataset>().HasKey(sd => new { sd.SandboxId, sd.DatasetId });
             modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
             modelBuilder.Entity<SandboxResource>().HasKey(r => r.Id);
             modelBuilder.Entity<SandboxResourceOperation>().HasKey(o => o.Id);
@@ -162,6 +164,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<SandboxResourceOperation>()
                 .Property(sro => sro.Updated)
                 .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<SandboxDataset>()
+              .Property(sro => sro.Added)
+              .HasDefaultValueSql("getutcdate()");
         }
     }
 }

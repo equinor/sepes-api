@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxResourceOperationDto : UpdateableBaseDto
     {

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;

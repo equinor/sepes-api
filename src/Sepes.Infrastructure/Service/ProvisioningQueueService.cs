@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Interface;
 using System;
