@@ -1,16 +1,30 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-    public partial class StudyController : StudyControllerBase
+    [Route("api/studies")]
+    [ApiController]
+    [Produces("application/json")]
+    [EnableCors("_myAllowSpecificOrigins")]
+    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
+    public class SandboxController : ControllerBase
     {
+        readonly ISandboxService _sandboxService;
+
+        public SandboxController(ISandboxService sandboxService)
+        {
+            _sandboxService = sandboxService;
+        }
+
         [HttpGet("{studyId}/sandboxes")]
         [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep and other roles
