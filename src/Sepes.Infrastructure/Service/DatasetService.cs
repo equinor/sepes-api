@@ -111,6 +111,25 @@ namespace Sepes.Infrastructure.Service
             return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
         }
 
+        public async Task<IEnumerable<DataSetsForStudyDto>> GetDatasetsForStudy(int studyId)
+        {
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.SandboxEdit);
+
+            if (studyFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("Study", studyId);
+            }
+
+            if (studyFromDb.StudyDatasets == null)
+            {
+                throw NotFoundException.CreateForEntityCustomDescr("StudyDatasets", $"studyId {studyId}");
+            }
+
+            var datasetDtos = _mapper.Map<IEnumerable<DataSetsForStudyDto>>(studyFromDb.StudyDatasets);
+
+            return datasetDtos;
+        }
+
         public async Task<StudyDto> RemoveDatasetFromStudyAsync(int studyId, int datasetId)
         {
             var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset);
@@ -349,5 +368,7 @@ namespace Sepes.Infrastructure.Service
 
             return studyDatasetRelation.Dataset;
         }
+
+      
     }
 }

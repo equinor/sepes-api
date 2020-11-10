@@ -23,6 +23,16 @@ namespace Sepes.RestApi.Controller
             _datasetService = datasetService;
         }
 
+        [HttpGet("{studyId}/datasets")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        [Authorize(Roles = RoleSets.AdminOrSponsor)]
+        //TODO: Must also be possible for other study specific roles
+        public async Task<IActionResult> GetDatasetsForStudy(int studyId)
+        {
+            var dataset = await _datasetService.GetDatasetsForStudy(studyId);
+            return new JsonResult(dataset);
+        }
+
         [HttpPut("{studyId}/datasets/{datasetId}")]
         [Authorize(Roles = AppRoles.Admin)]
         //TODO: Must also be possible for sponsor rep/vendor admin
