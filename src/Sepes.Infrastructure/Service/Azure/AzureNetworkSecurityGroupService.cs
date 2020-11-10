@@ -132,6 +132,49 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
+        public async Task NsgAllowInboundPort(string resourceGroupName, string securityGroupName,
+                                              string ruleName,
+                                              int priority,
+                                              string[] internalAddresses,
+                                              int toPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
+                .AllowInbound()
+                .FromAddresses(internalAddresses)
+                .FromAnyPort()
+                .ToAnyAddress()
+                .ToPort(toPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+
+        public async Task NsgAllowOutboundPort(string resourceGroupName, string securityGroupName,
+                                               string ruleName,
+                                               int priority,
+                                               string[] externalAddresses,
+                                               int toPort)
+        {
+            await _azure.NetworkSecurityGroups
+                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
+                .Update()
+                .DefineRule(ruleName)
+                .AllowOutbound()
+                .FromAnyAddress()
+                .FromAnyPort()
+                .ToAddresses(externalAddresses)
+                .ToPort(toPort)
+                .WithAnyProtocol()
+                .WithPriority(priority)
+                .Attach()
+                .ApplyAsync();
+        }
+
+
         public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
