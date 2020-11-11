@@ -1,12 +1,17 @@
 ﻿using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.Network.Fluent.NetworkSecurityGroup.Update;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,13 +32,13 @@ namespace Sepes.Infrastructure.Service
 
             var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
-            if(nsg == null)
+            if (nsg == null)
             {
                 _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}. Creating!");
 
                 nsg = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, parameters.Tags, cancellationToken);
-            }          
-          
+            }
+
             var result = CreateResult(nsg);
 
             _logger.LogInformation($"Done ensuring Network Security Group exists for sandbox with Id: {parameters.SandboxName}! Id: {nsg.Id}");
@@ -132,11 +137,189 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
+        //public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesByPrefix(string resourceGroupName, string nsgName, string withNamePrefix, CancellationToken cancellationToken = default)
+        //{
+        //    var nsg = await GetResourceAsync(resourceGroupName, nsgName);
+
+        //    var result = new Dictionary<string, NsgRuleDto>();
+
+        //    foreach (var curRuleKvp in nsg.SecurityRules)
+        //    {
+        //        if (curRuleKvp.Value.Name.StartsWith(withNamePrefix))
+        //        {
+        //            if (!result.ContainsKey(curRuleKvp.Key))
+        //            {
+        //                result.Add(curRuleKvp.Key, new NsgRuleDto());
+        //            }
+        //        }
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default)
+        {
+            var nsg = await GetResourceAsync(resourceGroupName, nsgName);
+
+            var result = new Dictionary<string, NsgRuleDto>();
+
+            foreach (var curRuleKvp in nsg.SecurityRules)
+            {
+                if (
+                    (curRuleKvp.Value.Direction == "Inbound" && curRuleKvp.Value.DestinationAddressPrefixes.Contains(address))
+                    ||
+                    (curRuleKvp.Value.Direction == "Outbound" && curRuleKvp.Value.SourceAddressPrefixes.Contains(address))
+                    )
+                {
+                    if (!result.ContainsKey(curRuleKvp.Value.Name))
+                    {
+                        result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol });
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public async Task AddInboundRule(string resourceGroupName, string securityGroupName,
+                                      NsgRuleDto rule, CancellationToken cancellationToken = default)
+        {
+            var createOperation = _azure.NetworkSecurityGroups
+                 .GetByResourceGroup(resourceGroupName, securityGroupName)
+                 .Update()
+                 .DefineRule(rule.Name);
+
+            var operationWithRules = await (rule.Action == RuleAction.Allow ? createOperation.AllowInbound() : createOperation.DenyInbound())
+            .FromAddresses(rule.SourceAddress)
+            .FromAnyPort()
+            .ToAddresses(rule.DestinationAddress)
+            .ToPort(rule.DestinationPort)
+            .WithAnyProtocol()
+            .WithPriority(rule.Priority)
+            .Attach()
+            .ApplyAsync(cancellationToken);
+        }
+
+        public async Task UpdateInboundRule(string resourceGroupName, string securityGroupName,
+                                 NsgRuleDto rule, CancellationToken cancellationToken = default)
+        {
+            var updateNsgOperation = _azure.NetworkSecurityGroups
+                 .GetByResourceGroup(resourceGroupName, securityGroupName)
+                 .Update();
+
+
+            var updateRuleOp = updateNsgOperation
+             .UpdateRule(rule.Name);
+            //Decide of allow or deny
+            (rule.Action == RuleAction.Allow ? updateRuleOp.AllowInbound() : updateRuleOp.DenyInbound())
+
+                .FromAddresses(rule.SourceAddress)
+            .FromAnyPort()
+              .ToAddresses(rule.DestinationAddress)
+           .ToPort(rule.DestinationPort)
+           .WithAnyProtocol()
+           .WithPriority(rule.Priority);
+
+            await updateNsgOperation.ApplyAsync();
+        }
+
+
+        //public async Task UpdateInboundRule(string resourceGroupName, string securityGroupName,
+        //                           NsgRuleDto rule, CancellationToken cancellationToken = default)
+        //{
+        //    var updateNsgOperation = _azure.NetworkSecurityGroups
+        //         .GetByResourceGroup(resourceGroupName, securityGroupName)
+        //         .Update();
+
+
+        //     _ = updateNsgOperation
+        //      .UpdateRule(rule.Name)
+        //      .AllowInbound()
+        //        .FromAddresses(rule.SourceAddress)
+        //    .FromAnyPort()
+        //      .ToAddresses(rule.DestinationAddress)
+        //   .ToPort(rule.DestinationPort)
+        //   .WithAnyProtocol()
+        //   .WithPriority(rule.Priority);
+
+        //    await updateNsgOperation.ApplyAsync();
+        //}
+
+        public async Task AddOutboundRule(string resourceGroupName, string securityGroupName,
+                                    NsgRuleDto rule, CancellationToken cancellationToken = default)
+        {
+            var createOperation = await _azure.NetworkSecurityGroups
+                 .GetByResourceGroup(resourceGroupName, securityGroupName)
+                 .Update()
+                 .DefineRule(rule.Name)
+                 .AllowOutbound()
+                 .FromAddresses(rule.SourceAddress)
+                 .FromPort(rule.SourcePort)
+                 .ToAddresses(rule.DestinationAddress)
+                 .ToAnyPort()
+                 .WithAnyProtocol()
+                 .WithPriority(rule.Priority)
+                 .Attach()
+                 .ApplyAsync(cancellationToken);
+        }
+
+
+        public async Task UpdateOutboundRule(string resourceGroupName, string securityGroupName,
+                                   NsgRuleDto rule, CancellationToken cancellationToken = default)
+        {
+            var updateNsgOperation = _azure.NetworkSecurityGroups
+                 .GetByResourceGroup(resourceGroupName, securityGroupName)
+                 .Update();
+
+
+            _ = updateNsgOperation
+             .UpdateRule(rule.Name)
+             .AllowOutbound()
+                 .FromAddresses(rule.SourceAddress)
+                 .FromPort(rule.SourcePort)
+                 .ToAddresses(rule.DestinationAddress)
+                 .ToAnyPort()
+                 .WithAnyProtocol()
+                 .WithPriority(rule.Priority);
+
+            await updateNsgOperation.ApplyAsync();
+        }
+
+
+
+        //public async Task UpdateRule(string resourceGroupName, string securityGroupName,
+        //                           NsgRuleDto rule, CancellationToken cancellationToken = default)
+        //{
+        //    var updateOperation = _azure.NetworkSecurityGroups
+        //         .GetByResourceGroup(resourceGroupName, securityGroupName)
+        //         .Update()
+        //         .UpdateRule(rule.Name)
+        //         .AllowInbound()
+        //         .FromAddresses(rule.SourceAddress)
+        //          .FromPort(rule.SourcePort)
+        //         .ToAnyAddress()
+        //          .ToPort(rule.DestinationPort)
+        //         .WithAnyProtocol()
+        //         .WithPriority(rule.Priority);
+
+        //}
+
+        public async Task DeleteRule(string resourceGroupName, string securityGroupName,
+                                string ruleName, CancellationToken cancellationToken = default)
+        {
+            var updatedNsg = await _azure.NetworkSecurityGroups
+                 .GetByResourceGroup(resourceGroupName, securityGroupName)
+                 .Update()
+                 .WithoutRule(ruleName)
+                .ApplyAsync();
+
+        }
+
         public async Task NsgAllowInboundPort(string resourceGroupName, string securityGroupName,
                                               string ruleName,
                                               int priority,
                                               string[] internalAddresses,
-                                              int toPort)
+                                              int toPort, CancellationToken cancellationToken = default)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
@@ -157,7 +340,7 @@ namespace Sepes.Infrastructure.Service
                                                string ruleName,
                                                int priority,
                                                string[] externalAddresses,
-                                               int toPort)
+                                               int toPort, CancellationToken cancellationToken = default)
         {
             await _azure.NetworkSecurityGroups
                 .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID

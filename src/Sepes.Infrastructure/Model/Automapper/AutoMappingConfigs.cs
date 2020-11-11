@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Dataset, DataSetsForStudyDto>();
 
             CreateMap<SandboxDataset, SandboxDatasetDto>()
-                .ForMember(dest => dest.DatasetId,source => source.MapFrom(x => x.Dataset.Id))
+                .ForMember(dest => dest.DatasetId, source => source.MapFrom(x => x.Dataset.Id))
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
 
@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources,source => source.MapFrom(x => x.Resources))
+                 .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
                      .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
                          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets));
 
@@ -125,6 +125,12 @@ namespace Sepes.Infrastructure.Model.Automapper
             .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
             .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => AzureVmUtil.GetOsName(x)))
                    .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
+
+
+            CreateMap<VmRuleDto, NsgRuleDto>()
+                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Id))
+                      .ForMember(dest => dest.Protocol, source => source.MapFrom(x => x.Protocol))
+                  .ForMember(dest => dest.Description, source => source.MapFrom(x => x.Description));
         }
     }
 }

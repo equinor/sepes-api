@@ -154,6 +154,8 @@ namespace Sepes.Infrastructure.Service
                 throw new NullReferenceException($"ResourceOperation {queueChildItem.SandboxResourceOperationId}Unable to resolve CRUD service for type {resourceType}!");
             }
 
+            var nsg = SandboxResourceUtil.GetSibilingResource(await _sandboxResourceService.GetByIdAsync(resource.Id.Value), AzureResourceType.NetworkSecurityGroup);
+
             currentCrudInput.ResetButKeepSharedVariables(currentCrudResult != null ? currentCrudResult.NewSharedVariables : null);
             currentCrudInput.Name = resource.ResourceName;
             currentCrudInput.StudyName = resource.StudyName;
@@ -161,6 +163,7 @@ namespace Sepes.Infrastructure.Service
             currentCrudInput.SandboxName = resource.SandboxName;
             currentCrudInput.ResourceGroupName = resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(resource.Region);
+            currentCrudInput.NetworkSecurityGroupName = nsg != null ? nsg.ResourceName : null;
             currentCrudInput.Tags = resource.Tags;
             currentCrudInput.ConfigurationString = resource.ConfigString;
             currentCrudResult = null;
@@ -179,17 +182,19 @@ namespace Sepes.Infrastructure.Service
                 else
                 {
                     currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
-                    _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with create");
+                   
 
                     var cancellationTokenSource = new CancellationTokenSource();
                     Task<CloudResourceCRUDResult> currentCrudResultTask = null;
 
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {
+                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with CREATE operation");
                         currentCrudResultTask = service.EnsureCreated(currentCrudInput, cancellationTokenSource.Token);
                     }
                     else
                     {
+                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Initial checks succeeded. Proceeding with UPDATE operation");
                         currentCrudResultTask = service.Update(currentCrudInput, cancellationTokenSource.Token);
                     }
 
@@ -198,6 +203,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (await _sandboxResourceService.ResourceIsDeleted(resource.Id.Value))
                         {
+                            _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation canceled!");
                             cancellationTokenSource.Cancel();
                             break;
                         }
@@ -209,6 +215,7 @@ namespace Sepes.Infrastructure.Service
 
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {
+                        _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Setting resource id and name!");
                         await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
                     }
                 }
@@ -219,10 +226,13 @@ namespace Sepes.Infrastructure.Service
 
                 if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
                 {
+                    _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Deleting ResourceGroup");
+
                     currentCrudResult = await service.Delete(currentCrudInput);
                 }
                 else if (currentResourceOperation.Resource.ResourceType == AzureResourceType.VirtualMachine)
                 {
+                    _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Deleting Virtual Machine");
                     currentCrudResult = await service.Delete(currentCrudInput);
                 }
                 else
