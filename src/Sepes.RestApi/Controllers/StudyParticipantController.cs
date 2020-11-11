@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-    [Route("api/study/")]
+    [Route("api/")]
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
@@ -30,14 +30,14 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(studies);
         }
 
-        [HttpPut("{studyId}/participants/{role}")]
+        [HttpPut("study/{studyId}/participants/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
             var updatedStudy = await _studyParticipantService.HandleAddParticipantAsync(studyId, user, role);
             return new JsonResult(updatedStudy);
         }    
 
-        [HttpDelete("{studyId}/participants/{userId}/{roleName}")]
+        [HttpDelete("study/{studyId}/participants/{userId}/{roleName}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int userId, string roleName)
         {
             var updatedStudy = await _studyParticipantService.RemoveParticipantFromStudyAsync(studyId, userId, roleName);
