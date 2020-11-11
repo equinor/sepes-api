@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-    [Route("api")]
+    [Route("api/study/")]
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
