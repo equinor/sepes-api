@@ -4,6 +4,9 @@
 A platform that allows vendors prove their solutions on your data in a sandbox
 
 
+
+
+
 ## Making commits
 
 We use [commitizen](http://commitizen.github.io/cz-cli) (and [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)) to make our commits. Tip:  run "npx git-cz" to make commits. 
@@ -13,6 +16,8 @@ We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a P
 - MAJOR version when you make incompatible API changes,
 - MINOR version when you add functionality in a backwards compatible manner, and
 - PATCH version when you make backwards compatible bug fixes.
+
+[Change Log](CHANGELOG.md)
 
 ## Setup local dev environment
 
