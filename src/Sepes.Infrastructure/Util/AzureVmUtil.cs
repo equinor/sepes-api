@@ -10,11 +10,11 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureVmUtil
     {
-      public static string GetOsName(SandboxResource resource)
+        public static string GetOsName(SandboxResource resource)
         {
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(resource.ConfigString);
 
-            if(vmSettings != null)
+            if (vmSettings != null)
             {
                 return vmSettings.OperatingSystem;
             }
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Util
         {
             var foundOs = osList.Where(os => os.Key == operatingSystemName).FirstOrDefault();
 
-            if(foundOs == null)
+            if (foundOs == null)
             {
                 throw new Exception("Unable to find Operating System record in list of available");
             }
@@ -59,12 +59,12 @@ namespace Sepes.Infrastructure.Util
 
         public static string GetPowerState(IVirtualMachine vm)
         {
-           if(vm != null)
+            if (vm != null)
             {
                 return vm.PowerState.Value.ToLower().Replace("powerstate/", "");
-            }          
+            }
 
-            return "not found";          
+            return "not found";
         }
 
         public static string GetOsType(IVirtualMachine vm)
@@ -79,7 +79,7 @@ namespace Sepes.Infrastructure.Util
 
         public static bool IsSameRule(VmRuleDto rule1, VmRuleDto rule2)
         {
-            if(rule1.Direction == rule2.Direction
+            if (rule1.Direction == rule2.Direction
                 && rule1.Protocol == rule2.Protocol
                 && rule1.Ip == rule2.Ip
                  && rule1.Port == rule2.Port)
@@ -89,6 +89,24 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-      
+        public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)
+        {
+            var ruleWithHighestPriority = rules.Where(r=> r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
+
+            if (ruleWithHighestPriority == null)
+            {
+                return 500;
+            }
+            else if (ruleWithHighestPriority.Priority < 500)
+            {
+                return 500;
+            }
+            else
+            {
+                return ruleWithHighestPriority.Priority + 10;
+            }
+        }
+
+
     }
 }

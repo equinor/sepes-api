@@ -79,8 +79,6 @@ namespace Sepes.Infrastructure.Service
             return input;
         }
 
-
-
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
@@ -132,11 +130,12 @@ namespace Sepes.Infrastructure.Service
                     ThrowIfRuleExists(existingRules, curNew);
                 }
 
-                foreach (var curNewRule in updatedRuleSet)
+                foreach (var curRule in updatedRuleSet)
                 {
-                    if (String.IsNullOrWhiteSpace(curNewRule.Id))
+                    if (String.IsNullOrWhiteSpace(curRule.Id))
                     {
-                        curNewRule.Id = Guid.NewGuid().ToString();
+                        curRule.Id = Guid.NewGuid().ToString();
+                        curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
                     }
                 }
 

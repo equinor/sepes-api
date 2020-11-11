@@ -29,6 +29,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         public Dictionary<string, string> Tags;
 
+        public string NetworkSecurityGroupName { get; set; }
+
         public string ConfigurationString { get; set; }
       
 
