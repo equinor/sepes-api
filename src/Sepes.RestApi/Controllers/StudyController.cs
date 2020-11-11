@@ -11,44 +11,25 @@ using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
-
     [Route("api/studies")]
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
-    public class StudyControllerBase : ControllerBase
+    public class StudyController : ControllerBase
     {
-       protected bool CanViewRestrictedStudy()
-        {
-            //TODO: Open up for more than admins
-            //TODO: ADdd relevant study specific roles
-     
-            return User.IsInRole(AppRoles.Admin);
-        }
-    }
-
-  
-    public partial class StudyController : StudyControllerBase
-    {        
         readonly IStudyService _studyService;
-        readonly IStudyParticipantService _studyParticipantService;
-        readonly ISandboxService _sandboxService;
-        readonly IDatasetService _datasetService;    
 
 
-        public StudyController(IStudyService studyService, IStudyParticipantService studyParticipantService, ISandboxService sandboxService, IDatasetService datasetService)
+        public StudyController(IStudyService studyService)
         {
             _studyService = studyService;
-            _studyParticipantService = studyParticipantService;
-            _sandboxService = sandboxService;
-            _datasetService = datasetService;    
-        }       
+        }
 
         [HttpGet]
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
-        {         
+        {
             var studies = await _studyService.GetStudiesAsync(excludeHidden);
             return new JsonResult(studies);
         }
@@ -57,13 +38,8 @@ namespace Sepes.RestApi.Controller
         [Authorize]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
-            //TODO: Require a role for this?
-            var study = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
 
-            if(study.Restricted && CanViewRestrictedStudy() == false)
-            {
-                return new ForbidResult();
-            }
+            var study = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
 
             return new JsonResult(study);
         }
@@ -76,13 +52,13 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(study);
         }
 
-      //[HttpPost()]
-      //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
-      //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
-      //{
-      //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
-      //    return new JsonResult(study);
-      //}
+        //[HttpPost()]
+        //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
+        //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
+        //{
+        //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
+        //    return new JsonResult(study);
+        //}
 
         [HttpDelete("{studyId}")]
         [Authorize(Roles = AppRoles.Admin)]
@@ -91,8 +67,8 @@ namespace Sepes.RestApi.Controller
             var deletedStudy = await _studyService.DeleteStudyAsync(studyId);
             return new JsonResult(deletedStudy);
         }
-       
-       
+
+
         [HttpPut("{studyId}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Authorize]
@@ -102,8 +78,8 @@ namespace Sepes.RestApi.Controller
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
-        
-        
+
+
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
@@ -123,10 +99,10 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
         {
-            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);           
+            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
 
             byte[] logo = await _studyService.GetLogoAsync(studyId);
-      
+
             string fileType = studyDto.LogoUrl.Split('.').Last();
 
             if (fileType.Equals("jpg"))
@@ -135,8 +111,8 @@ namespace Sepes.RestApi.Controller
             }
 
             return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
-       
-        }    
+
+        }
     }
 
 }

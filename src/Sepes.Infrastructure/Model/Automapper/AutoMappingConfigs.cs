@@ -40,8 +40,15 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DataSetsForStudyDto>();
 
+            CreateMap<StudyDataset, DataSetsForStudyDto>()
+                  .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
+                        .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
+                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
+
+                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
+
             CreateMap<SandboxDataset, SandboxDatasetDto>()
-                .ForMember(dest => dest.DatasetId,source => source.MapFrom(x => x.Dataset.Id))
+                .ForMember(dest => dest.DatasetId, source => source.MapFrom(x => x.Dataset.Id))
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
 
@@ -52,7 +59,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources,source => source.MapFrom(x => x.Resources))
+                 .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
                      .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
                          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets));
 

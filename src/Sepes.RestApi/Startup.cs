@@ -133,6 +133,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyService, StudyService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();

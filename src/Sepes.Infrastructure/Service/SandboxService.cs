@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
-            var studyFromDb = StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
