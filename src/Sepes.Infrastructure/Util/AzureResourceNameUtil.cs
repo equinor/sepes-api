@@ -76,16 +76,16 @@ namespace Sepes.Infrastructure.Util
             //The name must begin with a letter or number, end with a letter, number or underscore, and may contain only letters, numbers, underscores, periods, or hyphens.
             //Max 80 characters
 
-            var vmNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(vmName, 60);
+            var vmNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(vmName, 57);
            var  suffixNormalized = "";
 
             if(suffix == null)
             {
-                suffixNormalized = Normalize("custom" + Guid.NewGuid().ToString(), 20);
+                suffixNormalized = Normalize("custom" + Guid.NewGuid().ToString(), 23);
             }
             else
             {
-                suffixNormalized = Normalize(suffix, 20);
+                suffixNormalized = Normalize(suffix, 23);
             }
            
             return $"{vmNameNormalized}-{suffixNormalized}";

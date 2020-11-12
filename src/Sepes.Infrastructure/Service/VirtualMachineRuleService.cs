@@ -145,7 +145,7 @@ namespace Sepes.Infrastructure.Service
                     }
                     else
                     {
-                        if (String.IsNullOrWhiteSpace(curRule.Name) || curRule.Name != AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET)
+                        if (String.IsNullOrWhiteSpace(curRule.Name) || !curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
                         {
                             throw new ArgumentException("Custom outbound rules are not allowed");
                         }
