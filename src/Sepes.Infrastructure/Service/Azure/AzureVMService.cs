@@ -92,8 +92,8 @@ namespace Sepes.Infrastructure.Service
             var existingRulesThatStillExists = new HashSet<string>();
 
             if (vmSettings.Rules == null)
-            {             
-                vmSettings.Rules = AzureVmConstants.RulePresets.InitialVmRules;
+            {
+                vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(parameters.Name);
             }
             else
             {
@@ -110,13 +110,14 @@ namespace Sepes.Infrastructure.Service
                             ruleMapped.DestinationAddress = primaryNic.PrimaryPrivateIP;
                             ruleMapped.DestinationPort = curRule.Port;
 
-                            if (existingRules.ContainsKey(curRule.Id))
+                            //get existing rule and use that name
+                            if (existingRules.ContainsKey(curRule.Name))
                             {
-                                existingRulesThatStillExists.Add(curRule.Id);
+                                existingRulesThatStillExists.Add(curRule.Name);
                                 await _nsgService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
-                            {
+                            {                               
                                 await _nsgService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
 
@@ -137,7 +138,7 @@ namespace Sepes.Infrastructure.Service
                                 ruleMapped.DestinationPort = curRule.Port;
                             }                         
 
-                            if (existingRules.ContainsKey(curRule.Id))
+                            if (existingRules.ContainsKey(curRule.Name))
                             {
                                 await _nsgService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
@@ -151,7 +152,7 @@ namespace Sepes.Infrastructure.Service
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Unable to create rule {curRule.Id} for VM {parameters.Name}", ex);
+                        _logger.LogError($"Unable to create rule {curRule.Name} for VM {parameters.Name}", ex);
                     }
                 }
             }

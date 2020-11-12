@@ -71,6 +71,26 @@ namespace Sepes.Infrastructure.Util
 
         }
 
+        public static string NsgRuleNameForVm(string vmName, string suffix = null)
+        {
+            //The name must begin with a letter or number, end with a letter, number or underscore, and may contain only letters, numbers, underscores, periods, or hyphens.
+            //Max 80 characters
+
+            var vmNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(vmName, 60);
+           var  suffixNormalized = "";
+
+            if(suffix == null)
+            {
+                suffixNormalized = Normalize("custom" + Guid.NewGuid().ToString(), 20);
+            }
+            else
+            {
+                suffixNormalized = Normalize(suffix, 20);
+            }
+           
+            return $"{vmNameNormalized}-{suffixNormalized}";
+        }
+
         public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
@@ -113,9 +133,16 @@ namespace Sepes.Infrastructure.Util
             return $"{prefix}{normalizedStudyName}{(avoidDash ? "" : "-")}{normalizedSanboxName}{shortUniquePart}";
         }
 
-        static string Normalize(string input)
+        static string Normalize(string input, int limit = 0)
         {
-            return StripWhitespace(input).ToLower();
+            var normalizedString = StripWhitespace(input).ToLower();
+
+            if (limit > 0 && normalizedString.Length > limit)
+            {
+                return normalizedString.Substring(0, limit);
+            }
+
+            return normalizedString;
         }
 
         public static string MakeStringAlphanumericAndRemoveWhitespace(string str, int limit = 0)

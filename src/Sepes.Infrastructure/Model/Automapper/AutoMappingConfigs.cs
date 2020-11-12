@@ -134,8 +134,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                    .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
 
 
-            CreateMap<VmRuleDto, NsgRuleDto>()
-                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Id))
+            CreateMap<VmRuleDto, NsgRuleDto>()                
                       .ForMember(dest => dest.Protocol, source => source.MapFrom(x => x.Protocol))
                   .ForMember(dest => dest.Description, source => source.MapFrom(x => x.Description));
         }

@@ -195,7 +195,7 @@ namespace Sepes.Infrastructure.Service
 
             ThrowIfRuleExists(vmSettings, input);
 
-            input.Id = Guid.NewGuid().ToString();
+            input.Name = Guid.NewGuid().ToString();
 
             if (vmSettings.Rules == null)
             {
@@ -226,7 +226,7 @@ namespace Sepes.Infrastructure.Service
             {
                 foreach (var curExistingRule in vmSettings.Rules)
                 {
-                    if (curExistingRule.Id == ruleId)
+                    if (curExistingRule.Name == ruleId)
                     {
                         return curExistingRule;
                     }
@@ -258,8 +258,8 @@ namespace Sepes.Infrastructure.Service
                     await ValidateRuleThrowIfInvalid(vmId, curRule);
                 }
 
-                var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Id)).ToList();
-                var existingRules = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Id)).ToList();
+                var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Name)).ToList();
+                var existingRules = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Name)).ToList();
 
                 foreach(var curNew in newRules)
                 {
@@ -268,9 +268,9 @@ namespace Sepes.Infrastructure.Service
 
                 foreach (var curNewRule in updatedRuleSet)
                 {
-                    if (String.IsNullOrWhiteSpace(curNewRule.Id))
+                    if (String.IsNullOrWhiteSpace(curNewRule.Name))
                     {
-                        curNewRule.Id = Guid.NewGuid().ToString();
+                        curNewRule.Name = Guid.NewGuid().ToString();
                     }
                 }
 
@@ -302,9 +302,9 @@ namespace Sepes.Infrastructure.Service
 
                 VmRuleDto ruleToRemove = null;
 
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Id, r => r);
+                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
 
-                if (rulesDictionary.TryGetValue(input.Id, out ruleToRemove))
+                if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
                 {
                     vmSettings.Rules.Remove(ruleToRemove);
 
@@ -322,7 +322,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            throw new NotFoundException($"Rule with id {input.Id} does not exist");
+            throw new NotFoundException($"Rule with id {input.Name} does not exist");
         }
 
         public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
@@ -347,7 +347,7 @@ namespace Sepes.Infrastructure.Service
 
                 VmRuleDto ruleToRemove = null;
 
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Id, r => r);
+                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
 
                 if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
                 {
@@ -491,7 +491,7 @@ namespace Sepes.Infrastructure.Service
             var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
             
-            vmSettings.Rules = AzureVmConstants.RulePresets.InitialVmRules;
+            vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(userInput.Name);
             return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
         }
 

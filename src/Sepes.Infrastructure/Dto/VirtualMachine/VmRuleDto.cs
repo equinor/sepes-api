@@ -2,7 +2,7 @@
 {
     public class VmRuleDto
     {
-        public string Id { get; set; }        
+        public string Name { get; set; }        
 
         public RuleDirection Direction { get; set; }
 

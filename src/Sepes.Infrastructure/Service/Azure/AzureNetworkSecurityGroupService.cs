@@ -217,7 +217,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task AddOutboundRule(string resourceGroupName, string securityGroupName,
                                     NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {
+        {           
             var createOperation = _azure.NetworkSecurityGroups
                  .GetByResourceGroup(resourceGroupName, securityGroupName)
                  .Update()
