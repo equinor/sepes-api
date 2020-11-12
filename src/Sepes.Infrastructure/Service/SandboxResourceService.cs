@@ -182,6 +182,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceName = updated.ResourceName;
             resource.ResourceType = updated.ResourceType;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
+            resource.ConfigString = updated.ConfigString;        
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();

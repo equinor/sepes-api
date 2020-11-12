@@ -146,7 +146,31 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-        public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default)
+        //public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default)
+        //{
+        //    var nsg = await GetResourceAsync(resourceGroupName, nsgName);
+
+        //    var result = new Dictionary<string, NsgRuleDto>();
+
+        //    foreach (var curRuleKvp in nsg.SecurityRules)
+        //    {
+        //        if (
+        //            (curRuleKvp.Value.Direction == "Inbound" && curRuleKvp.Value.DestinationAddressPrefixes.Contains(address))
+        //            ||
+        //            (curRuleKvp.Value.Direction == "Outbound" && curRuleKvp.Value.SourceAddressPrefixes.Contains(address))
+        //            )
+        //        {
+        //            if (!result.ContainsKey(curRuleKvp.Value.Name))
+        //            {
+        //                result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol });
+        //            }
+        //        }
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
         {
             var nsg = await GetResourceAsync(resourceGroupName, nsgName);
 
@@ -154,11 +178,7 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curRuleKvp in nsg.SecurityRules)
             {
-                if (
-                    (curRuleKvp.Value.Direction == "Inbound" && curRuleKvp.Value.DestinationAddressPrefixes.Contains(address))
-                    ||
-                    (curRuleKvp.Value.Direction == "Outbound" && curRuleKvp.Value.SourceAddressPrefixes.Contains(address))
-                    )
+                if (curRuleKvp.Value.Name.Contains(nameContains))
                 {
                     if (!result.ContainsKey(curRuleKvp.Value.Name))
                     {
@@ -217,21 +237,27 @@ namespace Sepes.Infrastructure.Service
 
         public async Task AddOutboundRule(string resourceGroupName, string securityGroupName,
                                     NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {           
-            var createOperation = _azure.NetworkSecurityGroups
+        {
+            var operationStep1 = _azure.NetworkSecurityGroups
                  .GetByResourceGroup(resourceGroupName, securityGroupName)
                  .Update()
-                 .DefineRule(rule.Name)
-                 .AllowOutbound()
+                 .DefineRule(rule.Name);
+
+            var operationStep2 = (rule.Action == RuleAction.Allow ? operationStep1.AllowOutbound() : operationStep1.DenyOutbound())           
                  .FromAddresses(rule.SourceAddress);
 
-            var decidePort = await (rule.SourcePort == 0 ? createOperation.FromAnyPort() : createOperation.FromPort(rule.SourcePort))              
-                 .ToAddresses(rule.DestinationAddress)
-                 .ToAnyPort()
-                 .WithAnyProtocol()
-                 .WithPriority(rule.Priority)
-                 .Attach()
-                 .ApplyAsync(cancellationToken);
+            var operationStep3 = (rule.SourcePort == 0 ? operationStep2.FromAnyPort() : operationStep2.FromPort(rule.SourcePort));
+
+            var operationStep4 = (rule.DestinationAddress == "*" ? operationStep3.ToAnyAddress() : operationStep3.ToAddress(rule.DestinationAddress));
+
+            var operationStep5 = operationStep4
+                .ToAnyPort()
+                .WithAnyProtocol()
+                .WithPriority(rule.Priority)
+                .Attach();
+
+            await operationStep5
+              .ApplyAsync(cancellationToken);
         }
 
 
@@ -243,15 +269,21 @@ namespace Sepes.Infrastructure.Service
                  .Update();
 
             var operationStep2 = operationStep1
-             .UpdateRule(rule.Name)
-             .AllowOutbound()
-                 .FromAddresses(rule.SourceAddress);
+             .UpdateRule(rule.Name);
 
-                  var decidePort = (rule.SourcePort == 0 ? operationStep2.FromAnyPort() : operationStep2.FromPort(rule.SourcePort))
-                 .ToAddresses(rule.DestinationAddress)
-                 .ToAnyPort()
-                 .WithAnyProtocol()
-                 .WithPriority(rule.Priority);
+            var operationStep3 = (rule.Action == RuleAction.Allow ? operationStep2.AllowOutbound() : operationStep2.DenyOutbound())
+              .FromAddresses(rule.SourceAddress);            
+
+            var operationStep4 = (rule.SourcePort == 0 ? operationStep3.FromAnyPort() : operationStep3.FromPort(rule.SourcePort));
+            //ruleMapped.DestinationAddress = "*";
+            //ruleMapped.DestinationPort = 0;
+
+            var operationStep5 = (rule.DestinationAddress == "*" ? operationStep4.ToAnyAddress() : operationStep2.ToAddress(rule.DestinationAddress));
+
+            _ = operationStep5
+                  .ToAnyPort()
+                  .WithAnyProtocol()
+                  .WithPriority(rule.Priority);
 
             await operationStep1.ApplyAsync();
         }

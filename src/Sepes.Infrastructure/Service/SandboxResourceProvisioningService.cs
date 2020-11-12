@@ -159,6 +159,7 @@ namespace Sepes.Infrastructure.Service
             currentCrudInput.ResetButKeepSharedVariables(currentCrudResult != null ? currentCrudResult.NewSharedVariables : null);
             currentCrudInput.Name = resource.ResourceName;
             currentCrudInput.StudyName = resource.StudyName;
+            currentCrudInput.DatabaseId = resource.Id.Value;
             currentCrudInput.SandboxId = resource.SandboxId;
             currentCrudInput.SandboxName = resource.SandboxName;
             currentCrudInput.ResourceGroupName = resource.ResourceGroupName;

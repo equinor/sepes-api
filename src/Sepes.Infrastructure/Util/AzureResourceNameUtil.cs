@@ -71,24 +71,29 @@ namespace Sepes.Infrastructure.Util
 
         }
 
-        public static string NsgRuleNameForVm(string vmName, string suffix = null)
+        public const string NSG_RULE_FOR_VM_PREFIX = "vm-rule-";
+
+        public static string NsgRuleNameForVm(int vmId, string suffix = null)
         {
             //The name must begin with a letter or number, end with a letter, number or underscore, and may contain only letters, numbers, underscores, periods, or hyphens.
             //Max 80 characters
+      
+            var vmIdString = vmId.ToString();
+            var suffixMaxLength = 80 - NSG_RULE_FOR_VM_PREFIX.Length - vmIdString.Length - 1;
 
-            var vmNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(vmName, 57);
-           var  suffixNormalized = "";
+
+           var suffixNormalized = "";
 
             if(suffix == null)
             {
-                suffixNormalized = Normalize("custom" + Guid.NewGuid().ToString(), 23);
+                suffixNormalized = Normalize(Guid.NewGuid().ToString(), suffixMaxLength);
             }
             else
             {
-                suffixNormalized = Normalize(suffix, 23);
+                suffixNormalized = Normalize(suffix, suffixMaxLength);
             }
            
-            return $"{vmNameNormalized}-{suffixNormalized}";
+            return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
 
         public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)

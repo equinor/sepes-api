@@ -69,6 +69,10 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(createdVm.PrimaryNetworkInterfaceId, cancellationToken);
+
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
+
             var result = CreateCRUDResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
@@ -76,6 +80,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
         }
+       
 
         public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
@@ -86,14 +91,23 @@ namespace Sepes.Infrastructure.Service
 
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
+
+            var result = CreateCRUDResult(vm);
+
+            return result;
+        }
+
+        async Task UpdateVmRules(CloudResourceCRUDInput parameters, VmSettingsDto vmSettings, string privateIp, CancellationToken cancellationToken = default)
+        {
             _logger.LogInformation($"Setting desired VM rules for {parameters.Name}");
 
-            var existingRules = await _nsgService.GetNsgRulesForAddress(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, primaryNic.PrimaryPrivateIP, cancellationToken);
+            var existingRules = await _nsgService.GetNsgRulesContainingName(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, $"{AzureResourceNameUtil.NSG_RULE_FOR_VM_PREFIX}{parameters.DatabaseId}", cancellationToken);
             var existingRulesThatStillExists = new HashSet<string>();
 
             if (vmSettings.Rules == null)
             {
-                vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(parameters.Name);
+                throw new Exception($"No rules exists for VM {parameters.Name}");
             }
             else
             {
@@ -107,7 +121,7 @@ namespace Sepes.Infrastructure.Service
                         {
                             ruleMapped.SourceAddress = curRule.Ip;
                             ruleMapped.SourcePort = curRule.Port;
-                            ruleMapped.DestinationAddress = primaryNic.PrimaryPrivateIP;
+                            ruleMapped.DestinationAddress = privateIp;
                             ruleMapped.DestinationPort = curRule.Port;
 
                             //get existing rule and use that name
@@ -117,17 +131,17 @@ namespace Sepes.Infrastructure.Service
                                 await _nsgService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
-                            {                               
+                            {
                                 await _nsgService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
 
                         }
                         else
                         {
-                            ruleMapped.SourceAddress = primaryNic.PrimaryPrivateIP;
+                            ruleMapped.SourceAddress = privateIp;
                             ruleMapped.SourcePort = curRule.Port;
 
-                            if(ruleMapped.Name == AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET)
+                            if (ruleMapped.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
                             {
                                 ruleMapped.DestinationAddress = "*";
                                 ruleMapped.DestinationPort = 0;
@@ -136,10 +150,11 @@ namespace Sepes.Infrastructure.Service
                             {
                                 ruleMapped.DestinationAddress = curRule.Ip;
                                 ruleMapped.DestinationPort = curRule.Port;
-                            }                         
+                            }
 
                             if (existingRules.ContainsKey(curRule.Name))
                             {
+                                existingRulesThatStillExists.Add(curRule.Name);
                                 await _nsgService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
@@ -152,14 +167,14 @@ namespace Sepes.Infrastructure.Service
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError($"Unable to create rule {curRule.Name} for VM {parameters.Name}", ex);
+                        throw new Exception($"Unable to create rule {curRule.Name} for VM {parameters.Name}", ex);
                     }
                 }
             }
 
-            if(existingRules != null && existingRules.Count > 0)
+            if (existingRules != null && existingRules.Count > 0)
             {
-                foreach(var curExistingKvp in existingRules)
+                foreach (var curExistingKvp in existingRules)
                 {
                     if (!existingRulesThatStillExists.Contains(curExistingKvp.Key))
                     {
@@ -168,13 +183,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-
-
             _logger.LogInformation($"Done setting desired VM rules for {parameters.Name}");
-
-            var result = CreateCRUDResult(vm);
-
-            return result;
         }
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)

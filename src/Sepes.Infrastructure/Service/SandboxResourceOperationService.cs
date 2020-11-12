@@ -56,6 +56,10 @@ namespace Sepes.Infrastructure.Service
                     {
                         throw new Exception($"Error when adding operation to resource {sandboxResourceId}, resource allready marked for deletion");
                     }
+                    else if (previousOperation.OperationType == CloudResourceOperationType.UPDATE)
+                    {
+                        //We can sneak in before this, as updates is safe to run often
+                    }
                     else
                     {
                         dependsOn = previousOperation.Id;

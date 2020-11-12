@@ -14,9 +14,9 @@ namespace Sepes.Infrastructure.Constants
             public const string ALLOW_FOR_SERVICETAG_VNET = "AllowAllForServiceTagVNet";
             public const string OPEN_CLOSE_INTERNET = "control-internet-access";
 
-            public static List<VmRuleDto> CreateInitialVmRules(string vmName)
+            public static List<VmRuleDto> CreateInitialVmRules(int vmId)
             {
-                return new List<VmRuleDto>() { new VmRuleDto() { Name = AzureResourceNameUtil.NsgRuleNameForVm(vmName, OPEN_CLOSE_INTERNET), Description = "Control outbound internet access. Set to Allow or Deny as needed!", Action = RuleAction.Deny, Priority = 1000, Direction = RuleDirection.Outbound } };
+                return new List<VmRuleDto>() { new VmRuleDto() { Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId, OPEN_CLOSE_INTERNET), Description = "Control outbound internet access. Set to Allow or Deny as needed!", Action = RuleAction.Deny, Priority = 1000, Direction = RuleDirection.Outbound } };
             }
 
         }

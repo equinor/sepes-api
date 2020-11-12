@@ -80,16 +80,19 @@ namespace Sepes.Infrastructure.Service
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
 
-            var region = RegionStringConverter.Convert(sandbox.Region);
-
-            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, study.Id.Value, sandboxId, userInput);
+            var region = RegionStringConverter.Convert(sandbox.Region);          
 
             var resourceGroup = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
             //Make this dependent on bastion create operation to be completed, since bastion finishes last
             var dependsOn = await SandboxResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
-            var vmResourceEntry = await _sandboxResourceService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, vmSettingsString);
+            var vmResourceEntry = await _sandboxResourceService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+
+            //Create vm settings and immeately attach to resource entry
+            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id.Value, study.Id.Value, sandboxId, userInput);
+            vmResourceEntry.ConfigString = vmSettingsString;
+            await _sandboxResourceService.Update(vmResourceEntry.Id.Value, vmResourceEntry);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxId;
@@ -473,7 +476,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        async Task<string> CreateVmSettingsString(string region, int studyId, int sandboxId, CreateVmUserInputDto userInput)
+        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
@@ -491,7 +494,7 @@ namespace Sepes.Infrastructure.Service
             var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
             
-            vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(userInput.Name);
+            vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(vmId);
             return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
         }
 

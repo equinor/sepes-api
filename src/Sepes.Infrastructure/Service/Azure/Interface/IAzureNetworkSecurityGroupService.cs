@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
       
         //Task<Dictionary<string, NsgRuleDto>> GetNsgRulesByPrefix(string resourceGroupName, string nsgName, string withNamePrefix, CancellationToken cancellationToken = default);
 
-        Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default);      
+        //Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default);      
 
         Task AddInboundRule(string resourceGroupName, string securityGroupName, NsgRuleDto rule, CancellationToken cancellationToken = default);
 
@@ -26,6 +26,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
         Task UpdateOutboundRule(string resourceGroupName, string securityGroupName, NsgRuleDto rule, CancellationToken cancellationToken = default);
         Task DeleteRule(string resourceGroupName, string securityGroupName, string ruleName, CancellationToken cancellationToken = default);
+        Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default);
 
         //Task UpdateRule(string resourceGroupName, string securityGroupName, NsgRuleDto rule, CancellationToken cancellationToken = default);
 

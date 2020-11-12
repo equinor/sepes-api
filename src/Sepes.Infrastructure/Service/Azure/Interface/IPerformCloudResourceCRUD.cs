@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
     public class CloudResourceCRUDInput
     {
+        public int DatabaseId { get; set; }
         public string ResourceGroupName { get; set; }
         public string Name { get; set; }
 

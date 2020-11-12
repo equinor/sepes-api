@@ -59,7 +59,7 @@ namespace Sepes.Infrastructure.Service
 
             ThrowIfRuleExists(vmSettings, input);
 
-            input.Name = Guid.NewGuid().ToString();
+            input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
 
             if (vmSettings.Rules == null)
             {
@@ -139,7 +139,7 @@ namespace Sepes.Infrastructure.Service
 
                         if (String.IsNullOrWhiteSpace(curRule.Name))
                         {
-                            curRule.Name = AzureResourceNameUtil.NsgRuleNameForVm(vm.ResourceName);
+                            curRule.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
                             curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
                         }
                     }
