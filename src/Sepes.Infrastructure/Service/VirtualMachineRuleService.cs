@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
@@ -40,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceService = sandboxResourceService;
             _sandboxResourceOperationService = sandboxResourceOperationService;
             _workQueue = workQueue;
-        }      
+        }
 
         async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperations operation)
         {
@@ -56,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
             var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
 
-            //Get config string
+            //Get existing rules from VM settings
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             ThrowIfRuleExists(vmSettings, input);
@@ -117,32 +115,48 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                foreach(var curRule in updatedRuleSet)
+                foreach (var curRule in updatedRuleSet)
                 {
                     await ValidateRuleThrowIfInvalid(vmId, curRule);
                 }
 
                 var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Id)).ToList();
-                var existingRules = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Id)).ToList();
+                var rulesThatShouldExistAllready = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Id)).ToList();
 
-                foreach(var curNew in newRules)
+                //Check that the new rules does not have a duplicate in existing rules
+                foreach (var curNew in newRules)
                 {
-                    ThrowIfRuleExists(existingRules, curNew);
+                    ThrowIfRuleExists(rulesThatShouldExistAllready, curNew);
                 }
 
                 foreach (var curRule in updatedRuleSet)
                 {
-                    if (String.IsNullOrWhiteSpace(curRule.Id))
+                    if (curRule.Direction == RuleDirection.Inbound)
                     {
-                        curRule.Id = Guid.NewGuid().ToString();
-                        curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
+                        if (curRule.Action == RuleAction.Deny)
+                        {
+                            throw new ArgumentException("Inbound rules can only have Action: Allow");
+                        }
+
+                        if (String.IsNullOrWhiteSpace(curRule.Id))
+                        {
+                            curRule.Id = Guid.NewGuid().ToString();
+                            curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
+                        }
+                    }
+                    else
+                    {
+                        if (String.IsNullOrWhiteSpace(curRule.Id) || curRule.Id != AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET)
+                        {
+                            throw new ArgumentException("Custom inbound rules are not allowed");
+                        }
                     }
                 }
 
                 vmSettings.Rules = updatedRuleSet;
                 saveAfterwards = true;
-            }  
-            
+            }
+
             if (saveAfterwards)
             {
                 vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
@@ -152,7 +166,7 @@ namespace Sepes.Infrastructure.Service
                 await CreateUpdateOperationAndAddQueueItem(vm, "Updated rules");
             }
 
-            return updatedRuleSet != null? updatedRuleSet : new List<VmRuleDto>();
+            return updatedRuleSet != null ? updatedRuleSet : new List<VmRuleDto>();
         }
 
         public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)

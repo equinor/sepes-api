@@ -91,7 +91,7 @@ namespace Sepes.Infrastructure.Util
 
         public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)
         {
-            var ruleWithHighestPriority = rules.Where(r=> r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
+            var ruleWithHighestPriority = rules.Where(r => r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
 
             if (ruleWithHighestPriority == null)
             {
@@ -105,8 +105,6 @@ namespace Sepes.Infrastructure.Util
             {
                 return ruleWithHighestPriority.Priority + 10;
             }
-        }
-
-
+        } 
     }
 }

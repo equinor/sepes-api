@@ -490,7 +490,8 @@ namespace Sepes.Infrastructure.Service
 
             var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
-
+            
+            vmSettings.Rules = AzureVmConstants.RulePresets.InitialVmRules;
             return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
         }
 

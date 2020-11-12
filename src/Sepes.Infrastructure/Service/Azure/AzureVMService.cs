@@ -92,13 +92,11 @@ namespace Sepes.Infrastructure.Service
             var existingRulesThatStillExists = new HashSet<string>();
 
             if (vmSettings.Rules == null)
-            {
-                //All rules have been deleted
+            {             
+                vmSettings.Rules = AzureVmConstants.RulePresets.InitialVmRules;
             }
             else
             {
-
-
                 foreach (var curRule in vmSettings.Rules)
                 {
                     try
@@ -127,8 +125,17 @@ namespace Sepes.Infrastructure.Service
                         {
                             ruleMapped.SourceAddress = primaryNic.PrimaryPrivateIP;
                             ruleMapped.SourcePort = curRule.Port;
-                            ruleMapped.DestinationAddress = curRule.Ip;
-                            ruleMapped.DestinationPort = curRule.Port;
+
+                            if(ruleMapped.Name == AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET)
+                            {
+                                ruleMapped.DestinationAddress = "*";
+                                ruleMapped.DestinationPort = 0;
+                            }
+                            else
+                            {
+                                ruleMapped.DestinationAddress = curRule.Ip;
+                                ruleMapped.DestinationPort = curRule.Port;
+                            }                         
 
                             if (existingRules.ContainsKey(curRule.Id))
                             {

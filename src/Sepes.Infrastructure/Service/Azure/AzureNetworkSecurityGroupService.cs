@@ -1,5 +1,4 @@
 ﻿using Microsoft.Azure.Management.Network.Fluent;
-using Microsoft.Azure.Management.Network.Fluent.NetworkSecurityGroup.Update;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -72,12 +71,6 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        //public async Task<INetworkSecurityGroup> CreateSecurityGroupForSubnet(Region region, string resourceGroupName, string sandboxName, Dictionary<string, string> tags)
-        //{
-        //    var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(sandboxName);
-        //    return await CreateSecurityGroup(region, resourceGroupName, nsgName, tags);
-        //}
-
         public async Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var nsg = await _azure.NetworkSecurityGroups
@@ -86,10 +79,26 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithTags(tags)
                 .CreateAsync(cancellationToken);
-            return nsg;
 
-            //Add rules obligatory to every pod. This will block AzureLoadBalancer from talking to the VMs inside sandbox
-            // await this.NsgApplyBaseRules(nsg);
+
+            await NsgApplyBaseRules(nsg);
+
+            return nsg;
+        }
+
+        async Task NsgApplyBaseRules(INetworkSecurityGroup nsg)
+        {
+            await nsg.Update()
+            .DefineRule(AzureVmConstants.RulePresets.ALLOW_FOR_SERVICETAG_VNET)
+            .AllowOutbound()
+            .FromAnyAddress()
+            .FromAnyPort()
+            .ToAddress("VirtualNetwork")
+            .ToAnyPort()
+            .WithAnyProtocol()
+            .WithPriority(990)
+            .Attach()
+            .ApplyAsync();
         }
 
         public async Task Delete(string resourceGroupName, string securityGroupName)
@@ -137,26 +146,6 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-        //public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesByPrefix(string resourceGroupName, string nsgName, string withNamePrefix, CancellationToken cancellationToken = default)
-        //{
-        //    var nsg = await GetResourceAsync(resourceGroupName, nsgName);
-
-        //    var result = new Dictionary<string, NsgRuleDto>();
-
-        //    foreach (var curRuleKvp in nsg.SecurityRules)
-        //    {
-        //        if (curRuleKvp.Value.Name.StartsWith(withNamePrefix))
-        //        {
-        //            if (!result.ContainsKey(curRuleKvp.Key))
-        //            {
-        //                result.Add(curRuleKvp.Key, new NsgRuleDto());
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
         public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default)
         {
             var nsg = await GetResourceAsync(resourceGroupName, nsgName);
@@ -189,11 +178,12 @@ namespace Sepes.Infrastructure.Service
                  .Update()
                  .DefineRule(rule.Name);
 
-            var operationWithRules = await (rule.Action == RuleAction.Allow ? createOperation.AllowInbound() : createOperation.DenyInbound())
+            var operationWithRules = (rule.Action == RuleAction.Allow ? createOperation.AllowInbound() : createOperation.DenyInbound())
             .FromAddresses(rule.SourceAddress)
             .FromAnyPort()
-            .ToAddresses(rule.DestinationAddress)
-            .ToPort(rule.DestinationPort)
+            .ToAddresses(rule.DestinationAddress);
+
+            var decidePort = await (rule.DestinationPort == 0 ? operationWithRules.ToAnyPort() : operationWithRules.ToPort(rule.DestinationPort))
             .WithAnyProtocol()
             .WithPriority(rule.Priority)
             .Attach()
@@ -215,46 +205,27 @@ namespace Sepes.Infrastructure.Service
 
                 .FromAddresses(rule.SourceAddress)
             .FromAnyPort()
-              .ToAddresses(rule.DestinationAddress)
-           .ToPort(rule.DestinationPort)
+              .ToAddresses(rule.DestinationAddress);
+
+            var decidePort = (rule.DestinationPort == 0 ? updateRuleOp.ToAnyPort() : updateRuleOp.ToPort(rule.DestinationPort))
+
            .WithAnyProtocol()
            .WithPriority(rule.Priority);
 
             await updateNsgOperation.ApplyAsync();
         }
 
-
-        //public async Task UpdateInboundRule(string resourceGroupName, string securityGroupName,
-        //                           NsgRuleDto rule, CancellationToken cancellationToken = default)
-        //{
-        //    var updateNsgOperation = _azure.NetworkSecurityGroups
-        //         .GetByResourceGroup(resourceGroupName, securityGroupName)
-        //         .Update();
-
-
-        //     _ = updateNsgOperation
-        //      .UpdateRule(rule.Name)
-        //      .AllowInbound()
-        //        .FromAddresses(rule.SourceAddress)
-        //    .FromAnyPort()
-        //      .ToAddresses(rule.DestinationAddress)
-        //   .ToPort(rule.DestinationPort)
-        //   .WithAnyProtocol()
-        //   .WithPriority(rule.Priority);
-
-        //    await updateNsgOperation.ApplyAsync();
-        //}
-
         public async Task AddOutboundRule(string resourceGroupName, string securityGroupName,
                                     NsgRuleDto rule, CancellationToken cancellationToken = default)
         {
-            var createOperation = await _azure.NetworkSecurityGroups
+            var createOperation = _azure.NetworkSecurityGroups
                  .GetByResourceGroup(resourceGroupName, securityGroupName)
                  .Update()
                  .DefineRule(rule.Name)
                  .AllowOutbound()
-                 .FromAddresses(rule.SourceAddress)
-                 .FromPort(rule.SourcePort)
+                 .FromAddresses(rule.SourceAddress);
+
+            var decidePort = await (rule.SourcePort == 0 ? createOperation.FromAnyPort() : createOperation.FromPort(rule.SourcePort))              
                  .ToAddresses(rule.DestinationAddress)
                  .ToAnyPort()
                  .WithAnyProtocol()
@@ -267,42 +238,23 @@ namespace Sepes.Infrastructure.Service
         public async Task UpdateOutboundRule(string resourceGroupName, string securityGroupName,
                                    NsgRuleDto rule, CancellationToken cancellationToken = default)
         {
-            var updateNsgOperation = _azure.NetworkSecurityGroups
+            var operationStep1 = _azure.NetworkSecurityGroups
                  .GetByResourceGroup(resourceGroupName, securityGroupName)
                  .Update();
 
-
-            _ = updateNsgOperation
+            var operationStep2 = operationStep1
              .UpdateRule(rule.Name)
              .AllowOutbound()
-                 .FromAddresses(rule.SourceAddress)
-                 .FromPort(rule.SourcePort)
+                 .FromAddresses(rule.SourceAddress);
+
+                  var decidePort = (rule.SourcePort == 0 ? operationStep2.FromAnyPort() : operationStep2.FromPort(rule.SourcePort))
                  .ToAddresses(rule.DestinationAddress)
                  .ToAnyPort()
                  .WithAnyProtocol()
                  .WithPriority(rule.Priority);
 
-            await updateNsgOperation.ApplyAsync();
+            await operationStep1.ApplyAsync();
         }
-
-
-
-        //public async Task UpdateRule(string resourceGroupName, string securityGroupName,
-        //                           NsgRuleDto rule, CancellationToken cancellationToken = default)
-        //{
-        //    var updateOperation = _azure.NetworkSecurityGroups
-        //         .GetByResourceGroup(resourceGroupName, securityGroupName)
-        //         .Update()
-        //         .UpdateRule(rule.Name)
-        //         .AllowInbound()
-        //         .FromAddresses(rule.SourceAddress)
-        //          .FromPort(rule.SourcePort)
-        //         .ToAnyAddress()
-        //          .ToPort(rule.DestinationPort)
-        //         .WithAnyProtocol()
-        //         .WithPriority(rule.Priority);
-
-        //}
 
         public async Task DeleteRule(string resourceGroupName, string securityGroupName,
                                 string ruleName, CancellationToken cancellationToken = default)
