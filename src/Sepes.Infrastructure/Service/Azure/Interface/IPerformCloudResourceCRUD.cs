@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 
     public class CloudResourceCRUDInput
     {
+        public int DatabaseId { get; set; }
         public string ResourceGroupName { get; set; }
         public string Name { get; set; }
 
@@ -28,6 +29,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         public Region Region { get; set; }
 
         public Dictionary<string, string> Tags;
+
+        public string NetworkSecurityGroupName { get; set; }
 
         public string ConfigurationString { get; set; }
       

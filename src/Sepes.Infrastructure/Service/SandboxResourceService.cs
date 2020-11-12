@@ -182,6 +182,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceName = updated.ResourceName;
             resource.ResourceType = updated.ResourceType;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
+            resource.ConfigString = updated.ConfigString;        
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
@@ -208,7 +209,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResource> GetOrThrowAsync(int id)
         {
-            var entityFromDb = await _db.SandboxResources.Include(r => r.Operations).FirstOrDefaultAsync(s => s.Id == id);
+            var entityFromDb = await _db.SandboxResources
+                    .Include(r => r.Sandbox)
+                    .ThenInclude(s=> s.Resources)
+                    .Include(r => r.Operations)
+                    .FirstOrDefaultAsync(s => s.Id == id);
 
             if (entityFromDb == null)
             {

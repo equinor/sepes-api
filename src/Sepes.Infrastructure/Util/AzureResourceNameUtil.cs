@@ -71,6 +71,31 @@ namespace Sepes.Infrastructure.Util
 
         }
 
+        public const string NSG_RULE_FOR_VM_PREFIX = "vm-rule-";
+
+        public static string NsgRuleNameForVm(int vmId, string suffix = null)
+        {
+            //The name must begin with a letter or number, end with a letter, number or underscore, and may contain only letters, numbers, underscores, periods, or hyphens.
+            //Max 80 characters
+      
+            var vmIdString = vmId.ToString();
+            var suffixMaxLength = 80 - NSG_RULE_FOR_VM_PREFIX.Length - vmIdString.Length - 1;
+
+
+           var suffixNormalized = "";
+
+            if(suffix == null)
+            {
+                suffixNormalized = Normalize(Guid.NewGuid().ToString(), suffixMaxLength);
+            }
+            else
+            {
+                suffixNormalized = Normalize(suffix, suffixMaxLength);
+            }
+           
+            return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
+        }
+
         public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
@@ -113,9 +138,16 @@ namespace Sepes.Infrastructure.Util
             return $"{prefix}{normalizedStudyName}{(avoidDash ? "" : "-")}{normalizedSanboxName}{shortUniquePart}";
         }
 
-        static string Normalize(string input)
+        static string Normalize(string input, int limit = 0)
         {
-            return StripWhitespace(input).ToLower();
+            var normalizedString = StripWhitespace(input).ToLower();
+
+            if (limit > 0 && normalizedString.Length > limit)
+            {
+                return normalizedString.Substring(0, limit);
+            }
+
+            return normalizedString;
         }
 
         public static string MakeStringAlphanumericAndRemoveWhitespace(string str, int limit = 0)

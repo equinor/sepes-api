@@ -4,4 +4,9 @@
     {
         Inbound, Outbound
     }
+
+    public enum RuleAction
+    {
+        Allow, Deny
+    }
 }

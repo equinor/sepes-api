@@ -146,6 +146,7 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
+            services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();            
             services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<IAzureVmOsService, AzureVmOsService>();
