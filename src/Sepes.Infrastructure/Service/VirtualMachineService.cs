@@ -31,12 +31,12 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
         readonly IStudyService _studyService;
         readonly ISandboxService _sandboxService;
+        readonly IVirtualMachineLookupService _vmLookupService;
         readonly ISandboxResourceService _sandboxResourceService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVMService _azureVmService;
-        readonly IAzureVmOsService _azureOsService;
-        readonly IAzureCostManagementService _costService;
+        readonly IAzureVMService _azureVmService;     
+
 
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
             IConfiguration config,
@@ -45,12 +45,11 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyService studyService,
             ISandboxService sandboxService,
+            IVirtualMachineLookupService vmLookupService,
             ISandboxResourceService sandboxResourceService,
             ISandboxResourceOperationService sandboxResourceOperationService,
             IProvisioningQueueService workQueue,
-            IAzureVMService azureVmService,
-            IAzureCostManagementService costService,
-            IAzureVmOsService azureOsService)
+            IAzureVMService azureVmService)
         {
             _logger = logger;
             _db = db;
@@ -59,12 +58,11 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyService = studyService;
             _sandboxService = sandboxService;
+            _vmLookupService = vmLookupService;
             _sandboxResourceService = sandboxResourceService;
             _sandboxResourceOperationService = sandboxResourceOperationService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
-            _azureOsService = azureOsService;
-            _costService = costService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
@@ -159,14 +157,7 @@ namespace Sepes.Infrastructure.Service
             return vmResource;
         }
 
-        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput)
-        {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
-
-            var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size);
-
-            return vmPrice;
-        }
+  
 
         void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
         {
@@ -186,301 +177,12 @@ namespace Sepes.Infrastructure.Service
                 }
             }
         }
-
-        public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        {
-            await ValidateRuleThrowIfInvalid(vmId, input);
-
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            ThrowIfRuleExists(vmSettings, input);
-
-            input.Name = Guid.NewGuid().ToString();
-
-            if (vmSettings.Rules == null)
-            {
-                vmSettings.Rules = new List<VmRuleDto>();
-            }
-
-            vmSettings.Rules.Add(input);
-
-            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-            await _db.SaveChangesAsync();
-
-            await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
-
-            return input;
-        }
-
-
-
-        public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
-        {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            if (vmSettings.Rules != null)
-            {
-                foreach (var curExistingRule in vmSettings.Rules)
-                {
-                    if (curExistingRule.Name == ruleId)
-                    {
-                        return curExistingRule;
-                    }
-                }
-            }
-
-            throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        }
-
-        public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
-        {
-
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            bool saveAfterwards = false;
-
-            if (updatedRuleSet == null || updatedRuleSet != null && updatedRuleSet.Count == 0) //Easy, all rules should be deleted
-            {
-                vmSettings.Rules = null;
-                saveAfterwards = true;
-            }
-            else
-            {
-                foreach(var curRule in updatedRuleSet)
-                {
-                    await ValidateRuleThrowIfInvalid(vmId, curRule);
-                }
-
-                var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Name)).ToList();
-                var existingRules = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Name)).ToList();
-
-                foreach(var curNew in newRules)
-                {
-                    ThrowIfRuleExists(existingRules, curNew);
-                }
-
-                foreach (var curNewRule in updatedRuleSet)
-                {
-                    if (String.IsNullOrWhiteSpace(curNewRule.Name))
-                    {
-                        curNewRule.Name = Guid.NewGuid().ToString();
-                    }
-                }
-
-                vmSettings.Rules = updatedRuleSet;
-                saveAfterwards = true;
-            }  
-            
-            if (saveAfterwards)
-            {
-                vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-                await _db.SaveChangesAsync();
-
-                await CreateUpdateOperationAndAddQueueItem(vm, "Updated rules");
-            }
-
-            return updatedRuleSet != null? updatedRuleSet : new List<VmRuleDto>();
-        }
-
-        public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            if (vmSettings.Rules != null)
-            {
-
-                VmRuleDto ruleToRemove = null;
-
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-                if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
-                {
-                    vmSettings.Rules.Remove(ruleToRemove);
-
-                    ThrowIfRuleExists(vmSettings, input);
-
-                    vmSettings.Rules.Add(input);
-
-                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-                    await _db.SaveChangesAsync();
-
-                    await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-
-                    return input;
-                }
-            }
-
-            throw new NotFoundException($"Rule with id {input.Name} does not exist");
-        }
-
-        public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
-        {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
-        }
-
-        public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
-        {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            if (vmSettings.Rules != null)
-            {
-
-                VmRuleDto ruleToRemove = null;
-
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-                if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
-                {
-                    vmSettings.Rules.Remove(ruleToRemove);
-
-                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-                    await _db.SaveChangesAsync();
-
-                    await CreateUpdateOperationAndAddQueueItem(vm, "Delete rule");
-
-                    return ruleToRemove;
-                }
-            }
-
-            throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        }
-
-        async Task ValidateRuleThrowIfInvalid(int vmId, VmRuleDto input)
-        {
-            if (true)
-            {
-                return;
-            }
-
-            throw new Exception($"Cannot apply rule to VM {vmId}");
-        }
-
-        async Task<SandboxResourceOperationDto> CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
-        {
-            var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id);
-
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = vm.SandboxId;
-            queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
-
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id.Value });
-
-            await _workQueue.SendMessageAsync(queueParentItem);
-
-            return vmUpdateOperation;
-        }
-
-        public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            List<VmSizeLookupDto> result = null;
-
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
-
-            try
-            {
-                var availableVmSizesFromAzure = await _azureVmService.GetAvailableVmSizes(sandbox.Region, cancellationToken);
-
-                var vmSizesWithCategory = availableVmSizesFromAzure.Select(sz =>
-                new VmSizeLookupDto() { Key = sz.Name, DisplayValue = AzureVmUtil.GetDisplayTextSizeForDropdown(sz), Category = AzureVmUtil.GetSizeCategory(sz.Name) })
-                    .ToList();
-
-                result = vmSizesWithCategory.Where(s => s.Category != "unknowncategory" && (s.Category != "gpu" || (s.Category == "gpu" && s.Key == "Standard_NV8as_v4"))).ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical($"Unable to get available VM sizes from azure for region {sandbox.Region}");
-            }
-
-            return result;
-        }
-
-        public async Task<List<VmDiskLookupDto>> AvailableDisks()
-        {
-            var result = new List<VmDiskLookupDto>();
-
-            result.Add(new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" });
-
-            return result;
-        }
-
-        public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            List<VmOsDto> result = null;
-
-            try
-            {
-                var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
-
-                result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogCritical($"Unable to get available OS from azure for sandbox {sandboxId}");
-            }
-
-            return result;
-        }
-
-        public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
-
-            var result = new List<VmOsDto>();
-
-            ////Windows
-            result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2019datacentercore", DisplayValue = "Windows Server 2019 Datacenter Core", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2016datacentercore", DisplayValue = "Windows Server 2016 Datacenter Core", Category = "windows" });
-
-            //Linux
-            result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
-
-            return result;
-        }
-
+        
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var availableOs = await AvailableOperatingSystems(region);
+            var availableOs = await _vmLookupService.AvailableOperatingSystems(region);
             vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
@@ -514,7 +216,5 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
-
-
     }
 }

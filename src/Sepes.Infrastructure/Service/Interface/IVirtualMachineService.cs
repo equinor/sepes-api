@@ -15,20 +15,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<VmExtendedDto> GetExtendedInfo(int vmId);
-
-        string CalculateName(string studyName, string sandboxName, string userPrefix);
-
-        Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
-
-        Task<List<VmDiskLookupDto>> AvailableDisks();
-
-
-        Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
-        Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken));
-
-        Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput);
-        
-        
+        Task<VmExtendedDto> GetExtendedInfo(int vmId); 
     }
 }
