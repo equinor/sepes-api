@@ -16,10 +16,11 @@ namespace Sepes.RestApi.Controllers
     public class VirtualMachineController : ControllerBase
     {
         readonly IVirtualMachineService _vmService;
-
-        public VirtualMachineController(IVirtualMachineService vmService)
+        readonly IVirtualMachineLookupService _vmLookupService;
+        public VirtualMachineController(IVirtualMachineService vmService, IVirtualMachineLookupService vmLookupService)
         {
             _vmService = vmService;
+            _vmLookupService = vmLookupService;
         }
 
         [HttpPost("{sandboxId}")]
@@ -27,14 +28,7 @@ namespace Sepes.RestApi.Controllers
         {
             var createdVm = await _vmService.CreateAsync(sandboxId, newVm);
             return new JsonResult(createdVm);
-        }
-
-        [HttpPost("{sandboxId}/calculatedprice")]
-        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
-        {
-            var createdVm = await _vmService.CalculatePrice(sandboxId, input);
-            return new JsonResult(createdVm);
-        }
+        }     
 
         //[HttpPut("{vmId}")]
         //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
@@ -50,12 +44,6 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(deleted);
         }
 
-        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
-        public string CalculateName(string studyName, string sandboxName, string userSuffix)
-        {
-            return _vmService.CalculateName(studyName, sandboxName, userSuffix);
-        }
-
         [HttpGet("forsandbox/{sandboxId}")]
         public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -68,28 +56,42 @@ namespace Sepes.RestApi.Controllers
         {
             var virtualMachinesForSandbox = await _vmService.GetExtendedInfo(vmId);
             return new JsonResult(virtualMachinesForSandbox);
-        }      
+        }
 
         //Lookup endpoints
+
+
+        [HttpPost("{sandboxId}/calculatedprice")]
+        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
+        {
+            var createdVm = await _vmLookupService.CalculatePrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
+        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
+        public string CalculateName(string studyName, string sandboxName, string userSuffix)
+        {
+            return _vmLookupService.CalculateName(studyName, sandboxName, userSuffix);
+        }
 
         [HttpGet("{sandboxId}/sizes")]
         public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
+            var availableSizes = await _vmLookupService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
             return new JsonResult(availableSizes);
         }
 
         [HttpGet("disks/")]
         public async Task<IActionResult> GetAvailableDisks()
         {
-            var availableSizes = await _vmService.AvailableDisks();
+            var availableSizes = await _vmLookupService.AvailableDisks();
             return new JsonResult(availableSizes);
         }
 
         [HttpGet("{sandboxId}/operatingsystems")]
         public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmService.AvailableOperatingSystems(sandboxId, cancellationToken);
+            var availableSizes = await _vmLookupService.AvailableOperatingSystems(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
     }
