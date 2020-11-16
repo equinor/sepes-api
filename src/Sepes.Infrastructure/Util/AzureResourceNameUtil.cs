@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Util
         public const string AZURE_RESOURCE_INITIAL_ID_OR_NAME = "n/a";
 
         public static string ResourceGroup(string studyName, string sandboxName)
-        {
+        {           
             return AzureResourceNameConstructor("rg-study-", studyName, sandboxName, maxLength: 64, addUniqueEnding: true);
         }
 
@@ -101,41 +101,41 @@ namespace Sepes.Infrastructure.Util
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
             var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
-            var normalizedStudyName = Normalize(studyName);
-            var normalizedSanboxName = Normalize(sandboxName);
+            var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
+            var alphanumericSandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
 
-            var charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+            var charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
 
             if (charachtersLeft < 0)
             {
                 var totalTrim = Math.Abs(charachtersLeft);
 
-                var nameLengthDiff = normalizedStudyName.Length - normalizedSanboxName.Length;
+                var nameLengthDiff = alphanumericStudyName.Length - alphanumericSandboxName.Length;
                 var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
 
                 if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
                 {
-                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - amountToTrimOff);
+                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - amountToTrimOff);
                 }
                 else // sandbox name is longer, trim it down to study length
                 {
-                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - amountToTrimOff);
+                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - amountToTrimOff);
                 }
 
                 //Both names are now equal in length, now we can equally remove from both
 
-                charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+                charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
 
                 if (charachtersLeft < 0)
                 {
                     var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
                     var even = charachtersLeft % 2 == 0;
-                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - mustRemoveEach - (even ? 0 : 1));
-                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - mustRemoveEach);
+                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - mustRemoveEach - (even ? 0 : 1));
+                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - mustRemoveEach);
                 }
             }
 
-            return $"{prefix}{normalizedStudyName}{(avoidDash ? "" : "-")}{normalizedSanboxName}{shortUniquePart}";
+            return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{shortUniquePart}";
         }
 
         static string Normalize(string input, int limit = 0)
