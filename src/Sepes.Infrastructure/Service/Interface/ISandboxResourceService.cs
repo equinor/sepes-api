@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<SandboxResource>> GetActiveResources();
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
-        Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
+        Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
 
         Task ValidateNameThrowIfInvalid(string resourceName);
 

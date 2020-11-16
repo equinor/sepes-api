@@ -13,8 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmDto> DeleteAsync(int id);
 
-        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default);
 
-        Task<VmExtendedDto> GetExtendedInfo(int vmId); 
+        Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default); 
     }
 }

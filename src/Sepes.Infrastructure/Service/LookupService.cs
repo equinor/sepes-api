@@ -1,19 +1,27 @@
 ﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
+using Sepes.Infrastructure.Constants;
+using AutoMapper;
 
 namespace Sepes.Infrastructure.Service
 {
     public class LookupService : ILookupService
     {
+        public IMapper _mapper;
+
+        public LookupService(IMapper mapper)
+        {
+            _mapper = mapper;
+        }
+
         public IEnumerable<LookupDto> AzureRegions()
         {
-            return new List<LookupDto>()
-            {
-                new LookupDto{ Key= "norwayeast", DisplayValue = "Norway East" },
-                new LookupDto{ Key= "europenorth",  DisplayValue = "North Europe" },
-                new LookupDto{ Key= "europewest",  DisplayValue = "West Europe" }
-            };
+            var availableRegions = AzureRegionConstants.Regions;
+
+            var mappedRegions = _mapper.Map<IEnumerable<LookupDto>>(availableRegions);
+
+            return mappedRegions;         
         }
 
         public IEnumerable<LookupDto> StudyRoles()

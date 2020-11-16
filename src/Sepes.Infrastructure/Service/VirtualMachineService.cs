@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceService _sandboxResourceService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVMService _azureVmService;     
+        readonly IAzureVMService _azureVmService;
 
 
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
@@ -78,7 +78,7 @@ namespace Sepes.Infrastructure.Service
 
             var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
 
-            var region = RegionStringConverter.Convert(sandbox.Region);          
+            var region = RegionStringConverter.Convert(sandbox.Region);
 
             var resourceGroup = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
@@ -125,7 +125,7 @@ namespace Sepes.Infrastructure.Service
             return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
         }
 
-        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
         {
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
@@ -136,7 +136,7 @@ namespace Sepes.Infrastructure.Service
             return virtualMachinesMapped;
         }
 
-        public async Task<VmExtendedDto> GetExtendedInfo(int vmId)
+        public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
             var vmResourceQueryable = SandboxResourceQueries.GetSandboxResource(_db, vmId);
             var vmResource = await vmResourceQueryable.SingleOrDefaultAsync();
@@ -146,22 +146,33 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForSandboxResource(vmId);
             }
 
-            return await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
+            var dto = await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
+
+            var availableSizes = await _vmLookupService.AvailableSizes(vmResource.Region, cancellationToken);
+
+            var availableSizesDict = availableSizes.ToDictionary(s => s.Key, s => s);
+
+            VmSize curSize = null;
+
+            if (availableSizesDict.TryGetValue(dto.SizeName, out curSize))
+            {
+                dto.Size = _mapper.Map<VmSizeDto>(curSize);
+            }
+
+            return dto;
         }
 
         async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperations operation)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
+            _ = await StudyAccessUtil.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
 
             return vmResource;
         }
 
-  
-
         void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
         {
-            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);        
+            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);
         }
 
         void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
@@ -177,7 +188,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
         }
-        
+
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
@@ -195,7 +206,7 @@ namespace Sepes.Infrastructure.Service
 
             var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
-            
+
             vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(vmId);
             return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
         }

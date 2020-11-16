@@ -78,8 +78,6 @@ namespace Sepes.Infrastructure.Service.Azure
             }
         }
 
-
-
         protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default(CancellationToken))
         {
             try

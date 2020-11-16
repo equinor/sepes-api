@@ -38,11 +38,11 @@ namespace Sepes.Infrastructure.Util
             }
 
             return "unknowncategory";
-        }
+        }       
 
-        public static string GetDisplayTextSizeForDropdown(VirtualMachineSize vmSizeInfo)
+        public static string GetDisplayTextSizeForDropdown(VmSize vmSizeInfo)
         {
-            return $"{vmSizeInfo.Name} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryInMB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
+            return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
         }
 
         public static string GetOsCategory(List<VmOsDto> osList, string operatingSystemName)
