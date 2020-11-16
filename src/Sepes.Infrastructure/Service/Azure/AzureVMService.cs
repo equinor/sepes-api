@@ -447,18 +447,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default)
-        {
-            using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
-            {
-                client.SubscriptionId = _subscriptionId;
-
-                var sizes = await client.VirtualMachineSizes.ListWithHttpMessagesAsync(region, cancellationToken: cancellationToken);
-                var sizesResponseText = await sizes.Response.Content.ReadAsStringAsync();
-                var deserialized = JsonConvert.DeserializeObject<AzureVirtualMachineSizeResponse>(sizesResponseText);
-                return deserialized.Value;
-            }
-        }
+     
 
         public async Task<VmExtendedDto> GetExtendedInfo(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
@@ -477,18 +466,7 @@ namespace Sepes.Infrastructure.Service
 
             result.SizeName = vm.Size.ToString();
 
-            await DecorateWithNetworkProperties(vm, result, cancellationToken);
-
-            var availableSizes = await GetAvailableVmSizes(vm.RegionName, cancellationToken);
-
-            var availableSizesDict = availableSizes.ToDictionary(s => s.Name, s => s);
-
-            VirtualMachineSize curSize = null;
-
-            if (availableSizesDict.TryGetValue(result.SizeName, out curSize))
-            {
-                result.Size = new VmSizeDto() { Name = result.SizeName, MemoryInMB = curSize.MemoryInMB.Value, MaxDataDiskCount = curSize.MaxDataDiskCount.Value, NumberOfCores = curSize.NumberOfCores.Value, OsDiskSizeInMB = curSize.OsDiskSizeInMB.Value, ResourceDiskSizeInMB = curSize.ResourceDiskSizeInMB.Value };
-            }
+            await DecorateWithNetworkProperties(vm, result, cancellationToken);        
 
             result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true, cancellationToken));
 

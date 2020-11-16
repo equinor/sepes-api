@@ -147,12 +147,11 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
-            services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();            
+            services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
+            services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
-            services.AddTransient<IAzureVmOsService, AzureVmOsService>();
-
-            
+            services.AddTransient<IAzureVmOsService, AzureVmOsService>();            
 
 
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();

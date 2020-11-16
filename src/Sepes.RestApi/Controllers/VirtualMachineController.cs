@@ -94,5 +94,12 @@ namespace Sepes.RestApi.Controllers
             var availableSizes = await _vmLookupService.AvailableOperatingSystems(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
+
+        [HttpGet("updateVmSizeCache")]
+        public async Task<IActionResult> UpdateVmSizeCache(CancellationToken cancellationToken = default)
+        {
+            await _vmLookupService.UpdateVmSizeCache(cancellationToken);
+            return new NoContentResult();
+        }
     }
 }
