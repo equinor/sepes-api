@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Interfaces;
+using System;
 
 namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
@@ -14,7 +15,8 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
 
         public string OperatingSystem { get; set; }         
         
-        public string Status { get; set; }         
+        public string Status { get; set; }
+        public DateTime? Deleted { get; set; }
 
         public string Created { get; set; }
 

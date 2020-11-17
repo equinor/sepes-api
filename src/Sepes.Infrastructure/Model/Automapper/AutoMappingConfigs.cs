@@ -131,7 +131,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name))
             .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
             .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => AzureVmUtil.GetOsName(x)))
-                   .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
+            .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
+                   .ForMember(dest => dest.Deleted, source => source.MapFrom(x => x.Deleted));
 
 
             CreateMap<VmRuleDto, NsgRuleDto>()                
