@@ -12,6 +12,11 @@ namespace Sepes.Infrastructure.Util
 
         public static string ResourceStatus(SandboxResource resource)
         {
+            if (resource.ResourceName.Contains("avmtodelete"))
+            {
+                var balle = 1;
+            }
+
             if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
             {
                 return "No operations found";
@@ -32,6 +37,11 @@ namespace Sepes.Infrastructure.Util
                     break;
                 }
                 else if(curOperation.Status == CloudResourceOperationState.FAILED)
+                {
+                    baseStatusOnThisOperation = curOperation;
+                    break;
+                }
+                else if (curOperation.OperationType == CloudResourceOperationType.DELETE)
                 {
                     baseStatusOnThisOperation = curOperation;
                     break;
