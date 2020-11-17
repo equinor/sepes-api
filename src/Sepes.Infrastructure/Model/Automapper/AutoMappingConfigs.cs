@@ -50,7 +50,16 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<SandboxDataset, SandboxDatasetDto>()
                 .ForMember(dest => dest.DatasetId, source => source.MapFrom(x => x.Dataset.Id))
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
-                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
+                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification))
+                .ForMember(dest => dest.SandboxName, opt =>
+                {
+                    opt.PreCondition(src => (!src.Sandbox.Deleted.HasValue));
+                    opt.MapFrom(src =>
+
+                        src.Sandbox.Name
+                    );
+                })
+                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id));
 
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
@@ -62,6 +71,14 @@ namespace Sepes.Infrastructure.Model.Automapper
                  .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
                      .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
                          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets));
+            /*
+            CreateMap<Sandbox, DatasetSandboxDto>()
+                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
+                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));
+
+            CreateMap<DatasetSandbox, DatasetSandboxDto>()
+                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
+                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));*/
 
             CreateMap<SandboxDto, Sandbox>();
 
