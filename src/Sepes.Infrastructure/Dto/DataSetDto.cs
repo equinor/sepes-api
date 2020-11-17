@@ -23,6 +23,6 @@ namespace Sepes.Infrastructure.Dto
 
         public ICollection<StudyDto> Studies { get; set; }
 
-        public ICollection<SandboxDatasetDto> SandboxDataset { get; set; }
+        public ICollection<SandboxDatasetDto> SandboxDatasets { get; set; }
     }
 }

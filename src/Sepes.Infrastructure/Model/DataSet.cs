@@ -37,7 +37,7 @@ namespace Sepes.Infrastructure.Model
         // ------------------------------
         public ICollection<StudyDataset> StudyDatasets { get; set; }
 
-        public ICollection<SandboxDataset> SandboxDataset { get; set; }
+        public ICollection<SandboxDataset> SandboxDatasets { get; set; }
 
         //StudyID is only populated if dataset is StudySpecific.
         //This is accounted for in API calls.
