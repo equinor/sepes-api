@@ -130,8 +130,7 @@ namespace Sepes.Infrastructure.Service
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
             var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
-
-            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);
+            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines).Where(x => !x.Deleted.HasValue).ToList();
 
             return virtualMachinesMapped;
         }
