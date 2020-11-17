@@ -138,7 +138,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
-            services.AddTransient<IAzureVMService, AzureVMService>();
+            services.AddTransient<IAzureVmService, AzureVmService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
@@ -146,13 +146,14 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
+            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
-            services.AddTransient<IAzureVmOsService, AzureVmOsService>();            
-
+            services.AddTransient<IAzureVmOsService, AzureVmOsService>();
+            services.AddTransient<IRegionService, RegionService>();
 
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
 

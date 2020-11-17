@@ -31,11 +31,11 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
         readonly IStudyService _studyService;
         readonly ISandboxService _sandboxService;
+        readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
         readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVMService _azureVmService;
+        readonly IAzureVmService _azureVmService;
 
 
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
@@ -45,11 +45,11 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyService studyService,
             ISandboxService sandboxService,
+            IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
             ISandboxResourceService sandboxResourceService,
-            ISandboxResourceOperationService sandboxResourceOperationService,
             IProvisioningQueueService workQueue,
-            IAzureVMService azureVmService)
+            IAzureVmService azureVmService)
         {
             _logger = logger;
             _db = db;
@@ -58,9 +58,9 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyService = studyService;
             _sandboxService = sandboxService;
+            _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
             _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceOperationService = sandboxResourceOperationService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
         }
@@ -148,7 +148,7 @@ namespace Sepes.Infrastructure.Service
 
             var dto = await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
 
-            var availableSizes = await _vmLookupService.AvailableSizes(vmResource.Region, cancellationToken);
+            var availableSizes = await _vmSizeService.AvailableSizes(vmResource.Region, cancellationToken);
 
             var availableSizesDict = availableSizes.ToDictionary(s => s.Key, s => s);
 

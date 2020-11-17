@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
@@ -17,18 +15,17 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureVMService : AzureServiceBase, IAzureVMService
+    public class AzureVmService : AzureServiceBase, IAzureVmService
     {
         readonly IAzureNetworkSecurityGroupService _nsgService;
         readonly IMapper _mapper;
 
-        public AzureVMService(IConfiguration config, ILogger<AzureVMService> logger, IAzureNetworkSecurityGroupService nsgService, IMapper mapper)
+        public AzureVmService(IConfiguration config, ILogger<AzureVmService> logger, IAzureNetworkSecurityGroupService nsgService, IMapper mapper)
             : base(config, logger)
         {
             _nsgService = nsgService;

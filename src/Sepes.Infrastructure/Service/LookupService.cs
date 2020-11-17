@@ -1,8 +1,7 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using AutoMapper;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
-using Sepes.Infrastructure.Constants;
-using AutoMapper;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -13,16 +12,7 @@ namespace Sepes.Infrastructure.Service
         public LookupService(IMapper mapper)
         {
             _mapper = mapper;
-        }
-
-        public IEnumerable<LookupDto> AzureRegions()
-        {
-            var availableRegions = AzureRegionConstants.Regions;
-
-            var mappedRegions = _mapper.Map<IEnumerable<LookupDto>>(availableRegions);
-
-            return mappedRegions;         
-        }
+        }     
 
         public IEnumerable<LookupDto> StudyRoles()
         {

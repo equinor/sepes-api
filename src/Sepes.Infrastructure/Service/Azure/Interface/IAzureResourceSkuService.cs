@@ -7,6 +7,6 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureResourceSkuService
     {
-        Task<List<ResourceSku>> GetSKUsForRegion(string region, string resourceType = null, CancellationToken cancellationToken = default);
+        Task<List<ResourceSku>> GetSKUsForRegion(string region, string resourceType = null, bool filterBasedOnResponseRestrictions = true, CancellationToken cancellationToken = default);
     }
 }
