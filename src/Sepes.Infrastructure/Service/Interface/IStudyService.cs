@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
 
-        Task<StudyDto> DeleteStudyAsync(int studyId);
+        Task DeleteStudyAsync(int studyId);
 
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
