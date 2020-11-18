@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
             _ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
-        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
+        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
         {
             try
             {

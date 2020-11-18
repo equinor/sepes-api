@@ -27,14 +27,7 @@ namespace Sepes.RestApi.Controllers
         {
             var createdVm = await _vmService.CreateAsync(sandboxId, newVm);
             return new JsonResult(createdVm);
-        }
-
-        [HttpPost("{sandboxId}/calculatedprice")]
-        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
-        {
-            var createdVm = await _vmService.CalculatePrice(sandboxId, input);
-            return new JsonResult(createdVm);
-        }
+        }     
 
         //[HttpPut("{vmId}")]
         //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
@@ -50,47 +43,18 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(deleted);
         }
 
-        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
-        public string CalculateName(string studyName, string sandboxName, string userSuffix)
-        {
-            return _vmService.CalculateName(studyName, sandboxName, userSuffix);
-        }
-
         [HttpGet("forsandbox/{sandboxId}")]
-        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IActionResult> GetAllVMsForSandbox(int sandboxId, CancellationToken cancellationToken = default)
         {
             var virtualMachinesForSandbox = await _vmService.VirtualMachinesForSandboxAsync(sandboxId, cancellationToken);
             return new JsonResult(virtualMachinesForSandbox);
         }
 
         [HttpGet("{vmId}/extended")]
-        public async Task<IActionResult> GetVmExtendedInfo(int vmId, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IActionResult> GetVmExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
             var virtualMachinesForSandbox = await _vmService.GetExtendedInfo(vmId);
             return new JsonResult(virtualMachinesForSandbox);
-        }      
-
-        //Lookup endpoints
-
-        [HttpGet("{sandboxId}/sizes")]
-        public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
-        {
-            var availableSizes = await _vmService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
-            return new JsonResult(availableSizes);
-        }
-
-        [HttpGet("disks/")]
-        public async Task<IActionResult> GetAvailableDisks()
-        {
-            var availableSizes = await _vmService.AvailableDisks();
-            return new JsonResult(availableSizes);
-        }
-
-        [HttpGet("{sandboxId}/operatingsystems")]
-        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
-        {
-            var availableSizes = await _vmService.AvailableOperatingSystems(sandboxId, cancellationToken);
-            return new JsonResult(availableSizes);
-        }
+        }         
     }
 }

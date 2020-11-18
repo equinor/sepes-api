@@ -5,7 +5,8 @@
 //Add-Migration <migration name> -Context SepesDbContext -StartupProject Sepes.RestApi -Project Sepes.Infrastructure
 
 namespace Sepes.Infrastructure.Model.Context
-{    public class SepesDbContext : DbContext
+{
+    public class SepesDbContext : DbContext
     {
         public SepesDbContext(DbContextOptions<SepesDbContext> options) : base(options) { }
 
@@ -28,11 +29,15 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<Variable> Variables { get; set; }
 
+        //Cloud provider cache
+        public virtual DbSet<Region> Regions { get; set; }
+        public virtual DbSet<VmSize> VmSizes { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             AddPrimaryKeys(modelBuilder);
             AddDefaultValues(modelBuilder);
-            AddRelationships(modelBuilder);      
+            AddRelationships(modelBuilder);
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
@@ -47,6 +52,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
             modelBuilder.Entity<SandboxResource>().HasKey(r => r.Id);
             modelBuilder.Entity<SandboxResourceOperation>().HasKey(o => o.Id);
+
+            modelBuilder.Entity<Region>().HasKey(r => r.Key);
+            modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
+            modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -96,6 +105,17 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(o => o.DependsOnOperation)
                 .WithMany(o => o.DependantOnThisOperation)
              .HasForeignKey(sd => sd.DependsOnOperationId).OnDelete(DeleteBehavior.Restrict);
+
+            //Cloud Region, Vm Size etc
+            modelBuilder.Entity<RegionVmSize>()
+                .HasOne(sd => sd.Region)
+                .WithMany(s => s.VmSizeAssociations)
+                .HasForeignKey(sd => sd.RegionKey).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RegionVmSize>()
+                .HasOne(sd => sd.VmSize)
+                .WithMany(d => d.RegionAssociations)
+                .HasForeignKey(sd => sd.VmSizeKey).OnDelete(DeleteBehavior.Restrict);
         }
 
 
@@ -168,6 +188,14 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<SandboxDataset>()
               .Property(sro => sro.Added)
               .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<Region>()
+            .Property(sro => sro.Created)
+            .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<VmSize>()
+            .Property(sro => sro.Created)
+            .HasDefaultValueSql("getutcdate()");
         }
     }
 }

@@ -63,30 +63,40 @@ namespace Sepes.CloudResourceWorker
 
             builder.Services.AddHttpContextAccessor();
 
+            //Plumbing
             builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
             builder.Services.AddScoped<IUserService, FunctionUserService>();
             builder.Services.AddScoped<IPrincipalService, PrincipalService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
+
+            //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
-            builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
             builder.Services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+
+            //Ext System Facade Services
+            builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
+            builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
+            builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
+
+            //Azure Services
+            builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             builder.Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             builder.Services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             builder.Services.AddTransient<IAzureBastionService, AzureBastionService>();
             builder.Services.AddTransient<IAzureVNetService, AzureVNetService>();
-            builder.Services.AddTransient<IAzureVMService, AzureVMService>();
+            builder.Services.AddTransient<IAzureVmService, AzureVmService>();
             builder.Services.AddTransient<IAzureQueueService, AzureQueueService>();
-            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-            builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
-            builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
+            builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
+
         }
     }
 }

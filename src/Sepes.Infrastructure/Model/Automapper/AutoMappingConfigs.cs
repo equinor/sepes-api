@@ -154,6 +154,19 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<VmRuleDto, NsgRuleDto>()                
                       .ForMember(dest => dest.Protocol, source => source.MapFrom(x => x.Protocol))
                   .ForMember(dest => dest.Description, source => source.MapFrom(x => x.Description));
+
+
+            CreateMap<AzureRegionDto, LookupDto>();
+
+            CreateMap<VmSize, VmSizeDto>()
+                  .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Key));
+
+            CreateMap<VmSize, VmSizeLookupDto>()
+               .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
+
+            CreateMap<Region, LookupDto>()
+             .ForMember(dest => dest.Key, source => source.MapFrom(x => x.Key))
+              .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.Name));
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Sepes.Infrastructure.Model;
 
 namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
@@ -17,5 +15,7 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
         public int MemoryInMB { get; set; }
 
         public int MaxDataDiskCount { get; set; }
+
+        public Region Region { get; set; }
     }
 }

@@ -17,7 +17,7 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
             _ => null,
         };
 
@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
             _ => null,
         };
 
@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVMService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
             _ => null,
         };
     }
