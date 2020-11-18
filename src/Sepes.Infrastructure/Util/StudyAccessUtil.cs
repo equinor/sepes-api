@@ -29,7 +29,9 @@ namespace Sepes.Infrastructure.Util
             return db.Studies
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
-                .Where(s => s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any() && s.DeletedAt.HasValue == false);
+                .Where(s => 
+                (s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any())
+                && s.Deleted.HasValue == false || (s.Deleted.HasValue && s.Deleted == false));
         }
 
         public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)

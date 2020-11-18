@@ -155,6 +155,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var currentUser = _userService.GetCurrentUser();
+            studyFromDb.Deleted = true;
             studyFromDb.DeletedBy = currentUser.UserName;
             studyFromDb.DeletedAt = DateTime.UtcNow;
             
