@@ -25,6 +25,8 @@ namespace Sepes.Infrastructure.Model
 
         public string LogoUrl { get; set; }
 
+        public bool? Deleted { get; set; }
+
         public DateTime? DeletedAt{ get; set; }
 
         public string DeletedBy { get; set; }

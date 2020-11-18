@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model

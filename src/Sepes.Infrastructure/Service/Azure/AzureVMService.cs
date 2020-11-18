@@ -1,11 +1,10 @@
-﻿using Microsoft.Azure.Management.Compute.Fluent;
+﻿using AutoMapper;
+using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
@@ -16,18 +15,21 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureVMService : AzureServiceBase, IAzureVMService
+    public class AzureVmService : AzureServiceBase, IAzureVmService
     {
-        public AzureVMService(IConfiguration config, ILogger<AzureVMService> logger)
+        readonly IAzureNetworkSecurityGroupService _nsgService;
+        readonly IMapper _mapper;
+
+        public AzureVmService(IConfiguration config, ILogger<AzureVmService> logger, IAzureNetworkSecurityGroupService nsgService, IMapper mapper)
             : base(config, logger)
         {
-
+            _nsgService = nsgService;
+            _mapper = mapper;
         }
 
         public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
@@ -41,8 +43,7 @@ namespace Sepes.Infrastructure.Service
 
             string vmSize = vmSettings.Size;
 
-
-            var createdVm = await Create(parameters.Region,
+            var createdVm = await CreateAsync(parameters.Region,
                 parameters.ResourceGroupName,
                 parameters.Name,
                 vmSettings.NetworkName, vmSettings.SubnetName,
@@ -65,6 +66,10 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(createdVm.PrimaryNetworkInterfaceId, cancellationToken);
+
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
+
             var result = CreateCRUDResult(createdVm);
 
             await DeletePasswordFromKeyVault(passwordReference);
@@ -73,35 +78,110 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
+
         public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
+            _logger.LogInformation($"Updating VM {parameters.Name}");
+
             var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(vm.PrimaryNetworkInterfaceId, cancellationToken);
 
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
-            //if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_CREATE)
-            //{
-            //    //Add rule to persisted config
-            //      //Enforce rule
-
-            //}
-            //else if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_UPDATE)
-            //{
-            //    //Update rule in persisted config
-            //    //Var get rule id
-            //    //Upate rule
-            //}
-            //else if (parameters.SubOperationType == AzureVmConstants.Operations.RULE_DELETE)
-            //{
-            //    //Delete rule from persised config
-            //    //Var get rule id
-            //    //Delete rule
-            //}
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
 
             var result = CreateCRUDResult(vm);
 
             return result;
-        }      
+        }
+
+        async Task UpdateVmRules(CloudResourceCRUDInput parameters, VmSettingsDto vmSettings, string privateIp, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation($"Setting desired VM rules for {parameters.Name}");
+
+            var existingRules = await _nsgService.GetNsgRulesContainingName(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, $"{AzureResourceNameUtil.NSG_RULE_FOR_VM_PREFIX}{parameters.DatabaseId}", cancellationToken);
+            var existingRulesThatStillExists = new HashSet<string>();
+
+            if (vmSettings.Rules == null)
+            {
+                throw new Exception($"No rules exists for VM {parameters.Name}");
+            }
+            else
+            {
+                foreach (var curRule in vmSettings.Rules)
+                {
+                    try
+                    {
+                        var ruleMapped = _mapper.Map<NsgRuleDto>(curRule);
+
+                        if (curRule.Direction == RuleDirection.Inbound)
+                        {
+                            ruleMapped.SourceAddress = curRule.Ip;
+                            ruleMapped.SourcePort = curRule.Port;
+                            ruleMapped.DestinationAddress = privateIp;
+                            ruleMapped.DestinationPort = curRule.Port;
+
+                            //get existing rule and use that name
+                            if (existingRules.ContainsKey(curRule.Name))
+                            {
+                                existingRulesThatStillExists.Add(curRule.Name);
+                                await _nsgService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                            }
+                            else
+                            {
+                                await _nsgService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                            }
+
+                        }
+                        else
+                        {
+                            ruleMapped.SourceAddress = privateIp;
+                            ruleMapped.SourcePort = curRule.Port;
+
+                            if (ruleMapped.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+                            {
+                                ruleMapped.DestinationAddress = "*";
+                                ruleMapped.DestinationPort = 0;
+                            }
+                            else
+                            {
+                                ruleMapped.DestinationAddress = curRule.Ip;
+                                ruleMapped.DestinationPort = curRule.Port;
+                            }
+
+                            if (existingRules.ContainsKey(curRule.Name))
+                            {
+                                existingRulesThatStillExists.Add(curRule.Name);
+                                await _nsgService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                            }
+                            else
+                            {
+                                await _nsgService.AddOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                            }
+                        }
+
+
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Unable to create rule {curRule.Name} for VM {parameters.Name}", ex);
+                    }
+                }
+            }
+
+            if (existingRules != null && existingRules.Count > 0)
+            {
+                foreach (var curExistingKvp in existingRules)
+                {
+                    if (!existingRulesThatStillExists.Contains(curExistingKvp.Key))
+                    {
+                        await _nsgService.DeleteRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, curExistingKvp.Key, cancellationToken);
+                    }
+                }
+            }
+
+            _logger.LogInformation($"Done setting desired VM rules for {parameters.Name}");
+        }
 
         public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
         {
@@ -128,7 +208,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+                return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId, true);
             }
             catch (Exception ex)
             {
@@ -136,7 +216,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IVirtualMachine> CreateAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IVirtualMachine vm;
 
@@ -264,9 +344,8 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await Delete(parameters.ResourceGroupName, parameters.Name);
+                await DeleteAsync(parameters.ResourceGroupName, parameters.Name, parameters.NetworkSecurityGroupName, parameters.ConfigurationString);
 
-                //Also remember to delete osdisk
                 provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
 
             }
@@ -274,16 +353,12 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");
                 provisioningState = CloudResourceProvisioningStates.NOTFOUND;
-                //Probably allready deleted
-
             }
 
             return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
-
         }
 
-
-        public async Task Delete(string resourceGroupName, string virtualMachineName)
+        public async Task DeleteAsync(string resourceGroupName, string virtualMachineName, string networkSecurityGroupName, string configString)
         {
             var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
@@ -310,6 +385,23 @@ namespace Sepes.Infrastructure.Service
             {
                 await DeleteDiskById(curDiskKvp.Value.Id);
             }
+
+            //Delete VM rules
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(configString);
+
+            foreach (var curRule in vmSettings.Rules)
+            {
+                try
+                {
+                    await _nsgService.DeleteRule(resourceGroupName, networkSecurityGroupName, curRule.Name);
+                }
+                catch (Exception)
+                {
+                    _logger.LogWarning($"Delete VM: Failed to delete NSG rule {curRule.Name} for vm {virtualMachineName}. Assuming it has allready been deleted");
+                }
+
+            }
+
         }
 
         public async Task DeleteNic(string id)
@@ -364,18 +456,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<IEnumerable<VirtualMachineSize>> GetAvailableVmSizes(string region = null, CancellationToken cancellationToken = default)
-        {
-            using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
-            {
-                client.SubscriptionId = _subscriptionId;
 
-                var sizes = await client.VirtualMachineSizes.ListWithHttpMessagesAsync(region, cancellationToken: cancellationToken);
-                var sizesResponseText = await sizes.Response.Content.ReadAsStringAsync();
-                var deserialized = JsonConvert.DeserializeObject<AzureVirtualMachineSizeResponse>(sizesResponseText);
-                return deserialized.Value;
-            }
-        }
 
         public async Task<VmExtendedDto> GetExtendedInfo(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
@@ -390,22 +471,11 @@ namespace Sepes.Infrastructure.Service
             if (vm == null)
             {
                 return result;
-            }          
+            }
 
             result.SizeName = vm.Size.ToString();
 
-            await DecorateWithNetworkProperties(vm, result, cancellationToken);          
-          
-            var availableSizes = await GetAvailableVmSizes(vm.RegionName, cancellationToken);
-
-            var availableSizesDict = availableSizes.ToDictionary(s => s.Name, s => s);
-
-            VirtualMachineSize curSize = null;
-
-            if (availableSizesDict.TryGetValue(result.SizeName, out curSize))
-            {
-                result.Size = new VmSizeDto() { Name = result.SizeName, MemoryInMB = curSize.MemoryInMB.Value, MaxDataDiskCount = curSize.MaxDataDiskCount.Value, NumberOfCores = curSize.NumberOfCores.Value, OsDiskSizeInMB = curSize.OsDiskSizeInMB.Value, ResourceDiskSizeInMB = curSize.ResourceDiskSizeInMB.Value };
-            }            
+            await DecorateWithNetworkProperties(vm, result, cancellationToken);
 
             result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true, cancellationToken));
 
@@ -418,14 +488,14 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task DecorateWithNetworkProperties(IVirtualMachine vm, VmExtendedDto vmDto, CancellationToken cancellationToken)        
+        async Task DecorateWithNetworkProperties(IVirtualMachine vm, VmExtendedDto vmDto, CancellationToken cancellationToken)
         {
             var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(vm.PrimaryNetworkInterfaceId, cancellationToken);
-           
+
             vmDto.PrivateIp = primaryNic.PrimaryPrivateIP;
 
             try
-            {   
+            {
                 if (primaryNic.PrimaryIPConfiguration != null)
                 {
                     var pip = await _azure.PublicIPAddresses.GetByResourceGroupAsync(vm.ResourceGroupName, primaryNic.PrimaryIPConfiguration.Name, cancellationToken);
@@ -439,18 +509,18 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
                 _logger.LogWarning($"Unable to fetch public IP settings for VM {vm.Name}");
-            }                   
+            }
 
             vmDto.NICs.Add(CreateNicDto(primaryNic));
 
             foreach (var curNic in vm.NetworkInterfaceIds)
             {
                 vmDto.NICs.Add(await CreateNicDto(curNic, cancellationToken));
-            }           
+            }
         }
 
         VmNicDto CreateNicDto(INetworkInterface nic)
-        { 
+        {
             var result = new VmNicDto() { Name = nic.Name };
             return result;
         }
@@ -464,7 +534,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForAzureResourceById(nicId);
             }
 
-            return CreateNicDto(nic);          
+            return CreateNicDto(nic);
         }
 
         async Task<VmDiskDto> CreateDiskDto(string diskId, bool isOs, CancellationToken cancellationToken)
@@ -488,6 +558,6 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-      
+
     }
 }

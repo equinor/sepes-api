@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto.Sandbox;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -21,5 +22,7 @@ namespace Sepes.Infrastructure.Dto
         public int? StudyId { get; set; }
 
         public ICollection<StudyDto> Studies { get; set; }
+
+        public ICollection<SandboxDatasetDto> SandboxDatasets { get; set; }
     }
 }

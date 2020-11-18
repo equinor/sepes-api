@@ -1,28 +1,31 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
 {
     [Route("api/lookup")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but keeping it restricted for now
+    [Authorize]
     public class LookupController : ControllerBase
     {     
         readonly ILookupService _lookupService;
+        readonly IRegionService _regionService;
 
-        public LookupController(ILookupService lookupService)
+        public LookupController(ILookupService lookupService, IRegionService regionService)
         {
             _lookupService = lookupService;
+            _regionService = regionService;
         }
 
         [HttpGet("regions")]
-        public IActionResult GetRegions()
+        public async Task<IActionResult> GetRegions(CancellationToken cancellationToken = default)
         {
-            var regions = _lookupService.AzureRegions();
+            var regions = await _regionService.GetLookup(cancellationToken);
             return new JsonResult(regions);
         }
 

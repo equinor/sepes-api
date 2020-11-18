@@ -1,17 +1,14 @@
 ﻿using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
-using System;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceStatusUtil
-    {     
-
-       
-
+    {  
         public static string ResourceStatus(SandboxResource resource)
-        {
+        {          
+
             if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
             {
                 return "No operations found";
@@ -32,6 +29,11 @@ namespace Sepes.Infrastructure.Util
                     break;
                 }
                 else if(curOperation.Status == CloudResourceOperationState.FAILED)
+                {
+                    baseStatusOnThisOperation = curOperation;
+                    break;
+                }
+                else if (curOperation.OperationType == CloudResourceOperationType.DELETE)
                 {
                     baseStatusOnThisOperation = curOperation;
                     break;

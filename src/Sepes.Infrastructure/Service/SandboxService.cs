@@ -47,7 +47,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> GetSandboxAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);              
+            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
@@ -63,7 +63,9 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
-        {  
+        {
+            Sandbox createdSandbox = null;
+
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
                 throw new ArgumentException("Region not specified.");
@@ -75,47 +77,64 @@ namespace Sepes.Infrastructure.Service
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))
             {
-                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before sandbox can be created.");
+                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before Sandbox can be created.");
             }
 
             //Check uniqueness of name
             if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).AnyAsync())
             {
-                throw new Exception($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
-            }  
-            
-            var sandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
-         
-            var user = _userService.GetCurrentUser();
-            sandbox.CreatedBy = user.UserName;
-            sandbox.TechnicalContactName = user.FullName;
-            sandbox.TechnicalContactEmail = user.EmailAddress;
-           
-            study.Sandboxes.Add(sandbox);
-            await _db.SaveChangesAsync();
+                throw new ArgumentException($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
+            }
 
-            // Get Dtos for arguments to sandboxWorkerService
-            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyAddRemoveSandbox);
-            var sandboxDto = await GetSandboxDtoAsync(sandbox.Id);
+            try
+            {
+                createdSandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
 
-            var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
+                var user = _userService.GetCurrentUser();
+                createdSandbox.CreatedBy = user.UserName;
+                createdSandbox.TechnicalContactName = user.FullName;
+                createdSandbox.TechnicalContactEmail = user.EmailAddress;
 
-            var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
+                study.Sandboxes.Add(createdSandbox);
+                await _db.SaveChangesAsync();
 
-            //This objects gets passed around
-            var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = sandbox.Id, StudyName = studyDto.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
+                try
+                {
+                    // Get Dtos for arguments to sandboxWorkerService
+                    var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyAddRemoveSandbox);
+                    var sandboxDto = await GetSandboxDtoAsync(createdSandbox.Id);
 
-            await CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
+                    var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
 
-            return await GetSandboxDtoAsync(sandbox.Id);
+                    var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
+
+                    //This objects gets passed around
+                    var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = createdSandbox.Id, StudyName = studyDto.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
+
+                    await CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
+                }
+                catch (Exception ex)
+                {
+                    //Deleting sandbox entry from DB
+                    study.Sandboxes.Remove(createdSandbox);
+                    await _db.SaveChangesAsync();
+                    throw;
+                }
+
+                return await GetSandboxDtoAsync(createdSandbox.Id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Sandbox creation failed: {ex.Message}", ex);
+            }
         }
 
 
         async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
-        { 
+        {
             var sandboxFromDb = await _db.Sandboxes
-                .Include(sb=> sb.SandboxDatasets)
-                    .ThenInclude(sd=> sd.Dataset)
+                .Include(sb => sb.SandboxDatasets)
+                    .ThenInclude(sd => sd.Dataset)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
                 .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
@@ -141,24 +160,31 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating basic sandbox resources for sandbox: {dto.SandboxName}. First creating Resource Group, other resources are created by worker");
 
-            await _sandboxResourceService.CreateSandboxResourceGroup(dto);
+            try
+            {               
+                await _sandboxResourceService.CreateSandboxResourceGroup(dto);
 
-            _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Ordering other resources");
+                _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Scheduling creation of other resources");
 
-            var queueParentItem = new ProvisioningQueueParentDto
+                var queueParentItem = new ProvisioningQueueParentDto
+                {
+                    SandboxId = dto.SandboxId,
+                    Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
+                };
+
+                await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
+                await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
+                await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
+                await ScheduleCreationOfBastion(dto, queueParentItem);
+
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
+
+                _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
+            }
+            catch (Exception ex)
             {
-                SandboxId = dto.SandboxId,
-                Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
-            };
-
-            await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
-            await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
-            await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
-            await ScheduleCreationOfBastion(dto, queueParentItem);
-
-            await _provisioningQueueService.SendMessageAsync(queueParentItem);
-
-            _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
+                throw new Exception($"Unable to create basic sandbox resources.", ex);
+            }
 
             return dto;
         }
@@ -225,7 +251,7 @@ namespace Sepes.Infrastructure.Service
                 ).ToList();
 
             var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);
-                       
+
 
             return resourcesMapped;
         }
@@ -233,8 +259,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
-         
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox); 
+
+            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
             var sandboxFromDb = await _db.Sandboxes.Include(sb => sb.Resources).ThenInclude(r => r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
@@ -265,14 +291,13 @@ namespace Sepes.Infrastructure.Service
 
                     curResource.Deleted = DateTime.UtcNow;
                     curResource.DeletedBy = user.UserName;
-                    curResource.UpdatedBy = "Faen";
 
                     _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", studyId, sandboxId, curResource.Id);
                 }
 
                 if (sandboxResourceGroup == null)
                 {
-                    throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}");
+                    throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {studyId}.");
                 }
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");

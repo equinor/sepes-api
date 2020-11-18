@@ -50,7 +50,16 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<SandboxDataset, SandboxDatasetDto>()
                 .ForMember(dest => dest.DatasetId, source => source.MapFrom(x => x.Dataset.Id))
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
-                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
+                .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification))
+                .ForMember(dest => dest.SandboxName, opt =>
+                {
+                    opt.PreCondition(src => (!src.Sandbox.Deleted.HasValue));
+                    opt.MapFrom(src =>
+
+                        src.Sandbox.Name
+                    );
+                })
+                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id));
 
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
@@ -60,8 +69,18 @@ namespace Sepes.Infrastructure.Model.Automapper
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
                  .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
-                     .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
-                         .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets));
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+                 .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
+                 .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
+
+            /*
+            CreateMap<Sandbox, DatasetSandboxDto>()
+                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
+                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));
+
+            CreateMap<DatasetSandbox, DatasetSandboxDto>()
+                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
+                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));*/
 
             CreateMap<SandboxDto, Sandbox>();
 
@@ -132,6 +151,24 @@ namespace Sepes.Infrastructure.Model.Automapper
             .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
             .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => AzureVmUtil.GetOsName(x)))
                    .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
+
+
+            CreateMap<VmRuleDto, NsgRuleDto>()                
+                      .ForMember(dest => dest.Protocol, source => source.MapFrom(x => x.Protocol))
+                  .ForMember(dest => dest.Description, source => source.MapFrom(x => x.Description));
+
+
+            CreateMap<AzureRegionDto, LookupDto>();
+
+            CreateMap<VmSize, VmSizeDto>()
+                  .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Key));
+
+            CreateMap<VmSize, VmSizeLookupDto>()
+               .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
+
+            CreateMap<Region, LookupDto>()
+             .ForMember(dest => dest.Key, source => source.MapFrom(x => x.Key))
+              .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.Name));
         }
     }
 }

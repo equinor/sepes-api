@@ -64,7 +64,6 @@ namespace Sepes.Infrastructure.Service
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
             studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
-
             return studyDto;
         }
 
@@ -125,7 +124,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
         }
       
-        public async Task<StudyDto> DeleteStudyAsync(int studyId)
+        public async Task DeleteStudyAsync(int studyId)
         {
             var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
 
@@ -156,11 +155,11 @@ namespace Sepes.Infrastructure.Service
             }
 
             var currentUser = _userService.GetCurrentUser();
+            studyFromDb.Deleted = true;
             studyFromDb.DeletedBy = currentUser.UserName;
             studyFromDb.DeletedAt = DateTime.UtcNow;
-
+            
             await _db.SaveChangesAsync();
-            return _mapper.Map<StudyDto>(studyFromDb);
         }
 
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)

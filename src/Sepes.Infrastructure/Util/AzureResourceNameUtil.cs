@@ -40,9 +40,9 @@ namespace Sepes.Infrastructure.Util
             return $"st{sandboxName.ToLower()}{shortGuid}";
         }
 
-        public static string EnsureMaxLength(string potentialName, int maxLength)
+        public static string EnsureMaxLength(string potentialName, int maxLength = 0)
         {
-            if(potentialName.Length > maxLength)
+            if (maxLength > 0 && potentialName.Length > maxLength)
             {
                 return potentialName.Substring(0, maxLength);
             }
@@ -71,51 +71,78 @@ namespace Sepes.Infrastructure.Util
 
         }
 
+        public const string NSG_RULE_FOR_VM_PREFIX = "vm-rule-";
+
+        public static string NsgRuleNameForVm(int vmId, string suffix = null)
+        {
+            //The name must begin with a letter or number, end with a letter, number or underscore, and may contain only letters, numbers, underscores, periods, or hyphens.
+            //Max 80 characters
+
+            var vmIdString = vmId.ToString();
+            var suffixMaxLength = 80 - NSG_RULE_FOR_VM_PREFIX.Length - vmIdString.Length - 1;
+
+
+            var suffixNormalized = "";
+
+            if (suffix == null)
+            {
+                suffixNormalized = Normalize(Guid.NewGuid().ToString(), suffixMaxLength);
+            }
+            else
+            {
+                suffixNormalized = Normalize(suffix, suffixMaxLength);
+            }
+
+            return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
+        }
+
         public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
             var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
-            var normalizedStudyName = Normalize(studyName);
-            var normalizedSanboxName = Normalize(sandboxName);
+            var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
+            var alphanumericSandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
 
-            var charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+            var charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
 
             if (charachtersLeft < 0)
             {
                 var totalTrim = Math.Abs(charachtersLeft);
 
-                var nameLengthDiff = normalizedStudyName.Length - normalizedSanboxName.Length;
+                var nameLengthDiff = alphanumericStudyName.Length - alphanumericSandboxName.Length;
                 var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
 
                 if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
                 {
-                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - amountToTrimOff);
+                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - amountToTrimOff);
                 }
                 else // sandbox name is longer, trim it down to study length
                 {
-                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - amountToTrimOff);
+                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - amountToTrimOff);
                 }
 
                 //Both names are now equal in length, now we can equally remove from both
 
-                charachtersLeft = availableSpaceForStudyAndSanboxName - (normalizedStudyName.Length + normalizedSanboxName.Length);
+                charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
 
                 if (charachtersLeft < 0)
                 {
                     var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
                     var even = charachtersLeft % 2 == 0;
-                    normalizedStudyName = normalizedStudyName.Substring(0, normalizedStudyName.Length - mustRemoveEach - (even ? 0 : 1));
-                    normalizedSanboxName = normalizedSanboxName.Substring(0, normalizedSanboxName.Length - mustRemoveEach);
+                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - mustRemoveEach - (even ? 0 : 1));
+                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - mustRemoveEach);
                 }
             }
 
-            return $"{prefix}{normalizedStudyName}{(avoidDash ? "" : "-")}{normalizedSanboxName}{shortUniquePart}";
+            return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{shortUniquePart}";
         }
 
-        static string Normalize(string input)
+        static string Normalize(string input, int limit = 0)
         {
-            return StripWhitespace(input).ToLower();
+            var normalizedString = StripWhitespace(input).ToLower();
+
+            return EnsureMaxLength(normalizedString, limit);
         }
 
         public static string MakeStringAlphanumericAndRemoveWhitespace(string str, int limit = 0)
@@ -123,14 +150,9 @@ namespace Sepes.Infrastructure.Util
 
             var alphaNummericString = new string((from c in str
                                                   where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
-                                                  select c).ToArray());
+                                                  select c).ToArray()).ToLower();
 
-            if (limit > 0 && alphaNummericString.Length > limit)
-            {
-                return alphaNummericString.Substring(0, limit);
-            }
-
-            return alphaNummericString;
+            return EnsureMaxLength(alphaNummericString, limit);
         }
 
         public static string StripWhitespace(string str) => new string((from c in str

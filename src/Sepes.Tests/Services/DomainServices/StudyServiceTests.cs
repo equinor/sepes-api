@@ -135,7 +135,7 @@ namespace Sepes.Tests.Services
 
             var createdStudy = await studyService.CreateStudyAsync(initialStudy);
             int studyId = createdStudy.Id.Value;
-            _ = await studyService.DeleteStudyAsync(studyId);
+            await studyService.DeleteStudyAsync(studyId);
 
             _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead));
 

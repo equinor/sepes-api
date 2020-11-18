@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Service
     {
         public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
-            return db.Studies.Where(s => s.DeletedAt.HasValue == false);
+            return db.Studies.Where(s => s.Deleted.HasValue == false || (s.Deleted.HasValue && s.Deleted.Value == false));
         }
 
         public static IQueryable<Study> UnHiddenStudiesQueryable(SepesDbContext db)
@@ -24,6 +24,7 @@ namespace Sepes.Infrastructure.Service
             return ActiveStudiesBaseQueryable(db)
                  .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
+                    .ThenInclude(sd => sd.SandboxDatasets)
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)

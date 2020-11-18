@@ -13,34 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmDto> DeleteAsync(int id);
 
-        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default);
 
-        Task<VmExtendedDto> GetExtendedInfo(int vmId);
-
-        string CalculateName(string studyName, string sandboxName, string userPrefix);
-
-        Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
-
-        Task<List<VmDiskLookupDto>> AvailableDisks();
-
-
-        Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default(CancellationToken));
-        Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default(CancellationToken));
-
-        Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput);
-        
-        //RULES
-        
-        Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
-
-        Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default);
-
-        Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> currentRules, CancellationToken cancellationToken = default);
-
-        Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default);
-
-        Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default);
-
-        Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default);
+        Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default); 
     }
 }
