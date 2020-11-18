@@ -35,10 +35,23 @@ namespace Sepes.Infrastructure.Util
             return secret.Value.Value;
         }
 
-        public static async Task<string> DeleteKeyVaultSecretValue(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName)
+        public static async Task<string> DeleteKeyVaultSecretValue(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName, bool purge = false)
         {
             var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
             var secret = await client.StartDeleteSecretAsync(secretName);
+
+            if (purge)
+            {
+                try
+                {
+                    var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"Unable to purge secret {secretName}", ex);
+                }
+             
+            }          
 
             return secret.Value.Value;
         }
