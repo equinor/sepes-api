@@ -124,7 +124,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
         }
       
-        public async Task<StudyDto> DeleteStudyAsync(int studyId)
+        public async Task DeleteStudyAsync(int studyId)
         {
             var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
 
@@ -155,11 +155,11 @@ namespace Sepes.Infrastructure.Service
             }
 
             var currentUser = _userService.GetCurrentUser();
+            studyFromDb.Deleted = true;
             studyFromDb.DeletedBy = currentUser.UserName;
             studyFromDb.DeletedAt = DateTime.UtcNow;
-
+            
             await _db.SaveChangesAsync();
-            return _mapper.Map<StudyDto>(studyFromDb);
         }
 
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)

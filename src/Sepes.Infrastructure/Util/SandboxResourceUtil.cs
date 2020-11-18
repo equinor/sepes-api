@@ -18,15 +18,7 @@ namespace Sepes.Infrastructure.Util
                 throw new NullReferenceException($"Cannot navigate to Sandbox sibling resources for resource {resource.Id}");
             }
 
-            var sibling = resource.Sandbox.Resources.FirstOrDefault(r => r.ResourceType == resourceType);
-
-
-            if (sibling == null)
-            {
-                throw new NullReferenceException($"Cannot navigate to sibling resource with type {resourceType} for resource id {resource.Id}");
-            }
-
-            return sibling;
+           return resource.Sandbox.Resources.FirstOrDefault(r => r.ResourceType == resourceType);   
         }
     }
 }

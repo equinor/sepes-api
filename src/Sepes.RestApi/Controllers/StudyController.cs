@@ -64,8 +64,8 @@ namespace Sepes.RestApi.Controller
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            var deletedStudy = await _studyService.DeleteStudyAsync(studyId);
-            return new JsonResult(deletedStudy);
+            await _studyService.DeleteStudyAsync(studyId);
+            return new NoContentResult();
         }
 
 
