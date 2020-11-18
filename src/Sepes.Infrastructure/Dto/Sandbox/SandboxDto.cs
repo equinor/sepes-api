@@ -15,6 +15,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string TechnicalContactName { get; set; }
 
         public string TechnicalContactEmail { get; set; }
+        public string LinkToCostAnalysis { get; set; }
 
         public bool Deleted { get; set; }
 

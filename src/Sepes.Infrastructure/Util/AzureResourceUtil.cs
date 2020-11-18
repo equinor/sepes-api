@@ -72,5 +72,33 @@ namespace Sepes.Infrastructure.Util
             var azureUrlPart = "https://portal.azure.com/#@";
             return $"{azureUrlPart}{domain}/resource{resourceId}";
         }
+
+        public static string CreateResourceCostLink(IConfiguration config, Sandbox resource)
+        {
+            var ResourceGroupId = "";
+            foreach (var i in resource.Resources)
+            {
+                ResourceGroupId = i.ResourceGroupId;
+            }
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
+
+            if (String.IsNullOrWhiteSpace(ResourceGroupId))
+            {
+                return null;
+            }
+
+            if (ResourceGroupId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
+            {
+                return null;
+            }
+
+            return CreateResourceCostLink(domain, ResourceGroupId);
+        }
+
+        public static string CreateResourceCostLink(string domain, string resourceId)
+        {
+            var azureUrlPart = "https://portal.azure.com/#@";
+            return $"{azureUrlPart}{domain}/resource{resourceId}/costanalysis";
+        }
     }
 }
