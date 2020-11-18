@@ -291,7 +291,6 @@ namespace Sepes.Infrastructure.Service
 
                     curResource.Deleted = DateTime.UtcNow;
                     curResource.DeletedBy = user.UserName;
-                    curResource.UpdatedBy = "Faen";
 
                     _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", studyId, sandboxId, curResource.Id);
                 }
