@@ -42,7 +42,15 @@ namespace Sepes.Infrastructure.Util
 
             if (purge)
             {
-                var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                try
+                {
+                    var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning($"Unable to purge secret {secretName}", ex);
+                }
+             
             }          
 
             return secret.Value.Value;

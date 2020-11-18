@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
             string vmSize = vmSettings.Size;
 
-            var createdVm = await Create(parameters.Region,
+            var createdVm = await CreateAsync(parameters.Region,
                 parameters.ResourceGroupName,
                 parameters.Name,
                 vmSettings.NetworkName, vmSettings.SubnetName,
@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
         }
-       
+
 
         public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
@@ -216,7 +216,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<IVirtualMachine> Create(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IVirtualMachine> CreateAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
         {
             IVirtualMachine vm;
 
@@ -344,9 +344,8 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await Delete(parameters.ResourceGroupName, parameters.Name);
+                await DeleteAsync(parameters.ResourceGroupName, parameters.Name, parameters.NetworkSecurityGroupName, parameters.ConfigurationString);
 
-                //Also remember to delete osdisk
                 provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
 
             }
@@ -354,16 +353,12 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");
                 provisioningState = CloudResourceProvisioningStates.NOTFOUND;
-                //Probably allready deleted
-
             }
 
             return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
-
         }
 
-
-        public async Task Delete(string resourceGroupName, string virtualMachineName)
+        public async Task DeleteAsync(string resourceGroupName, string virtualMachineName, string networkSecurityGroupName, string configString)
         {
             var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
@@ -390,6 +385,23 @@ namespace Sepes.Infrastructure.Service
             {
                 await DeleteDiskById(curDiskKvp.Value.Id);
             }
+
+            //Delete VM rules
+            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(configString);
+
+            foreach (var curRule in vmSettings.Rules)
+            {
+                try
+                {
+                    await _nsgService.DeleteRule(resourceGroupName, networkSecurityGroupName, curRule.Name);
+                }
+                catch (Exception)
+                {
+                    _logger.LogWarning($"Delete VM: Failed to delete NSG rule {curRule.Name} for vm {virtualMachineName}. Assuming it has allready been deleted");
+                }
+
+            }
+
         }
 
         public async Task DeleteNic(string id)
@@ -444,7 +456,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-     
+
 
         public async Task<VmExtendedDto> GetExtendedInfo(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
@@ -463,7 +475,7 @@ namespace Sepes.Infrastructure.Service
 
             result.SizeName = vm.Size.ToString();
 
-            await DecorateWithNetworkProperties(vm, result, cancellationToken);        
+            await DecorateWithNetworkProperties(vm, result, cancellationToken);
 
             result.Disks.Add(await CreateDiskDto(vm.OSDiskId, true, cancellationToken));
 
