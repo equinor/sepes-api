@@ -274,19 +274,25 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<SandboxResourceOperationDto> CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
+        async Task CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
         {
-            var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id);
+            if(await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(vm.Id))
+            {
+                _logger.LogWarning($"Updating VM {vm.Id}: There is allready an unstarted VM Create or Update operation. Not creating additional");
+            }
+            else
+            {
+                //If un started update allready exist, no need to create update op?
+                var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id);
 
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = vm.SandboxId;
-            queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
+                var queueParentItem = new ProvisioningQueueParentDto();
+                queueParentItem.SandboxId = vm.SandboxId;
+                queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
 
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id.Value });
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id.Value });
 
-            await _workQueue.SendMessageAsync(queueParentItem);
-
-            return vmUpdateOperation;
+                await _workQueue.SendMessageAsync(queueParentItem);             
+            }          
         }
     }
 }

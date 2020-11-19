@@ -26,6 +26,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<SandboxResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId);
 
         Task<bool> OperationIsFinishedAndSucceededAsync(int operationId);
-     
+        Task<bool> HasUnstartedCreateOrUpdateOperation(int resourceId);
     }
 }
