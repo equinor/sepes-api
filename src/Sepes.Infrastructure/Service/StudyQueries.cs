@@ -25,6 +25,7 @@ namespace Sepes.Infrastructure.Service
                  .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
                     .ThenInclude(sd => sd.SandboxDatasets)
+                     .ThenInclude(sd => sd.Sandbox)
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)
