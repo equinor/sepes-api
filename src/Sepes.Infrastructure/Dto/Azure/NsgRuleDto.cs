@@ -22,6 +22,8 @@ namespace Sepes.Infrastructure.Dto.Azure
         public int DestinationPort { get; set; }
         public string Protocol { get; set; }
 
+        public string Direction { get; set; }
+
         public RuleAction Action { get; set; } = RuleAction.Allow;
 
 

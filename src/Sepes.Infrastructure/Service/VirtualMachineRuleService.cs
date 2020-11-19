@@ -140,7 +140,7 @@ namespace Sepes.Infrastructure.Service
                         if (String.IsNullOrWhiteSpace(curRule.Name))
                         {
                             curRule.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
-                            curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
+                            //curRule.Priority = AzureVmUtil.GetNextVmRulePriority(updatedRuleSet, curRule.Direction);
                         }
                     }
                     else
