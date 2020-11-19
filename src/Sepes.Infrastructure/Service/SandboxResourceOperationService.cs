@@ -58,7 +58,11 @@ namespace Sepes.Infrastructure.Service
                     }
                     else if (previousOperation.OperationType == CloudResourceOperationType.UPDATE)
                     {
-                        //We can sneak in before this, as updates is safe to run often
+                        //If previous operation is waiting for some other op, it's best this also gets in line
+                        if (previousOperation.DependsOnOperationId.HasValue)
+                        {
+                            dependsOn = previousOperation.Id;
+                        }                    
                     }
                     else
                     {
@@ -203,6 +207,12 @@ namespace Sepes.Infrastructure.Service
             return await preceedingOpsQueryable.ToListAsync();
         }
 
+        public async Task<bool> HasUnstartedCreateOrUpdateOperation(int resourceId)
+        {
+            var preceedingOpsQueryable = GetPreceedingUnstartedCreateOrUpdateOperationsQueryable(resourceId);
+            return await preceedingOpsQueryable.AnyAsync();
+        }
+
         public async Task<List<SandboxResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId)
         {
             var unfinishedOps = await GetUnfinishedOperations(resourceId);
@@ -239,6 +249,16 @@ namespace Sepes.Infrastructure.Service
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
                 && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
+                );
+        }
+
+        IQueryable<SandboxResourceOperation> GetPreceedingUnstartedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
+        {
+            return _db.SandboxResourceOperations
+                .Where(o => o.SandboxResourceId == resourceId
+                && (batchId == null || (batchId != null && o.BatchId != batchId))
+                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW)
                 );
         }
 
