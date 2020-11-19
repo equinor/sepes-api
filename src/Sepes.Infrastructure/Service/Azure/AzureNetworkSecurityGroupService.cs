@@ -96,7 +96,7 @@ namespace Sepes.Infrastructure.Service
             .ToAddress("VirtualNetwork")
             .ToAnyPort()
             .WithAnyProtocol()
-            .WithPriority(11000)
+            .WithPriority(AzureVmConstants.RulePresets.ALLOW_FOR_SERVICETAG_VNET_PRIORITY)
             .Attach()
             .ApplyAsync();
         }
