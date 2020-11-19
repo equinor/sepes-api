@@ -96,7 +96,7 @@ namespace Sepes.Infrastructure.Service
             .ToAddress("VirtualNetwork")
             .ToAnyPort()
             .WithAnyProtocol()
-            .WithPriority(990)
+            .WithPriority(11000)
             .Attach()
             .ApplyAsync();
         }

@@ -89,6 +89,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             builder.Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             builder.Services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
+            builder.Services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             builder.Services.AddTransient<IAzureBastionService, AzureBastionService>();
             builder.Services.AddTransient<IAzureVNetService, AzureVNetService>();
             builder.Services.AddTransient<IAzureVmService, AzureVmService>();
