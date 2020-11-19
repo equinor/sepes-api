@@ -9,6 +9,9 @@ namespace Sepes.Infrastructure.Constants
         public const string WINDOWS = "windows";
         public const string LINUX = "linux";
 
+        public const int MIN_RULE_PRIORITY = 500;
+        public const int MAX_RULE_PRIORITY = 10000;
+
         public static class RulePresets
         {
             public const string ALLOW_FOR_SERVICETAG_VNET = "AllowAllForServiceTagVNet";
@@ -16,7 +19,7 @@ namespace Sepes.Infrastructure.Constants
 
             public static List<VmRuleDto> CreateInitialVmRules(int vmId)
             {
-                return new List<VmRuleDto>() { new VmRuleDto() { Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId, OPEN_CLOSE_INTERNET), Description = "Control outbound internet access. Set to Allow or Deny as needed!", Action = RuleAction.Deny, Priority = 1000, Direction = RuleDirection.Outbound } };
+                return new List<VmRuleDto>() { new VmRuleDto() { Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId, OPEN_CLOSE_INTERNET), Description = "Control outbound internet access. Set to Allow or Deny as needed!", Action = RuleAction.Deny, Direction = RuleDirection.Outbound } };
             }
 
         }

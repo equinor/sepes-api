@@ -89,22 +89,22 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)
-        {
-            var ruleWithHighestPriority = rules.Where(r => r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
+        //public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)
+        //{
+        //    var ruleWithHighestPriority = rules.Where(r => r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
 
-            if (ruleWithHighestPriority == null)
-            {
-                return 500;
-            }
-            else if (ruleWithHighestPriority.Priority < 500)
-            {
-                return 500;
-            }
-            else
-            {
-                return ruleWithHighestPriority.Priority + 10;
-            }
-        } 
+        //    if (ruleWithHighestPriority == null)
+        //    {
+        //        return 500;
+        //    }
+        //    else if (ruleWithHighestPriority.Priority < 500)
+        //    {
+        //        return 500;
+        //    }
+        //    else
+        //    {
+        //        return ruleWithHighestPriority.Priority + 10;
+        //    }
+        //} 
     }
 }
