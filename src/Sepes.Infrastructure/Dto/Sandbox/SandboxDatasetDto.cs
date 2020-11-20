@@ -5,6 +5,7 @@
         public int DatasetId { get; set; }
 
         public string Name { get; set; }
+        public int StudyId { get; set; }
 
         public int SandboxId { get; set; }
 

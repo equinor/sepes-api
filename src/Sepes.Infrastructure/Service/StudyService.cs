@@ -63,6 +63,7 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await GetStudyByIdAsync(studyId, userOperation);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
             studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
+            studyDto.Datasets.Where(ds => ds.SandboxDatasets.Any(sd => sd.StudyId.Equals(studyId)));
             studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
             return studyDto;
         }
