@@ -2,8 +2,6 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,45 +10,7 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Util
 {
     public static class StudyAccessUtil
-    {
-        //Scenarios
-        //Might come with list of study, might come with single
-
-        //Wonder if has access it role. Not solved here
-        //Wonder if has study specific role, solved here
-        //Might have study Id
-        //Might have list of studies
-        //Remember to get user from db as late as possible
-
-        public static IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
-        {
-
-            //As of now, if you have ANY role associated with a study, you can view it
-            return db.Studies
-                .Include(s => s.StudyParticipants)
-                    .ThenInclude(sp => sp.User)
-                .Where(s => 
-                (s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any())
-                && s.Deleted.HasValue == false || (s.Deleted.HasValue && s.Deleted == false));
-        }
-
-        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyByIdOrThrowAsync(db, studyId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
-
-        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
-
-        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyByResourceIdOrThrowAsync(db, resourceId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
+    {      
         
         public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
         {

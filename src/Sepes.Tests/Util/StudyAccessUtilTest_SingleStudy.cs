@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System.Linq;
 using Xunit;
@@ -23,7 +24,7 @@ namespace Sepes.Tests.Util
           
             var userSerice = ServiceProvider.GetService<IUserService>();
 
-            var returnedStudy = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
+            var returnedStudy = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
             Assert.NotNull(returnedStudy); 
         }
 
@@ -38,7 +39,7 @@ namespace Sepes.Tests.Util
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, roleThatGrantsPermission);
 
             var userSerice = ServiceProvider.GetService<IUserService>();
-            var study = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
 
             Assert.NotNull(study);
             Assert.Equal(COMMON_STUDY_ID, study.Id);
@@ -65,7 +66,7 @@ namespace Sepes.Tests.Util
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, justSomeBogusRole);
             
             var userSerice = ServiceProvider.GetService<IUserService>();
-            await Assert.ThrowsAsync<ForbiddenException>(()=> StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead));     
+            await Assert.ThrowsAsync<ForbiddenException>(()=> StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead));     
         }  
      
         

@@ -1,10 +1,9 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Interface;
+﻿using Sepes.Infrastructure.Dto.Interfaces;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class StudyDto : UpdateableBaseDto, IHasLogoUrl
+    public class StudyDto : UpdateableBaseDto, IHasStudyParticipants
     {
         public string Name { get; set; }
 
@@ -18,18 +17,6 @@ namespace Sepes.Infrastructure.Dto
 
         public bool Restricted { get; set; }
 
-        public string LogoUrl { get; set; }
-
-        public string OwnerName { get; set; }
-        public string OwnerEmail { get; set; }
-
-        public bool CanViewSandboxes { get; set; }
-
-        public ICollection<DatasetDto> Datasets { get; set; }
-
-        public ICollection<SandboxDto> Sandboxes { get; set; }
-
-        public ICollection<StudyParticipantDto> Participants { get; set; }
-        
+        public List<StudyParticipantDto> Participants { get; set; }        
     }
 }

@@ -21,10 +21,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             //STUDY
             CreateMap<Study, StudyListItemDto>();
 
-            CreateMap<Study, StudyDto>()
+            CreateMap<Study, StudyDetailsDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
                     .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+
+            CreateMap<Study, StudyDto>()    
+              .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
             CreateMap<StudyDto, Study>();

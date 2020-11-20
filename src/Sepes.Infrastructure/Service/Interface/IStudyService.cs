@@ -8,8 +8,10 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyService
     {        
-        Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null);
+        Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null);
         Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation);
+
+        Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperations userOperation);
 
         Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
 
@@ -19,6 +21,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
 
-        Task<byte[]> GetLogoAsync(int id);   
+        //Task<byte[]> GetLogoAsync(int id);
+
+        Task<LogoResponseDto> GetLogoAsync(int id);
     }
 }
