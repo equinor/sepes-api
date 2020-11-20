@@ -192,7 +192,7 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount(dto.StudyName, dto.SandboxName);
-            var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id.Value;
+            var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.StorageAccount, sandboxControlled: true, resourceName: resourceName, dependsOn: resourceGroupCreateOperation);
             dto.DiagnosticsStorage = resourceEntry;
 
@@ -201,7 +201,7 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfNetworkSecurityGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var nsgName = AzureResourceNameUtil.NetworkSecGroupSubnet(dto.StudyName, dto.SandboxName);
-            var diagStorageAccountCreateOperation = dto.DiagnosticsStorage.Operations.FirstOrDefault().Id.Value;
+            var diagStorageAccountCreateOperation = dto.DiagnosticsStorage.Operations.FirstOrDefault().Id;
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.NetworkSecurityGroup, sandboxControlled: true, resourceName: nsgName, dependsOn: diagStorageAccountCreateOperation);
             dto.NetworkSecurityGroup = resourceEntry;
         }
@@ -215,7 +215,7 @@ namespace Sepes.Infrastructure.Service
             var networkSettings = new NetworkSettingsDto() { SandboxSubnetName = sandboxSubnetName };
             var networkSettingsString = SandboxResourceConfigStringSerializer.Serialize(networkSettings);
 
-            var nsgCreateOperation = dto.NetworkSecurityGroup.Operations.FirstOrDefault().Id.Value;
+            var nsgCreateOperation = dto.NetworkSecurityGroup.Operations.FirstOrDefault().Id;
 
             var resourceEntry = await CreateResource(dto, queueParentItem, AzureResourceType.VirtualNetwork, sandboxControlled: true, resourceName: networkName, configString: networkSettingsString, dependsOn: nsgCreateOperation);
             dto.Network = resourceEntry;
@@ -223,7 +223,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task ScheduleCreationOfBastion(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string configString = null)
         {
-            var vNetCreateOperation = dto.Network.Operations.FirstOrDefault().Id.Value;
+            var vNetCreateOperation = dto.Network.Operations.FirstOrDefault().Id;
 
             var bastionName = AzureResourceNameUtil.Bastion(dto.StudyName, dto.SandboxName);
 
@@ -234,7 +234,7 @@ namespace Sepes.Infrastructure.Service
         async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, string configString = null, int dependsOn = 0)
         {
             var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id.Value });
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id });
 
             return resourceEntry;
         }
