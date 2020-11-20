@@ -8,7 +8,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,45 +31,53 @@ namespace Sepes.Infrastructure.Service
             _azureBlobStorageService = azureBlobStorageService;
         }
 
-        public async Task<IEnumerable<StudyListItemDto>> GetStudiesAsync(bool? excludeHidden = null)
+        public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null)
         {
             List<Study> studiesFromDb;
 
             if (excludeHidden.HasValue && excludeHidden.Value)
             {
-                studiesFromDb = await StudyQueries.UnHiddenStudiesQueryable(_db).ToListAsync();
+                studiesFromDb = await StudyBaseQueries.UnHiddenStudiesQueryable(_db).ToListAsync();
             }
             else
             {
                 var user = await _userService.GetCurrentUserFromDbAsync();
-                var studiesQueryable = StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(_db, user.Id);
+                var studiesQueryable = StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(_db, user.Id);
                 studiesFromDb = await studiesQueryable.ToListAsync();
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
           
 
-            studiesDtos = await _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
+            studiesDtos = _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }
 
-        async Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation)
+        async Task<Study> GetStudyByIdAsync(int studyId, UserOperations userOperation, bool withIncludes)
         {
-            return await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation);
+            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
         }
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, userOperation);
+            var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, false);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
-            studyDto.Sandboxes = studyDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
-            studyDto = await _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDto);
+            
             return studyDto;
         }
 
-        public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
+        public async Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperations userOperation)
         {
-            //TODO: Validate action
+            var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, true);
+            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
+            _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDetailsDto);
+            studyDetailsDto.Sandboxes = studyDetailsDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
+       
+            return studyDetailsDto;
+        }
+
+        public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
+        {          
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
@@ -83,7 +91,7 @@ namespace Sepes.Infrastructure.Service
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata, false);
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -126,7 +134,7 @@ namespace Sepes.Infrastructure.Service
       
         public async Task DeleteStudyAsync(int studyId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyDelete);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyDelete, false);
 
             foreach(var curSandbox in studyFromDb.Sandboxes)
             {
@@ -165,7 +173,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyUpdateMetadata);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata, false); 
 
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -183,23 +191,22 @@ namespace Sepes.Infrastructure.Service
             }
 
             return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
-        }
+        }           
 
-        public async Task<byte[]> GetLogoAsync(int studyId)
+        public async Task<LogoResponseDto> GetLogoAsync(int studyId)
         {
             try
             {
-                var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead);
-                string logoUrl = studyFromDb.LogoUrl;
-                var logo = _azureBlobStorageService.GetImageFromBlobAsync(logoUrl);
-                return await logo;
+                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyRead, false);             
+                var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _azureBlobStorageService.GetImageFromBlobAsync(studyFromDb.LogoUrl) };              
+           
+                return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Unable to get logo for Study {studyId}");
                 return null;
             }
-
         }
 
         void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
@@ -219,6 +226,6 @@ namespace Sepes.Infrastructure.Service
         {
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }
+        }      
     }
 }

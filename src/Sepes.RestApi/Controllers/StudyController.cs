@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Controller
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
         {
-            var studies = await _studyService.GetStudiesAsync(excludeHidden);
+            var studies = await _studyService.GetStudyListAsync(excludeHidden);
             return new JsonResult(studies);
         }
 
@@ -39,7 +39,7 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
 
-            var study = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
+            var study = await _studyService.GetStudyDetailsDtoByIdAsync(studyId, UserOperations.StudyRead);
 
             return new JsonResult(study);
         }
@@ -95,24 +95,19 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
         [Authorize]
-        //Is study restricted? Then check if user can view restricted studies
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
         {
-            var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyRead);
+            var logoResponse = await _studyService.GetLogoAsync(studyId);
 
-            byte[] logo = await _studyService.GetLogoAsync(studyId);
-
-            string fileType = studyDto.LogoUrl.Split('.').Last();
+            string fileType = logoResponse.LogoUrl.Split('.').Last();
 
             if (fileType.Equals("jpg"))
             {
                 fileType = "jpeg";
             }
 
-            return File(new System.IO.MemoryStream(logo), $"image/{fileType}", $"logo_{studyId}.{fileType}");
-
+            return File(new System.IO.MemoryStream(logoResponse.LogoBytes), $"image/{fileType}", $"logo_{studyId}.{fileType}");
         }
     }
-
 }

@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperations operation)
         {
-            _ = await StudyAccessUtil.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
+            _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
 
             return vmResource;

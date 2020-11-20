@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
@@ -72,7 +73,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Verify that study with that id exists
-            var study = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))
@@ -145,7 +146,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Ensure user is allowed to perform this action
-            _ = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
+            _ = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
 
             return sandboxFromDb;
         }
@@ -260,7 +261,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
 
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
             var sandboxFromDb = await _db.Sandboxes.Include(sb => sb.Resources).ThenInclude(r => r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)

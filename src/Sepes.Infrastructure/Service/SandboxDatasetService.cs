@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
 
             var datasetsFromDb = await _db.SandboxDatasets
                 .Include(sd=> sd.Dataset)
@@ -43,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Add(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);   
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);   
        
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
@@ -67,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Remove(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
             var sandboxDataset = await _db.SandboxDatasets
                 .FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 
