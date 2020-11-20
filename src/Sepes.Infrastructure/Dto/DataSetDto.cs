@@ -21,8 +21,8 @@ namespace Sepes.Infrastructure.Dto
         public string Tags { get; set; }
         public int? StudyId { get; set; }
 
-        public ICollection<StudyDto> Studies { get; set; }
+        public List<StudyDto> Studies { get; set; }
 
-        public ICollection<SandboxDatasetDto> SandboxDatasets { get; set; }
+        public List<SandboxDatasetDto> SandboxDatasets { get; set; }
     }
 }
