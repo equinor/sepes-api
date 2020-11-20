@@ -160,34 +160,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return dto;
-        }
-
-        async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperations operation)
-        {
-            _ = await StudyAccessUtil.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
-            var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
-
-            return vmResource;
-        }
-
-        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
-        {
-            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);
-        }
-
-        void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
-        {
-            if (rules != null)
-            {
-                foreach (var curExistingRule in rules)
-                {
-                    if (AzureVmUtil.IsSameRule(ruleToCompare, curExistingRule))
-                    {
-                        throw new Exception($"Same rule allready exists");
-                    }
-                }
-            }
-        }
+        }     
 
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {

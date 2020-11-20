@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -122,8 +121,8 @@ namespace Sepes.Infrastructure.Service
                 ResourceGroupId = resourceGroupId,
                 ResourceGroupName = resourceGroupName,
                 ResourceType = type,
-                ResourceKey = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
                 ResourceName = resourceName,
+                ResourceKey = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,              
                 ResourceId = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
                 SandboxControlled = sandboxControlled,
                 Region = region,
@@ -137,6 +136,7 @@ namespace Sepes.Infrastructure.Service
                     BatchId = batchId,
                     OperationType = CloudResourceOperationType.CREATE,
                     CreatedBy = currentUser.UserName,
+                    Status = CloudResourceOperationState.NEW,
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     DependsOnOperationId = dependentOn != 0 ? dependentOn: default(int?),
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT

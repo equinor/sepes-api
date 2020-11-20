@@ -12,6 +12,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<ProvisioningQueueParentDto> RecieveMessageAsync();     
 
         Task DeleteMessageAsync(ProvisioningQueueParentDto message);
+        Task DeleteMessageAsync(string messageId, string popReceipt);
 
         Task DeleteQueueAsync();
 

@@ -32,7 +32,13 @@ namespace Sepes.Infrastructure.Service
         public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
         {
             _logger.LogInformation($"Queue: Deleting message: {message.MessageId} with description \"{message.Description}\", having {message.Children.Count} children");
-            await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+            await DeleteMessageAsync(message.MessageId, message.PopReceipt);
+        }
+
+        public async Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            _logger.LogInformation($"Queue: Deleting message: {messageId}");
+            await _queueService.DeleteMessageAsync(messageId, popReceipt);
         }
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
@@ -46,8 +52,8 @@ namespace Sepes.Infrastructure.Service
                 var convertedMessage = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
 
                 convertedMessage.MessageId = messageFromQueue.MessageId;
-                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;              
-
+                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;
+                convertedMessage.VisibleAt = messageFromQueue.VisibleAt;
                 return convertedMessage;
             }
 
@@ -65,8 +71,11 @@ namespace Sepes.Infrastructure.Service
             var messageAsJson = JsonConvert.SerializeObject(message);
             var updateReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);
             message.PopReceipt = updateReceipt.PopReceipt;
+            message.VisibleAt = updateReceipt.NextVisibleOn.UtcDateTime;
             _logger.LogInformation($"Queue: Message {message.MessageId} will be visible again at {updateReceipt.NextVisibleOn} (UTC)");
 
         }
+
+      
     }
 }

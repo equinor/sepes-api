@@ -348,6 +348,17 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
 
+                    b.Property<string>("QueueMessageId")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("QueueMessagePopReceipt")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime?>("QueueMessageVisibleAgainAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("SandboxResourceId")
                         .HasColumnType("int");
 

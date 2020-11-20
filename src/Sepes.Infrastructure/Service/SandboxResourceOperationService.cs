@@ -100,6 +100,7 @@ namespace Sepes.Infrastructure.Service
             var entityFromDb = await _db.SandboxResourceOperations
                 .Include(o => o.DependsOnOperation)
                 .ThenInclude(o => o.Resource)
+                 .Include(o => o.DependantOnThisOperation)
                 .Include(o => o.Resource)
                  .ThenInclude(r => r.Sandbox)
                          .ThenInclude(sb => sb.Study)
@@ -136,7 +137,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(itemFromDb.Id);
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
         }
 
         public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status, string errorMessage = null)
@@ -156,10 +157,61 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(itemFromDb.Id);
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
         }
 
-        public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
+
+        public async Task<SandboxResourceOperationDto> SetUpdatedTimestampAsync(int id)
+        {
+            var currentUser = _userService.GetCurrentUser();
+
+            var itemFromDb = await GetOrThrowAsync(id);
+
+            itemFromDb.Updated = DateTime.UtcNow;
+            itemFromDb.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
+        }
+
+        public async Task<SandboxResourceOperationDto> SaveQueueMessageDetails(int id, string messageId, string popReceipt, DateTime visibleAgainAt)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+
+            var currentUser = _userService.GetCurrentUser();
+
+            itemFromDb.Updated = DateTime.UtcNow;
+            itemFromDb.UpdatedBy = currentUser.UserName;
+
+            itemFromDb.QueueMessageId = messageId;
+            itemFromDb.QueueMessagePopReceipt = popReceipt;
+            itemFromDb.QueueMessageVisibleAgainAt = visibleAgainAt;
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
+        }
+
+        public async Task<SandboxResourceOperationDto> ClearQueueMessageDetails(int id)
+        {
+            var itemFromDb = await GetOrThrowAsync(id);
+
+            var currentUser = _userService.GetCurrentUser();
+
+            itemFromDb.Updated = DateTime.UtcNow;
+            itemFromDb.UpdatedBy = currentUser.UserName;
+
+            itemFromDb.QueueMessageId = null;
+            itemFromDb.QueueMessagePopReceipt = null;
+            itemFromDb.QueueMessageVisibleAgainAt = null;
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
+        }
+
+            public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -171,7 +223,7 @@ namespace Sepes.Infrastructure.Service
             itemFromDb.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(itemFromDb.Id);
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
         }
 
         private async Task<SandboxResource> GetSandboxResourceOrThrowAsync(int id)
@@ -260,8 +312,6 @@ namespace Sepes.Infrastructure.Service
                 && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW)
                 );
-        }
-
-
+        }     
     }
 }

@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt };
+                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt, VisibleAt = firstMessage.NextVisibleOn.HasValue ? firstMessage.NextVisibleOn.Value.UtcDateTime : default(DateTime) };
             }
 
             return null;

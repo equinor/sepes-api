@@ -27,7 +27,14 @@ namespace Sepes.Infrastructure.Model
 
         public string Description { get; set; }
 
-        public string LatestError { get; set; }    
+        public string LatestError { get; set; }
+
+        [MaxLength(64)]
+        public string QueueMessageId { get; set; }
+        [MaxLength(64)]
+        public string QueueMessagePopReceipt{ get; set; }
+
+        public DateTime? QueueMessageVisibleAgainAt { get; set; }
 
         public SandboxResource Resource { get; set; }
         

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
@@ -15,5 +16,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string MessageId { get; set; }
         [JsonIgnore]
         public string PopReceipt { get; set; }
+        [JsonIgnore]
+        public DateTime VisibleAt { get; set; }
     }
 }
