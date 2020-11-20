@@ -231,11 +231,11 @@ namespace Sepes.Infrastructure.Service
         async public Task<VmExternalLink> GetExternalLink(int vmId)
         {
             var vmResource = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
-            var returnVm = new VmExternalLink();
-            returnVm.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
-            returnVm.Id = vmId;
+            var vmExternalLink = new VmExternalLink();
+            vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
+            vmExternalLink.Id = vmId;
 
-            return returnVm;
+            return vmExternalLink;
         }
     }
 }
