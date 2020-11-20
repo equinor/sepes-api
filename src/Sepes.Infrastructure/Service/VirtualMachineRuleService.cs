@@ -289,7 +289,7 @@ namespace Sepes.Infrastructure.Service
                 queueParentItem.SandboxId = vm.SandboxId;
                 queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
 
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id.Value });
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id });
 
                 await _workQueue.SendMessageAsync(queueParentItem);             
             }          

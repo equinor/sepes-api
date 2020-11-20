@@ -88,15 +88,15 @@ namespace Sepes.Infrastructure.Service
             var vmResourceEntry = await _sandboxResourceService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
 
             //Create vm settings and immeately attach to resource entry
-            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id.Value, study.Id.Value, sandboxId, userInput);
+            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, study.Id, sandboxId, userInput);
             vmResourceEntry.ConfigString = vmSettingsString;
-            await _sandboxResourceService.Update(vmResourceEntry.Id.Value, vmResourceEntry);
+            await _sandboxResourceService.Update(vmResourceEntry.Id, vmResourceEntry);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxId;
             queueParentItem.Description = $"Create VM for Sandbox: {sandboxId}";
 
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id.Value });
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
 
             await _workQueue.SendMessageAsync(queueParentItem);
 
@@ -129,7 +129,7 @@ namespace Sepes.Infrastructure.Service
         {
             var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
 
-            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id.Value);
+            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
 
             var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);
 
