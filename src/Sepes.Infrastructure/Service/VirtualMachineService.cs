@@ -227,5 +227,15 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
+
+        async public Task<VmExternalLink> GetExternalLink(int vmId)
+        {
+            var vmResource = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vmExternalLink = new VmExternalLink();
+            vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
+            vmExternalLink.Id = vmId;
+
+            return vmExternalLink;
+        }
     }
 }
