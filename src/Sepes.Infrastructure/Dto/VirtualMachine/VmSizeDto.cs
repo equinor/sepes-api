@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Dto.VirtualMachine
 
         public int ResourceDiskSizeInMB { get; set; }
 
-        public int MemoryInMB { get; set; }
+        public int MemoryGB { get; set; }
 
         public int MaxDataDiskCount { get; set; }
 
