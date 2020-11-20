@@ -7,7 +7,7 @@ using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;

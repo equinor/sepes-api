@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto.Study;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {

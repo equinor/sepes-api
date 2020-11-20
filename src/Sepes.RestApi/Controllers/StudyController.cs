@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
 using System.Net.Mime;

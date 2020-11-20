@@ -6,9 +6,9 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxService
     {
-        Task<SandboxDto> GetSandboxAsync(int sandboxId);
+        Task<SandboxDto> GetAsync(int sandboxId);
 
-        Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId);
+        Task<IEnumerable<SandboxDto>> GetForStudyAsync(int studyId);
         Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto newSandbox);
         Task<SandboxDto> DeleteAsync(int studyId, int sandboxId);
 

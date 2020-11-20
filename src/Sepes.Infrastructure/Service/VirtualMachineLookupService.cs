@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId);
 
             var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size, cancellationToken);
 
@@ -74,7 +74,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+                var sandbox = await _sandboxService.GetAsync(sandboxId);
 
                 result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
 

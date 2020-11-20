@@ -46,14 +46,23 @@ namespace Sepes.Infrastructure.Service
             _config = config;
         }
 
-        public async Task<SandboxDto> GetSandboxAsync(int sandboxId)
+        public async Task<SandboxDto> GetAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
+        async Task SetPermissions(SandboxDto sandbox)
+        {
+            var sandboxPermissions = new SandboxPermissionsDto();
 
-        public async Task<IEnumerable<SandboxDto>> GetSandboxesForStudyAsync(int studyId)
+            sandboxPermissions.Update = true;
+            sandboxPermissions.Delete = true;          
+
+            sandbox.Permissions = sandboxPermissions;
+        }
+
+        public async Task<IEnumerable<SandboxDto>> GetForStudyAsync(int studyId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
 
@@ -131,7 +140,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task<Sandbox> GetSandboxOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
+        async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
         {
             var sandboxFromDb = await _db.Sandboxes
                 .Include(sb => sb.SandboxDatasets)
@@ -153,7 +162,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<SandboxDto> GetSandboxDtoAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId);
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
 
@@ -242,7 +251,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
@@ -340,7 +349,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ReScheduleSandboxCreation(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxFromDb.Id;

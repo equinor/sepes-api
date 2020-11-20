@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

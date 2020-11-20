@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId);
             var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperations.SandboxEdit);
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
@@ -128,7 +128,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId);
 
             var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
 

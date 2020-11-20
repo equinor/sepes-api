@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -72,6 +73,8 @@ namespace Sepes.Infrastructure.Service
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
             _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDetailsDto);
             studyDetailsDto.Sandboxes = studyDetailsDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
+            await SetPermissions(studyDetailsDto);
+       
 
             foreach (var curDs in studyDto.Datasets)
             {
@@ -79,6 +82,21 @@ namespace Sepes.Infrastructure.Service
             }
 
             return studyDetailsDto;
+        }
+
+        async Task SetPermissions(StudyDetailsDto study)
+        {
+            var studyPermissions = new StudyPermissionsDto();
+
+            studyPermissions.UpdateDetails = true;
+            studyPermissions.Delete = true;
+            studyPermissions.AddRemoveDataset = true;
+            studyPermissions.AddRemoveParticipant = true;
+            studyPermissions.AddRemoveSandbox = true;
+            studyPermissions.NavigateToSandbox = true;
+            studyPermissions.NavigateToDataset = true;
+
+            study.Permissions = studyPermissions;
         }
 
         public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)

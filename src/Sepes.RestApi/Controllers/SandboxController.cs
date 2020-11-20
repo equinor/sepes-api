@@ -30,7 +30,7 @@ namespace Sepes.RestApi.Controller
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
         {
-            var sandboxes = await _sandboxService.GetSandboxesForStudyAsync(studyId);
+            var sandboxes = await _sandboxService.GetForStudyAsync(studyId);
             return new JsonResult(sandboxes);
         }
 
@@ -39,7 +39,7 @@ namespace Sepes.RestApi.Controller
         //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> GetSandbox(int studyId, int sandboxId)
         {
-            var sandboxes = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandboxes = await _sandboxService.GetAsync(sandboxId);
             return new JsonResult(sandboxes);
         }
 

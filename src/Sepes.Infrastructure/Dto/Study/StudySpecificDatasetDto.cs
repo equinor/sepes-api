@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto.Study
 {
     public class StudySpecificDatasetDto : UpdateableBaseDto
     {
