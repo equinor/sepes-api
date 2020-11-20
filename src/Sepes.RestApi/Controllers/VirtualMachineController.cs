@@ -55,6 +55,13 @@ namespace Sepes.RestApi.Controllers
         {
             var virtualMachinesForSandbox = await _vmService.GetExtendedInfo(vmId);
             return new JsonResult(virtualMachinesForSandbox);
-        }         
+        }
+
+        [HttpGet("{vmId}/externalLink")]
+        public async Task<IActionResult> GetVmExternalLink(int vmId, CancellationToken cancellationToken = default)
+        {
+            var virtualMachinesForSandbox = await _vmService.GetExternalLink(vmId);
+            return new JsonResult(virtualMachinesForSandbox);
+        }
     }
 }
