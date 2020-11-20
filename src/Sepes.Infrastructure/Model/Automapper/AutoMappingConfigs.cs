@@ -59,7 +59,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                         src.Sandbox.Name
                     );
                 })
-                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id));
+                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id))
+                .ForMember(dest => dest.StudyId, source => source.MapFrom(x => x.Sandbox.StudyId));
 
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
