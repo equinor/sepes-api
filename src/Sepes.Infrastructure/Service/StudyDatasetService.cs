@@ -42,23 +42,7 @@ namespace Sepes.Infrastructure.Service
             var datasetDto = _mapper.Map<StudyDatasetDto>(studyDatasetRelation.Dataset);
 
             return datasetDto;
-        }
-
-        async Task<Dataset> GetDatasetOrThrowAsync(int id)
-        {
-            var datasetFromDb = await _db.Datasets
-                .Where(ds => ds.StudyId == null)
-                .Include(s => s. StudyDatasets)
-                .ThenInclude(sd=> sd.Study)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (datasetFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("Dataset", id);
-            }
-
-            return datasetFromDb;
-        }
+        }    
 
         public async Task<StudyDto> AddDatasetToStudyAsync(int studyId, int datasetId)
         {

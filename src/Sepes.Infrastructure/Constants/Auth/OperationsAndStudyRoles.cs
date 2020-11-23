@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Constants
 {
-    public static class UserOperationsAndRequiredRoles
+    public static class OperationsAndStudyRoles
     {
         static Dictionary<UserOperations, HashSet<string>> _operations;
 
@@ -44,8 +44,6 @@ namespace Sepes.Infrastructure.Constants
             return Operations[operation];
         }
     }
-
-
 
     public class OperationsAndRoles
     {
