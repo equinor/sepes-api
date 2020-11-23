@@ -76,7 +76,7 @@ namespace Sepes.Infrastructure.Service
             await SetPermissions(studyDetailsDto);
        
 
-            foreach (var curDs in studyDto.Datasets)
+            foreach (var curDs in studyDetailsDto.Datasets)
             {
                 curDs.SandboxDatasets = curDs.SandboxDatasets.Where(sd => sd.StudyId == studyId).ToList();
             }
