@@ -42,9 +42,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, DataSetsForStudyDto>();
+            CreateMap<Dataset, StudyDatasetDto>();
 
-            CreateMap<StudyDataset, DataSetsForStudyDto>()
+            CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
                 .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))

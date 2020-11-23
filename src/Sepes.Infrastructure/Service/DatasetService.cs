@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,23 +52,7 @@ namespace Sepes.Infrastructure.Service
 
             return datasetDto;
         }
-
-        public async Task<DataSetsForStudyDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead);
-
-            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
-
-            if (studyDatasetRelation == null)
-            {
-                throw NotFoundException.CreateForEntity("Dataset", datasetId);
-            }
-
-            var datasetDto = _mapper.Map<DataSetsForStudyDto>(studyDatasetRelation.Dataset);
-
-            return datasetDto;
-        }
-
+       
         async Task<Dataset> GetDatasetOrThrowAsync(int id)
         {
             var datasetFromDb = await _db.Datasets
@@ -86,45 +67,8 @@ namespace Sepes.Infrastructure.Service
             }
 
             return datasetFromDb;
-        }
-
-       
-
-        public async Task<StudyDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset, true);
-            PerformUsualTestForPostedDatasets(newDataset);
-            var dataset = _mapper.Map<Dataset>(newDataset);
-            dataset.StudyId = studyId;
-            await _db.Datasets.AddAsync(dataset);
-
-            // Create new linking table
-            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
-            await _db.StudyDatasets.AddAsync(studyDataset);
-            await _db.SaveChangesAsync();
-
-            return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
-        }
-
-        void PerformUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
-        {
-            if (String.IsNullOrWhiteSpace(datasetDto.Name))
-            {
-                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Name}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Classification))
-            {
-                throw new ArgumentException($"Field Dataset.Classification is required. Current value: {datasetDto.Classification}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Location))
-            {
-                throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
-            {
-                throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
-            }
-        }
+        }       
+        
 
         void PerformUsualTestForPostedDatasets(DatasetDto datasetDto)
         {

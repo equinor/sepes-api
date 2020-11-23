@@ -15,7 +15,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
+    [Authorize]
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
@@ -27,7 +27,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet]
-        [Authorize(Roles = AppRoles.Admin)]
+        [Authorize]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
         {
             var studies = await _studyService.GetStudyListAsync(excludeHidden);
@@ -38,9 +38,7 @@ namespace Sepes.RestApi.Controller
         [Authorize]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
-
             var study = await _studyService.GetStudyDetailsDtoByIdAsync(studyId, UserOperations.StudyRead);
-
             return new JsonResult(study);
         }
 
@@ -51,14 +49,6 @@ namespace Sepes.RestApi.Controller
             var study = await _studyService.CreateStudyAsync(newStudy);
             return new JsonResult(study);
         }
-
-        //[HttpPost()]
-        //[Consumes(MediaTypeNames.Application.Json, "multipart/form-data")]
-        //public async Task<IActionResult> CreateStudyWithPicture(StudyDto newStudy, IFormFile studyLogo)
-        //{
-        //    var study = await _studyService.CreateStudyAsync(newStudy, studyLogo);
-        //    return new JsonResult(study);
-        //}
 
         [HttpDelete("{studyId}")]
         [Authorize(Roles = AppRoles.Admin)]
@@ -71,8 +61,6 @@ namespace Sepes.RestApi.Controller
 
         [HttpPut("{studyId}/details")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [Authorize]
-        //TODO: Must also be possible for sponsor rep and other roles
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
             var updatedStudy = await _studyService.UpdateStudyDetailsAsync(studyId, study);
@@ -83,8 +71,6 @@ namespace Sepes.RestApi.Controller
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
-        [Authorize]
-        //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
             var updatedStudy = await _studyService.AddLogoAsync(studyId, studyLogo);
@@ -94,7 +80,6 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}/logo")]
         [Consumes(MediaTypeNames.Application.Json)]
         [Produces(MediaTypeNames.Application.Octet)]
-        [Authorize]
         // For local development, this method requires a running instance of Azure Storage Emulator
         public async Task<IActionResult> GetLogo(int studyId)
         {

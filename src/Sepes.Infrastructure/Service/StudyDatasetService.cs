@@ -28,9 +28,9 @@ namespace Sepes.Infrastructure.Service
         }         
 
 
-        public async Task<DataSetsForStudyDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
+        public async Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead, true);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            var datasetDto = _mapper.Map<DataSetsForStudyDto>(studyDatasetRelation.Dataset);
+            var datasetDto = _mapper.Map<StudyDatasetDto>(studyDatasetRelation.Dataset);
 
             return datasetDto;
         }
@@ -84,7 +84,7 @@ namespace Sepes.Infrastructure.Service
             return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
         }
 
-        public async Task<IEnumerable<DataSetsForStudyDto>> GetDatasetsForStudy(int studyId)
+        public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.SandboxEdit, true);
 
@@ -98,7 +98,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntityCustomDescr("StudyDatasets", $"studyId {studyId}");
             }
 
-            var datasetDtos = _mapper.Map<IEnumerable<DataSetsForStudyDto>>(studyFromDb.StudyDatasets);
+            var datasetDtos = _mapper.Map<IEnumerable<StudyDatasetDto>>(studyFromDb.StudyDatasets);
 
             return datasetDtos;
         }
@@ -137,7 +137,7 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-        public async Task<StudyDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset)
+        public async Task<StudyDatasetDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset, true);
             PerformUsualTestForPostedDatasets(newDataset);
@@ -150,7 +150,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
+            return await GetDatasetByStudyIdAndDatasetIdAsync(studyId, studyDataset.DatasetId);
         }
 
         void PerformUsualTestForPostedDatasets(StudySpecificDatasetDto datasetDto)
@@ -174,7 +174,7 @@ namespace Sepes.Infrastructure.Service
         }      
       
 
-        public async Task<DataSetsForStudyDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
+        public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
         {
             PerformUsualTestForPostedDatasets(updatedDataset);
             var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId);

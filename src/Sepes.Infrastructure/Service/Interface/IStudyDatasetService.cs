@@ -6,13 +6,15 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyDatasetService
-    { 
-        Task<IEnumerable<DataSetsForStudyDto>> GetDatasetsForStudy(int studyId);
-        Task<DataSetsForStudyDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto newDataset);
-        Task<DataSetsForStudyDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId);
-
+    {
+        //Add remove existing datasets to Study
         Task<StudyDto> AddDatasetToStudyAsync(int studyId, int datasetId);
         Task<StudyDto> RemoveDatasetFromStudyAsync(int studyId, int datasetId);
-        Task<StudyDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset);
+
+        //Study specific data set operations
+        Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId);
+        Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto newDataset);
+        Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId);     
+        Task<StudyDatasetDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset);      
     }
 }
