@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
         {
             await ValidateRuleThrowIfInvalid(vmId, input);
 
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get existing rules from VM settings
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -80,7 +80,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -101,7 +101,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -171,7 +171,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -206,7 +206,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -216,7 +216,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vm = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);

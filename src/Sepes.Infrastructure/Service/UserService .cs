@@ -87,10 +87,24 @@ namespace Sepes.Infrastructure.Service
             //Reload information that comes from principal;
             var principal = _principalService.GetPrincipal();
 
-            userDto.Admin = principal.IsInRole(AppRoles.Admin);
-            userDto.Sponsor = principal.IsInRole(AppRoles.Sponsor);
-            userDto.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
-     
+            if (principal.IsInRole(AppRoles.Admin))
+            {
+                userDto.Admin = true;
+                userDto.AppRoles.Add(AppRoles.Admin);
+            }
+
+            if (principal.IsInRole(AppRoles.Sponsor))
+            {
+                userDto.Sponsor = true;
+                userDto.AppRoles.Add(AppRoles.Sponsor);
+            }
+
+            if (principal.IsInRole(AppRoles.DatasetAdmin))
+            {
+                userDto.DatasetAdmin = true;
+                userDto.AppRoles.Add(AppRoles.DatasetAdmin);
+            }
+
             return userDto;
         }
 

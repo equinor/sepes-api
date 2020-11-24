@@ -19,10 +19,12 @@ namespace Sepes.Infrastructure.Constants
         {
             if (_operations == null)
             {
+                
                 _operations = new Dictionary<Tuple<UserOperations, bool>, HashSet<string>>();
-                AddRole(UserOperations.StudyRead, true, AppRoles.Admin, AppRoles.Sponsor);
-                AddRole(UserOperations.StudyCreate, false, AppRoles.Admin, AppRoles.Sponsor);
-                AddRole(UserOperations.StudyDelete, true, AppRoles.Admin, AppRoles.Sponsor);
+                AddRole(UserOperations.Study_Read, false, AppRoles.Admin);
+                AddRole(UserOperations.Study_Read, true, AppRoles.Admin, AppRoles.Sponsor);
+                AddRole(UserOperations.Study_Create, false, AppRoles.Admin, AppRoles.Sponsor);
+                AddRole(UserOperations.Study_Delete, true, AppRoles.Admin, AppRoles.Sponsor);
             }
         }
 

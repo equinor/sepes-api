@@ -2,22 +2,23 @@
 {
     public enum UserOperations
     {
-        //Study overview
-        StudyRead,
+        //STUDY
+        Study_Create,
+        Study_Read,
+        Study_Close,
+        Study_Delete,
+        Study_Update_Metadata,
+        Study_Read_ResultsAndLearnings,
+        Study_Update_ResultsAndLearnings,
 
-        //Study details and editation
-        StudyCreate,
-        StudyUpdateMetadata,
+        Study_AddRemove_Dataset,
+        Study_AddRemove_Participant,
 
-        StudyAddRemoveDataset,
-        StudyAddRemoveParticipant,
-        StudyAddRemoveSandbox,
+        //Sandbox
+        Study_Crud_Sandbox,
 
-        StudyClose,
-        StudyDelete,
 
         //Sandbox details and editation
-        SandboxEdit,
         SandboxLock,
         SandboxUnlock,
         EditRules,

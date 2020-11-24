@@ -1,26 +1,52 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.Auth;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Model;
+﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
-using System;
+using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Constants.Auth
 {
-    public static class StudyAccessUtil
+    public enum PermissionLevel { AuthorizedUser, AppRoles, StudySpecificRole }
+
+    public class OperationWithPermissionTwo
     {
+        public UserOperations Operation { get; set; }
 
-        //Permissions
-        //AllowedOperatopns
-        //Operations
-        //App roles
-        //Study participant roles
+        public PermissionLevel Level { get; set; }
 
-        static List<OperationWithPermissionTwo> AllowedOperations = new List<OperationWithPermissionTwo>() {
+        public bool AppliesOnlyToNonHiddenStudies { get; set; }
+
+        public bool AppliesOnlyIfUserIsStudyOwner { get; set; }
+
+        public HashSet<string> AllowedForRoles { get; set; }
+
+
+        public static OperationWithPermissionTwo CreateForAuthorizedUser(UserOperations operation, bool appliesOnlyToNonHiddenStudies)
+        {
+            return new OperationWithPermissionTwo() { Operation = operation, Level = PermissionLevel.AuthorizedUser };
+        }
+
+        public static OperationWithPermissionTwo CreateForAppRole(UserOperations operation, bool appliesOnlyToNonHiddenStudies, bool appliesOnlyIfUserIsStudyOwner, params string[] allowedForRoles)
+        {
+            return new OperationWithPermissionTwo() { Operation = operation, Level = PermissionLevel.AppRoles, AllowedForRoles = new HashSet<string>(allowedForRoles), AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies, AppliesOnlyIfUserIsStudyOwner = appliesOnlyIfUserIsStudyOwner };
+        }
+
+        public static OperationWithPermissionTwo CreateForStudyRole(UserOperations operation, bool appliesOnlyToNonHiddenStudies, params string[] allowedForRoles)
+        {
+            return new OperationWithPermissionTwo() { Operation = operation, Level = PermissionLevel.StudySpecificRole, AllowedForRoles = new HashSet<string>(allowedForRoles), AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies };
+        }
+    }
+
+    public static class TestThisTwo
+    {
+        public static HashSet<string> Combine(params string[] args)
+        {
+            return new HashSet<string>(args);
+        }
+
+        static List<OperationWithPermissionTwo> OperationsAndRoles = new List<OperationWithPermissionTwo>()
+        {
             OperationWithPermissionTwo.CreateForAuthorizedUser(UserOperations.Study_Read, appliesOnlyToNonHiddenStudies: true), //As a authorized user, you can read any non-hidden Study
             OperationWithPermissionTwo.CreateForAppRole(UserOperations.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin), //As a admin, you can read any Study, hidden or not, 
             OperationWithPermissionTwo.CreateForStudyRole(UserOperations.Study_Read, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.StudyViewer ), //As a admin, you can read any Study, hidden or not, 
@@ -101,7 +127,7 @@ namespace Sepes.Infrastructure.Util
 
         static IEnumerable<OperationWithPermissionTwo> ForOperationQueryable(UserOperations operation)
         {
-            return AllowedOperations.Where(or => or.Operation == operation);
+            return OperationsAndRoles.Where(or => or.Operation == operation);
         }
 
         public static bool TestIfAllowedWithoutRoles(IEnumerable<OperationWithPermissionTwo> relevantOperations, Study study = null)
@@ -143,7 +169,7 @@ namespace Sepes.Infrastructure.Util
 
             if (study.Restricted)
             {
-                allowedForAppRolesQueryable = allowedForAppRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies == false);
+                allowedForAppRolesQueryable = allowedForAppRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies = false);
             }
 
             if (allowedForAppRolesQueryable.Any())
@@ -200,174 +226,6 @@ namespace Sepes.Infrastructure.Util
 
             return false;
         }
-
-
-        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
-        {
-            if (await HasAccessToOperationForStudy(userService, study, operation))
-            {
-                return study;
-            }
-
-            throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
-        }
-        //public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
-        //{
-
-        //    if (study.Restricted == false && CheckOperationAgainstThoseWhoAreOpenForAll(userService, study, operation))
-        //    {
-        //        return study;
-        //    }
-
-        //    if (CheckOperationAgainstApplicationRoles(userService, study, operation))
-        //    {
-        //        return study;
-        //    }
-
-        //    await CheckStudyRolesThrowIfNotAllowed(userService, study, operation);
-
-        //    return study;
-        //}
-
-        //public static bool CheckOperationAgainstThoseWhoAreOpenForAll(IUserService userService, Study study, UserOperations operation)
-        //{
-        //    var operationsOpenToEverybody = OperationsForAnyUser.GetOperations();
-
-        //    return (operationsOpenToEverybody.Contains(operation));
-        //}
-
-        //public static bool CheckOperationAgainstApplicationRoles(IUserService userService, Study study, UserOperations operation)
-        //{
-        //    var requiredRoles = GetRequiredApplicationRoles(OperationsAndApplicationRoles.GetOperations(), operation, study.Restricted);
-
-
-        //    return UserHasRequiredApplicationRole(userService, requiredRoles);
-
-
-
-        //}
-
-        //public static HashSet<string> GetRequiredApplicationRoles(Dictionary<Tuple<UserOperations, bool>, HashSet<string>> operationsForRoles, UserOperations operation, bool studyIsHidden)
-        //{
-
-        //    HashSet<string> roleSet = null;
-
-        //    //Case, study is hidden
-        //    //Can use: false
-        //    //Study is open
-        //    //Can use: false and true, true first because it's more specific?
-
-
-        //    if (studyIsHidden)  //Study is hidden, can only use entries where "onlyForNonHidden" is false
-        //    {
-        //        if (operationsForRoles.TryGetValue(new Tuple<UserOperations, bool>(operation, false), out roleSet))
-        //        {
-        //            return roleSet;
-        //        }
-
-        //    }
-        //    else  //Study is NOT hidden, can use entries where "onlyForNonHidden" is true or false, pick true first because they are more specific
-        //    {
-        //        if (operationsForRoles.TryGetValue(new Tuple<UserOperations, bool>(operation, true), out roleSet))
-        //        {
-        //            return roleSet;
-        //        }
-        //        else if (operationsForRoles.TryGetValue(new Tuple<UserOperations, bool>(operation, false), out roleSet))
-        //        {
-        //            return roleSet;
-        //        }
-        //    }
-
-        //    return null;
-        //}
-
-        public static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
-        {
-            if (currentUser == null)
-            {
-                throw new ArgumentNullException("currentUser");
-            }
-
-            if (appRoles == null || appRoles.Count() == 0)
-            {
-                throw new ArgumentNullException("requiredRoles");
-            }
-
-            if (currentUser.AppRoles == null)
-            {
-                return false;
-            }
-
-            return currentUser.AppRoles.Intersect(appRoles).Any();
-        }
-
-        public static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, params string[] appRoles)
-        {
-            return UserHasAnyOfTheseAppRoles(currentUser, new HashSet<string>(appRoles));
-        }
-
-        static bool UserHasRequiredApplicationRole(IUserService userService, HashSet<string> requiredRoles)
-        {
-            if (requiredRoles == null || requiredRoles.Count == 0)
-            {
-                return false;
-            }
-
-            var currentUser = userService.GetCurrentUser();
-
-            foreach (var curRole in requiredRoles)
-            {
-                if (curRole == AppRoles.Admin && currentUser.Admin)
-                {
-                    return true;
-                }
-                else if (curRole == AppRoles.Sponsor && currentUser.Sponsor)
-                {
-                    return true;
-                }
-                else if (curRole == AppRoles.DatasetAdmin && currentUser.DatasetAdmin)
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        //public static async Task CheckStudyRolesThrowIfNotAllowed(IUserService userService, Study study, UserOperations operation)
-        //{
-        //    var requiredRoles = OperationsAndStudyRoles.GetRequiredRoles(operation);
-
-        //    if ((await UserHasAnyOfTheseStudyRoles(userService, study, requiredRoles)) == false)
-        //    {
-        //        throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
-        //    }
-        //}
-
-        public static async Task<bool> UserHasAnyOfTheseStudyRoles(IUserService userService, Study study, params string[] requiredRoles)
-        {
-            var currentUser = await userService.GetCurrentUserFromDbAsync();
-            return UserHasAnyOfTheseStudyRoles(currentUser.Id, study, requiredRoles);
-        }
-
-        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles)
-        {
-            foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
-            {
-                if (requiredRoles.Contains(curParticipant.RoleName))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, params string[] requiredRoles)
-        {
-            var requiredRolesLookup = new HashSet<string>(requiredRoles);
-
-            return UserHasAnyOfTheseStudyRoles(userId, study, requiredRolesLookup);
-        }
     }
+
 }

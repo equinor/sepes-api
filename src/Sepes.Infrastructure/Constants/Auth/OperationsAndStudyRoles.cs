@@ -17,20 +17,20 @@ namespace Sepes.Infrastructure.Constants
             {
                 _operations = new Dictionary<UserOperations, HashSet<string>>() {
 
-                    { UserOperations.StudyCreate, new HashSet<string> {  } }, 
+                    { UserOperations.Study_Create, new HashSet<string> {  } }, 
                     //Study overview and read
-                    { UserOperations.StudyRead, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.SponsorRep } }, 
+                    { UserOperations.Study_Read, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.SponsorRep } }, 
                     
                     //Study details and editation
-                    { UserOperations.StudyUpdateMetadata, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
-                    { UserOperations.StudyAddRemoveDataset, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
-                    { UserOperations.StudyAddRemoveParticipant, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
-                    { UserOperations.StudyAddRemoveSandbox, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
-                    { UserOperations.StudyClose, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
-                    { UserOperations.StudyDelete, new HashSet<string> { StudyRoles.StudyOwner } },
+                    { UserOperations.Study_Update_Metadata, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
+                    { UserOperations.Study_AddRemove_Dataset, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
+                    { UserOperations.Study_AddRemove_Participant, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
+                    { UserOperations.Study_Crud_Sandbox, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
+                    { UserOperations.Study_Close, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep } },
+                    { UserOperations.Study_Delete, new HashSet<string> { StudyRoles.StudyOwner } },
                      
                     //Sandbox details and editation
-                    { UserOperations.SandboxEdit, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
+                    { UserOperations.Study_Crud_Sandbox, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
                     { UserOperations.SandboxLock, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } },
                     { UserOperations.SandboxUnlock, new HashSet<string> { StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.VendorAdmin } }
 
@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Constants
 
         public OperationsAndRoles()
         {
-            AddRole(UserOperations.StudyCreate, false, AppRoles.Admin, AppRoles.Sponsor);
+            AddRole(UserOperations.Study_Create, false, AppRoles.Admin, AppRoles.Sponsor);
         }
 
         void AddRole(UserOperations operation, bool onlyForNonRestricted, params string[] allowedForRoles)

@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Read, true);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
@@ -47,7 +47,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddDatasetToStudyAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset); 
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Dataset); 
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             if (datasetFromDb == null)
@@ -65,12 +65,12 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
+            return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.Study_AddRemove_Dataset);
         }
 
         public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.SandboxEdit, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Crud_Sandbox, true);
 
             if (studyFromDb == null)
             {
@@ -89,7 +89,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> RemoveDatasetFromStudyAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Dataset, true);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             //Does dataset exist?
@@ -117,13 +117,13 @@ namespace Sepes.Infrastructure.Service
             }
 
             await _db.SaveChangesAsync();
-            var retVal = await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.StudyAddRemoveDataset);
+            var retVal = await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperations.Study_AddRemove_Dataset);
             return retVal;
         }
 
         public async Task<StudyDatasetDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveDataset, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Dataset, true);
             PerformUsualTestForPostedDatasets(newDataset);
             var dataset = _mapper.Map<Dataset>(newDataset);
             dataset.StudyId = studyId;
@@ -225,7 +225,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyRead, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Read, true);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 

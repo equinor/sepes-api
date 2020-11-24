@@ -38,7 +38,7 @@ namespace Sepes.RestApi.Controller
         [Authorize]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
-            var study = await _studyService.GetStudyDetailsDtoByIdAsync(studyId, UserOperations.StudyRead);
+            var study = await _studyService.GetStudyDetailsDtoByIdAsync(studyId, UserOperations.Study_Read);
             return new JsonResult(study);
         }
 

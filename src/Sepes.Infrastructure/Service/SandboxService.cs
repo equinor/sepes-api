@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDto> GetAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.Study_Read);
 
             return _mapper.Map<SandboxDto>(sandboxFromDb);
         }
@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDto>> GetForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Crud_Sandbox);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Verify that study with that id exists
-            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Crud_Sandbox);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))
@@ -111,7 +111,7 @@ namespace Sepes.Infrastructure.Service
                 try
                 {
                     // Get Dtos for arguments to sandboxWorkerService
-                    var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.StudyAddRemoveSandbox);
+                    var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperations.Study_Crud_Sandbox);
                     var sandboxDto = await GetSandboxDtoAsync(createdSandbox.Id);
 
                     var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
@@ -140,7 +140,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.SandboxEdit)
+        async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperations userOperation = UserOperations.Study_Crud_Sandbox)
         {
             var sandboxFromDb = await _db.Sandboxes
                 .Include(sb => sb.SandboxDatasets)
@@ -251,7 +251,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.Study_Crud_Sandbox);
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
@@ -270,7 +270,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
 
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveSandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_Crud_Sandbox);
             var sandboxFromDb = await _db.Sandboxes.Include(sb => sb.Resources).ThenInclude(r => r.Operations).FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
 
             if (sandboxFromDb == null)
@@ -349,7 +349,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ReScheduleSandboxCreation(int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.SandboxEdit);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperations.Study_Crud_Sandbox);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxFromDb.Id;

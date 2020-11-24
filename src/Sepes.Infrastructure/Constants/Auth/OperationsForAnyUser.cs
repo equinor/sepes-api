@@ -17,8 +17,9 @@ namespace Sepes.Infrastructure.Constants
         {
             if (_operations == null)
             {
+                //Telling the system what a unauthorized user can do
                 _operations = new HashSet<UserOperations>();
-                _operations.Add(UserOperations.StudyRead);
+                _operations.Add(UserOperations.Study_Read);
             }
         }
 

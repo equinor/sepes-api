@@ -71,7 +71,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await _sandboxService.GetAsync(sandboxId);
-            var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperations.SandboxEdit);
+            var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperations.Study_Crud_Sandbox);
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
 
@@ -231,7 +231,7 @@ namespace Sepes.Infrastructure.Service
 
         async public Task<VmExternalLink> GetExternalLink(int vmId)
         {
-            var vmResource = await GetVmResourceEntry(vmId, UserOperations.SandboxEdit);
+            var vmResource = await GetVmResourceEntry(vmId, UserOperations.Study_Crud_Sandbox);
             var vmExternalLink = new VmExternalLink();
             vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
             vmExternalLink.Id = vmId;

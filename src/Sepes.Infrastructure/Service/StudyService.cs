@@ -107,14 +107,14 @@ namespace Sepes.Infrastructure.Service
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
             var newStudyId = await Add(studyDb);
-            return await GetStudyDtoByIdAsync(newStudyId, UserOperations.StudyRead);
+            return await GetStudyDtoByIdAsync(newStudyId, UserOperations.Study_Read);
         }
 
         public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata, false);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.Study_Update_Metadata, false);
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -152,12 +152,12 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
+            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.Study_Update_Metadata);
         }
       
         public async Task DeleteStudyAsync(int studyId)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyDelete, false);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.Study_Delete, false);
 
             foreach(var curSandbox in studyFromDb.Sandboxes)
             {
@@ -196,7 +196,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyUpdateMetadata, false); 
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.Study_Update_Metadata, false); 
 
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -213,14 +213,14 @@ namespace Sepes.Infrastructure.Service
                 _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
-            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.StudyUpdateMetadata);
+            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperations.Study_Update_Metadata);
         }           
 
         public async Task<LogoResponseDto> GetLogoAsync(int studyId)
         {
             try
             {
-                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.StudyRead, false);             
+                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperations.Study_Read, false);             
                 var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _azureBlobStorageService.GetImageFromBlobAsync(studyFromDb.LogoUrl) };              
            
                 return response;
