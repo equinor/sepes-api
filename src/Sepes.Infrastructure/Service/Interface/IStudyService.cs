@@ -10,9 +10,9 @@ namespace Sepes.Infrastructure.Service.Interface
     public interface IStudyService
     {        
         Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null);
-        Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperations userOperation);
+        Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation);
 
-        Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperations userOperation);
+        Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperation userOperation);
 
         Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
 

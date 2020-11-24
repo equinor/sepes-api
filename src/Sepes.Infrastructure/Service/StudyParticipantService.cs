@@ -78,7 +78,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"The Study Owner role cannot be deleted");
             }
 
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Participant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
             var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
             if (studyParticipantFromDb == null)
@@ -111,7 +111,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Participant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
 
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
@@ -134,7 +134,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {          
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.Study_AddRemove_Participant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
 
             var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
 

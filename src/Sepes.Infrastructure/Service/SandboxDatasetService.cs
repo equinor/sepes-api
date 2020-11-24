@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.Study_Crud_Sandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
             var datasetsFromDb = await _db.SandboxDatasets
                 .Include(sd=> sd.Dataset)
@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Add(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.Study_Crud_Sandbox);   
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);   
        
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
@@ -68,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Remove(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.Study_Crud_Sandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
             var sandboxDataset = await _db.SandboxDatasets
                 .FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 

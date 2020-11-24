@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Constants
 {
-    public enum UserOperations
+    public enum UserOperation
     {
         //STUDY
         Study_Create,

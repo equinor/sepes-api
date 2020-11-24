@@ -29,19 +29,19 @@ namespace Sepes.Infrastructure.Service.Queries
             return studyFromDb;
         }
 
-        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation, bool withIncludes = false)
+        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
         {
             var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
             return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
         }
 
-        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperations operation)
+        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation)
         {
             var studyFromDb = await GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
             return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
         }
 
-        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperations operation, bool withIncludes = false)
+        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false)
         {
             var studyFromDb = await GetStudyByResourceIdOrThrowAsync(db, resourceId, withIncludes);
             return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);

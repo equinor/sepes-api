@@ -105,7 +105,7 @@ namespace Sepes.Tests.Services
             RefreshTestDb();
             IStudyService studyService = ServiceProvider.GetService<IStudyService>();
 
-            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperations.Study_Read));
+            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }
 
         [Theory]
@@ -137,7 +137,7 @@ namespace Sepes.Tests.Services
             int studyId = createdStudy.Id;
             await studyService.DeleteStudyAsync(studyId);
 
-            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(studyId, UserOperations.Study_Read));
+            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Read));
 
         }
 
