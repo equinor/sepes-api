@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
 
             if (studyDatasetRelation == null)
             {
-                throw NotFoundException.CreateForEntity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
             }
 
             var datasetDto = _mapper.Map<StudyDatasetDto>(studyDatasetRelation.Dataset);
@@ -60,8 +60,8 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Dataset with id {datasetId} is studySpecific, and cannot be linked using this method.");
             }
 
-            // Create new linking table
-            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = datasetFromDb };
+            // Create new entry in linking table
+            var studyDataset = new StudyDataset { Study = studyFromDb, Dataset = datasetFromDb };
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
             if (studyFromDb == null)
             {
@@ -161,7 +161,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto updatedDataset)
         {
             PerformUsualTestForPostedDatasets(updatedDataset);
-            var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId);
+            var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId, UserOperation.Study_AddRemove_Dataset);
+
             if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
             {
                 datasetFromDb.Name = updatedDataset.Name;
@@ -223,15 +224,15 @@ namespace Sepes.Infrastructure.Service
             return await GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetFromDb.Id);
         }
 
-        async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId)
+        async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId, UserOperation operation)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, operation, true);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
             if (studyDatasetRelation == null)
             {
-                throw NotFoundException.CreateForEntity("Dataset", datasetId);
+                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
             }
 
             return studyDatasetRelation.Dataset;

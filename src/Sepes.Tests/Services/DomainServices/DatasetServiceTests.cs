@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -126,7 +127,7 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             SeedTestDatabase(datasetId);
             var studyDto = AddStudyToTestDatabase(studyId);
-            var datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.AddDatasetToStudyAsync(providedStudyId, providedDatasetId));
         }
@@ -138,7 +139,7 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             SeedTestDatabase(datasetId);
             var studyDto = AddStudyToTestDatabase(studyId);
-            var datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
             await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
             var dataset = await datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
@@ -155,7 +156,7 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             SeedTestDatabase(datasetId);
             var studyDto = AddStudyToTestDatabase(studyId);
-            var datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
             await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.RemoveDatasetFromStudyAsync(providedStudyId, providedDatasetId));
@@ -168,7 +169,7 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             SeedTestDatabase(datasetId);
             var studyDto = AddStudyToTestDatabase(studyId);
-            var datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
             await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
             await datasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
@@ -182,7 +183,7 @@ namespace Sepes.Tests.Services
         public async void AddStudySpecificDatasetAsync_WithoutRequiredAttributes_ShouldFail(string name, string location, string classification)
         {
             RefreshTestDatabase();
-            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
             var createdStudy = await AddStudyToTestDatabase(1);
 

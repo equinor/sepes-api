@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
 
             var sizes = await AvailableSizes(sandbox.Region, cancellationToken);
 

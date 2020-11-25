@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
-          
+
 
             studiesDtos = _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, false);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
-            
+
             return studyDto;
         }
 
@@ -84,10 +84,10 @@ namespace Sepes.Infrastructure.Service
 
             return studyDetailsDto;
         }
-      
+
 
         public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
-        {          
+        {
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
@@ -141,24 +141,107 @@ namespace Sepes.Infrastructure.Service
 
             return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
         }
-      
+
+
+
+        public async Task CloseStudyAsync(int studyId)
+        {
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Close, true);
+
+            ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
+
+            await RemoveDatasets(studyFromDb.Id);
+
+            var currentUser = _userService.GetCurrentUser();
+            studyFromDb.Closed = true;
+            studyFromDb.ClosedBy = currentUser.UserName;
+            studyFromDb.ClosedAt = DateTime.UtcNow;
+
+            await _db.SaveChangesAsync();
+        }
+
         public async Task DeleteStudyAsync(int studyId)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Delete, false);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Delete, true);
 
-            foreach(var curSandbox in studyFromDb.Sandboxes)
-            {
-                if(curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
-                {
-                    throw new Exception($"Cannot delete study {studyId}, it has open sandboxes that must be deleted first");
-                }
-            }
+            ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
             if (!String.IsNullOrWhiteSpace(studyFromDb.LogoUrl))
             {
                 _ = _azureBlobStorageService.DeleteBlob(studyFromDb.LogoUrl);
             }
 
+            await RemoveDatasets(studyFromDb.Id);
+
+            var userEntriesForDeletedStudyParticipants = new HashSet<int>();
+
+            foreach (var curSandbox in studyFromDb.Sandboxes)
+            {
+                foreach (var curResource in curSandbox.Resources)
+                {
+                    foreach (var curOperation in curResource.Operations)
+                    {
+                        if (curOperation.DependsOnOperation != null)
+                        {
+                            if (_db.SandboxResourceOperations.Contains(curOperation.DependsOnOperation))
+                            {
+                                _db.SandboxResourceOperations.Remove(curOperation.DependsOnOperation);
+                            }
+                        }
+
+                        if (_db.SandboxResourceOperations.Contains(curOperation))
+                        {
+                            _db.SandboxResourceOperations.Remove(curOperation);
+                        }
+                    }
+
+                    _db.SandboxResources.Remove(curResource);
+                }
+
+                _db.Sandboxes.Remove(curSandbox);
+            }
+
+            foreach (var curParticipant in studyFromDb.StudyParticipants)
+            {
+                if (!userEntriesForDeletedStudyParticipants.Contains(curParticipant.UserId))
+                {
+                    userEntriesForDeletedStudyParticipants.Add(curParticipant.UserId);
+                }
+
+                _db.StudyParticipants.Remove(curParticipant);
+
+            }
+
+            await _db.SaveChangesAsync();
+
+            foreach (var curUserId in userEntriesForDeletedStudyParticipants)
+            {
+                var userEntry = await _db.Users.Include(u => u.StudyParticipants).FirstOrDefaultAsync(u => u.Id == curUserId);
+
+                if(userEntry != null)
+                {
+                    if(userEntry.StudyParticipants.Count == 0)
+                    {
+                        _db.Users.Remove(userEntry);
+                        await _db.SaveChangesAsync();
+                    }
+                }              
+            }
+        }
+
+        void ValidateStudyForCloseOrDeleteThrowIfNot(Study studyFromDb)
+        {
+            foreach (var curSandbox in studyFromDb.Sandboxes)
+            {
+                if (curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
+                {
+                    throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
+                }
+            }
+        }
+
+        async Task RemoveDatasets(int studyId)
+        {
             //Check if study contains studySpecific Datasets
             var studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyId == studyId).ToListAsync();
 
@@ -171,19 +254,12 @@ namespace Sepes.Infrastructure.Service
                     _db.Datasets.Remove(dataset);
                 }
             }
-
-            var currentUser = _userService.GetCurrentUser();
-            studyFromDb.Deleted = true;
-            studyFromDb.DeletedBy = currentUser.UserName;
-            studyFromDb.DeletedAt = DateTime.UtcNow;
-            
-            await _db.SaveChangesAsync();
         }
 
         public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false); 
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
 
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -201,15 +277,15 @@ namespace Sepes.Infrastructure.Service
             }
 
             return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
-        }           
+        }
 
         public async Task<LogoResponseDto> GetLogoAsync(int studyId)
         {
             try
             {
-                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read, false);             
-                var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _azureBlobStorageService.GetImageFromBlobAsync(studyFromDb.LogoUrl) };              
-           
+                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read, false);
+                var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _azureBlobStorageService.GetImageFromBlobAsync(studyFromDb.LogoUrl) };
+
                 return response;
             }
             catch (Exception ex)
@@ -236,6 +312,6 @@ namespace Sepes.Infrastructure.Service
         {
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }      
+        }
     }
 }

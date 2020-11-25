@@ -33,7 +33,8 @@ namespace Sepes.Infrastructure.Service
         readonly IProvisioningQueueService _provisioningQueueService;
 
 
-        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger, IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService provisioningQueueService)
+        public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
+            IUserService userService, IRequestIdService requestIdService, IStudyService studyService, ISandboxResourceService sandboxResourceService, IProvisioningQueueService provisioningQueueService)
         {
             _db = db;
             _mapper = mapper;
@@ -46,19 +47,26 @@ namespace Sepes.Infrastructure.Service
             _config = config;
         }
 
-        public async Task<SandboxDto> GetAsync(int sandboxId)
+        public async Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, userOperation, false);
             var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
+            return sandboxDto;
+        }
+
+        public async Task<SandboxDetailsDto> GetSandboxDetailsAsync(int sandboxId)
+        {
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
+            var sandboxDto = _mapper.Map<SandboxDetailsDto>(sandboxFromDb);
 
             await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions);
 
             return sandboxDto;
         }      
 
-        public async Task<IEnumerable<SandboxDto>> GetForStudyAsync(int studyId)
+        public async Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox, true);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
@@ -66,7 +74,7 @@ namespace Sepes.Infrastructure.Service
             return sandboxDTOs;
         }
 
-        public async Task<SandboxDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
+        public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
             Sandbox createdSandbox = null;
 
@@ -105,8 +113,9 @@ namespace Sepes.Infrastructure.Service
                 try
                 {
                     // Get Dtos for arguments to sandboxWorkerService
+                    //TODO: Can get on or the other via the other, don't need two?
                     var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
-                    var sandboxDto = await GetAsync(createdSandbox.Id);
+                    var sandboxDto = await GetAsync(createdSandbox.Id, UserOperation.Study_Crud_Sandbox);
 
                     var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
 
@@ -125,7 +134,7 @@ namespace Sepes.Infrastructure.Service
                     throw;
                 }
 
-                return await GetAsync(createdSandbox.Id);
+                return await GetSandboxDetailsAsync(createdSandbox.Id);
             }
             catch (Exception ex)
             {
@@ -134,27 +143,11 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation = UserOperation.Study_Crud_Sandbox)
+        async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes)
         {
-            var sandboxFromDb = await _db.Sandboxes
-                .Include(sb => sb.SandboxDatasets)
-                    .ThenInclude(sd => sd.Dataset)
-                .Include(sb => sb.Resources)
-                    .ThenInclude(r => r.Operations)
-                .FirstOrDefaultAsync(sb => sb.Id == sandboxId && (!sb.Deleted.HasValue || !sb.Deleted.Value));
-
-            if (sandboxFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
-            }
-
-            //Ensure user is allowed to perform this action
-            _ = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, sandboxFromDb.StudyId, userOperation);
-
-            return sandboxFromDb;
-        }
-
-     
+            var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, userOperation, withIncludes);
+            return sandbox;
+        }     
 
         async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
         {
@@ -241,7 +234,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
@@ -256,7 +249,7 @@ namespace Sepes.Infrastructure.Service
             return resourcesMapped;
         }
 
-        public async Task<SandboxDto> DeleteAsync(int studyId, int sandboxId)
+        public async Task DeleteAsync(int studyId, int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
 
@@ -330,16 +323,14 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
                 await _db.SaveChangesAsync();
-            }
+            }         
 
-            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
-
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
+            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);         
         }
 
         public async Task ReScheduleSandboxCreation(int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxFromDb.Id;
@@ -424,11 +415,6 @@ namespace Sepes.Infrastructure.Service
             logMessage += $" | {logText}";
 
             return logMessage;
-        }
-
-        //public Task<IEnumerable<SandboxTemplateDto>> GetTemplatesAsync()
-        //{
-        //    return templates;          
-        //}
+        }  
     }
 }

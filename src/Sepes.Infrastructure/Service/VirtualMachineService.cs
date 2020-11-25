@@ -20,7 +20,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineService : IVirtualMachineService
@@ -70,7 +69,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            var sandbox = await _sandboxService.GetAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
             var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperation.Study_Crud_Sandbox);
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
@@ -113,6 +112,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> DeleteAsync(int id)
         {
+            _ = GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
+
             var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
 
             var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
@@ -120,15 +121,9 @@ namespace Sepes.Infrastructure.Service
             return dtoMappedFromResource;
         }
 
-
-        public string CalculateName(string studyName, string sandboxName, string userPrefix)
-        {
-            return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
-        }
-
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Read);
 
             var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
 
@@ -139,8 +134,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
-            var vmResourceQueryable = SandboxResourceQueries.GetSandboxResource(_db, vmId);
-            var vmResource = await vmResourceQueryable.SingleOrDefaultAsync();
+
+            var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
 
             if (vmResource == null)
             {
@@ -163,33 +158,24 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
+        public async Task<VmExternalLink> GetExternalLink(int vmId)
+        {
+            var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+            var vmExternalLink = new VmExternalLink();
+            vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
+            vmExternalLink.Id = vmId;
+
+            return vmExternalLink;
+        }
+
         async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperation operation)
         {
             _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
 
             return vmResource;
-        }
-
-        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
-        {
-            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);
-        }
-
-        void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
-        {
-            if (rules != null)
-            {
-                foreach (var curExistingRule in rules)
-                {
-                    if (AzureVmUtil.IsSameRule(ruleToCompare, curExistingRule))
-                    {
-                        throw new Exception($"Same rule allready exists");
-                    }
-                }
-            }
-        }
-
+        } 
+        
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
@@ -229,14 +215,6 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async public Task<VmExternalLink> GetExternalLink(int vmId)
-        {
-            var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-            var vmExternalLink = new VmExternalLink();
-            vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
-            vmExternalLink.Id = vmId;
 
-            return vmExternalLink;
-        }
     }
 }

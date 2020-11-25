@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Queries
     {
         public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
-            return db.Studies.Where(s => s.Deleted.HasValue == false || (s.Deleted.HasValue && s.Deleted.Value == false));
+            return db.Studies.Where(s => s.Closed.HasValue == false || (s.Closed.HasValue && s.Closed.Value == false));
         }
 
         public static IQueryable<Study> UnHiddenStudiesQueryable(SepesDbContext db)

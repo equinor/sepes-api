@@ -18,11 +18,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
 
+        Task CloseStudyAsync(int studyId);
         Task DeleteStudyAsync(int studyId);
 
         Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
-
-        //Task<byte[]> GetLogoAsync(int id);
 
         Task<LogoResponseDto> GetLogoAsync(int id);
     }

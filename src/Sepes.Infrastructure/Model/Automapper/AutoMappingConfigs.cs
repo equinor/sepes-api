@@ -73,10 +73,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
-                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
-                 .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
-                 .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name));
+
+            CreateMap<Sandbox, SandboxDetailsDto>()
+         .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
+         .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+         .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
+         .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
 
             /*
             CreateMap<Sandbox, DatasetSandboxDto>()

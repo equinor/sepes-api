@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
+    [Authorize]
     public class StudyParticipantController : ControllerBase
     {
         readonly IStudyParticipantService _studyParticipantService;

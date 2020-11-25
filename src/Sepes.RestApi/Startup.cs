@@ -99,19 +99,7 @@ namespace Sepes.RestApi
             // Token acquisition service based on MSAL.NET
             // and chosen token cache implementation
             services.AddWebAppCallsProtectedWebApi(_configuration)
-               .AddInMemoryTokenCaches();          
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(MyAllowSpecificOrigins,
-                builder =>
-                {
-                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
-                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                });
-            });
+               .AddInMemoryTokenCaches();            
 
             DoMigration();
 

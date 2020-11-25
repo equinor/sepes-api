@@ -27,7 +27,6 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
         {
             var studies = await _studyService.GetStudyListAsync(excludeHidden);
@@ -35,7 +34,6 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet("{studyId}")]
-        [Authorize]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
             var study = await _studyService.GetStudyDetailsDtoByIdAsync(studyId, UserOperation.Study_Read);
@@ -54,9 +52,17 @@ namespace Sepes.RestApi.Controller
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            await _studyService.DeleteStudyAsync(studyId);
+            await _studyService.CloseStudyAsync(studyId); //Todo: Switch to correct method
             return new NoContentResult();
         }
+
+        //[HttpDelete("{studyId}")]
+        //[Authorize]
+        //public async Task<IActionResult> CloseStudyAsync(int studyId)
+        //{
+        //    await _studyService.CloseStudyAsync(studyId);
+        //    return new NoContentResult();
+        //}
 
 
         [HttpPut("{studyId}/details")]

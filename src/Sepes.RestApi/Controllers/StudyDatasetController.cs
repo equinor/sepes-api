@@ -24,7 +24,6 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet("{studyId}/datasets")]
         [Consumes(MediaTypeNames.Application.Json)]        
-        //TODO: Must also be possible for other study specific roles
         public async Task<IActionResult> GetDatasetsForStudy(int studyId)
         {
             var dataset = await _studyDatasetService.GetDatasetsForStudy(studyId);
@@ -32,15 +31,13 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPut("{studyId}/datasets/{datasetId}")]        
-        //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
         {
             var updatedStudy = await _studyDatasetService.AddDatasetToStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
-        [HttpDelete("{studyId}/datasets/{datasetId}")]        
-        //TODO: Must also be possible for sponsor rep/vendor admin
+        [HttpDelete("{studyId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
             var updatedStudy = await _studyDatasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
@@ -48,8 +45,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet("{studyId}/datasets/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]        
-        //TODO: Must also be possible for other study specific roles
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
         {
             var dataset = await _studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
@@ -57,8 +53,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost("{studyId}/datasets/studyspecific")]
-        [Consumes(MediaTypeNames.Application.Json)]        
-        //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
         {
             var updatedStudy = await _studyDatasetService.AddStudySpecificDatasetAsync(studyId, newDataset);
@@ -66,14 +61,11 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]        
-        //TODO: Must also be possible for sponsor rep/vendor admin or other study specific roles
+        [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
         {
             var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, newDataset);
             return new JsonResult(updatedStudy);
         }
-
     }
-
 }
