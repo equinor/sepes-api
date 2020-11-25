@@ -1,10 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,8 +20,8 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
 
         public DatasetService(SepesDbContext db, IMapper mapper, IStudyService studyService, IUserService userService)
-            :base(db, mapper)
-        {            
+            : base(db, mapper)
+        {
             _studyService = studyService;
             _userService = userService;
         }
@@ -31,11 +33,13 @@ namespace Sepes.Infrastructure.Service
                 .ToListAsync();
             var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
 
-            return dataasetsDtos;  
+            return dataasetsDtos;
         }
 
         public async Task<IEnumerable<DatasetDto>> GetDatasetsAsync()
         {
+            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
+
             var datasetsFromDb = await _db.Datasets
                 .Where(ds => ds.StudyId == null)
                 .ToListAsync();
@@ -46,19 +50,19 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId)
         {
-            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId);
+            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read);
 
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
             return datasetDto;
         }
-       
-        async Task<Dataset> GetDatasetOrThrowAsync(int id)
+
+        async Task<Dataset> GetDatasetOrThrowAsync(int id, UserOperation operation)
         {
             var datasetFromDb = await _db.Datasets
                 .Where(ds => ds.StudyId == null)
-                .Include(s => s. StudyDatasets)
-                .ThenInclude(sd=> sd.Study)
+                .Include(s => s.StudyDatasets)
+                .ThenInclude(sd => sd.Study)
                 .FirstOrDefaultAsync(s => s.Id == id);
 
             if (datasetFromDb == null)
@@ -66,9 +70,19 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", id);
             }
 
+            ThrowIfOperationNotAllowed(operation);
+
             return datasetFromDb;
-        }       
-        
+        }
+
+        void ThrowIfOperationNotAllowed(UserOperation operation)
+        {
+            if (StudyAccessUtil.HasAccessToOperation(_userService, operation) == false)
+            {
+                throw new ForbiddenException($"User {_userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
+            }
+        }
+
 
         void PerformUsualTestForPostedDatasets(DatasetDto datasetDto)
         {
@@ -88,16 +102,19 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
         {
+            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create);
+
             var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
             var newDatasetId = await Add(newDatasetDbModel);
             return await GetDatasetByDatasetIdAsync(newDatasetId);
-
         }
 
         public async Task<DatasetDto> UpdateDatasetAsync(int datasetId, DatasetDto updatedDataset)
         {
+            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Create);
+
             PerformUsualTestForPostedDatasets(updatedDataset);
-            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId);
+
             if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
             {
                 datasetFromDb.Name = updatedDataset.Name;
@@ -158,6 +175,6 @@ namespace Sepes.Infrastructure.Service
             Validate(datasetFromDb);
             await _db.SaveChangesAsync();
             return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
-        }     
+        }
     }
 }

@@ -22,6 +22,10 @@
         SandboxLock,
         SandboxUnlock,
         EditRules,
+
+        //Dataset
+        PreApprovedDataset_Read,
+        PreApprovedDataset_Create
       
     }
 }

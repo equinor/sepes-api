@@ -6,7 +6,7 @@ namespace Sepes.Infrastructure.Constants.Auth
 {
     public static class AllowedUserOperations
     {
-       public static List<OperationPermission> OperationSet = new List<OperationPermission>() {
+        public static List<OperationPermission> OperationSet = new List<OperationPermission>() {
             OperationPermission.CreateForAuthorizedUser(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: true), //As a authorized user, you can read any non-hidden Study
             OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin), //As a admin, you can read any Study, hidden or not, 
             OperationPermission.CreateForStudyRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.StudyViewer ), //As a admin, you can read any Study, hidden or not, 
@@ -42,6 +42,10 @@ namespace Sepes.Infrastructure.Constants.Auth
             //SANDBOX, CRUD
             OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
+
+            //PRE-APPROVED DATASETS
+            OperationPermission.CreateForAuthorizedUser(UserOperation.PreApprovedDataset_Read),
+            OperationPermission.CreateForAppRole(UserOperation.PreApprovedDataset_Create, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.DatasetAdmin),
         };
 
         public static IEnumerable<OperationPermission> ForOperationQueryable(UserOperation operation)

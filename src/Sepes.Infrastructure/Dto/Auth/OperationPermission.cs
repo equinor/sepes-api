@@ -18,9 +18,9 @@ namespace Sepes.Infrastructure.Dto.Auth
         public HashSet<string> AllowedForRoles { get; set; }
 
 
-        public static OperationPermission CreateForAuthorizedUser(UserOperation operation, bool appliesOnlyToNonHiddenStudies)
+        public static OperationPermission CreateForAuthorizedUser(UserOperation operation, bool appliesOnlyToNonHiddenStudies = false)
         {
-            return new OperationPermission() { Operation = operation, Level = PermissionLevel.AuthorizedUser };
+            return new OperationPermission() { Operation = operation, Level = PermissionLevel.AuthorizedUser, AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies };
         }
 
         public static OperationPermission CreateForAppRole(UserOperation operation, bool appliesOnlyToNonHiddenStudies, bool appliesOnlyIfUserIsStudyOwner, params string[] roles)
