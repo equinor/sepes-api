@@ -23,6 +23,6 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public List<SandboxDatasetDto> Datasets { get; set; }
 
-        public SandboxPermissionsDto Permissions { get; set; }
+        public SandboxPermissionsDto Permissions { get; set; } = new SandboxPermissionsDto();
     }
 }

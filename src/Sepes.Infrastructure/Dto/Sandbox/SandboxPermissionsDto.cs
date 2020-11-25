@@ -4,6 +4,9 @@
     {
         public bool Update { get; set; }
 
-        public bool Delete { get; set; }      
+        public bool Delete { get; set; }
+
+        public bool EditRules { get; set; }      
+    
     }
 }

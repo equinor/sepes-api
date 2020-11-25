@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -18,9 +19,14 @@ namespace Sepes.Infrastructure.Util
 
             dto.AddRemoveDataset = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);
             dto.AddRemoveSandbox = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.AddRemoveParticipant = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_AddRemove_Participant);
+            dto.AddRemoveParticipant = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_AddRemove_Participant);           
+        }
 
-           
+        public static async Task DecorateDto(IUserService userService, Study studyDb, SandboxPermissionsDto dto)
+        {
+            dto.Delete = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            dto.Update = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            dto.EditRules = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox); //TODO: Revise, should be based on the edit rules operation?
         }
     }
 }

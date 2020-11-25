@@ -49,22 +49,16 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxDto> GetAsync(int sandboxId)
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read);
+            var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
 
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
-        }
-        async Task SetPermissions(SandboxDto sandbox)
-        {
-            var sandboxPermissions = new SandboxPermissionsDto();
+            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions);
 
-            sandboxPermissions.Update = true;
-            sandboxPermissions.Delete = true;          
-
-            sandbox.Permissions = sandboxPermissions;
-        }
+            return sandboxDto;
+        }      
 
         public async Task<IEnumerable<SandboxDto>> GetForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox, true);
 
             var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
@@ -112,7 +106,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     // Get Dtos for arguments to sandboxWorkerService
                     var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
-                    var sandboxDto = await GetSandboxDtoAsync(createdSandbox.Id);
+                    var sandboxDto = await GetAsync(createdSandbox.Id);
 
                     var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
 
@@ -131,7 +125,7 @@ namespace Sepes.Infrastructure.Service
                     throw;
                 }
 
-                return await GetSandboxDtoAsync(createdSandbox.Id);
+                return await GetAsync(createdSandbox.Id);
             }
             catch (Exception ex)
             {
@@ -160,18 +154,14 @@ namespace Sepes.Infrastructure.Service
             return sandboxFromDb;
         }
 
-        async Task<SandboxDto> GetSandboxDtoAsync(int sandboxId)
-        {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId);
-            return _mapper.Map<SandboxDto>(sandboxFromDb);
-        }
+     
 
         async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
         {
             _logger.LogInformation($"Creating basic sandbox resources for sandbox: {dto.SandboxName}. First creating Resource Group, other resources are created by worker");
 
             try
-            {               
+            {
                 await _sandboxResourceService.CreateSandboxResourceGroup(dto);
 
                 _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Scheduling creation of other resources");
