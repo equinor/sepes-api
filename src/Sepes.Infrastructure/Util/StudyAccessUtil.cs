@@ -126,8 +126,6 @@ namespace Sepes.Infrastructure.Util
                         {
                             return true;
                         }
-
-
                     }
 
                 }

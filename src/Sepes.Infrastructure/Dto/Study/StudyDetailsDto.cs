@@ -19,9 +19,9 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public bool Restricted { get; set; }
 
-        public string LogoUrl { get; set; }    
+        public string LogoUrl { get; set; }
 
-        public StudyPermissionsDto Permissions { get; set; }
+        public StudyPermissionsDto Permissions { get; set; } = new StudyPermissionsDto();
 
         public ICollection<DatasetDto> Datasets { get; set; }
 

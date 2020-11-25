@@ -2,18 +2,19 @@
 {
     public class StudyPermissionsDto
     {  
-        public bool UpdateDetails { get; set; }
+        public bool UpdateMetadata { get; set; }
 
-        public bool Delete { get; set; }
+        public bool ReadResulsAndLearnings { get; set; }
+
+        public bool UpdateResulsAndLearnings { get; set; }
+
+        public bool CloseStudy { get; set; }
+        public bool DeleteStudy { get; set; }
 
         public bool AddRemoveDataset { get; set; }
 
         public bool AddRemoveParticipant { get; set; }
 
         public bool AddRemoveSandbox { get; set; }
-
-        public bool NavigateToSandbox { get; set; }
-
-        public bool NavigateToDataset { get; set; }
     }
 }

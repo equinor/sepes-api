@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Region {region} not found or disabled.");
             }
 
-            var sizes = relevantDbRegion.VmSizeAssociations.Select(va => va.VmSize).ToList();
+            var sizes = relevantDbRegion.VmSizeAssociations.Select(va => va.VmSize).OrderBy(s=> s.Key).ToList();
 
             return sizes;
         }
