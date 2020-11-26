@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Dto
         public bool DatasetAdmin { get; set; }
 
 
-        public List<StudyParticipantDto> StudyParticipants { get; set; }
+        public List<StudyParticipantDto> StudyParticipants { get; set; } = new List<StudyParticipantDto>();
 
         public UserDto()
         {

@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
+using Sepes.Tests.Setup;
 using System.Linq;
 using Xunit;
 
@@ -21,10 +19,10 @@ namespace Sepes.Tests.Util
         public async void ReadingUnrestrictedStudy_ShouldBeAllowed()
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, false);
-          
-            var userSerice = ServiceProvider.GetService<IUserService>();
+            
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser();        
 
-            var returnedStudy = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperation.Study_Read);
+            var returnedStudy = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
             Assert.NotNull(returnedStudy); 
         }
 
@@ -38,8 +36,8 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, roleThatGrantsPermission);
 
-            var userSerice = ServiceProvider.GetService<IUserService>();
-            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperation.Study_Read);
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(1);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
 
             Assert.NotNull(study);
             Assert.Equal(COMMON_STUDY_ID, study.Id);
@@ -50,23 +48,20 @@ namespace Sepes.Tests.Util
             var studyParticipant = study.StudyParticipants.FirstOrDefault();
             Assert.NotNull(studyParticipant);
             Assert.NotNull(studyParticipant.User);
-            Assert.Equal(COMMON_USER_ID, studyParticipant.User.Id);
-       
+            Assert.Equal(COMMON_USER_ID, studyParticipant.User.Id);       
         }
 
-        //TODO: 20201126: KRST: NEED TO INTRODUCE MOQ TO FAKE THE USER SERVICE TO BE ABLE TO TEST THIS
-        //[Theory]        
-        //[InlineData("null")]
-        //[InlineData("Not a real role")]
-        //[InlineData("")]
-        //public async void ReadingRestrictedStudyWithoutPermission_ShouldFail(string justSomeBogusRole)
-        //{
-        //    var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, justSomeBogusRole);
-            
-        //    var userSerice = ServiceProvider.GetService<IUserService>();
-        //    await Assert.ThrowsAsync<ForbiddenException>(()=> StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, justSomeBogusRole));     
-        //}  
-     
         
+        [Theory]
+        [InlineData("null")]
+        [InlineData("Not a real role")]
+        [InlineData("")]        
+        public async void ReadingRestrictedStudyThatHasBogusRole_ShouldFail(string justSomeBogusRole)
+        {
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, justSomeBogusRole);
+
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(1);
+            await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
+        }
     }
 }
