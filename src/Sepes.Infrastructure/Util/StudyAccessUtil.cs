@@ -149,7 +149,7 @@ namespace Sepes.Infrastructure.Util
 
             if (study.Restricted)
             {
-                allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies = false);
+                allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies == false);
             }
 
             if (allowedForStudyRolesQueryable.Any())
