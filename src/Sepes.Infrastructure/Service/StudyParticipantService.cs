@@ -2,11 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -77,7 +78,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"The Study Owner role cannot be deleted");
             }
 
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
             var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
             if (studyParticipantFromDb == null)
@@ -110,7 +111,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperations.StudyAddRemoveParticipant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
 
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
@@ -132,9 +133,8 @@ namespace Sepes.Infrastructure.Service
         }
 
         async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
-        {
-            // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudyQueries.GetStudyByIdOrThrowAsync(_db, studyId);
+        {          
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
 
             var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
 

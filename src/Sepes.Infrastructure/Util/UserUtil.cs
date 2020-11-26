@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Util
 
         public static UserDto CreateSepesUser(IConfiguration config, IPrincipal principal)
         {
-            var claimsPrincipal = principal as ClaimsPrincipal;
+            var claimsPrincipal = principal as ClaimsPrincipal;            
 
             var user = new UserDto(                
                 GetOid(config, claimsPrincipal),
@@ -23,9 +23,23 @@ namespace Sepes.Infrastructure.Util
                 GetFullName(config, claimsPrincipal),
                 GetEmail(config, claimsPrincipal));
 
-            user.Admin = principal.IsInRole(AppRoles.Admin);
-            user.Sponsor = principal.IsInRole(AppRoles.Sponsor);
-            user.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
+            if (principal.IsInRole(AppRoles.Admin))
+            {
+                user.Admin = true;
+                user.AppRoles.Add(AppRoles.Admin);
+            }
+
+            if (principal.IsInRole(AppRoles.Sponsor))
+            {
+                user.Sponsor = true;
+                user.AppRoles.Add(AppRoles.Sponsor);
+            }
+
+            if (principal.IsInRole(AppRoles.DatasetAdmin))
+            {
+                user.DatasetAdmin = true;
+                user.AppRoles.Add(AppRoles.DatasetAdmin);
+            }      
 
             return user;
         }

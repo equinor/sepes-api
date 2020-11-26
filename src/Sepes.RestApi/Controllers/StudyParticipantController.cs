@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize(Roles = AppRoles.Admin)] //Todo: Need wider access, but restricted for now
+    [Authorize]
     public class StudyParticipantController : ControllerBase
     {
         readonly IStudyParticipantService _studyParticipantService;
@@ -26,22 +25,22 @@ namespace Sepes.RestApi.Controller
         [HttpGet("participants")]
         public async Task<IActionResult> GetLookupAsync(string search)
         {
-            var studies = await _studyParticipantService.GetLookupAsync(search);
-            return new JsonResult(studies);
+            var studyParticipants = await _studyParticipantService.GetLookupAsync(search);
+            return new JsonResult(studyParticipants);
         }
 
         [HttpPut("studies/{studyId}/participants/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            var updatedStudy = await _studyParticipantService.HandleAddParticipantAsync(studyId, user, role);
-            return new JsonResult(updatedStudy);
+            var addedParticipantDto = await _studyParticipantService.HandleAddParticipantAsync(studyId, user, role);
+            return new JsonResult(addedParticipantDto);
         }    
 
         [HttpDelete("studies/{studyId}/participants/{userId}/{roleName}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int userId, string roleName)
         {
-            var updatedStudy = await _studyParticipantService.RemoveParticipantFromStudyAsync(studyId, userId, roleName);
-            return new JsonResult(updatedStudy);
+            await _studyParticipantService.RemoveParticipantFromStudyAsync(studyId, userId, roleName);
+            return new NoContentResult();
         }
     }
 }

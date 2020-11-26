@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto.Study;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -11,6 +12,8 @@ namespace Sepes.Infrastructure.Dto
         public string FullName { get; set; }
         public string UserName { get; set; }
         public string EmailAddress { get; set; }
+
+        public HashSet<string> AppRoles { get; set; } = new HashSet<string>();
 
         public bool Admin { get; set; }
 

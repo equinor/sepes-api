@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Sepes.Infrastructure.Dto.Sandbox
+﻿namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxDto : UpdateableBaseDto
     {
@@ -15,12 +13,8 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string TechnicalContactName { get; set; }
 
         public string TechnicalContactEmail { get; set; }
-        public string LinkToCostAnalysis { get; set; }
 
         public bool Deleted { get; set; }
-
-        public List<SandboxResourceLightDto> Resources { get; set; }
-
-        public List<SandboxDatasetDto> Datasets { get; set; }
+     
     }
 }

@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -21,10 +22,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             //STUDY
             CreateMap<Study, StudyListItemDto>();
 
-            CreateMap<Study, StudyDto>()
+            CreateMap<Study, StudyDetailsDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
                     .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+
+            CreateMap<Study, StudyDto>()    
+              .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
             CreateMap<StudyDto, Study>();
@@ -38,9 +42,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, DataSetsForStudyDto>();
+            CreateMap<Dataset, StudyDatasetDto>();
 
-            CreateMap<StudyDataset, DataSetsForStudyDto>()
+            CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
                 .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
@@ -69,10 +73,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
-                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
-                 .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
-                 .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name));
+
+            CreateMap<Sandbox, SandboxDetailsDto>()
+         .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
+         .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+         .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
+         .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
 
             /*
             CreateMap<Sandbox, DatasetSandboxDto>()

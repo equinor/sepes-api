@@ -16,7 +16,24 @@ namespace Sepes.Tests.Mocks
 
         UserDto GetBaseUser()
         {
-            return new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL);
+            var testUser= new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL, true);
+
+            if (testUser.Admin)
+            {
+                testUser.AppRoles.Add(AppRoles.Admin);
+            }
+
+            if (testUser.Sponsor)
+            {
+                testUser.AppRoles.Add(AppRoles.Sponsor);
+            }
+
+            if (testUser.DatasetAdmin)
+            {
+                testUser.AppRoles.Add(AppRoles.DatasetAdmin);
+            }
+
+            return testUser;
         }
 
         public UserDto GetCurrentUser()

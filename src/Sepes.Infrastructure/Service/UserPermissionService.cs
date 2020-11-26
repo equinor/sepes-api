@@ -18,6 +18,11 @@ namespace Sepes.Infrastructure.Service
             var userFromDb = await _userService.GetCurrentUserFromDbAsync();
 
             var result = new UserPermissionDto();
+
+            result.FullName = userFromDb.FullName;
+            result.EmailAddress = userFromDb.EmailAddress;
+            result.UserName = userFromDb.UserName;
+
             result.Admin = userFromDb.Admin;
             result.Sponsor = userFromDb.Sponsor;
             result.DatasetAdmin = userFromDb.DatasetAdmin;

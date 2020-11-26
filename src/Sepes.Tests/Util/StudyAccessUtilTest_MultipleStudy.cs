@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System.Linq;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithAdvancedTestData();
 
-            var studiesForUser1 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 1).ToListAsync();
+            var studiesForUser1 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 1).ToListAsync();
             Assert.Equal(6, studiesForUser1.Count);
 
             Assert.False(studiesForUser1.Where(s => s.Restricted).Any());
@@ -30,25 +31,25 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithAdvancedTestData();
 
-            var studiesForUser2 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 2).ToListAsync();
+            var studiesForUser2 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 2).ToListAsync();
             Assert.Equal(6, studiesForUser2.Count);
 
-            var studiesForUser3 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 3).ToListAsync();
+            var studiesForUser3 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 3).ToListAsync();
             Assert.Equal(11, studiesForUser3.Count);
 
-            var studiesForUser4 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 4).ToListAsync();
+            var studiesForUser4 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 4).ToListAsync();
             Assert.Equal(7, studiesForUser4.Count);
 
-            var studiesForUser5 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 5).ToListAsync();
+            var studiesForUser5 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 5).ToListAsync();
             Assert.Equal(7, studiesForUser5.Count);
 
-            var studiesForUser6 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 6).ToListAsync();
+            var studiesForUser6 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 6).ToListAsync();
             Assert.Equal(7, studiesForUser6.Count);
 
-            var studiesForUser7 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 7).ToListAsync();
+            var studiesForUser7 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 7).ToListAsync();
             Assert.Equal(7, studiesForUser7.Count);
 
-            var studiesForUser8 = await StudyAccessUtil.GetStudiesIncludingRestrictedForCurrentUser(db, 8).ToListAsync();
+            var studiesForUser8 = await StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(db, 8).ToListAsync();
             Assert.Equal(7, studiesForUser8.Count);
         }
 

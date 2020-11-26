@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Dto.Study;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto

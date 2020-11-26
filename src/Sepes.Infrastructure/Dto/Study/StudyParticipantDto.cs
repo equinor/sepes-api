@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Study
 {
     public class StudyParticipantDto
     {

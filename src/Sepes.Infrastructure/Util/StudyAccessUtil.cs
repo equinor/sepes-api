@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.Auth;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Auth;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,94 +14,181 @@ namespace Sepes.Infrastructure.Util
 {
     public static class StudyAccessUtil
     {
-        //Scenarios
-        //Might come with list of study, might come with single
 
-        //Wonder if has access it role. Not solved here
-        //Wonder if has study specific role, solved here
-        //Might have study Id
-        //Might have list of studies
-        //Remember to get user from db as late as possible
-
-        public static IQueryable<Study> GetStudiesIncludingRestrictedForCurrentUser(SepesDbContext db, int userId)
+        public static void CheckOperationPermissionsOrThrow(IUserService userService, UserOperation operation)
         {
-
-            //As of now, if you have ANY role associated with a study, you can view it
-            return db.Studies
-                .Include(s => s.StudyParticipants)
-                    .ThenInclude(sp => sp.User)
-                .Where(s => 
-                (s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any())
-                && s.Deleted.HasValue == false || (s.Deleted.HasValue && s.Deleted == false));
-        }
-
-        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyByIdOrThrowAsync(db, studyId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
-
-        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
-
-        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperations operation)
-        {
-            var studyFromDb = await StudyQueries.GetStudyByResourceIdOrThrowAsync(db, resourceId);
-            return await CheckStudyAccessOrThrow(userService, studyFromDb, operation);
-        }
-        
-        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperations operation)
-        {
-            if (operation == UserOperations.StudyCreate)
+            if (HasAccessToOperation(userService, operation) == false)
             {
-                if (userService.GetCurrentUser().Admin || userService.GetCurrentUser().Sponsor)
-                {
-                    return study;
-                }
+                throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
+            }          
+        }
+
+        public static bool HasAccessToOperation(IUserService userService, UserOperation operation)
+        {
+            var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
+
+            //First thest this, as it's the most common operation and it requires no db access
+            if (IsAllowedWithoutAnyRoles(onlyRelevantOperations))
+            {
+                return true;
             }
 
-            //Sponsors should be able to add sandbox
-            //TODO: Verify that they should have access to create sandbox for restricted studies in which they don't own
-            if (operation == UserOperations.StudyAddRemoveSandbox)
+            if (IsAllowedBasedOnAppRoles(onlyRelevantOperations, userService))
             {
-                if (userService.GetCurrentUser().Sponsor) {
-
-                    return study;
-                } 
+                return true;
             }
 
-            //No study specific roles required
-            if (operation == UserOperations.StudyRead && study.Restricted == false)
+            return false;
+        }
+
+        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperation operation)
+        {
+            if (await HasAccessToOperationForStudy(userService, study, operation))
             {
                 return study;
             }
 
-            await ThrowIfOperationNotAllowed(userService, study, operation);
+            throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+        }     
 
-            return study;
-        }
-
-
-        public static async Task ThrowIfOperationNotAllowed(IUserService userService, Study study, UserOperations operation)
+        public static async Task<bool> HasAccessToOperationForStudy(IUserService userService, Study study, UserOperation operation)
         {
-            var requiredRoles = UserOperationsAndRequiredRoles.GetRequiredRoles(operation);
+            var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
-            if ((await UserHasRequiredStudyRole(userService, study, requiredRoles)) == false)
+            //First thest this, as it's the most common operation and it requires no db access
+            if (IsAllowedWithoutAnyRoles(onlyRelevantOperations, study))
             {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+                return true;
             }
-        }
 
-        static async Task<bool> UserHasRequiredStudyRole(IUserService userService, Study study, params string[] requiredRoles)
+            if (await IsAllowedBasedOnAppRoles(onlyRelevantOperations, userService, study))
+            {
+                return true;
+            }
+
+            if (await IsAllowedBasedOnStudyRoles(onlyRelevantOperations, userService, study))
+            {
+                return true;
+            }
+
+            return false;
+        }      
+
+        public static bool IsAllowedWithoutAnyRoles(IEnumerable<OperationPermission> relevantOperations, Study study = null)
         {
-            var currentUser = await userService.GetCurrentUserFromDbAsync();
-            return UserHasRequiredStudyRole(currentUser.Id, study, requiredRoles);
+            var operationsAllowedWithoutRoles = AllowedUserOperations.ForAuthorizedUserLevel(relevantOperations);
+
+            if (study != null && study.Restricted)
+            {
+                operationsAllowedWithoutRoles = AllowedUserOperations.ForRestrictedStudies(operationsAllowedWithoutRoles);
+            }
+
+            return operationsAllowedWithoutRoles.Any();
         }
 
-        static bool UserHasRequiredStudyRole(int userId, Study study, params string[] requiredRoles)
+        static bool IsAllowedBasedOnAppRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService)
+        {
+            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
+
+            if (allowedForAppRolesQueryable.Any())
+            {
+                var currentUser = userService.GetCurrentUser();
+
+                foreach (var curAllowance in allowedForAppRolesQueryable)
+                {
+                    if (StudyAccessUtil.UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        static async Task<bool> IsAllowedBasedOnAppRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study)
+        {
+            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
+
+            if (study.Restricted)
+            {
+                allowedForAppRolesQueryable = AllowedUserOperations.ForRestrictedStudies(allowedForAppRolesQueryable);
+            }
+
+            if (allowedForAppRolesQueryable.Any())
+            {
+                var currentUserDb = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+                foreach (var curAllowance in allowedForAppRolesQueryable)
+                {
+                    if (StudyAccessUtil.UserHasAnyOfTheseAppRoles(currentUserDb, curAllowance.AllowedForRoles))
+                    {
+                        if (curAllowance.AppliesOnlyIfUserIsStudyOwner)
+                        {
+                            if (StudyAccessUtil.UserHasAnyOfTheseStudyRoles(currentUserDb.Id, study, StudyRoles.StudyOwner))
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
+                    }
+
+                }
+            }
+
+            return false;
+
+        }
+
+        static async Task<bool> IsAllowedBasedOnStudyRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study)
+        {
+            var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(relevantOperations);
+
+            if (study.Restricted)
+            {
+                allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies = false);
+            }
+
+            if (allowedForStudyRolesQueryable.Any())
+            {
+                var currentUser = await userService.GetCurrentUserFromDbAsync();
+
+                foreach (var curOpWithRole in allowedForStudyRolesQueryable)
+                {
+                    if (StudyAccessUtil.UserHasAnyOfTheseStudyRoles(currentUser.Id, study, curOpWithRole.AllowedForRoles))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }         
+
+        public static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
+        {
+            if (currentUser == null)
+            {
+                throw new ArgumentNullException("currentUser");
+            }
+
+            if (appRoles == null || appRoles.Count() == 0)
+            {
+                throw new ArgumentNullException("requiredRoles");
+            }
+
+            if (currentUser.AppRoles == null)
+            {
+                return false;
+            }
+
+            return currentUser.AppRoles.Intersect(appRoles).Any();
+        }       
+
+        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles)
         {
             foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
             {
@@ -113,26 +201,11 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        static async Task<bool> UserHasRequiredStudyRole(IUserService userService, Study study, HashSet<string> requiredRoles)
+        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, params string[] requiredRoles)
         {
-            var currentUser = await userService.GetCurrentUserFromDbAsync();
-            return UserHasRequiredStudyRole(currentUser.Id, study, requiredRoles);
+            var requiredRolesLookup = new HashSet<string>(requiredRoles);
+
+            return UserHasAnyOfTheseStudyRoles(userId, study, requiredRolesLookup);
         }
-
-        static bool UserHasRequiredStudyRole(int userId, Study study, HashSet<string> requiredRoles)
-        {
-
-            foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
-            {
-                if (requiredRoles.Contains(curParticipant.RoleName))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-
     }
 }

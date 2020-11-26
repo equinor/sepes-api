@@ -190,7 +190,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<bool> ExistsPreceedingUnfinishedOperationsAsync(SandboxResourceOperationDto operationDto)
         {
-            var querable = GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(operationDto.Resource.Id.Value, operationDto.BatchId, operationDto.Created);
+            var querable = GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(operationDto.Resource.Id, operationDto.BatchId, operationDto.Created);
             return await querable.AnyAsync();
         }
 
