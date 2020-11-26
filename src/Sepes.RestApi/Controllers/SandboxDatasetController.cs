@@ -23,7 +23,6 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet("{sandboxId}/datasets")]
         [Consumes(MediaTypeNames.Application.Json)]
-        //TODO: Must also be possible for other study specific roles
         public async Task<IActionResult> GetDatasetsForSandbox(int sandboxId)
         {
             var dataset = await _service.GetAll(sandboxId);
@@ -38,7 +37,6 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpDelete("{sandboxId}/datasets/{datasetId}")]
-        //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> RemoveDataSetAsync(int sandboxId, int datasetId)
         {
             var updatedStudy = await _service.Remove(sandboxId, datasetId);

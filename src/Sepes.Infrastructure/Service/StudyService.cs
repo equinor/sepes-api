@@ -88,6 +88,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
+            StudyAccessUtil.CheckOperationPermissionsOrThrow(_userService, UserOperation.Study_Create);
+
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserFromDbAsync();
@@ -97,7 +99,7 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyDtoByIdAsync(newStudyId, UserOperation.Study_Read);
         }
 
-        public async Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto updatedStudy)
+        public async Task<StudyDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
@@ -150,7 +152,7 @@ namespace Sepes.Infrastructure.Service
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
-            await RemoveDatasets(studyFromDb.Id);
+            //await RemoveDatasets(studyFromDb.Id);
 
             var currentUser = _userService.GetCurrentUser();
             studyFromDb.Closed = true;
@@ -171,7 +173,42 @@ namespace Sepes.Infrastructure.Service
                 _ = _azureBlobStorageService.DeleteBlob(studyFromDb.LogoUrl);
             }
 
-            await RemoveDatasets(studyFromDb.Id);
+            // TODO: Possibly keep datasets for archiving/logging purposes.
+
+            var studySpecificDatasets = new List<int>();
+
+            //Delete datasets links and study specific datasets
+            var studyDatasets = studyFromDb.StudyDatasets.ToList();
+
+            if (studyDatasets.Any())
+            {
+                foreach (var studyDataset in studyDatasets)
+                {
+                   //Remove relation
+                    studyFromDb.StudyDatasets.Remove(studyDataset);
+
+                    if (studyDataset.Dataset.StudyId == studyFromDb.Id)
+                    {
+                        //Study specific dataset, must be deleted
+                        studySpecificDatasets.Add(studyDataset.DatasetId);
+                    } 
+                }
+            }
+
+            await _db.SaveChangesAsync();
+
+            if (studySpecificDatasets.Any())
+            {
+                foreach(var curStudySpecificDatasetId in studySpecificDatasets)
+                {
+                    var datasetToDelete = await _db.Datasets.FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId && d.StudyId.HasValue && d.StudyId == studyFromDb.Id);
+
+                    if(datasetToDelete != null)
+                    {
+                        _db.Datasets.Remove(datasetToDelete);
+                    }
+                }
+            }
 
             var userEntriesForDeletedStudyParticipants = new HashSet<int>();
 
@@ -238,7 +275,7 @@ namespace Sepes.Infrastructure.Service
                     throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
                 }
             }
-        }
+        }       
 
         async Task RemoveDatasets(int studyId)
         {

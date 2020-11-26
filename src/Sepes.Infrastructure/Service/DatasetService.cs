@@ -16,18 +16,18 @@ namespace Sepes.Infrastructure.Service
 {
     public class DatasetService : ServiceBase<Dataset>, IDatasetService
     {
-        readonly IStudyService _studyService;
         readonly IUserService _userService;
 
-        public DatasetService(SepesDbContext db, IMapper mapper, IStudyService studyService, IUserService userService)
+        public DatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
             : base(db, mapper)
         {
-            _studyService = studyService;
             _userService = userService;
         }
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
+            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
+
             var datasetsFromDb = await _db.Datasets
                 .Where(ds => ds.StudyId == null)
                 .ToListAsync();
@@ -102,7 +102,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
         {
-            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create);
+            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
             var newDatasetId = await Add(newDatasetDbModel);
@@ -111,7 +111,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> UpdateDatasetAsync(int datasetId, DatasetDto updatedDataset)
         {
-            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Create);
+            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             PerformUsualTestForPostedDatasets(updatedDataset);
 

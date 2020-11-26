@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Constants.Auth
 
             //PRE-APPROVED DATASETS
             OperationPermission.CreateForAuthorizedUser(UserOperation.PreApprovedDataset_Read),
-            OperationPermission.CreateForAppRole(UserOperation.PreApprovedDataset_Create, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.DatasetAdmin),
+            OperationPermission.CreateForAppRole(UserOperation.PreApprovedDataset_Create_Update_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.DatasetAdmin),
         };
 
         public static IEnumerable<OperationPermission> ForOperationQueryable(UserOperation operation)

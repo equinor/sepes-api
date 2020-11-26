@@ -13,7 +13,7 @@ namespace Sepes.RestApi.Controller
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize] //Todo: Need wider access, but restricted for now
+    [Authorize]
     public class SandboxController : ControllerBase
     {
         readonly ISandboxService _sandboxService;
@@ -39,7 +39,6 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost("{studyId}/sandboxes")]
         [Consumes(MediaTypeNames.Application.Json)]
-        //TODO: Must also be possible for sponsor rep/vendor admin
         public async Task<IActionResult> CreateSandboxAsync(int studyId, SandboxCreateDto newSandbox)
         {
             var updatedStudy = await _sandboxService.CreateAsync(studyId, newSandbox);

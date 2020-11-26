@@ -41,7 +41,6 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost]
-        [Authorize(Roles = RoleSets.AdminOrSponsor)]
         public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
         {
             var study = await _studyService.CreateStudyAsync(newStudy);
@@ -49,7 +48,6 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpDelete("{studyId}")]
-        [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
             await _studyService.CloseStudyAsync(studyId); //Todo: Switch to correct method
@@ -69,7 +67,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
-            var updatedStudy = await _studyService.UpdateStudyDetailsAsync(studyId, study);
+            var updatedStudy = await _studyService.UpdateStudyMetadataAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
 

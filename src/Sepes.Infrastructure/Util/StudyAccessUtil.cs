@@ -15,6 +15,14 @@ namespace Sepes.Infrastructure.Util
     public static class StudyAccessUtil
     {
 
+        public static void CheckOperationPermissionsOrThrow(IUserService userService, UserOperation operation)
+        {
+            if (HasAccessToOperation(userService, operation) == false)
+            {
+                throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
+            }          
+        }
+
         public static bool HasAccessToOperation(IUserService userService, UserOperation operation)
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);

@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
 
-        Task<StudyDto> UpdateStudyDetailsAsync(int studyId, StudyDto newStudy);
+        Task<StudyDto> UpdateStudyMetadataAsync(int studyId, StudyDto newStudy);
 
         Task CloseStudyAsync(int studyId);
         Task DeleteStudyAsync(int studyId);
