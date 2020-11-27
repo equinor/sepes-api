@@ -113,7 +113,8 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
+     
+            public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -142,27 +143,7 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
-        }
-
-        //public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status, string errorMessage = null)
-        //{
-        //    var currentUser = _userService.GetCurrentUser();
-
-        //    var itemFromDb = await GetOrThrowAsync(id);
-        //    itemFromDb.Status = status;
-        //    itemFromDb.TryCount++;
-        //    itemFromDb.Updated = DateTime.UtcNow;
-        //    itemFromDb.UpdatedBy = currentUser.UserName;
-
-        //    if (!String.IsNullOrWhiteSpace(errorMessage))
-        //    {
-        //        itemFromDb.LatestError = errorMessage;
-        //    }
-
-        //    await _db.SaveChangesAsync();
-
-        //    return await GetByIdAsync(itemFromDb.Id);
-        //}
+        }       
 
         public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
         {

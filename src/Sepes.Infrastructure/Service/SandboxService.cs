@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service
             await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions);
 
             return sandboxDto;
-        }      
+        }
 
         public async Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId)
         {
@@ -147,7 +147,7 @@ namespace Sepes.Infrastructure.Service
         {
             var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, userOperation, withIncludes);
             return sandbox;
-        }     
+        }
 
         async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
         {
@@ -232,7 +232,48 @@ namespace Sepes.Infrastructure.Service
             return resourceEntry;
         }
 
-        public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId)
+        public async Task<SandboxResourceLightDto> RetryLastOperation(int resourceId)
+        {
+            var resource = await _sandboxResourceService.GetByIdAsync(resourceId);
+
+            var sandboxFromDb = await GetOrThrowAsync(resource.SandboxId, UserOperation.Study_Crud_Sandbox, true);
+
+            if (resource.ResourceType != AzureResourceType.VirtualMachine)
+            {
+                throw new ArgumentException("Retry is only supported for Virtual Machines");
+            }
+
+            var relevantOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
+
+            if (relevantOperation == null)
+            {
+                throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, "Could not locate ANY database entry for VM", resourceId));
+            }
+            else if (String.IsNullOrWhiteSpace(relevantOperation.Status) || relevantOperation.Status == CloudResourceOperationState.NEW || relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.FAILED || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+            {
+                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Increasing MAX try count", resourceId));
+
+                relevantOperation.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count  
+
+                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Re-queing item. Previous status was {relevantOperation.Status}", resourceId));
+
+                var queueParentItem = new ProvisioningQueueParentDto();
+                queueParentItem.SandboxId = sandboxFromDb.Id;
+                queueParentItem.Description = $"{relevantOperation} (re-scheduled)";
+
+                await _db.SaveChangesAsync();
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
+            }
+            else
+            {
+                throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Could not locate RELEVANT database entry for ResourceGroupOperation", resourceId));
+            }
+
+            return _mapper.Map<SandboxResourceLightDto>(resource);
+        }
+
+        public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int sandboxId)
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
 
@@ -245,13 +286,14 @@ namespace Sepes.Infrastructure.Service
 
             var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);
 
-
             return resourcesMapped;
         }
 
-        public async Task DeleteAsync(int studyId, int sandboxId)
+      
+
+        public async Task DeleteAsync(int sandboxId)
         {
-            _logger.LogWarning(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Starting", studyId, sandboxId);
+            _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox {0}: Starting", sandboxId);
 
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
@@ -259,6 +301,8 @@ namespace Sepes.Infrastructure.Service
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
+
+            int studyId = sandboxFromDb.StudyId;
 
             var user = _userService.GetCurrentUser();
 
@@ -283,6 +327,8 @@ namespace Sepes.Infrastructure.Service
 
                     curResource.Deleted = DateTime.UtcNow;
                     curResource.DeletedBy = user.UserName;
+
+                    SetAllOperationsToAborted(user, curResource);
 
                     _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", studyId, sandboxId, curResource.Id);
                 }
@@ -322,9 +368,19 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", studyId, sandboxId);
                 await _db.SaveChangesAsync();
-            }         
+            }
 
-            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);         
+            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
+        }
+
+        void SetAllOperationsToAborted(UserDto currentUser, SandboxResource resource)
+        {
+            foreach (var curOp in resource.Operations)
+            {
+                curOp.Status = CloudResourceOperationState.ABORTED;
+                curOp.Updated = DateTime.UtcNow;
+                curOp.UpdatedBy = currentUser.UserName;
+            }
         }
 
         public async Task ReScheduleSandboxCreation(int sandboxId)
@@ -355,8 +411,6 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate RELEVANT database entry for ResourceGroupOperation"));
             }
 
-            //Rest of resources must have failed, cannot handle partial creation yet
-
             var operations = new List<SandboxResourceOperation>();
 
             foreach (var curResource in sandboxFromDb.Resources)
@@ -367,30 +421,25 @@ namespace Sepes.Infrastructure.Service
                     continue;
                 }
 
-                //Last operation must be a create
                 var relevantOperation = curResource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
 
                 if (relevantOperation == null)
                 {
-                    throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate ANY database entry for ResourceGroupOperation", curResource.Id));
+                    throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate ANY database entry for resource", curResource.Id));
                 }
-                else if (String.IsNullOrWhiteSpace(relevantOperation.Status) || relevantOperation.Status == CloudResourceOperationState.NEW || relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                else if (String.IsNullOrWhiteSpace(relevantOperation.Status) || relevantOperation.Status == CloudResourceOperationState.NEW || relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.FAILED || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                 {
                     _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Re-queing item. Previous status was {relevantOperation.Status}", curResource.Id));
-                    queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
-                }
-                else if (relevantOperation.Status == CloudResourceOperationState.FAILED)
-                {
-                    _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Increasing retry count and re-queing item. Previous status was {relevantOperation.Status}", curResource.Id));
-                    relevantOperation.MaxTryCount += 3;
-                    await _db.SaveChangesAsync();
+                    relevantOperation.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count               
                     queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
                 }
                 else
                 {
-                    throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Could not locate RELEVANT database entry for ResourceGroupOperation", curResource.Id));
+                    throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, $"Could not locate RELEVANT database entry for resource", curResource.Id));
                 }
             }
+
+            await _db.SaveChangesAsync();
 
             if (queueParentItem.Children.Count == 0)
             {
@@ -414,6 +463,8 @@ namespace Sepes.Infrastructure.Service
             logMessage += $" | {logText}";
 
             return logMessage;
-        }  
+        }
+
+
     }
 }

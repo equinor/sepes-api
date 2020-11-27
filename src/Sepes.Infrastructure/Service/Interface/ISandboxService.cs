@@ -13,9 +13,11 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId);
         Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto newSandbox);
-        Task DeleteAsync(int studyId, int sandboxId);
+        Task DeleteAsync(int sandboxId);
 
-        Task<List<SandboxResourceLightDto>> GetSandboxResources(int studyId, int sandboxId);
-        Task ReScheduleSandboxCreation(int studyId);
+        Task<List<SandboxResourceLightDto>> GetSandboxResources(int sandboxId);
+
+        Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
+        Task ReScheduleSandboxCreation(int sandboxId);
     }
 }
