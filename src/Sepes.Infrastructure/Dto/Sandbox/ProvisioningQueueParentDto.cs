@@ -15,5 +15,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string MessageId { get; set; }
         [JsonIgnore]
         public string PopReceipt { get; set; }
+        [JsonIgnore]
+        public int DequeueCount { get; set; }
     }
 }
