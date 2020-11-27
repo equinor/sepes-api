@@ -16,5 +16,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task DeleteQueueAsync();
 
         Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds);
+
+        Task ReQueueMessageAsync(ProvisioningQueueParentDto message, CancellationToken cancellationToken = default);
     }
 }

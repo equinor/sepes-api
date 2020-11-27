@@ -27,6 +27,7 @@ namespace Sepes.CloudResourceWorker
             var transformedQueueItem = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(myQueueItem.AsString);
             transformedQueueItem.MessageId = myQueueItem.Id;
             transformedQueueItem.PopReceipt = myQueueItem.PopReceipt;
+            transformedQueueItem.DequeueCount = myQueueItem.DequeueCount;
 
           await  _provisioningService.HandleQueueItem(transformedQueueItem);          
         }

@@ -15,6 +15,8 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string LastKnownProvisioningState { get; set; }
 
         public string LinkToExternalSystem { get; set; }
-        
+
+        public string RetryLink { get; set; }
+
     }
 }

@@ -113,7 +113,8 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null)
+     
+            public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
         {
             var currentUser = _userService.GetCurrentUser();
 
@@ -134,21 +135,6 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            await _db.SaveChangesAsync();
-
-            return await GetByIdAsync(itemFromDb.Id);
-        }
-
-        public async Task<SandboxResourceOperationDto> UpdateStatusAndIncreaseTryCountAsync(int id, string status, string errorMessage = null)
-        {
-            var currentUser = _userService.GetCurrentUser();
-
-            var itemFromDb = await GetOrThrowAsync(id);
-            itemFromDb.Status = status;
-            itemFromDb.TryCount++;
-            itemFromDb.Updated = DateTime.UtcNow;
-            itemFromDb.UpdatedBy = currentUser.UserName;
-
             if (!String.IsNullOrWhiteSpace(errorMessage))
             {
                 itemFromDb.LatestError = errorMessage;
@@ -156,22 +142,22 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(itemFromDb.Id);
-        }
+           return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
+        }       
 
         public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
         {
             var currentUser = _userService.GetCurrentUser();
 
             var itemFromDb = await GetOrThrowAsync(id);
-            itemFromDb.TryCount++;
+            itemFromDb.TryCount ++;
             itemFromDb.CarriedOutBySessionId = requestId;
             itemFromDb.Status = status;
             itemFromDb.Updated = DateTime.UtcNow;
             itemFromDb.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
 
-            return await GetByIdAsync(itemFromDb.Id);
+            return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
         }
 
         private async Task<SandboxResource> GetSandboxResourceOrThrowAsync(int id)
