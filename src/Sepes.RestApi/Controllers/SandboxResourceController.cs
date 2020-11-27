@@ -21,14 +21,14 @@ namespace Sepes.RestApi.Controller
             _sandboxService = sandboxService;
         }       
 
-        [HttpGet("/sandboxes/{sandboxId}/resources")]
+        [HttpGet("sandboxes/{sandboxId}/resources")]
         public async Task<IActionResult> GetSandboxResources(int sandboxId)
         {
             var sandboxes = await _sandboxService.GetSandboxResources(sandboxId);
             return new JsonResult(sandboxes);
         }
 
-        [HttpPut("/resources/{resourceId}/retry")]
+        [HttpPut("resources/{resourceId}/retry")]
         public async Task<IActionResult> RetryLastOperation(int resourceId)
         {
             var resource = await _sandboxService.RetryLastOperation(resourceId);
