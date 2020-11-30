@@ -35,6 +35,12 @@ namespace Sepes.Infrastructure.Service.Queries
             return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
         }
 
+        public static async Task<Study> GetStudyForAddParticipantByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
+        {
+            var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
+            return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+        }
+
         public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation)
         {
             var studyFromDb = await GetStudyBySandboxIdOrThrowAsync(db, sandboxId);

@@ -73,12 +73,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName)
         {
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
+
             if (roleName == StudyRoles.StudyOwner)
             {
                 throw new ArgumentException($"The Study Owner role cannot be deleted");
             }
-
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
+            
             var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
             if (studyParticipantFromDb == null)
@@ -94,28 +95,28 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
+
             ValidateRoleNameThrowIfInvalid(role);
 
             if (user.Source == ParticipantSource.Db)
             {
-                return await AddDbUserAsParticipantAsync(studyId, user.DatabaseId.Value, role);
+                return await AddDbUserAsParticipantAsync(studyFromDb, user.DatabaseId.Value, role);
             }
             else if (user.Source == ParticipantSource.Azure)
             {
-                return await AddAzureUserAsParticipantAsync(studyId, user, role);
+                return await AddAzureUserAsParticipantAsync(studyFromDb, user, role);
             }
 
             throw new ArgumentException($"Unknown source for user {user.UserName}");
         }
 
 
-        async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(int studyId, int userId, string role)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
-
+        async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(Study studyFromDb, int userId, string role)
+        { 
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
-                throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyId}");
+                throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
             }
 
             var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
@@ -132,10 +133,8 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<StudyParticipantDto>(studyParticipant);
         }
 
-        async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(int studyId, ParticipantLookupDto user, string role)
-        {          
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
-
+        async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        { 
             var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
 
             if (userFromAzure == null)
@@ -152,12 +151,12 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                return await AddDbUserAsParticipantAsync(studyId, userDb.Id, role);
+                return await AddDbUserAsParticipantAsync(studyFromDb, userDb.Id, role);
             }
 
             if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
             {
-                throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyId}");
+                throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyFromDb.Id}");
             }
 
             var newStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };

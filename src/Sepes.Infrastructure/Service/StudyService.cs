@@ -101,9 +101,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
         {
-            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
-
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
+
+            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -295,8 +295,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
-            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
+
+            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
+        
 
             string oldFileName = studyFromDb.LogoUrl;
 

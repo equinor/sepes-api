@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Constants.Auth
             //RESULTS AND LEARNINGS, READ
             OperationPermission.CreateForAuthorizedUser(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: true),
             OperationPermission.CreateForAppRole(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
-            OperationPermission.CreateForStudyRole(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, StudyRoles.StudyViewer),
+            OperationPermission.CreateForStudyRole(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.StudyViewer),
 
             //RESULTS AND LEARNINGS, UPDATE
             OperationPermission.CreateForAppRole(UserOperation.Study_Update_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Constants.Auth
 
             //STUDY, ADD/REMOVE PARTICIPANT
             OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
-            OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
+            OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //SANDBOX, CRUD
             OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),

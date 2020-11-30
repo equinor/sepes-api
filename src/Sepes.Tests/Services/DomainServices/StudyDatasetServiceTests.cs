@@ -32,7 +32,7 @@ namespace Sepes.Tests.Services
             db.Database.EnsureCreated();
         }
 
-        async Task<StudyDto> AddStudyToTestDatabase(int studyId)
+        async Task<StudyDetailsDto> AddStudyToTestDatabase(int studyId)
         {
             var studyService = ServiceProvider.GetService<IStudyService>();
             StudyCreateDto study = new StudyCreateDto()
