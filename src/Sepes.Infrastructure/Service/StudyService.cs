@@ -86,7 +86,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudyDto)
+        public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
             StudyAccessUtil.CheckOperationPermissionsOrThrow(_userService, UserOperation.Study_Create);
 
@@ -96,10 +96,10 @@ namespace Sepes.Infrastructure.Service
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
             var newStudyId = await Add(studyDb);
-            return await GetStudyDtoByIdAsync(newStudyId, UserOperation.Study_Read);
+            return await GetStudyDetailsDtoByIdAsync(newStudyId, UserOperation.Study_Create);
         }
 
-        public async Task<StudyDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
+        public async Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
         {
             PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
@@ -141,7 +141,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
+            return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
         }
 
 
@@ -293,7 +293,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<StudyDto> AddLogoAsync(int studyId, IFormFile studyLogo)
+        public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
@@ -313,7 +313,7 @@ namespace Sepes.Infrastructure.Service
                 _ = _azureBlobStorageService.DeleteBlob(oldFileName);
             }
 
-            return await GetStudyDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
+            return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
         }
 
         public async Task<LogoResponseDto> GetLogoAsync(int studyId)

@@ -14,14 +14,14 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperation userOperation);
 
-        Task<StudyDto> CreateStudyAsync(StudyCreateDto newStudy);
+        Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudy);
 
-        Task<StudyDto> UpdateStudyMetadataAsync(int studyId, StudyDto newStudy);
+        Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto newStudy);
 
         Task CloseStudyAsync(int studyId);
         Task DeleteStudyAsync(int studyId);
 
-        Task<StudyDto> AddLogoAsync(int id, IFormFile studyLogo);
+        Task<StudyDetailsDto> AddLogoAsync(int id, IFormFile studyLogo);
 
         Task<LogoResponseDto> GetLogoAsync(int id);
     }
