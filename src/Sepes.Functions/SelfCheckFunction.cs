@@ -1,14 +1,23 @@
 using Microsoft.Azure.WebJobs;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Sepes.Functions
 {
-    public static class SelfCheckFunction
+    public class SelfCheckFunction
     {
+        readonly IConfiguration _config;
+
+        public SelfCheckFunction(IConfiguration config)
+        {
+            _config = config;
+        }
+
         [FunctionName("SelfCheck")]
-        public static void Run([TimerTrigger("0 */30 * * * *")]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 */30 * * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             var databaseOkay = true;
             var provisioningQueueOkay = true;
@@ -16,7 +25,7 @@ namespace Sepes.Functions
             var selfMonitoringStringBuilder = new StringBuilder($"Self check started at {DateTime.UtcNow}: ");
             selfMonitoringStringBuilder.Append(GenerateKeyValue("db", databaseOkay));
             selfMonitoringStringBuilder.Append(GenerateKeyValue("resource queue", provisioningQueueOkay));
-            log.LogWarning(selfMonitoringStringBuilder.ToString());  
+            log.LogWarning(selfMonitoringStringBuilder.ToString());         
         }
 
         static string GenerateKeyValue(string key, bool okay)
