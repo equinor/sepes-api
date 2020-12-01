@@ -6,7 +6,7 @@ using System;
 using System.Security.Claims;
 using System.Security.Principal;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
     {

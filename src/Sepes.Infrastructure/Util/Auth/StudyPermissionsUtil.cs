@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util.Auth;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util

@@ -10,12 +10,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Util.Auth
 {
     public static class StudyAccessUtil
     {
 
-        public static void CheckOperationPermissionsOrThrow(IUserService userService, UserOperation operation)
+        public static void HasAccessToOperationOrThrow(IUserService userService, UserOperation operation)
         {
             if (HasAccessToOperation(userService, operation) == false)
             {
@@ -41,7 +41,27 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
+        {
+            if (currentUser == null)
+            {
+                throw new ArgumentNullException("currentUser");
+            }
+
+            if (appRoles == null || appRoles.Count() == 0)
+            {
+                throw new ArgumentNullException("requiredRoles");
+            }
+
+            if (currentUser.AppRoles == null)
+            {
+                return false;
+            }
+
+            return currentUser.AppRoles.Intersect(appRoles).Any();
+        }
+
+        public static async Task<Study> HasAccessToOperationForStudyOrThrow(IUserService userService, Study study, UserOperation operation, string newRole = null)
         {
             if (await HasAccessToOperationForStudy(userService, study, operation))
             {
@@ -96,7 +116,7 @@ namespace Sepes.Infrastructure.Util
 
                 foreach (var curAllowance in allowedForAppRolesQueryable)
                 {
-                    if (StudyAccessUtil.UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
+                    if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
                     {
                         return true;
                     }
@@ -168,25 +188,7 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
-        {
-            if (currentUser == null)
-            {
-                throw new ArgumentNullException("currentUser");
-            }
-
-            if (appRoles == null || appRoles.Count() == 0)
-            {
-                throw new ArgumentNullException("requiredRoles");
-            }
-
-            if (currentUser.AppRoles == null)
-            {
-                return false;
-            }
-
-            return currentUser.AppRoles.Intersect(appRoles).Any();
-        }
+       
 
         public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles, UserOperation operation, string newRole = null)
         {
@@ -225,8 +227,6 @@ namespace Sepes.Infrastructure.Util
             }
 
             return false;
-
-
         }
     }
 }

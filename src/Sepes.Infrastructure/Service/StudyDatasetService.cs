@@ -65,7 +65,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperation.Study_AddRemove_Dataset);
+            return await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset);
         }
 
         public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId)
@@ -117,7 +117,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             await _db.SaveChangesAsync();
-            var retVal = await _studyService.GetStudyDtoByIdAsync(studyId, Constants.UserOperation.Study_AddRemove_Dataset);
+            var retVal = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset);
             return retVal;
         }
 
@@ -129,8 +129,8 @@ namespace Sepes.Infrastructure.Service
             dataset.StudyId = studyId;
             await _db.Datasets.AddAsync(dataset);
 
-            // Create new linking table
-            StudyDataset studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
+            // Create new linking table entry
+            var studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 

@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +89,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
-            StudyAccessUtil.CheckOperationPermissionsOrThrow(_userService, UserOperation.Study_Create);
+            StudyAccessUtil.HasAccessToOperationOrThrow(_userService, UserOperation.Study_Create);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
