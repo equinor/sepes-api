@@ -96,6 +96,8 @@ namespace Sepes.Infrastructure.Util.Auth
 
         public static bool IsAllowedWithoutAnyRoles(IEnumerable<OperationPermission> relevantOperations, Study study = null)
         {
+            //TODO: Validate that this user is a company user
+
             var operationsAllowedWithoutRoles = AllowedUserOperations.ForAuthorizedUserLevel(relevantOperations);
 
             if (study != null && study.Restricted)

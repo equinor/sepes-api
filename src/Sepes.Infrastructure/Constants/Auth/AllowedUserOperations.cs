@@ -17,8 +17,9 @@ namespace Sepes.Infrastructure.Constants.Auth
 
             //STUDY READ
             OperationPermission.CreateForAuthorizedUser(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: true),
-            OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin), 
-            OperationPermission.CreateForStudyRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, StudyRoles.StudyOwner, StudyRoles.SponsorRep, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.StudyViewer ),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            OperationPermission.CreateForStudyRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.StudyViewer ),
                   
             //STUDY CREATE
             OperationPermission.CreateForAppRole(UserOperation.Study_Create, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
