@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,7 +89,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
-            StudyAccessUtil.CheckOperationPermissionsOrThrow(_userService, UserOperation.Study_Create);
+            StudyAccessUtil.HasAccessToOperationOrThrow(_userService, UserOperation.Study_Create);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
@@ -101,9 +102,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
         {
-            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
-
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
+
+            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -295,8 +296,10 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
-            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
+
+            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
+        
 
             string oldFileName = studyFromDb.LogoUrl;
 

@@ -11,12 +11,12 @@
         Study_Read_ResultsAndLearnings,
         Study_Update_ResultsAndLearnings,
 
-        Study_AddRemove_Dataset,
         Study_AddRemove_Participant,
+
+        Study_AddRemove_Dataset,
 
         //Sandbox
         Study_Crud_Sandbox,
-
 
         //Sandbox details and editation
         SandboxLock,

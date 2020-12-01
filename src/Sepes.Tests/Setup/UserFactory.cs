@@ -89,9 +89,28 @@ namespace Sepes.Tests.Setup
             return SetupUserServiceMock(GetSponsor(userId));
         }
 
+        public static Mock<IUserService> GetUserServiceMockForDatasetAdmin(int userId = 1)
+        {
+            return SetupUserServiceMock(GetDatasetAdmin(userId));
+        }
+
         public static Mock<IUserService> GetUserServiceForDatasetAdmin(int userId = 1)
         {
             return SetupUserServiceMock(GetDatasetAdmin(userId));
+        }
+
+        public static Mock<IUserService> GetUserServiceMockForAppRole(string appRole, int userId = 1)
+        {
+            switch (appRole)
+            {
+                case AppRoles.Admin:
+                    return GetUserServiceMockForAdmin(userId);
+                case AppRoles.Sponsor:
+                    return GetUserServiceMockForSponsor(userId);
+                case AppRoles.DatasetAdmin:
+                    return GetUserServiceMockForDatasetAdmin(userId);
+            }
+            return SetupUserServiceMock(GetAdmin(userId));
         }
 
         static Mock<IUserService> SetupUserServiceMock(UserDto user)

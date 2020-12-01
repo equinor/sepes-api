@@ -10,17 +10,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Util.Auth
 {
     public static class StudyAccessUtil
     {
 
-        public static void CheckOperationPermissionsOrThrow(IUserService userService, UserOperation operation)
+        public static void HasAccessToOperationOrThrow(IUserService userService, UserOperation operation)
         {
             if (HasAccessToOperation(userService, operation) == false)
             {
                 throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
-            }          
+            }
         }
 
         public static bool HasAccessToOperation(IUserService userService, UserOperation operation)
@@ -41,7 +41,27 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static async Task<Study> CheckStudyAccessOrThrow(IUserService userService, Study study, UserOperation operation)
+        static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
+        {
+            if (currentUser == null)
+            {
+                throw new ArgumentNullException("currentUser");
+            }
+
+            if (appRoles == null || appRoles.Count() == 0)
+            {
+                throw new ArgumentNullException("requiredRoles");
+            }
+
+            if (currentUser.AppRoles == null)
+            {
+                return false;
+            }
+
+            return currentUser.AppRoles.Intersect(appRoles).Any();
+        }
+
+        public static async Task<Study> HasAccessToOperationForStudyOrThrow(IUserService userService, Study study, UserOperation operation, string newRole = null)
         {
             if (await HasAccessToOperationForStudy(userService, study, operation))
             {
@@ -49,9 +69,9 @@ namespace Sepes.Infrastructure.Util
             }
 
             throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
-        }     
+        }
 
-        public static async Task<bool> HasAccessToOperationForStudy(IUserService userService, Study study, UserOperation operation)
+        public static async Task<bool> HasAccessToOperationForStudy(IUserService userService, Study study, UserOperation operation, string newRole = null)
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
@@ -61,21 +81,23 @@ namespace Sepes.Infrastructure.Util
                 return true;
             }
 
-            if (await IsAllowedBasedOnAppRoles(onlyRelevantOperations, userService, study))
+            if (await IsAllowedBasedOnAppRoles(onlyRelevantOperations, userService, study, operation, newRole))
             {
                 return true;
             }
 
-            if (await IsAllowedBasedOnStudyRoles(onlyRelevantOperations, userService, study))
+            if (await IsAllowedBasedOnStudyRoles(onlyRelevantOperations, userService, study, operation, newRole))
             {
                 return true;
             }
 
             return false;
-        }      
+        }
 
         public static bool IsAllowedWithoutAnyRoles(IEnumerable<OperationPermission> relevantOperations, Study study = null)
         {
+            //TODO: Validate that this user is a company user
+
             var operationsAllowedWithoutRoles = AllowedUserOperations.ForAuthorizedUserLevel(relevantOperations);
 
             if (study != null && study.Restricted)
@@ -96,7 +118,7 @@ namespace Sepes.Infrastructure.Util
 
                 foreach (var curAllowance in allowedForAppRolesQueryable)
                 {
-                    if (StudyAccessUtil.UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
+                    if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
                     {
                         return true;
                     }
@@ -106,7 +128,7 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        static async Task<bool> IsAllowedBasedOnAppRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study)
+        static async Task<bool> IsAllowedBasedOnAppRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study, UserOperation operation, string newRole = null)
         {
             var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
 
@@ -121,12 +143,12 @@ namespace Sepes.Infrastructure.Util
 
                 foreach (var curAllowance in allowedForAppRolesQueryable)
                 {
-                    if (StudyAccessUtil.UserHasAnyOfTheseAppRoles(currentUserDb, curAllowance.AllowedForRoles))
+                    if (UserHasAnyOfTheseAppRoles(currentUserDb, curAllowance.AllowedForRoles))
                     {
                         if (curAllowance.AppliesOnlyIfUserIsStudyOwner)
                         {
-                            if (StudyAccessUtil.UserHasAnyOfTheseStudyRoles(currentUserDb.Id, study, StudyRoles.StudyOwner))
-                            {
+                            if (UserHasAnyOfTheseStudyRoles(currentUserDb.Id, study, operation, newRole, StudyRoles.StudyOwner))
+                            {                                
                                 return true;
                             }
                         }
@@ -143,7 +165,7 @@ namespace Sepes.Infrastructure.Util
 
         }
 
-        static async Task<bool> IsAllowedBasedOnStudyRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study)
+        static async Task<bool> IsAllowedBasedOnStudyRoles(IEnumerable<OperationPermission> relevantOperations, IUserService userService, Study study, UserOperation operation, string newRole = null)
         {
             var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(relevantOperations);
 
@@ -158,7 +180,7 @@ namespace Sepes.Infrastructure.Util
 
                 foreach (var curOpWithRole in allowedForStudyRolesQueryable)
                 {
-                    if (StudyAccessUtil.UserHasAnyOfTheseStudyRoles(currentUser.Id, study, curOpWithRole.AllowedForRoles))
+                    if (UserHasAnyOfTheseStudyRoles(currentUser.Id, study, curOpWithRole.AllowedForRoles, operation, newRole))
                     {
                         return true;
                     }
@@ -166,33 +188,15 @@ namespace Sepes.Infrastructure.Util
             }
 
             return false;
-        }         
+        }
 
-        public static bool UserHasAnyOfTheseAppRoles(UserDto currentUser, HashSet<string> appRoles)
-        {
-            if (currentUser == null)
-            {
-                throw new ArgumentNullException("currentUser");
-            }
+       
 
-            if (appRoles == null || appRoles.Count() == 0)
-            {
-                throw new ArgumentNullException("requiredRoles");
-            }
-
-            if (currentUser.AppRoles == null)
-            {
-                return false;
-            }
-
-            return currentUser.AppRoles.Intersect(appRoles).Any();
-        }       
-
-        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles)
+        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles, UserOperation operation, string newRole = null)
         {
             foreach (var curParticipant in study.StudyParticipants.Where(p => p.UserId == userId))
             {
-                if (requiredRoles.Contains(curParticipant.RoleName))
+                if (requiredRoles.Contains(curParticipant.RoleName) && !DisqualifiedBySpecialVendorAdminCase(curParticipant, operation, newRole))
                 {
                     return true;
                 }
@@ -201,11 +205,30 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, params string[] requiredRoles)
+        public static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, UserOperation operation, string newRole, params string[] requiredRoles)
         {
             var requiredRolesLookup = new HashSet<string>(requiredRoles);
 
-            return UserHasAnyOfTheseStudyRoles(userId, study, requiredRolesLookup);
+            return UserHasAnyOfTheseStudyRoles(userId, study, requiredRolesLookup, operation, newRole);
+        }
+
+        public static bool DisqualifiedBySpecialVendorAdminCase(StudyParticipant studyParticipant, UserOperation operation, string newRole)
+        {
+            if (String.IsNullOrWhiteSpace(newRole) == false)
+            {
+                if (operation == UserOperation.Study_AddRemove_Participant)
+                {
+                    if (studyParticipant.RoleName == StudyRoles.VendorAdmin)
+                    {
+                        if (newRole != StudyRoles.VendorContributor)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
     }
 }

@@ -4,7 +4,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -32,19 +32,25 @@ namespace Sepes.Infrastructure.Service.Queries
         public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
         {
             var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
-            return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
+        }
+
+        public static async Task<Study> GetStudyForAddParticipantByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
+        {
+            var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
         }
 
         public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation)
         {
             var studyFromDb = await GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
-            return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
         }
 
         public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false)
         {
             var studyFromDb = await GetStudyByResourceIdOrThrowAsync(db, resourceId, withIncludes);
-            return await StudyAccessUtil.CheckStudyAccessOrThrow(userService, studyFromDb, operation);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
         }
 
         #endregion    
