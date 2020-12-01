@@ -27,19 +27,12 @@ namespace Sepes.Tests.Util
             Assert.NotNull(returnedStudy); 
         }
 
-        //I am owner, but not admin
-        //I am owner
-
-   
-
-     
-
         [Fact]  
         public async void ReadingRestrictedStudy_AsAdmin_ShouldSucceeed()
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForAdmin(1);
+            var userServiceMock = UserFactory.GetUserServiceMockForAdmin(COMMON_USER_ID);
 
             var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
 
@@ -53,7 +46,7 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, 1);
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, COMMON_USER_ID);
        
             var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
 
@@ -67,7 +60,7 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, 1);
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, COMMON_USER_ID);
 
             await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
         }
@@ -81,7 +74,7 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(1);
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(COMMON_USER_ID);
             var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
 
             PerformUsualStudyTests(study);
@@ -98,7 +91,7 @@ namespace Sepes.Tests.Util
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, justSomeBogusRole);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(1);
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(COMMON_USER_ID);
             await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
         }
 
