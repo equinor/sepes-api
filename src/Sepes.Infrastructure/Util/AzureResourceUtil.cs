@@ -73,6 +73,11 @@ namespace Sepes.Infrastructure.Util
             return $"{azureUrlPart}{domain}/resource{resourceId}";
         }
 
+        public static string CreateResourceRetryLink(int resourceId)
+        {
+            return $"api/resources/{resourceId}/retry";
+        }
+
         public static string CreateResourceCostLink(IConfiguration config, Sandbox resource)
         {
             var ResourceGroupId = "";

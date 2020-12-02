@@ -7,7 +7,7 @@ using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,8 +24,8 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly IPrincipalService _principalService;
         readonly SepesDbContext _db;
-        readonly IMapper _mapper; 
-        
+        readonly IMapper _mapper;
+
         public UserService(IConfiguration config, SepesDbContext db, IPrincipalService principalService, IMapper mapper)
         {
             _config = config;
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
                 _userIsLoadedFromDb = true;
             }
-          
+
             return _cachedUser;
         }
 
@@ -57,19 +57,19 @@ namespace Sepes.Infrastructure.Service
         {
             if (_userIsLoadedFromDb == false || _userIsLoadedFromDbWithStudyParticipants == false)
             {
-                var userFromDb = await EnsureDbUserExists(true);             
+                var userFromDb = await EnsureDbUserExists(true);
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
                 _userIsLoadedFromDb = true;
                 _userIsLoadedFromDbWithStudyParticipants = true;
             }
             return _cachedUser;
-        }  
+        }
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)
         {
             var userDto = _mapper.Map<UserDto>(user);
 
-            if(userDto.ObjectId != _cachedUser.ObjectId)
+            if (userDto.ObjectId != _cachedUser.ObjectId)
             {
                 throw new Exception($"Error mapping user DTO from DB entry. ObjectId was not equal");
             }
@@ -87,10 +87,8 @@ namespace Sepes.Infrastructure.Service
             //Reload information that comes from principal;
             var principal = _principalService.GetPrincipal();
 
-            userDto.Admin = principal.IsInRole(AppRoles.Admin);
-            userDto.Sponsor = principal.IsInRole(AppRoles.Sponsor);
-            userDto.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
-     
+            UserUtil.ApplyExtendedProps(_config, principal, userDto);
+
             return userDto;
         }
 
@@ -139,6 +137,6 @@ namespace Sepes.Infrastructure.Service
             var queryable = GetUserQueryable(includeParticipantInfo);
             var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == _cachedUser.ObjectId);
             return userFromDb;
-        }  
+        }
     }
 }

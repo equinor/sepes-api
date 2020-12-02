@@ -47,6 +47,22 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
+        async Task<bool> CheckAndHandleTryCount(ProvisioningQueueParentDto queueParentItem, SandboxResourceOperationDto currentResourceOperation)
+        {
+            if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
+            {
+                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
+
+                currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED);
+                await _workQueue.DeleteMessageAsync(queueParentItem);
+
+                return true;
+            }
+
+            return false;
+
+        }
+
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation($"Handling message: {queueParentItem.MessageId}. Message description: {queueParentItem.Description}");
@@ -75,16 +91,20 @@ namespace Sepes.Infrastructure.Service
                         {
                             //cannot recover from this
                             await _workQueue.DeleteMessageAsync(queueParentItem);
-                            throw new Exception($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Resource is marked for deletion in database, Aborting!");
+                            throw new TaskCanceledException($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Resource is marked for deletion in database, Aborting!");
                         }
                         else if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
                         {
                             _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
 
-                            currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED);
+                            currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED);
                             await _workQueue.DeleteMessageAsync(queueParentItem);
                             deleteFromQueueAfterCompletion = false; //Has allready been done
                             break;
+                        }
+                        else if (String.IsNullOrWhiteSpace(currentResourceOperation.Status) == false && currentResourceOperation.Status == CloudResourceOperationState.ABORTED)
+                        {
+                            throw new TaskCanceledException($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Has aborted state!");
                         }
                         else if (currentResourceOperation.OperationType != CloudResourceOperationType.DELETE && MightBeInProgressByAnotherThread(currentResourceOperation))
                         {
@@ -109,30 +129,56 @@ namespace Sepes.Infrastructure.Service
                         }
 
                         currentCrudResult = await HandleCRUD(queueParentItem, queueChildItem, currentResourceOperation, currentCrudInput, currentCrudResult);
-                    }
+                    }                  
+                   
                     catch (Exception ex)
                     {
-                        if (currentResourceOperation != null)
+                        if(ex is TaskCanceledException || ( ex.InnerException != null && ex.InnerException is TaskCanceledException))
                         {
-                            await _sandboxResourceOperationService.UpdateStatusAndIncreaseTryCountAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.FAILED, AzureResourceUtil.CreateResourceOperationErrorMessage(ex));
+                            if (currentResourceOperation != null)
+                            {
+                                currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.ABORTED, errorMessage: AzureResourceUtil.CreateResourceOperationErrorMessage(ex));
+                            }
                         }
+                        else
+                        {
+                            if (currentResourceOperation != null)
+                            {
+                                currentResourceOperation = await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED, errorMessage: AzureResourceUtil.CreateResourceOperationErrorMessage(ex));
+
+                                if (currentResourceOperation.TryCount < currentResourceOperation.MaxTryCount && queueParentItem != null && queueParentItem.DequeueCount == 5)
+                                {
+                                    await _workQueue.ReQueueMessageAsync(queueParentItem);
+                                }
+                                else
+                                {
+                                    await _workQueue.IncreaseInvisibilityAsync(queueParentItem, 10);
+                                }
+
+                            }
+
+                          
+                        }                     
 
                         throw;
-                    }
-                }
-
-                _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}");
+                    }//catch
+                } //foreach
 
                 if (deleteFromQueueAfterCompletion)
                 {
+                    _logger.LogInformation($"Deleting handling queue message: {queueParentItem.MessageId}");
                     await _workQueue.DeleteMessageAsync(queueParentItem);
-                }
+                }            
+
+                _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}");
 
             }
             catch (Exception ex)
             {
                 _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}, message description: {queueParentItem.Description}. See exception info for details ");
             }
+
+         
         }
 
         async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, SandboxResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
@@ -153,12 +199,12 @@ namespace Sepes.Infrastructure.Service
                 throw new NullReferenceException($"ResourceOperation {queueChildItem.SandboxResourceOperationId}Unable to resolve CRUD service for type {resourceType}!");
             }
 
-            var nsg = SandboxResourceUtil.GetSibilingResource(await _sandboxResourceService.GetByIdAsync(resource.Id.Value), AzureResourceType.NetworkSecurityGroup);
+            var nsg = SandboxResourceUtil.GetSibilingResource(await _sandboxResourceService.GetByIdAsync(resource.Id), AzureResourceType.NetworkSecurityGroup);
 
             currentCrudInput.ResetButKeepSharedVariables(currentCrudResult != null ? currentCrudResult.NewSharedVariables : null);
             currentCrudInput.Name = resource.ResourceName;
             currentCrudInput.StudyName = resource.StudyName;
-            currentCrudInput.DatabaseId = resource.Id.Value;
+            currentCrudInput.DatabaseId = resource.Id;
             currentCrudInput.SandboxId = resource.SandboxId;
             currentCrudInput.SandboxName = resource.SandboxName;
             currentCrudInput.ResourceGroupName = resource.ResourceGroupName;
@@ -178,11 +224,12 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation allready completed. Resource should exist. Getting provsioning state");
                     await ThrowIfUnexpectedProvisioningStateAsync(currentResourceOperation);     //cannot recover from this                  
                     currentCrudResult = await service.GetSharedVariables(currentCrudInput);
+                    return currentCrudResult;
                 }
                 else
                 {
-                    currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
-                   
+                    currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+
 
                     var cancellationTokenSource = new CancellationTokenSource();
                     Task<CloudResourceCRUDResult> currentCrudResultTask = null;
@@ -198,10 +245,11 @@ namespace Sepes.Infrastructure.Service
                         currentCrudResultTask = service.Update(currentCrudInput, cancellationTokenSource.Token);
                     }
 
-
                     while (!currentCrudResultTask.IsCompleted)
                     {
-                        if (await _sandboxResourceService.ResourceIsDeleted(resource.Id.Value))
+                        currentResourceOperation = await _sandboxResourceOperationService.GetByIdAsync(currentResourceOperation.Id);
+
+                        if (await _sandboxResourceService.ResourceIsDeleted(resource.Id) || currentResourceOperation.Status == CloudResourceOperationState.ABORTED)
                         {
                             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Operation canceled!");
                             cancellationTokenSource.Cancel();
@@ -216,13 +264,13 @@ namespace Sepes.Infrastructure.Service
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {
                         _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Setting resource id and name!");
-                        await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id.Value, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                        await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
                     }
                 }
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
-                currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id.Value, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+                currentResourceOperation = await _sandboxResourceOperationService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
 
                 if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
                 {
@@ -244,14 +292,14 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Finished with provisioningState: {currentCrudResult.CurrentProvisioningState}");
 
-            await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id.Value, CloudResourceOperationState.DONE_SUCCESSFUL, currentCrudResult.CurrentProvisioningState);
+            await _sandboxResourceOperationService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentCrudResult.CurrentProvisioningState);
 
             return currentCrudResult;
         }
 
         string CreateOperationLogMessagePrefix(SandboxResourceOperationDto currentResourceOperation)
         {
-            return $"{currentResourceOperation.Id} | {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType} | ";
+            return $"{currentResourceOperation.Id} | {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType.ToUpper()} | attempt ({currentResourceOperation.TryCount}/{currentResourceOperation.MaxTryCount}) | ";
         }
 
         bool MightBeInProgressByAnotherThread(SandboxResourceOperationDto currentResourceOperation)

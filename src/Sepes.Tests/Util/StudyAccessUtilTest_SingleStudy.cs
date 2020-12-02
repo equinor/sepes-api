@@ -1,8 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Service.Queries;
+using Sepes.Tests.Setup;
 using System.Linq;
 using Xunit;
 
@@ -17,57 +17,100 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public async void ReadingUnrestrictedStudy_ShouldBeAllowed()
+        public async void ReadingUnrestrictedStudyAsEmployee_ShouldBeAllowed()
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, false);
-          
-            var userSerice = ServiceProvider.GetService<IUserService>();
+            
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(true, COMMON_USER_ID);        
 
-            var returnedStudy = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
+            var returnedStudy = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
             Assert.NotNull(returnedStudy); 
         }
 
-        [Theory]
-        [InlineData(StudyRoles.StudyOwner)]
-        [InlineData(StudyRoles.SponsorRep)]
-        [InlineData(StudyRoles.VendorAdmin)]
-        [InlineData(StudyRoles.VendorContributor)]
-        [InlineData(StudyRoles.StudyViewer)]
-        public async void ReadingRestrictedStudyWithPermission_ShouldSucceed(string roleThatGrantsPermission)
+        [Fact]
+        public async void ReadingUnrestrictedStudyAsEmployee_ShouldThrow()
         {
-            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, roleThatGrantsPermission);
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, false);
 
-            var userSerice = ServiceProvider.GetService<IUserService>();
-            var study = await StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead);
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(false, COMMON_USER_ID);
 
-            Assert.NotNull(study);
-            Assert.Equal(COMMON_STUDY_ID, study.Id);
-
-            Assert.NotNull(study.StudyParticipants);
-            Assert.NotEmpty(study.StudyParticipants);
-
-            var studyParticipant = study.StudyParticipants.FirstOrDefault();
-            Assert.NotNull(studyParticipant);
-            Assert.NotNull(studyParticipant.User);
-            Assert.Equal(COMMON_USER_ID, studyParticipant.User.Id);
-       
+            await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
         }
 
-        [Theory]        
-        [InlineData("null")]
-        [InlineData("Not a real role")]
-        [InlineData("")]
-        [InlineData(AppRoles.Admin)] //Not a study specific role, so cannot be used this way
-        [InlineData(AppRoles.Sponsor)] //Not a study specific role, so cannot be used this way
-        [InlineData(AppRoles.DatasetAdmin)] //Not a study specific role, so cannot be used this way
-        public async void ReadingRestrictedStudyWithoutPermission_ShouldFail(string justSomeBogusRole)
+        [Fact]  
+        public async void ReadingRestrictedStudy_AsAdmin_ShouldSucceeed()
+        {
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true);
+
+            var userServiceMock = UserFactory.GetUserServiceMockForAdmin(COMMON_USER_ID);
+
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
+
+            PerformUsualStudyTests(study);
+        }
+
+        [Theory]
+        [InlineData(AppRoles.Admin, StudyRoles.StudyOwner)]
+        [InlineData(AppRoles.Sponsor, StudyRoles.StudyOwner)]
+        public async void ReadingRestrictedStudy_WithRelevantAppRole_ShouldSucceeed(string appRole, string studySpecificRole)
+        {
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
+
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, COMMON_USER_ID);
+       
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
+
+            PerformUsualStudyTests(study);
+            UserMustBeAmongStudyParticipants(study);
+        }
+
+        [Theory]
+        [InlineData(AppRoles.DatasetAdmin, StudyRoles.StudyOwner)]
+        public async void ReadingRestrictedStudy_WithWrongAppRole_ShouldFail(string appRole, string studySpecificRole)
+        {
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
+
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRole, COMMON_USER_ID);
+
+            await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
+        }
+
+        [Theory]
+        [InlineData(false, StudyRoles.SponsorRep)]
+        [InlineData(false, StudyRoles.VendorAdmin)]
+        [InlineData(false, StudyRoles.VendorContributor)]
+        [InlineData(false, StudyRoles.StudyViewer)]
+        [InlineData(true, StudyRoles.SponsorRep)]
+        [InlineData(true, StudyRoles.VendorAdmin)]
+        [InlineData(true, StudyRoles.VendorContributor)]
+        [InlineData(true, StudyRoles.StudyViewer)]
+        public async void ReadingRestrictedStudyWithRelevantPermission_ShouldSucceed(bool employee, string studySpecificRole)
+        {
+            var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, studySpecificRole);
+
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(employee, COMMON_USER_ID);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read);
+
+            PerformUsualStudyTests(study);
+            UserMustBeAmongStudyParticipants(study);
+        }   
+
+
+        [Theory]
+        [InlineData(false, "null")]
+        [InlineData(false, "Not a real role")]
+        [InlineData(false, "")]
+        [InlineData(false, StudyRoles.StudyOwner)]
+        [InlineData(true, "null")]
+        [InlineData(true, "Not a real role")]
+        [InlineData(true, "")]
+        [InlineData(true, StudyRoles.StudyOwner)]
+        public async void ReadingRestrictedStudyThatHasBogusRole_ShouldFail(bool employee, string justSomeBogusRole)
         {
             var db = GetContextWithSimpleTestData(COMMON_USER_ID, COMMON_STUDY_ID, true, justSomeBogusRole);
-            
-            var userSerice = ServiceProvider.GetService<IUserService>();
-            await Assert.ThrowsAsync<ForbiddenException>(()=> StudyAccessUtil.GetStudyByIdCheckAccessOrThrow(db, userSerice, COMMON_STUDY_ID, UserOperations.StudyRead));     
-        }  
-     
-        
+
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(employee, COMMON_USER_ID);
+            await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_Read));
+        }       
     }
 }

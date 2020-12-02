@@ -15,6 +15,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default);
 
-        Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default); 
+        Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default);
+
+        Task<VmExternalLink> GetExternalLink(int vmId);
     }
 }

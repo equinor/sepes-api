@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class StudySpecificDatasetDto : UpdateableBaseDto
+    public class StudyDatasetDto : UpdateableBaseDto
     {
         public string Name { get; set; }
         public string Description { get; set; }
@@ -19,8 +17,6 @@ namespace Sepes.Infrastructure.Dto
         public string CountryOfOrigin { get; set; }
         public string AreaL1 { get; set; }
         public string AreaL2 { get; set; }
-        public string Tags { get; set; }
-
-        public int StudyNo { get; set; }
+        public string Tags { get; set; }       
     }
 }

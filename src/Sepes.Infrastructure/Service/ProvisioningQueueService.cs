@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
             _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
-        public async Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Adding message: {message.Description}, having {message.Children.Count} children");
             await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message, visibilityTimeout, cancellationToken);
@@ -67,6 +67,17 @@ namespace Sepes.Infrastructure.Service
             message.PopReceipt = updateReceipt.PopReceipt;
             _logger.LogInformation($"Queue: Message {message.MessageId} will be visible again at {updateReceipt.NextVisibleOn} (UTC)");
 
+        }
+
+        public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation($"Queue: Re-queuing message: {message.Description}, having {message.Children.Count} children.");
+
+            await DeleteMessageAsync(message);
+            message.DequeueCount = 0;
+            message.PopReceipt = null;
+            message.MessageId = null;
+            await SendMessageAsync(message, cancellationToken: cancellationToken);           
         }
     }
 }

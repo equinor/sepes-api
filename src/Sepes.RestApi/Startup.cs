@@ -79,9 +79,7 @@ namespace Sepes.RestApi
                     // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
-            });       
-
-      
+            });        
 
             var enableSensitiveDataLogging = true;
 
@@ -101,19 +99,7 @@ namespace Sepes.RestApi
             // Token acquisition service based on MSAL.NET
             // and chosen token cache implementation
             services.AddWebAppCallsProtectedWebApi(_configuration)
-               .AddInMemoryTokenCaches();          
-
-            services.AddCors(options =>
-            {
-                options.AddPolicy(MyAllowSpecificOrigins,
-                builder =>
-                {
-                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
-                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
-                });
-            });
+               .AddInMemoryTokenCaches();            
 
             DoMigration();
 
@@ -128,9 +114,10 @@ namespace Sepes.RestApi
             services.AddTransient<ILookupService, LookupService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
-            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IStudyDatasetService, StudyDatasetService>();
+            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
@@ -155,9 +142,7 @@ namespace Sepes.RestApi
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<IAzureVmOsService, AzureVmOsService>();
             services.AddTransient<IRegionService, RegionService>();
-
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>

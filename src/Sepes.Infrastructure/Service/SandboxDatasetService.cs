@@ -6,7 +6,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read);
 
             var datasetsFromDb = await _db.SandboxDatasets
                 .Include(sd=> sd.Dataset)
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Add(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);   
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);   
        
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDatasetDto> Remove(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudyAccessUtil.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperations.SandboxEdit);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
             var sandboxDataset = await _db.SandboxDatasets
                 .FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 

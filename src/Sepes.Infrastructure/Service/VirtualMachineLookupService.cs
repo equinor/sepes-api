@@ -1,7 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -10,30 +8,20 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineLookupService : IVirtualMachineLookupService
     {
         readonly ILogger _logger;
-        readonly SepesDbContext _db;
-        readonly IMapper _mapper;
-        readonly IUserService _userService;
         readonly ISandboxService _sandboxService;
         readonly IAzureCostManagementService _costService;
 
         public VirtualMachineLookupService(
             ILogger<VirtualMachineService> logger,
-            SepesDbContext db,
-            IMapper mapper,
-            IUserService userService,
             ISandboxService sandboxService,
             IAzureCostManagementService costService)
         {
             _logger = logger;
-            _db = db;
-            _mapper = mapper;
-            _userService = userService;
             _sandboxService = sandboxService;
             _costService = costService;
         }
@@ -45,7 +33,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
 
             var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size, cancellationToken);
 
@@ -74,7 +62,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+                var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
 
                 result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
 
@@ -108,8 +96,6 @@ namespace Sepes.Infrastructure.Service
             result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
 
             return result;
-        }
-
-      
+        }      
     }
 }

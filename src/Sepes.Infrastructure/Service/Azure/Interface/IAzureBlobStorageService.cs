@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
+using Sepes.Infrastructure.Interface;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -8,9 +9,9 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureBlobStorageService
     {
-        Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);    
+        IEnumerable<StudyListItemDto> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);    
 
-        Task<StudyDto> DecorateLogoUrlWithSAS(StudyDto studyDto);
+        void DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);
 
         Response<bool> DeleteBlob(string fileName);
         Task<byte[]> GetImageFromBlobAsync(string logoUrl);

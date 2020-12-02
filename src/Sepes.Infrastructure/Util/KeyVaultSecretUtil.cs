@@ -50,10 +50,52 @@ namespace Sepes.Infrastructure.Util
                 {
                     logger.LogWarning($"Unable to purge secret {secretName}", ex);
                 }
-             
-            }          
+
+            }
 
             return secret.Value.Value;
+        }
+
+        //Key vault sometimes get bloated with vm passwords, use this routine to delete and purge those. Remember not to leave reference to this so it runs in production
+        public static async Task ClearAllVmPasswords(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting)
+        {
+
+            try
+            {
+                var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
+
+
+                foreach (var cur in client.GetPropertiesOfSecrets())
+                {
+                    if (cur.Name.ToLower().IndexOf("newvmpassword-") == 0)
+                    {
+                        if (cur.CreatedOn.HasValue)
+                        {
+                            if (cur.CreatedOn.Value.AddHours(1) < DateTime.UtcNow)
+                            {
+                                await client.StartDeleteSecretAsync(cur.Name);
+    
+                        }
+                        }
+                    }
+                }
+
+                foreach (var cur in client.GetDeletedSecrets())
+                {
+                    if (cur.Name.ToLower().IndexOf("newvmpassword-") == 0)
+                    {
+
+                        await client.PurgeDeletedSecretAsync(cur.Name);
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+
+                logger.LogError(ex, "Failed to delete VM passwords from keyvault");
+            }
         }
     }
 }

@@ -4,6 +4,8 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace Sepes.Tests.Util
 {
@@ -115,6 +117,24 @@ namespace Sepes.Tests.Util
             {
                 study.StudyParticipants.Add(new StudyParticipant() { StudyId = study.Id, UserId = userId, RoleName = curRole });
             }
+        }
+
+        protected void PerformUsualStudyTests(Study study)
+        {
+            Assert.NotNull(study);
+            Assert.Equal(COMMON_STUDY_ID, study.Id);
+
+            Assert.NotNull(study.StudyParticipants);
+        }
+
+        protected void UserMustBeAmongStudyParticipants(Study study)
+        {
+            Assert.NotEmpty(study.StudyParticipants);
+
+            var studyParticipant = study.StudyParticipants.FirstOrDefault();
+            Assert.NotNull(studyParticipant);
+            Assert.NotNull(studyParticipant.User);
+            Assert.Equal(COMMON_USER_ID, studyParticipant.User.Id);
         }
     }
 }

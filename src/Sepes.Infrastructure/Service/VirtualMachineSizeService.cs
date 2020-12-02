@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandbox = await _sandboxService.GetSandboxAsync(sandboxId);
+            var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
 
             var sizes = await AvailableSizes(sandbox.Region, cancellationToken);
 
@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Region {region} not found or disabled.");
             }
 
-            var sizes = relevantDbRegion.VmSizeAssociations.Select(va => va.VmSize).ToList();
+            var sizes = relevantDbRegion.VmSizeAssociations.Select(va => va.VmSize).OrderBy(s=> s.Key).ToList();
 
             return sizes;
         }

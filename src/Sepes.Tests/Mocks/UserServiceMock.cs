@@ -1,22 +1,17 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using System.Collections.Generic;
+using Sepes.Tests.Setup;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Mocks
 {
     public class UserServiceMock : IUserService
     {
-        public static string OBJECT_ID = "objectId";
-        public static string USERNAME = "testuser";
-        public static string FULLNAME = "Test User";
-        public static string EMAIL = "testuser@equinor.com";
-      
-
         UserDto GetBaseUser()
         {
-            return new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL);
+            var testUser = UserFactory.GetAdmin(1);        
+
+            return testUser;
         }
 
         public UserDto GetCurrentUser()

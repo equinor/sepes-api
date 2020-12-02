@@ -7,7 +7,7 @@ using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -128,9 +128,9 @@ namespace Sepes.Infrastructure.Service
             throw new Exception("File upload failed. Unable to crate connection to file storage");
         }
 
-        public async Task<StudyDto> DecorateLogoUrlWithSAS(StudyDto studyDto)
+        public void DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo)
         {
-            var uriBuilder = await CreateUriBuilderWithSasToken();
+            var uriBuilder = CreateUriBuilderWithSasToken();
 
             if(uriBuilder == null)
             {
@@ -138,15 +138,13 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                DecorateLogoUrlsWithSAS(uriBuilder, studyDto);
-            }            
-
-            return studyDto;
+                DecorateLogoUrlsWithSAS(uriBuilder, hasLogo);
+            } 
         }
 
-        public async Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
+        public IEnumerable<StudyListItemDto> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
         {
-            var uriBuilder = await CreateUriBuilderWithSasToken();
+            var uriBuilder = CreateUriBuilderWithSasToken();
 
             if (uriBuilder == null)
             {
@@ -164,20 +162,20 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        void DecorateLogoUrlsWithSAS(UriBuilder uriBuilder, IHasLogoUrl studyDto)
+        void DecorateLogoUrlsWithSAS(UriBuilder uriBuilder, IHasLogoUrl hasLogo)
         {
-            if (!String.IsNullOrWhiteSpace(studyDto.LogoUrl))
+            if (!String.IsNullOrWhiteSpace(hasLogo.LogoUrl))
             {
-                uriBuilder.Path = string.Format("{0}/{1}", _containerName, studyDto.LogoUrl);
-                studyDto.LogoUrl = uriBuilder.Uri.ToString();
+                uriBuilder.Path = string.Format("{0}/{1}", _containerName, hasLogo.LogoUrl);
+                hasLogo.LogoUrl = uriBuilder.Uri.ToString();
             }
             else
             {
-                studyDto.LogoUrl = null;
+                hasLogo.LogoUrl = null;
             }            
         }      
 
-        async Task<UriBuilder> CreateUriBuilderWithSasToken()
+        UriBuilder CreateUriBuilderWithSasToken()
         {
             bool isDevelopmentStorage = this._connectionString == "UseDevelopmentStorage=true";
 

@@ -27,9 +27,18 @@ namespace Sepes.Infrastructure.Query
             return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.VirtualNetwork);
         }
 
+        static IQueryable<SandboxResource> WithBasicIncludesQueryable(SepesDbContext db)
+        {
+            return db.SandboxResources
+                .Include(r => r.Operations)
+                .Include(sr=> sr.Sandbox)
+                    .ThenInclude(sb=> sb.Study)
+                        .ThenInclude(s=> s.StudyParticipants);
+        }
+
         public static async Task<SandboxResource> GetSingleSandboxResourceEntry(SepesDbContext db, int sandboxId, string resourceType)
         {
-            var resourceEntry = await db.SandboxResources.Include(r => r.Operations).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == resourceType && r.SandboxControlled);
+            var resourceEntry = await WithBasicIncludesQueryable(db).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == resourceType && r.SandboxControlled);
 
             if (resourceEntry == null)
             {
@@ -41,9 +50,8 @@ namespace Sepes.Infrastructure.Query
 
         public static IQueryable<SandboxResource> GetSandboxResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
         {
-            var resourceQuerable = db
-                .SandboxResources
-                .Include(r => r.Operations)
+            var resourceQuerable =
+                WithBasicIncludesQueryable(db)
                 .Where(r => r.SandboxId == sandboxId
                 && r.ResourceType == resourceType
                 && (!r.Deleted.HasValue ||
@@ -56,10 +64,8 @@ namespace Sepes.Infrastructure.Query
 
         public static IQueryable<SandboxResource> GetSandboxResource(SepesDbContext db, int resourceId)
         {
-            var resourceQuerable = db
-                .SandboxResources
-                .Include(r => r.Sandbox)
-                .Include(r => r.Operations)
+            var resourceQuerable =
+                WithBasicIncludesQueryable(db)
                 .Where(r => r.Id == resourceId            
                 && (!r.Deleted.HasValue || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));
 
@@ -80,7 +86,7 @@ namespace Sepes.Infrastructure.Query
 
         public static async Task<int> GetCreateOperationIdForBastion(SepesDbContext db, int sandboxId)
         {
-            var bastionResourceForSandbox = await db.SandboxResources.Include(r => r.Operations).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == AzureResourceType.Bastion);
+            var bastionResourceForSandbox = await WithBasicIncludesQueryable(db).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == AzureResourceType.Bastion);
 
             if (bastionResourceForSandbox == null)
             {

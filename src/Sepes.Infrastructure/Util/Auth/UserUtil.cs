@@ -6,16 +6,15 @@ using System;
 using System.Security.Claims;
 using System.Security.Principal;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
-    {
-        
+    {        
         const string CLAIM_TENANT = "http://schemas.microsoft.com/identity/claims/tenantid";
 
         public static UserDto CreateSepesUser(IConfiguration config, IPrincipal principal)
         {
-            var claimsPrincipal = principal as ClaimsPrincipal;
+            var claimsPrincipal = principal as ClaimsPrincipal;            
 
             var user = new UserDto(                
                 GetOid(config, claimsPrincipal),
@@ -23,11 +22,41 @@ namespace Sepes.Infrastructure.Util
                 GetFullName(config, claimsPrincipal),
                 GetEmail(config, claimsPrincipal));
 
-            user.Admin = principal.IsInRole(AppRoles.Admin);
-            user.Sponsor = principal.IsInRole(AppRoles.Sponsor);
-            user.DatasetAdmin = principal.IsInRole(AppRoles.DatasetAdmin);
+            ApplyExtendedProps(config, claimsPrincipal, user);
 
             return user;
+        }
+
+        public static void ApplyExtendedProps(IConfiguration config, IPrincipal principal, UserDto user)
+        {
+            if (principal.IsInRole(AppRoles.Admin))
+            {
+                user.Admin = true;
+                user.AppRoles.Add(AppRoles.Admin);
+            }
+
+            if (principal.IsInRole(AppRoles.Sponsor))
+            {
+                user.Sponsor = true;
+                user.AppRoles.Add(AppRoles.Sponsor);
+            }
+
+            if (principal.IsInRole(AppRoles.DatasetAdmin))
+            {
+                user.DatasetAdmin = true;
+                user.AppRoles.Add(AppRoles.DatasetAdmin);
+            }
+           
+            var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(config, ConfigConstants.EMPLOYEE_ROLE);
+
+            foreach (var curEmployeeAdGroup in employeeAdGroups)
+            {
+                if (principal.IsInRole(curEmployeeAdGroup))
+                {
+                    user.Employee = true;
+                    break;
+                }
+            }
         }
 
         public static string GetTenantId(IPrincipal principal)

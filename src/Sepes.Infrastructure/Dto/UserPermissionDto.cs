@@ -12,9 +12,13 @@
 
         public bool DatasetAdmin { get; set; }
 
+
+
         public bool CanCreateStudy { get; set; }
 
-        public bool CanAdministerDatasets { get; set; }
+        public bool CanRead_PreApproved_Datasets { get; set; }
+
+        public bool CanEdit_PreApproved_Datasets { get; set; }
 
     }
 }

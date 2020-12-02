@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
-
+          
             var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
             if (nsg == null)
@@ -96,7 +96,7 @@ namespace Sepes.Infrastructure.Service
             .ToAddress("VirtualNetwork")
             .ToAnyPort()
             .WithAnyProtocol()
-            .WithPriority(11000)
+            .WithPriority(AzureVmConstants.RulePresets.ALLOW_FOR_SERVICETAG_VNET_PRIORITY)
             .Attach()
             .ApplyAsync();
         }

@@ -1,6 +1,6 @@
 ﻿using Sepes.Infrastructure.Interface;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Infrastructure.Dto.Study
 {
     public class StudyCreateDto : IHasLogoUrl
     {

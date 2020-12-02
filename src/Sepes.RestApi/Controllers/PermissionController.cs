@@ -10,7 +10,7 @@ namespace Sepes.RestApi.Controllers
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize] //Todo: Need wider access, but restricted for now
+    [Authorize]
     public class PermissionController : ControllerBase
     {
         readonly IUserPermissionService _service;

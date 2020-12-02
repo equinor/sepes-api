@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -21,10 +22,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             //STUDY
             CreateMap<Study, StudyListItemDto>();
 
-            CreateMap<Study, StudyDto>()
+            CreateMap<Study, StudyDetailsDto>()
                 .ForMember(dest => dest.Datasets,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
                     .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+
+            CreateMap<Study, StudyDto>()    
+              .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
             CreateMap<StudyDto, Study>();
@@ -38,9 +42,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, DataSetsForStudyDto>();
+            CreateMap<Dataset, StudyDatasetDto>();
 
-            CreateMap<StudyDataset, DataSetsForStudyDto>()
+            CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
                 .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
@@ -59,7 +63,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                         src.Sandbox.Name
                     );
                 })
-                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id));
+                .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id))
+                .ForMember(dest => dest.StudyId, source => source.MapFrom(x => x.Sandbox.StudyId));
 
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
@@ -68,10 +73,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
-                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
-                 .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
-                 .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name));
+
+            CreateMap<Sandbox, SandboxDetailsDto>()
+         .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
+         .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+         .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
+         .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
 
             /*
             CreateMap<Sandbox, DatasetSandboxDto>()
@@ -91,8 +99,9 @@ namespace Sepes.Infrastructure.Model.Automapper
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
-                .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
-
+                .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
+                .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>());
+            
 
             //CLOUD RESOURCE
 

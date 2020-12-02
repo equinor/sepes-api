@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto.Study;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -12,6 +13,9 @@ namespace Sepes.Infrastructure.Dto
         public string UserName { get; set; }
         public string EmailAddress { get; set; }
 
+        public HashSet<string> AppRoles { get; set; } = new HashSet<string>();
+        public bool Employee { get; set; }
+
         public bool Admin { get; set; }
 
         public bool Sponsor { get; set; }
@@ -19,7 +23,7 @@ namespace Sepes.Infrastructure.Dto
         public bool DatasetAdmin { get; set; }
 
 
-        public List<StudyParticipantDto> StudyParticipants { get; set; }
+        public List<StudyParticipantDto> StudyParticipants { get; set; } = new List<StudyParticipantDto>();
 
         public UserDto()
         {

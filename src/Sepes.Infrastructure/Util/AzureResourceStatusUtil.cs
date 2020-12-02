@@ -6,14 +6,9 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceStatusUtil
     {  
-        public static string ResourceStatus(SandboxResource resource)
-        {          
 
-            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
-            {
-                return "No operations found";
-            }
-
+        public static SandboxResourceOperation DecideWhatOperationToBaseStatusOn(SandboxResource resource)
+        {
             SandboxResourceOperation baseStatusOnThisOperation = null;
 
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
@@ -28,7 +23,7 @@ namespace Sepes.Infrastructure.Util
 
                     break;
                 }
-                else if(curOperation.Status == CloudResourceOperationState.FAILED)
+                else if (curOperation.Status == CloudResourceOperationState.FAILED)
                 {
                     baseStatusOnThisOperation = curOperation;
                     break;
@@ -43,7 +38,20 @@ namespace Sepes.Infrastructure.Util
                     baseStatusOnThisOperation = curOperation;
                 }
             }
-                      
+
+            return baseStatusOnThisOperation;
+        }
+
+
+        public static string ResourceStatus(SandboxResource resource)
+        {          
+
+            if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
+            {
+                return "No operations found";
+            }
+
+            var baseStatusOnThisOperation = DecideWhatOperationToBaseStatusOn(resource);                      
 
             string unfinishedWorkStatus = null;
            
