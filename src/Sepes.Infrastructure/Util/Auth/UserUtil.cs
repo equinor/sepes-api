@@ -9,8 +9,7 @@ using System.Security.Principal;
 namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
-    {
-        
+    {        
         const string CLAIM_TENANT = "http://schemas.microsoft.com/identity/claims/tenantid";
 
         public static UserDto CreateSepesUser(IConfiguration config, IPrincipal principal)
@@ -23,6 +22,13 @@ namespace Sepes.Infrastructure.Util.Auth
                 GetFullName(config, claimsPrincipal),
                 GetEmail(config, claimsPrincipal));
 
+            ApplyExtendedProps(config, claimsPrincipal, user);
+
+            return user;
+        }
+
+        public static void ApplyExtendedProps(IConfiguration config, IPrincipal principal, UserDto user)
+        {
             if (principal.IsInRole(AppRoles.Admin))
             {
                 user.Admin = true;
@@ -39,9 +45,18 @@ namespace Sepes.Infrastructure.Util.Auth
             {
                 user.DatasetAdmin = true;
                 user.AppRoles.Add(AppRoles.DatasetAdmin);
-            }      
+            }
+           
+            var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(config, ConfigConstants.EMPLOYEE_ROLE);
 
-            return user;
+            foreach (var curEmployeeAdGroup in employeeAdGroups)
+            {
+                if (principal.IsInRole(curEmployeeAdGroup))
+                {
+                    user.Employee = true;
+                    break;
+                }
+            }
         }
 
         public static string GetTenantId(IPrincipal principal)

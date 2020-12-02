@@ -29,28 +29,22 @@ namespace Sepes.Infrastructure.Service.Queries
             return studyFromDb;
         }
 
-        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
+        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false, string newRole = null)
         {
             var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
-            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
-        }
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation, newRole);
+        }      
 
-        public static async Task<Study> GetStudyForAddParticipantByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false)
+        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation, bool withIncludes = false, string newRole = null)
         {
-            var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
-            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
+            var studyFromDb = await GetStudyBySandboxIdOrThrowAsync(db, sandboxId, withIncludes);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation, newRole);
         }
 
-        public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation)
-        {
-            var studyFromDb = await GetStudyBySandboxIdOrThrowAsync(db, sandboxId);
-            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
-        }
-
-        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false)
+        public static async Task<Study> GetStudyByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false, string newRole = null)
         {
             var studyFromDb = await GetStudyByResourceIdOrThrowAsync(db, resourceId, withIncludes);
-            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation);
+            return await StudyAccessUtil.HasAccessToOperationForStudyOrThrow(userService, studyFromDb, operation, newRole);
         }
 
         #endregion    

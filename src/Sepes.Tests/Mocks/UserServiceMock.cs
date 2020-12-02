@@ -1,8 +1,6 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Mocks
@@ -11,7 +9,7 @@ namespace Sepes.Tests.Mocks
     {
         UserDto GetBaseUser()
         {
-            var testUser = UserFactory.GetAdmin();        
+            var testUser = UserFactory.GetAdmin(1);        
 
             return testUser;
         }

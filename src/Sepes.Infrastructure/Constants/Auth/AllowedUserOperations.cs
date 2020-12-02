@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Constants.Auth
         public static List<OperationPermission> OperationSet = new List<OperationPermission>() {
 
             //STUDY READ
-            OperationPermission.CreateForAuthorizedUser(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: true),
+            OperationPermission.CreateForAllNonExternalUser(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: true),
             OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
             OperationPermission.CreateForAppRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Read, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor, StudyRoles.StudyViewer ),
@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_Update_Metadata, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //RESULTS AND LEARNINGS, READ
-            OperationPermission.CreateForAuthorizedUser(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: true),
+            OperationPermission.CreateForAllNonExternalUser(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: true),
             OperationPermission.CreateForAppRole(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Read_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.StudyViewer),
 
@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //STUDY, ADD/REMOVE PARTICIPANT
-            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Admin, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //SANDBOX, CRUD
@@ -58,7 +58,7 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //PRE-APPROVED DATASETS
-            OperationPermission.CreateForAuthorizedUser(UserOperation.PreApprovedDataset_Read),
+            OperationPermission.CreateForAllNonExternalUser(UserOperation.PreApprovedDataset_Read),
             OperationPermission.CreateForAppRole(UserOperation.PreApprovedDataset_Create_Update_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.DatasetAdmin),
         };
 
@@ -72,9 +72,9 @@ namespace Sepes.Infrastructure.Constants.Auth
             return source.Where(or => or.Level == level);
         }
 
-        public static IEnumerable<OperationPermission> ForAuthorizedUserLevel(IEnumerable<OperationPermission> source)
+        public static IEnumerable<OperationPermission> ForAllNonExternalUserLevel(IEnumerable<OperationPermission> source)
         {
-            return ForLevel(source, PermissionLevel.AuthorizedUser);
+            return ForLevel(source, PermissionLevel.AllNonExternalUser);
         }
 
         public static IEnumerable<OperationPermission> ForAppRolesLevel(IEnumerable<OperationPermission> source)

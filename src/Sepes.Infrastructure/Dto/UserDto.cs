@@ -14,6 +14,7 @@ namespace Sepes.Infrastructure.Dto
         public string EmailAddress { get; set; }
 
         public HashSet<string> AppRoles { get; set; } = new HashSet<string>();
+        public bool Employee { get; set; }
 
         public bool Admin { get; set; }
 
