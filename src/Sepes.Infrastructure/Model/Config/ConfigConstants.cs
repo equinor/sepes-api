@@ -38,5 +38,7 @@
         public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";
 
         public const string DISABLE_MONITORING = "DisableMonitoring";
+
+        public const string EMPLOYEE_ROLE = "EmployeeRole";
     }
 }

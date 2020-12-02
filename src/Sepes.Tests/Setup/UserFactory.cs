@@ -1,9 +1,7 @@
 ﻿using Moq;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
-using System.Collections.Generic;
 
 namespace Sepes.Tests.Setup
 {
@@ -14,10 +12,10 @@ namespace Sepes.Tests.Setup
         public static string FULLNAME = "Test User";
         public static string EMAIL = "testuser@equinor.com";
 
-        public static UserDto GetBasicAuthenticatedUser(int userId = 1)
+        public static UserDto GetBasicAuthenticatedUser(bool employee, int userId)
         {
             var testUser = new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL);
-            SetBasicUserProperties(testUser, userId);
+            SetBasicUserProperties(testUser, employee, userId);
             return testUser;
         }
 
@@ -28,30 +26,31 @@ namespace Sepes.Tests.Setup
         //    return testUser;
         //}
 
-        public static UserDto GetAdmin(int userId = 1) {
+        public static UserDto GetAdmin(int userId) {
 
             var testUser = new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL, admin: true);
-            SetBasicUserProperties(testUser, userId);
+            SetBasicUserProperties(testUser, true, userId);
             return testUser;
         }
 
-        public static UserDto GetSponsor(int userId = 1)
+        public static UserDto GetSponsor(int userId)
         {
             var testUser = new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL, sponsor: true);
-            SetBasicUserProperties(testUser, userId);
+            SetBasicUserProperties(testUser, true, userId);
             return testUser;
         }
 
-        public static UserDto GetDatasetAdmin(int userId = 1)
+        public static UserDto GetDatasetAdmin(int userId)
         {
             var testUser = new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL, datasetAdmin: true);
-            SetBasicUserProperties(testUser, userId);
+            SetBasicUserProperties(testUser, true, userId);
             return testUser;
         }
 
-        public static void SetBasicUserProperties(UserDto user, int userId = 1)
+        public static void SetBasicUserProperties(UserDto user, bool employee, int userId)
         {
             user.Id = userId;
+            user.Employee = employee;
 
             if (user.Admin)
             {
@@ -69,37 +68,37 @@ namespace Sepes.Tests.Setup
             }
         }
 
-        public static Mock<IUserService> GetUserServiceMockForUserWithStudyRole(int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForUserWithStudyRole(bool employee, int userId)
         {
-            return SetupUserServiceMock(GetBasicAuthenticatedUser(userId));
+            return SetupUserServiceMock(GetBasicAuthenticatedUser(employee, userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForBasicUser(int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForBasicUser(bool employee, int userId)
         {
-            return SetupUserServiceMock(GetBasicAuthenticatedUser(userId));
+            return SetupUserServiceMock(GetBasicAuthenticatedUser(employee, userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId)
         {
             return  SetupUserServiceMock(GetAdmin(userId));     
         }
 
-        public static Mock<IUserService> GetUserServiceMockForSponsor(int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForSponsor(int userId)
         {
             return SetupUserServiceMock(GetSponsor(userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForDatasetAdmin(int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForDatasetAdmin(int userId)
         {
             return SetupUserServiceMock(GetDatasetAdmin(userId));
         }
 
-        public static Mock<IUserService> GetUserServiceForDatasetAdmin(int userId = 1)
+        public static Mock<IUserService> GetUserServiceForDatasetAdmin(int userId)
         {
             return SetupUserServiceMock(GetDatasetAdmin(userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForAppRole(string appRole, int userId = 1)
+        public static Mock<IUserService> GetUserServiceMockForAppRole(string appRole, int userId)
         {
             switch (appRole)
             {

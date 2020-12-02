@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, roleName);
 
             if (roleName == StudyRoles.StudyOwner)
             {
@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant);
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);
 
             ValidateRoleNameThrowIfInvalid(role);
 

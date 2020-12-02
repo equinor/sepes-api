@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Auth
 {
-    public enum PermissionLevel { AuthorizedUser, AppRoles, StudySpecificRole }
+    public enum PermissionLevel { AllNonExternalUser, AppRoles, StudySpecificRole }
 
     public class OperationPermission
     {
@@ -18,9 +18,9 @@ namespace Sepes.Infrastructure.Dto.Auth
         public HashSet<string> AllowedForRoles { get; set; }
 
 
-        public static OperationPermission CreateForAuthorizedUser(UserOperation operation, bool appliesOnlyToNonHiddenStudies = false)
+        public static OperationPermission CreateForAllNonExternalUser(UserOperation operation, bool appliesOnlyToNonHiddenStudies = false)
         {
-            return new OperationPermission() { Operation = operation, Level = PermissionLevel.AuthorizedUser, AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies };
+            return new OperationPermission() { Operation = operation, Level = PermissionLevel.AllNonExternalUser, AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies };
         }
 
         public static OperationPermission CreateForAppRole(UserOperation operation, bool appliesOnlyToNonHiddenStudies, bool appliesOnlyIfUserIsStudyOwner, params string[] roles)
@@ -33,6 +33,4 @@ namespace Sepes.Infrastructure.Dto.Auth
             return new OperationPermission() { Operation = operation, Level = PermissionLevel.StudySpecificRole, AllowedForRoles = new HashSet<string>(roles), AppliesOnlyToNonHiddenStudies = appliesOnlyToNonHiddenStudies };
         }
     }
-
-
 }
