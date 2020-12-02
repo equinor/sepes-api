@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/equinor/sepes-api/compare/0.2.5...0.3.0) (2020-12-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* three endpoints described above are replaced by endpoints not requiring the
+studies/studyId part
+
+### Features
+
+* **vm:** new endpoint for external link to virtual machine ([#422](https://github.com/equinor/sepes-api/issues/422)) ([1ae8097](https://github.com/equinor/sepes-api/commit/1ae8097dbf99200087502242a4192e3a8354826d))
+
+
+### Bug Fixes
+
+* **rbac:** added role for employee vs external user. more unit tests.… ([#440](https://github.com/equinor/sepes-api/issues/440)) ([12f44a6](https://github.com/equinor/sepes-api/commit/12f44a6c0f4ab97917f7c0eb9bd69ce3eb9e044f))
+* **study:** returning the detailed response for CreateStudy, UpdateLogo and UpdateStudyDetails ([f5a4fb1](https://github.com/equinor/sepes-api/commit/f5a4fb1fef220032e5f6a8f83147e029d4bd93ea))
+* (SandboxResourceController): methods missing "/api/" prefix. ([#436](https://github.com/equinor/sepes-api/issues/436)) ([19d3ff9](https://github.com/equinor/sepes-api/commit/19d3ff927823eea97ba24b80a30552c87a351e2c))
+* renamed dataset properties in permissions response. Also now using rbac engine ([#432](https://github.com/equinor/sepes-api/issues/432)) ([895b713](https://github.com/equinor/sepes-api/commit/895b713f5607c68dfaca133a2b4ca3bb93cf393b))
+* **sandbox creation:** rule priority for basic nsg rule was to high, now set to 4050 ([946009f](https://github.com/equinor/sepes-api/commit/946009fbe688366f5058df1270331eec6e1e6290))
+* **vm:** vm extended info endpoint, renamed MemoryInDb to MemoryGB ([#424](https://github.com/equinor/sepes-api/issues/424)) ([939cca7](https://github.com/equinor/sepes-api/commit/939cca7d7520f74defca8edd3feaac245a85fd31))
+
+
+* removed sandbox endpoints that were simplified to not include/study/studyId part ([#437](https://github.com/equinor/sepes-api/issues/437)) ([cde78c0](https://github.com/equinor/sepes-api/commit/cde78c0d46cfcea20467f3237dad6342e620030a))
+
 ### [0.2.5](https://github.com/equinor/sepes-api/compare/0.2.4...0.2.5) (2020-11-19)
 
 ### [0.2.4](https://github.com/equinor/sepes-api/compare/0.2.3...0.2.4) (2020-11-19)
