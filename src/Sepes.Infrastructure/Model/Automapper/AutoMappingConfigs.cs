@@ -4,6 +4,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
@@ -70,6 +71,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.StudyNo,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
                 .ReverseMap();
+
+            CreateMap<DatasetCreateUpdateInputDto, Dataset>();
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
