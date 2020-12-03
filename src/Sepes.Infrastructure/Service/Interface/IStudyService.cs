@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -21,8 +19,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task CloseStudyAsync(int studyId);
         Task DeleteStudyAsync(int studyId);
 
-        Task<StudyDetailsDto> AddLogoAsync(int id, IFormFile studyLogo);
-
-        Task<LogoResponseDto> GetLogoAsync(int id);
+   
     }
 }

@@ -14,10 +14,12 @@ namespace Sepes.RestApi.Controller
     public class DatasetController : ControllerBase
     {     
         readonly IDatasetService _datasetService;
+        readonly IDatasetFileService _datasetFileService;
 
-        public DatasetController(IDatasetService datasetService)
+        public DatasetController(IDatasetService datasetService, IDatasetFileService datasetFileService)
         {
             _datasetService = datasetService;
+            _datasetFileService = datasetFileService;
         }
 
         [HttpGet]
@@ -49,13 +51,19 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(dataset);
         }
 
-
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateDataset(int id, DatasetDto dataset)
         {
             var updatedDataset = await _datasetService.UpdateDatasetAsync(id, dataset);
             return new JsonResult(updatedDataset);
         }
+
+
+        //[HttpPost("{datasetId}/files")]
+        //public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files)
+        //{
+        //    _datasetFileService
+        //}
     }
 
 }

@@ -1,8 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -24,14 +27,14 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet("{studyId}/datasets")]
         [Consumes(MediaTypeNames.Application.Json)]        
-        public async Task<IActionResult> GetDatasetsForStudy(int studyId)
+        public async Task<IActionResult> GetAllDatasetsAsync(int studyId)
         {
             var dataset = await _studyDatasetService.GetDatasetsForStudy(studyId);
             return new JsonResult(dataset);
         }
 
         [HttpPut("{studyId}/datasets/{datasetId}")]        
-        public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
+        public async Task<IActionResult> AddExistingDataSetAsync(int studyId, int datasetId)
         {
             var updatedStudy = await _studyDatasetService.AddDatasetToStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
@@ -52,20 +55,23 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(dataset);
         }
 
+        //STUDY SPECIFIC DATASET
+
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
+        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputDto newDataset)
         {
-            var updatedStudy = await _studyDatasetService.AddStudySpecificDatasetAsync(studyId, newDataset);
+            var updatedStudy = await _studyDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
         }
 
         [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
+        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputDto updatedDataset)
         {
-            var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, newDataset);
+            var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
             return new JsonResult(updatedStudy);
         }
-    }
+
+}
 }

@@ -143,6 +143,10 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureVmOsService, AzureVmOsService>();
             services.AddTransient<IRegionService, RegionService>();
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
+            services.AddTransient<IDatasetFileService, DatasetFileService>();
+            services.AddTransient<IStudyLogoService, StudyLogoService>();
+
+
 
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>

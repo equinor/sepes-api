@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -7,7 +6,6 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -24,14 +22,14 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly IUserService _userService;
-        readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly IStudyLogoService _studyLogoService;
 
-        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IAzureBlobStorageService azureBlobStorageService)
+        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService)
             : base(db, mapper)
         {
             _logger = logger;
             _userService = userService;
-            _azureBlobStorageService = azureBlobStorageService;
+            _studyLogoService = studyLogoService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null)
@@ -52,7 +50,7 @@ namespace Sepes.Infrastructure.Service
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
 
-            studiesDtos = _azureBlobStorageService.DecorateLogoUrlsWithSAS(studiesDtos);
+            studiesDtos = _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }
 
@@ -73,7 +71,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, true);
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
-            _azureBlobStorageService.DecorateLogoUrlWithSAS(studyDetailsDto);
+            _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);
             studyDetailsDto.Sandboxes = studyDetailsDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
             await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);
 
@@ -169,10 +167,7 @@ namespace Sepes.Infrastructure.Service
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
-            if (!String.IsNullOrWhiteSpace(studyFromDb.LogoUrl))
-            {
-                _ = _azureBlobStorageService.DeleteBlob(studyFromDb.LogoUrl);
-            }
+            await _studyLogoService.DeleteAsync(studyFromDb);
 
             // TODO: Possibly keep datasets for archiving/logging purposes.
 
@@ -294,46 +289,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
-        {
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
-
-            var fileName = _azureBlobStorageService.UploadBlob(studyLogo);
-        
-
-            string oldFileName = studyFromDb.LogoUrl;
-
-            if (!String.IsNullOrWhiteSpace(fileName) && oldFileName != fileName)
-            {
-                studyFromDb.LogoUrl = fileName;
-            }
-
-            Validate(studyFromDb);
-            await _db.SaveChangesAsync();
-
-            if (!String.IsNullOrWhiteSpace(oldFileName))
-            {
-                _ = _azureBlobStorageService.DeleteBlob(oldFileName);
-            }
-
-            return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
-        }
-
-        public async Task<LogoResponseDto> GetLogoAsync(int studyId)
-        {
-            try
-            {
-                var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read, false);
-                var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _azureBlobStorageService.GetImageFromBlobAsync(studyFromDb.LogoUrl) };
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Unable to get logo for Study {studyId}");
-                return null;
-            }
-        }
+      
 
         void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {

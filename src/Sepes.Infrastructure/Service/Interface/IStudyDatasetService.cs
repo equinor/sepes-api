@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Study;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -13,8 +14,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         //Study specific data set operations
         Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId);
-        Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, StudySpecificDatasetDto newDataset);
+  
         Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId);     
-        Task<StudyDatasetDto> AddStudySpecificDatasetAsync(int studyId, StudySpecificDatasetDto newDataset);      
+        Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputDto newDataset);
+
+        Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputDto newDataset);
     }
 }
