@@ -21,14 +21,12 @@ namespace Sepes.Infrastructure.Service
     public class StudyService : ServiceBase<Study>, IStudyService
     {
         readonly ILogger _logger;
-        readonly IUserService _userService;
         readonly IStudyLogoService _studyLogoService;
 
         public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService)
-            : base(db, mapper)
+            : base(db, mapper, userService)
         {
             _logger = logger;
-            _userService = userService;
             _studyLogoService = studyLogoService;
         }
 
@@ -52,12 +50,7 @@ namespace Sepes.Infrastructure.Service
 
             studiesDtos = _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
-        }
-
-        async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
-        {
-            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
-        }
+        }       
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)
         {

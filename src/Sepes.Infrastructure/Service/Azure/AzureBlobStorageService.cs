@@ -21,6 +21,7 @@ namespace Sepes.Infrastructure.Service.Azure
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
         string _connectionString;
+        string _accountUrl;
 
         public AzureBlobStorageService(ILogger<AzureBlobStorageService> logger, IConfiguration configuration)
         {
@@ -30,13 +31,20 @@ namespace Sepes.Infrastructure.Service.Azure
 
         public void SetConfigugrationKeyForConnectionString(string connectionStringConfigName)
         {
+            _accountUrl = null;
             _connectionString = GetStorageConnectionString(connectionStringConfigName);
-        }     
+        }  
+        
+         public void SetAccountUrl(string accountUrl)
+        {
+            _connectionString = null;
+            _accountUrl = accountUrl;
+        } 
 
         public async Task UploadFileToBlobContainer(string containerName, string blobName, IFormFile file)
         {
 
-            var blobServiceClient = new BlobServiceClient(_connectionString);
+            var blobServiceClient = GetBlobServiceClient();
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             await blobContainerClient.CreateIfNotExistsAsync();
@@ -65,7 +73,7 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             MemoryStream ms = new MemoryStream();
             CloudStorageAccount.TryParse(_connectionString, out CloudStorageAccount storageAccount);
-
+            
             var BlobClient = storageAccount.CreateCloudBlobClient();
             var container = BlobClient.GetContainerReference(containerName);
 
@@ -81,8 +89,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
         public async Task<int> DeleteFileFromBlobContainer(string containerName, string blobName)
         {
-            BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-
+            var blobServiceClient = GetBlobServiceClient(); 
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             var blobClient = blobContainerClient.GetBlobClient(blobName);
@@ -171,7 +178,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
             try
             {
-                client = new BlobServiceClient(_connectionString);
+                client = GetBlobServiceClient();
                 return true;
             }
             catch (Exception ex)
@@ -181,9 +188,27 @@ namespace Sepes.Infrastructure.Service.Azure
             }
         }
 
-        private string GetStorageConnectionString(string nameOfConfig)
+        string GetStorageConnectionString(string nameOfConfig)
         {
             return _configuration[nameOfConfig];
+        }
+
+        BlobServiceClient GetBlobServiceClient()
+        {
+            if (String.IsNullOrWhiteSpace(_connectionString) == false)
+            {
+                return new BlobServiceClient(_connectionString);
+            }
+            else if(String.IsNullOrWhiteSpace(_accountUrl) == false)
+            {
+
+                //Should have access through subscription? Or neet to get token/access key?
+                return new BlobServiceClient(new Uri(_accountUrl)); 
+            }
+            else
+            {
+                throw new Exception($"Unable to create BlobServiceClient, no relevant connection details found");
+            }
         }
 
         //public async Task<List<FileStreamResult>> DownloadFileFromBlobContainer(string connectionString, string containerName, List<BlobFileName> blobfiles)

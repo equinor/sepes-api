@@ -14,6 +14,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<int> DeleteFileFromBlobContainer(string containerName, string blobName);
         Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName);
         UriBuilder CreateUriBuilderWithSasToken(string containerName);
+        void SetAccountUrl(string accountUrl);
         // Task<FileStreamResult> DownloadFile(string containerName,string blobName, string fileName);
 
 

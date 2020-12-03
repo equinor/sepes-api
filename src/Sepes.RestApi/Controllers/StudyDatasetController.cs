@@ -43,8 +43,8 @@ namespace Sepes.RestApi.Controller
         [HttpDelete("{studyId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyDatasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
-            return new JsonResult(updatedStudy);
+            await _studyDatasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
+            return new NoContentResult();
         }
 
         [HttpGet("{studyId}/datasets/{datasetId}")]

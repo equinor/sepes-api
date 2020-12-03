@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Dataset;
@@ -17,16 +18,14 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class StudyDatasetService : ServiceBase<Dataset>, IStudyDatasetService
+    public class StudyDatasetService : DatasetServiceBase, IStudyDatasetService
     {
-        readonly IStudyService _studyService;
-        readonly IUserService _userService;
+     
 
-        public StudyDatasetService(SepesDbContext db, IMapper mapper, IStudyService studyService, IUserService userService)
-            :base(db, mapper)
+        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService)
+            :base(db, mapper, logger, userService)
         {            
-            _studyService = studyService;
-            _userService = userService;
+        
         }         
 
 
@@ -46,7 +45,7 @@ namespace Sepes.Infrastructure.Service
             return datasetDto;
         }    
 
-        public async Task<StudyDto> AddDatasetToStudyAsync(int studyId, int datasetId)
+        public async Task<StudyDatasetDto> AddDatasetToStudyAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset); 
@@ -67,7 +66,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+           return _mapper.Map<StudyDatasetDto>(studyDataset.Dataset);
         }
 
         public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudy(int studyId)
@@ -89,7 +88,7 @@ namespace Sepes.Infrastructure.Service
             return datasetDtos;
         }
 
-        public async Task<StudyDto> RemoveDatasetFromStudyAsync(int studyId, int datasetId)
+        public async Task RemoveDatasetFromStudyAsync(int studyId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
             var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
@@ -118,9 +117,7 @@ namespace Sepes.Infrastructure.Service
                 _db.Datasets.Remove(datasetFromDb);
             }
 
-            await _db.SaveChangesAsync();
-            var retVal = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset);
-            return retVal;
+            await _db.SaveChangesAsync();     
         }
 
         //STUDY SPECIFIC DATASETS

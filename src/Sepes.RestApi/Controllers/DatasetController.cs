@@ -14,7 +14,7 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class DatasetController : ControllerBase
-    {     
+    {
         readonly IDatasetService _datasetService;
         readonly IDatasetFileService _datasetFileService;
 
@@ -36,14 +36,14 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetDatasetsLookupAsync()
         {
             var studies = await _datasetService.GetDatasetsLookupAsync();
-            return new JsonResult(studies);          
+            return new JsonResult(studies);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDataset(int id)
         {
             var dataset = await _datasetService.GetDatasetByDatasetIdAsync(id);
-            return new JsonResult(dataset);        
+            return new JsonResult(dataset);
         }
 
         [HttpPost("")]
@@ -60,11 +60,12 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedDataset);
         }
 
-        //[HttpPost("{datasetId}/files")]
-        //public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files)
-        //{
-        //    _datasetFileService.Ad
-        //}
+        [HttpPost("{datasetId}/files")]
+        public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files)
+        {
+            var fileAddResult = await _datasetFileService.AddFiles(datasetId, files);
+            return new NoContentResult();
+        }
     }
 
 }

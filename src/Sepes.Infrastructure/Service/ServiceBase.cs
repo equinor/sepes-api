@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -14,11 +17,13 @@ namespace Sepes.Infrastructure.Service
     {
         protected readonly SepesDbContext _db;
         protected readonly IMapper _mapper;
+        protected readonly IUserService _userService;
 
-        public ServiceBase(SepesDbContext db, IMapper mapper)
+        public ServiceBase(SepesDbContext db, IMapper mapper, IUserService userService)
         {
             _db = db;
             _mapper = mapper;
+            _userService = userService;
         }
 
         public async Task<int> Add(TModel entity)
@@ -53,6 +58,11 @@ namespace Sepes.Infrastructure.Service
             }
 
             return true;          
+        }
+
+        protected async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
+        {
+            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
         }
 
     }
