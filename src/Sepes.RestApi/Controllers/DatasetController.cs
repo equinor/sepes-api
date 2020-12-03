@@ -60,6 +60,13 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedDataset);
         }
 
+        [HttpPost("{datasetId}/file")]
+        public async Task<IActionResult> AddFile(int datasetId, [FromForm] IFormFile files)
+        {
+            var fileAddResult = await _datasetFileService.AddFiles(datasetId, new List<IFormFile> { files });
+            return new NoContentResult();
+        }
+
         [HttpPost("{datasetId}/files")]
         public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files)
         {

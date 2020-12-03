@@ -24,33 +24,27 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;
         }
 
-        protected IQueryable<Dataset> DatasetBaseQueryable(bool removeStudySpecific, int datasetId = 0)
+        protected IQueryable<Dataset> DatasetBaseQueryable(bool excludeStudySpecific = true)
         {
             var queryable = _db.Datasets
                  .Include(s => s.StudyDatasets)
                  .ThenInclude(sd => sd.Study).AsQueryable();
 
-            if(datasetId > 0)
+            if (excludeStudySpecific)
             {
-                queryable = queryable.Where(ds => ds.Id == datasetId);
-            }
-
-            if (removeStudySpecific)
-            {
-                queryable = queryable.Where(ds => ds.StudyId == null);
+                queryable = queryable.Where(ds => ds.StudyId.HasValue == false);
             }
 
             return queryable;
         }
-
        
-        protected async Task<Dataset> GetDatasetOrThrowAsync(int id, UserOperation operation)
+        protected async Task<Dataset> GetDatasetOrThrowAsync(int datasetId, UserOperation operation, bool excludeStudySpecific = true)
         {
-            var datasetFromDb = await DatasetBaseQueryable(true, id).FirstOrDefaultAsync();
+            var datasetFromDb = await DatasetBaseQueryable(excludeStudySpecific).FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             if (datasetFromDb == null)
             {
-                throw NotFoundException.CreateForEntity("Dataset", id);
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
             ThrowIfOperationNotAllowed(operation);

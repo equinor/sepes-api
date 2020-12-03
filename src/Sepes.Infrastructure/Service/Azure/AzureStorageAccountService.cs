@@ -154,5 +154,20 @@ namespace Sepes.Infrastructure.Service
         {
             throw new NotImplementedException();
         }
+
+        public async Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var account = await _azure.StorageAccounts.Define(name)
+            .WithRegion(region)
+            .WithExistingResourceGroup(resourceGroupName)
+            .WithAccessFromAllNetworks()
+            .WithGeneralPurposeAccountKindV2()
+            .WithOnlyHttpsTraffic()
+            .WithSku(StorageAccountSkuType.Standard_LRS)
+             .WithTags(tags)
+            .CreateAsync();
+
+            return account;
+        }
     }
 }

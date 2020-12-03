@@ -23,19 +23,22 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<Guid>> AddFiles(int datasetId, List<IFormFile> files)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, Constants.UserOperation.PreApprovedDataset_Read);
+            var dataset = await GetDatasetOrThrowAsync(datasetId, Constants.UserOperation.PreApprovedDataset_Read, false);
 
             if (dataset.StudyId.HasValue)
             {
-                var study = await GetStudyByIdAsync(dataset.StudyId.Value, Constants.UserOperation.Study_AddRemove_Dataset, false);
+                //Verify access to study
+                _ = await GetStudyByIdAsync(dataset.StudyId.Value, Constants.UserOperation.Study_AddRemove_Dataset, false);
             }
             else
             {
                 ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
-            }          
+            }           
+         
 
             //TODO: Verify format of this
             _storageService.SetAccountUrl(dataset.StorageAccountName);
+            //Todo:  CHeck that storage account exsists
             //get hold of relevant storage account
             //get hold of relevant container
             //ensure account and container exist, thow if account does not exist
