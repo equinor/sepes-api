@@ -7,24 +7,13 @@ namespace Sepes.Infrastructure.Util
     public static class DataSetUtils
     {
 
-        public static void UpdateDatasetBasicDetails(Dataset datasetFromDb, DatasetCreateUpdateInputDto updatedDataset)
+        public static void UpdateDatasetBasicDetails(Dataset datasetFromDb, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
 
             if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
             {
                 datasetFromDb.Name = updatedDataset.Name;
-            }
-
-            //TODO: VERIFY THAT THIS CANNOT BE CHANGED
-            //if (!String.IsNullOrWhiteSpace(updatedDataset.StorageAccountName) && updatedDataset.StorageAccountName != datasetFromDb.StorageAccountName)
-            //{
-            //    datasetFromDb.StorageAccountName = updatedDataset.StorageAccountName;
-            //}
-
-            //if (!String.IsNullOrWhiteSpace(updatedDataset.Location) && updatedDataset.Location != datasetFromDb.Location)
-            //{
-            //    datasetFromDb.Location = updatedDataset.Location;
-            //}
+            }         
 
             if (!String.IsNullOrWhiteSpace(updatedDataset.Classification) && updatedDataset.Classification != datasetFromDb.Classification)
             {
@@ -81,7 +70,7 @@ namespace Sepes.Infrastructure.Util
             }
         }
 
-        public static void PerformUsualTestForPostedDatasets(DatasetCreateUpdateInputDto datasetDto)
+        public static void PerformUsualTestForPostedDatasets(DatasetCreateUpdateInputBaseDto datasetDto)
         {
             if (String.IsNullOrWhiteSpace(datasetDto.Name))
             {

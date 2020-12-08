@@ -17,9 +17,9 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudyAsync(int studyId);
   
         Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId);     
-        Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputDto newDataset, CancellationToken cancellationToken = default);
+        Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, CancellationToken cancellationToken = default);
 
-        Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputDto newDataset);
+        Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto newDataset);
         Task SoftDeleteStudySpecificDatasetAsync(Study study, int datasetId, CancellationToken cancellationToken = default);
         Task HardDeleteStudySpecificDatasetAsync(Study study, int datasetId, CancellationToken cancellationToken = default);      
         Task SoftDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);

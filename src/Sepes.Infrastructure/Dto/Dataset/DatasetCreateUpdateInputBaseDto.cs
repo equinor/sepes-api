@@ -1,10 +1,8 @@
 ﻿namespace Sepes.Infrastructure.Dto.Dataset
 {
-    public class DatasetCreateUpdateInputDto
+    public class DatasetCreateUpdateInputBaseDto
     {
-        public string Name { get; set; }    
-
-        //public string StorageAccountName { get; set; }
+        public string Name { get; set; }
 
         public string Location { get; set; }
 

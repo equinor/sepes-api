@@ -139,7 +139,7 @@ namespace Sepes.Infrastructure.Service
 
         //STUDY SPECIFIC DATASETS
 
-        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputDto newDatasetInput, CancellationToken cancellationToken = default)
+        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
             DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
@@ -183,7 +183,7 @@ namespace Sepes.Infrastructure.Service
             await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId);
         }
 
-        public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputDto updatedDataset)
+        public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DataSetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
 

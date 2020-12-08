@@ -72,7 +72,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
                 .ReverseMap();
 
-            CreateMap<DatasetCreateUpdateInputDto, Dataset>();
+            CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()

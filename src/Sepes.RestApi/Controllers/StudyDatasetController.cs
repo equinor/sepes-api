@@ -56,7 +56,7 @@ namespace Sepes.RestApi.Controller
 
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputDto newDataset)
+        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset)
         {
             var updatedStudy = await _studyDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset);
             return new JsonResult(updatedStudy);
@@ -64,7 +64,7 @@ namespace Sepes.RestApi.Controller
 
         [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputDto updatedDataset)
+        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
             return new JsonResult(updatedStudy);
