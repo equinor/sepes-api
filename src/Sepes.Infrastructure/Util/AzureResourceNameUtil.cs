@@ -36,14 +36,14 @@ namespace Sepes.Infrastructure.Util
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
         // StorageAccount names needs to be unique in Azure scope.
-        public static string StudySpecificDataSetStorageAccount(string userPrefix)
+        public static string StudySpecificDataSetStorageAccount(string datasetName)
         {
             string prefix = "stds";
             var uniquePart = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
 
-            var userPrefixNormalized = MakeStringAlphanumericAndRemoveWhitespace(userPrefix, 24 - prefix.Length - uniquePart.Length);
+            var nameNormalized = MakeStringAlphanumericAndRemoveWhitespace(datasetName, 24 - prefix.Length - uniquePart.Length);
 
-            return $"{prefix}{userPrefixNormalized}{uniquePart}";
+            return $"{prefix}{nameNormalized}{uniquePart}";
         }
 
         public static string EnsureMaxLength(string potentialName, int maxLength = 0)

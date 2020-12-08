@@ -69,12 +69,5 @@ namespace Sepes.RestApi.Controller
             var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
             return new JsonResult(updatedStudy);
         }
-
-        [HttpGet("datasets/studyspecific/storageAccountNameCalculation/{userSuffix}")]
-        public string CalculateName(string userSuffix)
-        {
-            return _studyDatasetService.CalculateStorageAccountName(userSuffix);
-        }
-
     }
 }

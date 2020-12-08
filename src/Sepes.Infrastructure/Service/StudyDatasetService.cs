@@ -115,37 +115,38 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            var studyDatasetFromDb = await _db.StudyDatasets
-                .FirstOrDefaultAsync(ds => ds.StudyId == studyId && ds.DatasetId == datasetId);
-
-            //Is dataset linked to a study?
-            if (studyDatasetFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
-            }
-
-
-
-            _db.StudyDatasets.Remove(studyDatasetFromDb);
-
-            //If dataset is studyspecific, remove dataset as well.
+            //If dataset is studyspecific, handle it differently
             // Possibly keep database entry, but mark as deleted.
             if (datasetFromDb.StudyId != null)
             {
-                _db.Datasets.Remove(datasetFromDb);
+                await HardDeleteStudySpecificDatasetAsync(studyFromDb, datasetFromDb.Id);
             }
+            else
+            {
+                var studyDatasetFromDb = await _db.StudyDatasets
+                .FirstOrDefaultAsync(ds => ds.StudyId == studyId && ds.DatasetId == datasetId);
 
-            await _db.SaveChangesAsync();
+                //Is dataset linked to a study?
+                if (studyDatasetFromDb == null)
+                {
+                    throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
+                }
+
+                _db.StudyDatasets.Remove(studyDatasetFromDb);
+                await _db.SaveChangesAsync();
+            }
         }
 
         //STUDY SPECIFIC DATASETS
 
-        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputDto newDataset, CancellationToken cancellationToken = default)
+        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputDto newDatasetInput, CancellationToken cancellationToken = default)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
-            DataSetUtils.PerformUsualTestForPostedDatasets(newDataset);
-            var dataset = _mapper.Map<Dataset>(newDataset);
+            DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
+            var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudyId = studyId;
+            dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
+            dataset.CreatedBy = _userService.GetCurrentUser().UserName;
             await _db.Datasets.AddAsync(dataset);
 
             // Create new linking table entry
@@ -167,9 +168,7 @@ namespace Sepes.Infrastructure.Service
 
             var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
 
-            await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);
-
-            dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.StorageAccountName);
+            await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);          
 
             var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, cancellationToken);
 
@@ -263,11 +262,6 @@ namespace Sepes.Infrastructure.Service
             var dataset = await GetStudySpecificDatasetOrThrowAsync(study.Id, datasetId, UserOperation.Study_AddRemove_Dataset);           
             await _storageAccountService.DeleteStorageAccount(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, cancellationToken);
             await HardDeleteAsync(dataset);
-        }
-
-        public string CalculateStorageAccountName(string userPrefix)
-        {
-            return AzureResourceNameUtil.StudySpecificDataSetStorageAccount(userPrefix);
-        }
+        } 
     }
 }

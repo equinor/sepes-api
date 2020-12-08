@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Dto.Storage;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ namespace Sepes.Infrastructure.Service.Azure
             _connectionDetails = AzureBlobStorageConnectionDetails.CreateUsingResourceGroupAndAccountName(resourceGroupName, accountName);
         }
 
-        public async Task UploadFileToBlobContainer(string containerName, string blobName, IFormFile file, CancellationToken cancellationToken = default)
+        public async Task<List<BlobStorageItemDto>> UploadFileToBlobContainer(string containerName, string blobName, IFormFile file, CancellationToken cancellationToken = default)
         {
             var blobServiceClient = await GetBlobServiceClient();
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
@@ -63,25 +64,36 @@ namespace Sepes.Infrastructure.Service.Azure
                 await blobClient.UploadAsync(stream, blobHttpHeader);
                 stream.Close();
             }
+
+            return await GetFileList(containerName, cancellationToken);
         }
 
-        //public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName, CancellationToken cancellationToken = default)
-        //{
-        //    MemoryStream ms = new MemoryStream();
-        //    CloudStorageAccount.TryParse(_connectionString, out CloudStorageAccount storageAccount);
+        public async Task<List<BlobStorageItemDto>> GetFileList(string containerName, CancellationToken cancellationToken = default)
+        {
+            var result = new List<BlobStorageItemDto>();
+            var blobServiceClient = await GetBlobServiceClient();
+            var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
-        //    var blobClient = storageAccount.CreateCloudBlobClient();
-        //    var container = blobClient.GetContainerReference(containerName);
+            await blobContainerClient.CreateIfNotExistsAsync();
 
-        //    var blob = container.GetBlobReference(blobName);
+            var blobAsyncPageable = blobContainerClient.GetBlobsAsync().WithCancellation(cancellationToken);
+            var enumerator = blobAsyncPageable.GetAsyncEnumerator();
 
-        //    await blob.DownloadToStreamAsync(ms);
-        //    Stream blobStream = blob.OpenReadAsync().Result;
-        //    var fileStream = new FileStreamResult(blobStream, blob.Properties.ContentType);
-        //    fileStream.FileDownloadName = fileName;
+            try
+            {
+                while (await enumerator.MoveNextAsync())
+                {
+                    var curBlob = enumerator.Current;
+                    result.Add(new BlobStorageItemDto() { Name = curBlob.Name, ContentType = curBlob.Properties.ContentType, SizeInBytes = curBlob.Properties.ContentLength.HasValue ? curBlob.Properties.ContentLength.Value : 0 });               
+                }
+            }
+            finally
+            {
+                await enumerator.DisposeAsync();
+            }
 
-        //    return fileStream;
-        //}
+            return result;           
+        }
 
         //public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName, CancellationToken cancellationToken = default)
         //{

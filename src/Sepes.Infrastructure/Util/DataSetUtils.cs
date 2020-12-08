@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Util
 
         public static void UpdateDatasetBasicDetails(Dataset datasetFromDb, DatasetCreateUpdateInputDto updatedDataset)
         {
-           
+
             if (!String.IsNullOrWhiteSpace(updatedDataset.Name) && updatedDataset.Name != datasetFromDb.Name)
             {
                 datasetFromDb.Name = updatedDataset.Name;
@@ -37,8 +37,7 @@ namespace Sepes.Infrastructure.Util
             }
         }
 
-
-            public static void UpdateDatasetExtendedDetails(Dataset datasetToUpdate, DatasetExtendedDetailsDto details)
+        public static void UpdateDatasetExtendedDetails(Dataset datasetToUpdate, DatasetExtendedDetailsDto details)
         {
             if (details.LRAId != datasetToUpdate.LRAId)
             {
@@ -96,10 +95,10 @@ namespace Sepes.Infrastructure.Util
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
-            if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
-            {
-                throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
-            }
+            //if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
+            //{
+            //    throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
+            //}
         }
     }
 
