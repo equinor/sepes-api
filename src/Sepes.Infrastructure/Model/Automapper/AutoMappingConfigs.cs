@@ -43,13 +43,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, StudyDatasetDto>();
+            CreateMap<Dataset, StudyDatasetDto>()
+                 .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<DatasetStorageExternalLinkResolver>());
 
             CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
-                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
-
+                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))                
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
 
             CreateMap<SandboxDataset, SandboxDatasetDto>()
