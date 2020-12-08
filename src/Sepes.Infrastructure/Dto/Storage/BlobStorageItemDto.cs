@@ -10,6 +10,6 @@ namespace Sepes.Infrastructure.Dto.Storage
 
         public string ContentType { get; set; }
 
-        public long SizeInBytes { get; set; }
+        public long Size { get; set; }
     }
 }
