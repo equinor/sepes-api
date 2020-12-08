@@ -71,6 +71,22 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpGet("{studyId}/resultsandlearnings")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetResultsAndLearningsAsync(int studyId)
+        {
+            var resultsAndLearningsFromDb = await _studyService.GetResultsAndLearningsAsync(studyId);
+            return new JsonResult(resultsAndLearningsFromDb);
+        }
+
+        [HttpPut("{studyId}/resultsandlearnings")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
+        {
+            var resultsAndLearningsFromDb = await _studyService.UpdateResultsAndLearningsAsync(studyId, resultsAndLearnings);
+            return new JsonResult(resultsAndLearningsFromDb);
+        }
+
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]

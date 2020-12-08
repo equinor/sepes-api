@@ -78,6 +78,7 @@ namespace Sepes.Infrastructure.Service
             return studyDetailsDto;
         }
 
+      
 
         public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
@@ -121,12 +122,7 @@ namespace Sepes.Infrastructure.Service
             if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
-            }
-
-            if (updatedStudy.ResultsAndLearnings != studyFromDb.ResultsAndLearnings)
-            {
-                studyFromDb.ResultsAndLearnings = updatedStudy.ResultsAndLearnings;
-            }
+            }          
 
             studyFromDb.Updated = DateTime.UtcNow;
 
@@ -135,6 +131,31 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
+        }
+
+        public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
+        {
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read_ResultsAndLearnings, false);
+
+            return new StudyResultsAndLearningsDto() { ResultsAndLearnings = studyFromDb.ResultsAndLearnings };
+        }
+
+        public async Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
+        {
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_ResultsAndLearnings, false);
+
+            if (resultsAndLearnings.ResultsAndLearnings != studyFromDb.ResultsAndLearnings)
+            {
+                studyFromDb.ResultsAndLearnings = resultsAndLearnings.ResultsAndLearnings;
+            }
+
+            var currentUser = _userService.GetCurrentUser();
+            studyFromDb.Updated = DateTime.UtcNow;
+            studyFromDb.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+
+            return new StudyResultsAndLearningsDto() { ResultsAndLearnings = studyFromDb.ResultsAndLearnings };
         }
 
         public async Task CloseStudyAsync(int studyId)
@@ -263,5 +284,7 @@ namespace Sepes.Infrastructure.Service
             study.StudyParticipants = new List<StudyParticipant>();
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
         }
+
+      
     }
 }
