@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Study;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
 using System;
 using System.Collections.Generic;
@@ -13,30 +12,54 @@ namespace Sepes.Infrastructure.Util
     {
         public static string MANAGED_BY_TAG_NAME = "ManagedBy";
 
-        public static Dictionary<string, string> CreateTags(IConfiguration config, StudyDto study, SandboxDto sandbox)
+        public static Dictionary<string, string> SandboxResourceTags(IConfiguration config, Study study, Sandbox sandbox)
         {
             var tags = CreateBaseTags(study.Name);
 
+            DecorateWithManagedByTags(tags, config);
+            DecorateWithCostAllocationTags(tags, config, study);
+            DecorateWithSandboxTags(tags, sandbox);
+
+            return tags;
+        }
+
+        public static Dictionary<string, string> StudySpecificDatasourceResourceGroupTags(IConfiguration config, Study study)
+        {
+            var tags = CreateBaseTags(study.Name);
+
+            DecorateWithManagedByTags(tags, config);
+            DecorateWithCostAllocationTags(tags, config, study);          
+
+            return tags;
+        }
+     
+
+        public static void DecorateWithManagedByTags(Dictionary<string, string> tags, IConfiguration config)
+        {
             //Adds a "managed by"-tag to Azure resources. Sepes won't change resources that are missing this tag
             var managedByTagValue = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);
             tags.Add(MANAGED_BY_TAG_NAME, managedByTagValue);
+        }
 
+        public static void DecorateWithCostAllocationTags(Dictionary<string, string> tags, IConfiguration config, Study study)
+        {
             //Enables cost tracking of Azure resources. This should only be enabled in PROD with real WBS codes, because fake wbs codes used in DEV is causing pain for teams that track the costs.
             var costAllocationTypeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_TYPE_TAG_NAME);
             tags.Add(costAllocationTypeTagName, "WBS");
 
             var costAllocationCodeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_CODE_TAG_NAME);
             tags.Add(costAllocationCodeTagName, study.WbsCode);
+        }
 
+        public static void DecorateWithSandboxTags(Dictionary<string, string> tags, Sandbox sandbox)
+        {
             // TODO: Get Owner Name and Email from Roles!
             //tags.Add("StudyOwnerName", study.OwnerName);
             //tags.Add("StudyOwnerEmail", study.OwnerEmail);
             tags.Add("SandboxName", sandbox.Name);
             tags.Add("TechnicalContactName", sandbox.TechnicalContactName);
             tags.Add("TechnicalContactEmail", sandbox.TechnicalContactEmail);
-
-            return tags;
-        }
+        } 
 
         public static Dictionary<string, string> CreateUnitTestTags(string studyName)
         {
@@ -93,7 +116,7 @@ namespace Sepes.Infrastructure.Util
                 throw new Exception($"Resource is missing tag: {tagName}");
             }
 
-                     
+
         }
 
         public static void CheckIfResourceIsManagedByThisInstanceThrowIfNot(IConfiguration config, IDictionary<string, string> resourceTags)
@@ -101,9 +124,9 @@ namespace Sepes.Infrastructure.Util
             var expectedTagValueFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);
 
             AzureResourceTagsFactory.ContainsTagWithValueThrowIfError(resourceTags, MANAGED_BY_TAG_NAME, expectedTagValueFromConfig);
-          
 
-        
+
+
 
         }
 

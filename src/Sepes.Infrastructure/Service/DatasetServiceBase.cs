@@ -27,8 +27,9 @@ namespace Sepes.Infrastructure.Service
         protected IQueryable<Dataset> DatasetBaseQueryable(bool excludeStudySpecific = true)
         {
             var queryable = _db.Datasets
-                 .Include(s => s.StudyDatasets)
-                 .ThenInclude(sd => sd.Study).AsQueryable();
+                 .Include(ds => ds.StudyDatasets)
+                 .ThenInclude(sd => sd.Study)
+                 .Where(ds => ds.Deleted.HasValue == false || ds.Deleted.HasValue && ds.Deleted.Value == false);
 
             if (excludeStudySpecific)
             {
@@ -37,7 +38,7 @@ namespace Sepes.Infrastructure.Service
 
             return queryable;
         }
-       
+
         protected async Task<Dataset> GetDatasetOrThrowAsync(int datasetId, UserOperation operation, bool excludeStudySpecific = true)
         {
             var datasetFromDb = await DatasetBaseQueryable(excludeStudySpecific).FirstOrDefaultAsync(ds => ds.Id == datasetId);
@@ -50,6 +51,20 @@ namespace Sepes.Infrastructure.Service
             ThrowIfOperationNotAllowed(operation);
 
             return datasetFromDb;
+        }
+
+        protected async Task SoftDeleteAsync(Dataset dataset)
+        {
+            dataset.Deleted = true;
+            dataset.DeletedAt = DateTime.UtcNow;
+            dataset.DeletedBy = _userService.GetCurrentUser().UserName;
+            await _db.SaveChangesAsync();
+        }
+
+        protected async Task HardDeleteAsync(Dataset dataset)
+        {           
+            _db.Datasets.Remove(dataset);
+            await _db.SaveChangesAsync();
         }
 
         protected void ThrowIfOperationNotAllowed(UserOperation operation)
@@ -74,6 +89,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
-        } 
+        }
     }
 }

@@ -58,6 +58,16 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("DataId")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -75,6 +85,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("SourceSystem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StorageAccountId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StorageAccountName")
@@ -417,6 +430,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("ResultsAndLearnings")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudySpecificDatasetsResourceGroup")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()

@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +50,29 @@ namespace Sepes.Infrastructure.Service
             var resourceGroup = await CreateInternal(resourceGroupName, region, tags);
             return MapToDto(resourceGroup);
         }
+
+        public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            IResourceGroup resourceGroup = null;
+
+            try
+            {
+         
+            resourceGroup = await GetResourceAsync(resourceGroupName);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogInformation(ex, "Ensure Resource Group Exist: Not found, creating");
+            }
+
+            if (resourceGroup == null)
+            {
+                resourceGroup = await CreateInternal(resourceGroupName, region, tags, cancellationToken);
+            }
+           
+            return MapToDto(resourceGroup);
+        }      
 
         async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {

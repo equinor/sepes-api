@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -72,45 +73,45 @@ namespace Sepes.Infrastructure.Service
             return result;
         }       
 
-        public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
+        //public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
+        //{
+        //    string storageAccountName = AzureResourceNameUtil.StorageAccount(sandboxName);
+
+        //    // Create storage account
+        //    var account = await _azure.StorageAccounts.Define(storageAccountName)
+        //        .WithRegion(region)
+        //        .WithExistingResourceGroup(resourceGroupName)
+        //        .WithAccessFromAllNetworks()
+        //        .WithGeneralPurposeAccountKindV2()
+        //        .WithOnlyHttpsTraffic()
+        //        .WithSku(StorageAccountSkuType.Standard_LRS)
+        //         .WithTags(tags)
+        //        .CreateAsync();
+
+        //    // Get keys to build connectionstring with
+        //    //var keys = await account.GetKeysAsync();
+
+        //    // Build connection string. Maybe return this? Or should access happen through SAS-key?
+        //    //string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
+
+        //    // Connect
+        //    //var connectedAccount = CloudStorageAccount.Parse(connectionString);
+
+        //    return account;
+        //}     
+
+        public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
         {
-            string storageAccountName = AzureResourceNameUtil.StorageAccount(sandboxName);
-
-            // Create storage account
-            var account = await _azure.StorageAccounts.Define(storageAccountName)
-                .WithRegion(region)
-                .WithExistingResourceGroup(resourceGroupName)
-                .WithAccessFromAllNetworks()
-                .WithGeneralPurposeAccountKindV2()
-                .WithOnlyHttpsTraffic()
-                .WithSku(StorageAccountSkuType.Standard_LRS)
-                 .WithTags(tags)
-                .CreateAsync();
-
-            // Get keys to build connectionstring with
-            //var keys = await account.GetKeysAsync();
-
-            // Build connection string. Maybe return this? Or should access happen through SAS-key?
-            //string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
-
-            // Connect
-            //var connectedAccount = CloudStorageAccount.Parse(connectionString);
-
-            return account;
-        }     
-
-        public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, storageAccountName);
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-            await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName);
+            await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
         }
 
-        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName)
+        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
-            var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName, cancellationToken);
             return resource;
         }
 
@@ -164,10 +165,20 @@ namespace Sepes.Infrastructure.Service
             .WithGeneralPurposeAccountKindV2()
             .WithOnlyHttpsTraffic()
             .WithSku(StorageAccountSkuType.Standard_LRS)
-             .WithTags(tags)
+            .WithTags(tags)
             .CreateAsync();
 
             return account;
+        }
+
+        public async Task<IRoleAssignment> SetBuiltInRoleAssignment(string resourceGroupName, string resourceName, string userId, BuiltInRole role, CancellationToken cancellationToken = default)
+        {
+            var storageAccount = await GetResourceAsync(resourceGroupName, resourceName);
+            var user = await _azure.AccessManagement.ActiveDirectoryUsers.GetByIdAsync(userId, cancellationToken);  
+            
+            var assignment = await user.Manager.RoleAssignments.Define("").ForUser(user).WithBuiltInRole(role).WithResourceScope(storageAccount).CreateAsync(cancellationToken);                      
+
+            return assignment;
         }
     }
 }

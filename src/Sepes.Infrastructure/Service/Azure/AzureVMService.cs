@@ -306,6 +306,7 @@ namespace Sepes.Infrastructure.Service
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
+
                                     .WithoutPrimaryPublicIPAddress();
 
 

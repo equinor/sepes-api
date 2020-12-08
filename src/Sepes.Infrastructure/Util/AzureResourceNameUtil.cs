@@ -8,9 +8,14 @@ namespace Sepes.Infrastructure.Util
     {
         public const string AZURE_RESOURCE_INITIAL_ID_OR_NAME = "n/a";
 
-        public static string ResourceGroup(string studyName, string sandboxName)
+        public static string SandboxResourceGroup(string studyName, string sandboxName)
         {
             return AzureResourceNameConstructor("rg-study-", studyName, sandboxName, maxLength: 64, addUniqueEnding: true);
+        }
+
+        public static string StudySpecificDatasetResourceGroup(string studyName)
+        {
+            return AzureResourceNameConstructor("rg-study-datasets-", studyName, null, maxLength: 64, addUniqueEnding: true);
         }
 
         public static string VNet(string studyName, string sandboxName) => AzureResourceNameConstructor("vnet-", studyName, sandboxName);
@@ -26,18 +31,19 @@ namespace Sepes.Infrastructure.Util
 
         public static string BastionPublicIp(string bastionName) => EnsureMaxLength($"pip-{bastionName}", 64);
 
+
+
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
         // StorageAccount names needs to be unique in Azure scope.
-        public static string StorageAccount(string sandboxName)
+        public static string StudySpecificDataSetStorageAccount(string userPrefix)
         {
-            var shortGuid = Guid.NewGuid().ToString().ToLower().Substring(0, 3);
-            sandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
-            if (sandboxName.Length > 18)
-            {
-                return $"st{sandboxName.ToLower().Substring(0, 18)}{shortGuid}";
-            }
-            return $"st{sandboxName.ToLower()}{shortGuid}";
+            string prefix = "stds";
+            var uniquePart = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
+
+            var userPrefixNormalized = MakeStringAlphanumericAndRemoveWhitespace(userPrefix, 24 - prefix.Length - uniquePart.Length);
+
+            return $"{prefix}{userPrefixNormalized}{uniquePart}";
         }
 
         public static string EnsureMaxLength(string potentialName, int maxLength = 0)
@@ -96,21 +102,22 @@ namespace Sepes.Infrastructure.Util
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
 
-        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
+        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName = null, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
             var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
             var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
-            var alphanumericSandboxName = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
+            var alphanumericSandboxName = sandboxName != null ? MakeStringAlphanumericAndRemoveWhitespace(sandboxName) : null;
+            var alphanumericSandboxNameLength = alphanumericSandboxName != null ? alphanumericSandboxName.Length : 0;
 
-            var charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
+            var charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxNameLength);
 
             if (charachtersLeft < 0)
             {
                 var totalTrim = Math.Abs(charachtersLeft);
 
-                var nameLengthDiff = alphanumericStudyName.Length - alphanumericSandboxName.Length;
+                var nameLengthDiff = alphanumericStudyName.Length - alphanumericSandboxNameLength;
                 var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
 
                 if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
@@ -119,23 +126,33 @@ namespace Sepes.Infrastructure.Util
                 }
                 else // sandbox name is longer, trim it down to study length
                 {
-                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - amountToTrimOff);
+                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxNameLength - amountToTrimOff);
                 }
 
                 //Both names are now equal in length, now we can equally remove from both
 
-                charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxName.Length);
+                charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxNameLength);
 
                 if (charachtersLeft < 0)
                 {
                     var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
                     var even = charachtersLeft % 2 == 0;
                     alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - mustRemoveEach - (even ? 0 : 1));
-                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxName.Length - mustRemoveEach);
+                    alphanumericSandboxName = EnsureMaxLength(alphanumericSandboxName, alphanumericSandboxNameLength - mustRemoveEach);
+                 
                 }
             }
 
-            return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{shortUniquePart}";
+            if (String.IsNullOrWhiteSpace(alphanumericSandboxName))
+            {
+                return $"{prefix}{alphanumericStudyName}{shortUniquePart}";
+            }
+            else
+            {
+                return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{shortUniquePart}";
+            }
+
+         
         }
 
         static string Normalize(string input, int limit = 0)

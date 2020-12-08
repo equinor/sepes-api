@@ -15,6 +15,8 @@ namespace Sepes.Infrastructure.Service.Azure
 {
     public class AzureApiServiceBase
     {
+        protected string[] scopes = new string[] { "https://management.azure.com/.default" };
+
         protected readonly ILogger _logger;
         protected readonly IConfiguration _config;
         protected readonly AzureCredentials _credentials;
@@ -42,12 +44,11 @@ namespace Sepes.Infrastructure.Service.Azure
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
 
             _tokenUrl = $"{_instance}{_tenantId}/oauth2/token";
+        }
 
-            //_credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
-
-            //_azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
-            //    .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
-            //    .Authenticate(_credentials).WithSubscription(_subscriptionId);
+        protected void SetScopes(string[] newScopes)
+        {
+            scopes = newScopes;
         }
 
         protected async Task<string> AquireTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -82,10 +83,22 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             try
             {
+                return await PerformRequest<T>(url, HttpMethod.Get, content: null, needsAuth, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{this.GetType()}: GetResponse for the url {url} failed", ex);
+            }
+        }
+
+        protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            try
+            {
                 string token = null;
 
                 if (needsAuth)
-                {
+                {                   
                     string[] scopes = new string[] { "https://management.azure.com/.default" };
                     token = await _tokenAcquisition.GetAccessTokenForAppAsync(scopes);
                 }
@@ -95,9 +108,30 @@ namespace Sepes.Infrastructure.Service.Azure
                     if (needsAuth)
                     {
                         apiRequestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    }                   
+                    }
 
-                    var responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+                    HttpResponseMessage responseMessage = null;
+
+                    if (method == HttpMethod.Get)
+                    {
+                        responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+                    }
+                    else if(method == HttpMethod.Post)
+                    {
+                        responseMessage = await apiRequestClient.PostAsync(url, content, cancellationToken);
+                    }
+                    else if (method == HttpMethod.Put)
+                    {
+                        responseMessage = await apiRequestClient.PutAsync(url, content, cancellationToken);
+                    }
+                    else if (method == HttpMethod.Patch)
+                    {
+                        responseMessage = await apiRequestClient.PatchAsync(url, content, cancellationToken);
+                    }
+                    else if (method == HttpMethod.Delete)
+                    {
+                        responseMessage = await apiRequestClient.DeleteAsync(url, cancellationToken);
+                    }                   
 
                     var responseString = await responseMessage.Content.ReadAsStringAsync();
 
@@ -108,12 +142,15 @@ namespace Sepes.Infrastructure.Service.Azure
             }
             catch (Exception ex)
             {
-                throw new Exception($"{this.GetType()}: GetResponse for the url {url} failed", ex);
+                throw new Exception($"{this.GetType()}: Response for {method.ToString()} against the url {url} failed", ex);
             }
         }
     }
 
-    class TokenResponse
+
+  
+
+class TokenResponse
     {
         public string access_token { get; set; }
 

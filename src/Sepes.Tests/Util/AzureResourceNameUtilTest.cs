@@ -6,22 +6,33 @@ namespace Sepes.Tests.Util
 
     public class AzureResourceNameUtilTest
     {
+
         [Fact]
-        public void ResourceGroupName_ShouldContainStudyAndSandboxName()
+        public void StudySpecificDatasetResourceGroupName_ShouldContainStudyName()
         {
-            var resourceGroupName = AzureResourceNameUtil.ResourceGroup("Very Secret Software Inc", "First attempt at finding good data");
+            var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup("Very Secret Software Inc");
+            Assert.InRange(resourceGroupName.Length, 6, 64);
+
+            Assert.Contains("rg-study-datasets-", resourceGroupName);
+            Assert.Contains("-verysecretsoftwareinc-", resourceGroupName);
+        }
+
+        [Fact]
+        public void SandboxResourceGroupName_ShouldContainStudyAndSandboxName()
+        {
+            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup("Very Secret Software Inc", "First attempt at finding good data");
             Assert.InRange(resourceGroupName.Length, 6, 64);
          
             Assert.Contains("rg-study-", resourceGroupName);
-            Assert.Contains("verysecretsoftwareinc", resourceGroupName);
-            Assert.Contains("firstattemptatfindinggooddata", resourceGroupName);
+            Assert.Contains("-verysecretsoftwareinc-", resourceGroupName);
+            Assert.Contains("-firstattemptatfindinggooddata-", resourceGroupName);
 
         }
 
         [Fact]
-        public void ResourceGroupName_ShouldNotExceed64Characters()
+        public void SandboxResourceGroupName_ShouldNotExceed64Characters()
         {
-            var resourceGroupName = AzureResourceNameUtil.ResourceGroup("Very Very Secret Software Inc", "First attempt at finding good data");
+            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup("Very Very Secret Software Inc", "First attempt at finding good data");
             Assert.InRange(resourceGroupName.Length, 6, 64);
             Assert.Contains("rg-study-", resourceGroupName);
             Assert.Contains("veryverysecretsoftwareinc", resourceGroupName);
@@ -49,7 +60,7 @@ namespace Sepes.Tests.Util
         [Fact]
         public void ResourceGroupName_ShouldFilterAwayNorwegianSpecialLetters()
         {
-            var resourceName = AzureResourceNameUtil.ResourceGroup("A revolutional Støddy with a long name", "Bæste sandbåx ju kæn tink");
+            var resourceName = AzureResourceNameUtil.SandboxResourceGroup("A revolutional Støddy with a long name", "Bæste sandbåx ju kæn tink");
             Assert.InRange(resourceName.Length, 4, 64);            
             Assert.Contains("rg-study-arevolutionalstddywithalongname-bstesandbxjukntink-", resourceName);
         }

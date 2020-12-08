@@ -74,5 +74,4 @@ namespace Sepes.RestApi.Controller
             return new NoContentResult();
         }
     }
-
 }

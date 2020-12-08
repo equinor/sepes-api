@@ -14,8 +14,7 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class DatasetService : DatasetServiceBase, IDatasetService
-    {
-       
+    {       
 
         public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService)
             : base(db, mapper, logger, userService)
@@ -55,7 +54,6 @@ namespace Sepes.Infrastructure.Service
 
             return datasetDto;
        }     
-
 
         public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
         {

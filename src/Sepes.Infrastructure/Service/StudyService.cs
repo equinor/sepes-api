@@ -22,12 +22,14 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly IStudyLogoService _studyLogoService;
+        readonly IStudyDatasetService _studyDatasetService;
 
-        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService)
+        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudyDatasetService studyDatasetService)
             : base(db, mapper, userService)
         {
             _logger = logger;
             _studyLogoService = studyLogoService;
+            _studyDatasetService = studyDatasetService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null)
@@ -48,7 +50,7 @@ namespace Sepes.Infrastructure.Service
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
 
-            studiesDtos = _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
+            studiesDtos = await _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
             return studiesDtos;
         }       
 
@@ -64,10 +66,9 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, true);
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
-            _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);
+            await _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);
             studyDetailsDto.Sandboxes = studyDetailsDto.Sandboxes.Where(sb => !sb.Deleted).ToList();
             await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);
-
 
             foreach (var curDs in studyDetailsDto.Datasets)
             {
@@ -136,15 +137,13 @@ namespace Sepes.Infrastructure.Service
             return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
         }
 
-
-
         public async Task CloseStudyAsync(int studyId)
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Close, true);
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
-            //await RemoveDatasets(studyFromDb.Id);
+            await _studyDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
 
             var currentUser = _userService.GetCurrentUser();
             studyFromDb.Closed = true;
@@ -162,45 +161,27 @@ namespace Sepes.Infrastructure.Service
 
             await _studyLogoService.DeleteAsync(studyFromDb);
 
-            // TODO: Possibly keep datasets for archiving/logging purposes.
+            // TODO: Possibly keep datasets for archiving/logging purposes.  
+            await _studyDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
 
-            var studySpecificDatasets = new List<int>();
+            await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);           
 
-            //Delete datasets links and study specific datasets
-            var studyDatasets = studyFromDb.StudyDatasets.ToList();
+            await RemoveStudyParticipantsAndRelatedEntries(studyFromDb);
+        }
 
-            if (studyDatasets.Any())
+        void ValidateStudyForCloseOrDeleteThrowIfNot(Study studyFromDb)
+        {
+            foreach (var curSandbox in studyFromDb.Sandboxes)
             {
-                foreach (var studyDataset in studyDatasets)
+                if (curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
                 {
-                   //Remove relation
-                    studyFromDb.StudyDatasets.Remove(studyDataset);
-
-                    if (studyDataset.Dataset.StudyId == studyFromDb.Id)
-                    {
-                        //Study specific dataset, must be deleted
-                        studySpecificDatasets.Add(studyDataset.DatasetId);
-                    } 
+                    throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
                 }
             }
+        }
 
-            await _db.SaveChangesAsync();
-
-            if (studySpecificDatasets.Any())
-            {
-                foreach(var curStudySpecificDatasetId in studySpecificDatasets)
-                {
-                    var datasetToDelete = await _db.Datasets.FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId && d.StudyId.HasValue && d.StudyId == studyFromDb.Id);
-
-                    if(datasetToDelete != null)
-                    {
-                        _db.Datasets.Remove(datasetToDelete);
-                    }
-                }
-            }
-
-            var userEntriesForDeletedStudyParticipants = new HashSet<int>();
-
+        async Task RemoveSandboxAndRelatedEntriesFromContext(Study studyFromDb)
+        {
             foreach (var curSandbox in studyFromDb.Sandboxes)
             {
                 foreach (var curResource in curSandbox.Resources)
@@ -227,6 +208,13 @@ namespace Sepes.Infrastructure.Service
                 _db.Sandboxes.Remove(curSandbox);
             }
 
+            await _db.SaveChangesAsync();
+        }
+
+        async Task RemoveStudyParticipantsAndRelatedEntries(Study studyFromDb)
+        {
+            var userEntriesForDeletedStudyParticipants = new HashSet<int>();
+
             foreach (var curParticipant in studyFromDb.StudyParticipants)
             {
                 if (!userEntriesForDeletedStudyParticipants.Contains(curParticipant.UserId))
@@ -244,45 +232,18 @@ namespace Sepes.Infrastructure.Service
             {
                 var userEntry = await _db.Users.Include(u => u.StudyParticipants).FirstOrDefaultAsync(u => u.Id == curUserId);
 
-                if(userEntry != null)
+                if (userEntry != null)
                 {
-                    if(userEntry.StudyParticipants.Count == 0)
+                    if (userEntry.StudyParticipants.Count == 0)
                     {
                         _db.Users.Remove(userEntry);
                         await _db.SaveChangesAsync();
                     }
-                }              
-            }
-        }
-
-        void ValidateStudyForCloseOrDeleteThrowIfNot(Study studyFromDb)
-        {
-            foreach (var curSandbox in studyFromDb.Sandboxes)
-            {
-                if (curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
-                {
-                    throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
                 }
             }
-        }       
 
-        async Task RemoveDatasets(int studyId)
-        {
-            //Check if study contains studySpecific Datasets
-            var studySpecificDatasets = await _db.Datasets.Where(ds => ds.StudyId == studyId).ToListAsync();
-
-            if (studySpecificDatasets.Any())
-            {
-                foreach (Dataset dataset in studySpecificDatasets)
-                {
-                    // TODO: Possibly keep datasets for archiving/logging purposes.
-                    // Possibly: Datasets.removeWithoutDeleting(dataset)
-                    _db.Datasets.Remove(dataset);
-                }
-            }
-        }
-
-      
+            await _db.SaveChangesAsync();
+        } 
 
         void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {

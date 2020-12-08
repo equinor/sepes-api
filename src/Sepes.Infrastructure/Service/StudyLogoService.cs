@@ -38,9 +38,9 @@ namespace Sepes.Infrastructure.Service
             _blobService.SetConfigugrationKeyForConnectionString(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
         }
 
-        public void DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo)
+        public async Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo)
         {
-            var uriBuilder = _blobService.CreateUriBuilderWithSasToken(_containerName);
+            var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
 
             if(uriBuilder == null)
             {
@@ -52,9 +52,9 @@ namespace Sepes.Infrastructure.Service
             } 
         }
 
-        public IEnumerable<StudyListItemDto> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
+        public async Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
         {
-            var uriBuilder = _blobService.CreateUriBuilderWithSasToken(_containerName);
+            var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
 
             if (uriBuilder == null)
             {
@@ -83,8 +83,7 @@ namespace Sepes.Infrastructure.Service
             {
                 hasLogo.LogoUrl = null;
             }            
-        }
-      
+        }      
         
         public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {

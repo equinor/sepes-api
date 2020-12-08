@@ -1,11 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
-using System.Collections.Generic;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -29,7 +26,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]        
         public async Task<IActionResult> GetAllDatasetsAsync(int studyId)
         {
-            var dataset = await _studyDatasetService.GetDatasetsForStudy(studyId);
+            var dataset = await _studyDatasetService.GetDatasetsForStudyAsync(studyId);
             return new JsonResult(dataset);
         }
 
@@ -73,5 +70,11 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
-}
+        [HttpGet("datasets/studyspecific/storageAccountNameCalculation/{userSuffix}")]
+        public string CalculateName(string userSuffix)
+        {
+            return _studyDatasetService.CalculateStorageAccountName(userSuffix);
+        }
+
+    }
 }

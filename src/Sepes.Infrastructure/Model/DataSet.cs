@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,6 +14,8 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
         public string StorageAccountName { get; set; }
+
+        public string StorageAccountId { get; set; }
 
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
@@ -32,6 +35,13 @@ namespace Sepes.Infrastructure.Model
         public string AreaL2 { get; set; }
         public string Tags { get; set; }
         public string Description { get; set; }
+
+        public bool? Deleted { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
+
+        [MaxLength(64)]
+        public string DeletedBy { get; set; }
 
         // Attributes used for linking.
         // ------------------------------

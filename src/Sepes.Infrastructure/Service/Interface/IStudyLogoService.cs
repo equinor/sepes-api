@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
@@ -10,9 +9,9 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyLogoService
     {
-        IEnumerable<StudyListItemDto> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);    
+        Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);
 
-        void DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);
+        Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);
 
         Task DeleteAsync(Study study);
 

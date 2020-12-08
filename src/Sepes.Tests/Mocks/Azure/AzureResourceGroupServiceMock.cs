@@ -87,10 +87,7 @@ namespace Sepes.Tests.Mocks.Azure
             resourceGroup.Tags = newTagList;            
         }
 
-        public Task<CloudResourceCRUDResult> EnsureCreatedAndConfigured(CloudResourceCRUDInput parameters)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
         {
@@ -108,6 +105,11 @@ namespace Sepes.Tests.Mocks.Azure
         }
 
         public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

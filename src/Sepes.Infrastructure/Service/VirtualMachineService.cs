@@ -68,14 +68,13 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
-            var study = await _studyService.GetStudyDtoByIdAsync(sandbox.StudyId, UserOperation.Study_Crud_Sandbox);
+            var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
-            var virtualMachineName = AzureResourceNameUtil.VirtualMachine(study.Name, sandbox.Name, userInput.Name);
+            var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
             await _sandboxResourceService.ValidateNameThrowIfInvalid(virtualMachineName);
 
-            var tags = AzureResourceTagsFactory.CreateTags(_config, study, sandbox);
+            var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
             var region = RegionStringConverter.Convert(sandbox.Region);
 
@@ -87,7 +86,7 @@ namespace Sepes.Infrastructure.Service
             var vmResourceEntry = await _sandboxResourceService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
 
             //Create vm settings and immeately attach to resource entry
-            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, study.Id, sandboxId, userInput);
+            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
             vmResourceEntry.ConfigString = vmSettingsString;
             await _sandboxResourceService.Update(vmResourceEntry.Id, vmResourceEntry);
 

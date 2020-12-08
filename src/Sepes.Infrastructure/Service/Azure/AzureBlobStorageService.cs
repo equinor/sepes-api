@@ -3,48 +3,43 @@ using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Sas;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Storage;
-using Microsoft.Azure.Storage.Blob;
+using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
-    public class AzureBlobStorageService : IAzureBlobStorageService
+   
+    public class AzureBlobStorageService : AzureServiceBase, IAzureBlobStorageService
     {
-        readonly ILogger _logger;
-        readonly IConfiguration _configuration;
-        string _connectionString;
-        string _accountUrl;
 
-        public AzureBlobStorageService(ILogger<AzureBlobStorageService> logger, IConfiguration configuration)
+        AzureBlobStorageConnectionDetails _connectionDetails;
+
+        public AzureBlobStorageService(IConfiguration configuration, ILogger<AzureBlobStorageService> logger)
+            : base(configuration, logger)
         {
-            _logger = logger;
-            _configuration = configuration;
+
         }
 
         public void SetConfigugrationKeyForConnectionString(string connectionStringConfigName)
         {
-            _accountUrl = null;
-            _connectionString = GetStorageConnectionString(connectionStringConfigName);
-        }  
-        
-         public void SetAccountUrl(string accountUrl)
-        {
-            _connectionString = null;
-            _accountUrl = accountUrl;
-        } 
+            _connectionDetails = AzureBlobStorageConnectionDetails.CreateUsingConnectionString(GetStorageConnectionString(connectionStringConfigName));
+        }
 
-        public async Task UploadFileToBlobContainer(string containerName, string blobName, IFormFile file)
+        public void SetResourceGroupAndAccountName(string resourceGroupName, string accountName)
         {
+            _connectionDetails = AzureBlobStorageConnectionDetails.CreateUsingResourceGroupAndAccountName(resourceGroupName, accountName);
+        }
 
-            var blobServiceClient = GetBlobServiceClient();
+        public async Task UploadFileToBlobContainer(string containerName, string blobName, IFormFile file, CancellationToken cancellationToken = default)
+        {
+            var blobServiceClient = await GetBlobServiceClient();
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             await blobContainerClient.CreateIfNotExistsAsync();
@@ -56,6 +51,7 @@ namespace Sepes.Infrastructure.Service.Azure
             blobHttpHeader.ContentType = file.ContentType;
 
             byte[] fileBytes;
+
             using (var memoryStream = new MemoryStream())
             {
                 await file.CopyToAsync(memoryStream);
@@ -67,29 +63,50 @@ namespace Sepes.Infrastructure.Service.Azure
                 await blobClient.UploadAsync(stream, blobHttpHeader);
                 stream.Close();
             }
-        }     
-
-        public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName)
-        {
-            MemoryStream ms = new MemoryStream();
-            CloudStorageAccount.TryParse(_connectionString, out CloudStorageAccount storageAccount);
-            
-            var BlobClient = storageAccount.CreateCloudBlobClient();
-            var container = BlobClient.GetContainerReference(containerName);
-
-            var blob = container.GetBlobReference(blobName);
-
-            await blob.DownloadToStreamAsync(ms);
-            Stream blobStream = blob.OpenReadAsync().Result;
-            var fileStream = new FileStreamResult(blobStream, blob.Properties.ContentType);
-            fileStream.FileDownloadName = fileName;
-
-            return fileStream;
         }
 
-        public async Task<int> DeleteFileFromBlobContainer(string containerName, string blobName)
+        //public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName, CancellationToken cancellationToken = default)
+        //{
+        //    MemoryStream ms = new MemoryStream();
+        //    CloudStorageAccount.TryParse(_connectionString, out CloudStorageAccount storageAccount);
+
+        //    var blobClient = storageAccount.CreateCloudBlobClient();
+        //    var container = blobClient.GetContainerReference(containerName);
+
+        //    var blob = container.GetBlobReference(blobName);
+
+        //    await blob.DownloadToStreamAsync(ms);
+        //    Stream blobStream = blob.OpenReadAsync().Result;
+        //    var fileStream = new FileStreamResult(blobStream, blob.Properties.ContentType);
+        //    fileStream.FileDownloadName = fileName;
+
+        //    return fileStream;
+        //}
+
+        //public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName, CancellationToken cancellationToken = default)
+        //{
+        //    MemoryStream ms = new MemoryStream();
+
+        //    var blobServiceClient = await GetBlobServiceClient();
+        //    var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+
+        //    var blobClient = blobContainerClient.GetBlobClient(blobName);
+        //    await blobClient.DownloadToAsync(ms);
+
+        //       var blob = container.GetBlobReference(blobName);
+
+        //    await blob.DownloadToStreamAsync(ms);
+        //    Stream blobStream = blob.OpenReadAsync().Result;
+        //    var fileStream = new FileStreamResult(blobStream, blob.Properties.ContentType);
+        //    fileStream.FileDownloadName = fileName;
+
+        //    return fileStream;
+        //}
+
+        public async Task<int> DeleteFileFromBlobContainer(string containerName, string blobName, CancellationToken cancellationToken = default)
         {
-            var blobServiceClient = GetBlobServiceClient(); 
+            var blobServiceClient = await GetBlobServiceClient();
             var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
             var blobClient = blobContainerClient.GetBlobClient(blobName);
@@ -98,13 +115,11 @@ namespace Sepes.Infrastructure.Service.Azure
             return result.Status;
         }
 
-        public UriBuilder CreateUriBuilderWithSasToken(string containerName)
+        public async Task<UriBuilder> CreateUriBuilderWithSasToken(string containerName)
         {
-            bool isDevelopmentStorage = this._connectionString == "UseDevelopmentStorage=true";
+            var accountName = await GetAccountNameFromConnectionString();
 
-            string accountName = null;
-
-            if (GetAccountNameFromConnectionString(out accountName))
+            if (String.IsNullOrWhiteSpace(accountName) == false)
             {
                 var uriBuilder = new UriBuilder()
                 {
@@ -112,7 +127,7 @@ namespace Sepes.Infrastructure.Service.Azure
                     Host = string.Format("{0}.blob.core.windows.net", accountName)
                 };
 
-                if (isDevelopmentStorage)
+                if (_connectionDetails.IsDevelopmentStorage)
                 {
                     return uriBuilder;
                 }
@@ -146,8 +161,13 @@ namespace Sepes.Infrastructure.Service.Azure
 
         string GetKeyValueFromConnectionString(string key)
         {
+            if (String.IsNullOrWhiteSpace(_connectionDetails.ConnectionString))
+            {
+                throw new Exception("Connection String not set");
+            }
+
             var settings = new Dictionary<string, string>();
-            var splitted = _connectionString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            var splitted = _connectionDetails.ConnectionString.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
             foreach (var nameValue in splitted)
             {
@@ -158,57 +178,79 @@ namespace Sepes.Infrastructure.Service.Azure
             return settings[key];
         }
 
-        bool GetAccountNameFromConnectionString(out string accountName)
+        async Task<string> GetAccountNameFromConnectionString(CancellationToken cancellationToken = default)
         {
-            BlobServiceClient blobServiceClient = null;
+            var blobServiceClient = await GetBlobServiceClient(cancellationToken);
 
-            if (CreateBlobServiceClient(out blobServiceClient))
-            {
-                accountName = blobServiceClient.AccountName;
-                return true;
-            }
-
-            accountName = null;
-            return false;
-        }
-
-        bool CreateBlobServiceClient(out BlobServiceClient client)
-        {
-            client = null;
-
-            try
-            {
-                client = GetBlobServiceClient();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unable to create new BlobServiceClient");
-                return false;
-            }
+            return blobServiceClient.AccountName;
         }
 
         string GetStorageConnectionString(string nameOfConfig)
         {
-            return _configuration[nameOfConfig];
+            return _config[nameOfConfig];
         }
 
-        BlobServiceClient GetBlobServiceClient()
+        async Task<BlobServiceClient> GetBlobServiceClient(CancellationToken cancellationToken = default)
         {
-            if (String.IsNullOrWhiteSpace(_connectionString) == false)
+            try
             {
-                return new BlobServiceClient(_connectionString);
+                if (String.IsNullOrWhiteSpace(_connectionDetails.ConnectionString) == false)
+                {
+                    return new BlobServiceClient(_connectionDetails.ConnectionString);
+                }
+                else
+                {
+                    string accessKey = null;
+
+                    if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountId) == false)
+                    {
+                        accessKey = await GetAccessKey(_connectionDetails.StorageAccountId, cancellationToken);
+                    }
+                    else if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountResourceGroup) == false && String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountName) == false)
+                    {
+                        accessKey = await GetAccessKey(_connectionDetails.StorageAccountResourceGroup, _connectionDetails.StorageAccountName, cancellationToken);
+                    }
+
+
+                    var credential = new StorageSharedKeyCredential(_connectionDetails.StorageAccountName, accessKey);
+
+                    //Should have access through subscription? Or neet to get token/access key?
+                    return new BlobServiceClient(new Uri($"https://{_connectionDetails.StorageAccountName}.blob.core.windows.net"), credential);
+                }
+
             }
-            else if(String.IsNullOrWhiteSpace(_accountUrl) == false)
+            catch (Exception ex)
             {
 
-                //Should have access through subscription? Or neet to get token/access key?
-                return new BlobServiceClient(new Uri(_accountUrl)); 
+                throw new Exception($"Unable to create BlobServiceClient", ex);
             }
-            else
+        }
+
+        async Task<string> GetAccessKey(string resourceGroup, string accountName, CancellationToken cancellationToken = default)
+        {
+            var storageAccount = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroup, accountName, cancellationToken);
+            return await GetKey(storageAccount, cancellationToken);
+        }
+
+        async Task<string> GetAccessKey(string storageAccountId, CancellationToken cancellationToken = default)
+        {
+            var storageAccount = await _azure.StorageAccounts.GetByIdAsync(storageAccountId, cancellationToken);
+            return await GetKey(storageAccount, cancellationToken);
+        }
+
+        async Task<string> GetKey(IStorageAccount account, CancellationToken cancellationToken = default)
+        {
+            var keys = await account.GetKeysAsync(cancellationToken);
+
+            foreach (var curKey in keys)
             {
-                throw new Exception($"Unable to create BlobServiceClient, no relevant connection details found");
+                if (curKey.KeyName == "key1")
+                {
+                    return curKey.Value;
+                }
             }
+
+            return null;
         }
 
         //public async Task<List<FileStreamResult>> DownloadFileFromBlobContainer(string connectionString, string containerName, List<BlobFileName> blobfiles)
@@ -234,5 +276,42 @@ namespace Sepes.Infrastructure.Service.Azure
         //    }
         //    return fileStreams;
         //}
+    }
+
+    public class AzureBlobStorageConnectionDetails
+    {
+
+        public static AzureBlobStorageConnectionDetails CreateUsingConnectionString(string connectionString)
+        {
+            return new AzureBlobStorageConnectionDetails() { ConnectionString = connectionString };
+        }
+
+        public static AzureBlobStorageConnectionDetails CreateUsingResourceGroupAndAccountName(string resourceGroup, string accountName)
+        {
+            return new AzureBlobStorageConnectionDetails() { StorageAccountResourceGroup = resourceGroup, StorageAccountName = accountName };
+        }
+
+        public static AzureBlobStorageConnectionDetails CreateUsingAccountId(string accountId)
+        {
+            return new AzureBlobStorageConnectionDetails() { StorageAccountId = accountId };
+        }
+
+        public string ConnectionString { get; private set; }
+
+        public string StorageAccountResourceGroup { get; private set; }
+
+        public string StorageAccountId { get; private set; }
+        public string StorageAccountName { get; private set; }
+
+        public bool IsDevelopmentStorage
+        {
+            get
+            {
+
+                return String.IsNullOrWhiteSpace(ConnectionString) == false && ConnectionString == "UseDevelopmentStorage=true";
+
+
+            }
+        }
     }
 }
