@@ -54,19 +54,13 @@ namespace Sepes.Infrastructure.Service
         public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             IResourceGroup resourceGroup = null;
+           
 
-            try
+            if (await Exists(resourceGroupName))
             {
-         
-            resourceGroup = await GetResourceAsync(resourceGroupName);
-
+                resourceGroup = await GetResourceAsync(resourceGroupName);
             }
-            catch (Exception ex)
-            {
-                _logger.LogInformation(ex, "Ensure Resource Group Exist: Not found, creating");
-            }
-
-            if (resourceGroup == null)
+            else
             {
                 resourceGroup = await CreateInternal(resourceGroupName, region, tags, cancellationToken);
             }
@@ -106,6 +100,11 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
             return resource;
+        }
+
+        async Task<bool> Exists(string resourceGroupName)
+        {
+           return await _azure.ResourceGroups.CheckExistenceAsync(resourceGroupName);
         }
 
         //public async Task<bool> Exists(string resourceGroupName) => await Exists(resourceGroupName, resourceGroupName);

@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
-   
+
     public class AzureBlobStorageService : AzureServiceBase, IAzureBlobStorageService
     {
 
@@ -84,7 +84,7 @@ namespace Sepes.Infrastructure.Service.Azure
                 while (await enumerator.MoveNextAsync())
                 {
                     var curBlob = enumerator.Current;
-                    result.Add(new BlobStorageItemDto() { Name = curBlob.Name, ContentType = curBlob.Properties.ContentType, SizeInBytes = curBlob.Properties.ContentLength.HasValue ? curBlob.Properties.ContentLength.Value : 0 });               
+                    result.Add(new BlobStorageItemDto() { Name = curBlob.Name, ContentType = curBlob.Properties.ContentType, SizeInBytes = curBlob.Properties.ContentLength.HasValue ? curBlob.Properties.ContentLength.Value : 0 });
                 }
             }
             finally
@@ -92,7 +92,7 @@ namespace Sepes.Infrastructure.Service.Azure
                 await enumerator.DisposeAsync();
             }
 
-            return result;           
+            return result;
         }
 
         //public async Task<FileStreamResult> DownloadFileFromBlobContainer(string containerName, string blobName, string fileName, CancellationToken cancellationToken = default)
@@ -212,29 +212,42 @@ namespace Sepes.Infrastructure.Service.Azure
                 }
                 else
                 {
-                    string accessKey = null;
-
-                    if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountId) == false)
-                    {
-                        accessKey = await GetAccessKey(_connectionDetails.StorageAccountId, cancellationToken);
-                    }
-                    else if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountResourceGroup) == false && String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountName) == false)
-                    {
-                        accessKey = await GetAccessKey(_connectionDetails.StorageAccountResourceGroup, _connectionDetails.StorageAccountName, cancellationToken);
-                    }
-
+                    string accessKey = await GetAccessKey(cancellationToken);
 
                     var credential = new StorageSharedKeyCredential(_connectionDetails.StorageAccountName, accessKey);
 
                     //Should have access through subscription? Or neet to get token/access key?
                     return new BlobServiceClient(new Uri($"https://{_connectionDetails.StorageAccountName}.blob.core.windows.net"), credential);
                 }
-
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex, "Something went wrong when creating BlobServiceClient");
                 throw new Exception($"Unable to create BlobServiceClient", ex);
+            }
+        }
+
+        async Task<string> GetAccessKey(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                string accessKey = null;
+
+                if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountId) == false)
+                {
+                    accessKey = await GetAccessKey(_connectionDetails.StorageAccountId, cancellationToken);
+                }
+                else if (String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountResourceGroup) == false && String.IsNullOrWhiteSpace(_connectionDetails.StorageAccountName) == false)
+                {
+                    accessKey = await GetAccessKey(_connectionDetails.StorageAccountResourceGroup, _connectionDetails.StorageAccountName, cancellationToken);
+                }
+
+                return accessKey;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed when getting access key");
+                throw;
             }
         }
 
