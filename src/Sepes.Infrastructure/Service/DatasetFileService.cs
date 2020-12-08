@@ -94,9 +94,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new NotImplementedException("Only Study specific datasets is supported");
                 //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
-            }
-
-           
+            }           
 
             return await _storageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
         }

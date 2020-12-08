@@ -27,23 +27,19 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureStorageAccountService _storageAccountService;
         readonly IAzureResourceGroupService _resourceGroupService;
         readonly IAzureRoleAssignmentService _roleAssignmentService;
-        readonly IDatasetFileService _datasetFileService;
 
         public StudyDatasetService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<StudyDatasetService> logger,
             IUserService userService,
             IAzureResourceGroupService resourceGroupService,
             IAzureStorageAccountService storageAccountService,
-            IAzureRoleAssignmentService roleAssignmentService,
-            IDatasetFileService datasetFileService)
+            IAzureRoleAssignmentService roleAssignmentService)
             : base(db, mapper, logger, userService)
         {
             _config = config;
             _resourceGroupService = resourceGroupService;
             _storageAccountService = storageAccountService;
             _roleAssignmentService = roleAssignmentService;
-            _datasetFileService = datasetFileService;
         }
-
 
         public async Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {
@@ -140,13 +136,26 @@ namespace Sepes.Infrastructure.Service
         //STUDY SPECIFIC DATASETS
 
         public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)
-        {
+        {            
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
             DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudyId = studyId;
             dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
-            dataset.CreatedBy = _userService.GetCurrentUser().UserName;
+
+            var currentUser = _userService.GetCurrentUser();
+            dataset.CreatedBy = currentUser.UserName;
+
+            if (newDatasetInput.AllowAccessFromAddresses != null && newDatasetInput.AllowAccessFromAddresses.Count > 0)
+            {
+                dataset.FirewallRules = new List<DatasetFirewallRule>();
+
+                foreach (var curNewAddress in newDatasetInput.AllowAccessFromAddresses)
+                {
+                    dataset.FirewallRules.Add(new DatasetFirewallRule() { CreatedBy = currentUser.UserName, Address = curNewAddress });
+                }
+            }
+
             await _db.Datasets.AddAsync(dataset);
 
             // Create new linking table entry
@@ -168,9 +177,10 @@ namespace Sepes.Infrastructure.Service
 
             var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
 
-            await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);          
+            await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);
 
-            var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, cancellationToken);
+            //var allowAccessFrom = dataset.FirewallRules != null && dataset.FirewallRules.Count > 0 ? dataset.FirewallRules.Select(fw => fw.Address).ToList() : null;
+            var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, onlyAllowAccessFrom: null, cancellationToken);
 
             dataset.StorageAccountId = newStorageAccount.Id;
             dataset.StorageAccountName = newStorageAccount.Name;
@@ -181,6 +191,8 @@ namespace Sepes.Infrastructure.Service
             var roleAssignmentId = Guid.NewGuid().ToString();
             var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";
             await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId);
+
+            //Todo: Create firewall rule
         }
 
         public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)

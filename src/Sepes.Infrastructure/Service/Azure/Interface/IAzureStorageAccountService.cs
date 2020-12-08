@@ -1,5 +1,4 @@
-﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,12 +12,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         //Task<IStorageAccount> CreateDiagnosticsStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags);
         Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default);
 
-        Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, CancellationToken cancellationToken = default);
-        Task<IRoleAssignment> SetBuiltInRoleAssignment(string resourceGroupName, string resourceName, string userId, BuiltInRole role, CancellationToken cancellationToken = default);
+        Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string storageAccountName, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default);
 
-        // CreateStorageContainer(type);
-        // DeleteStoragecontainer(type);
-
-        // Methods for accessing storageContainers:
+        Task<IStorageAccount> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default);
     }
 }

@@ -1,5 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -46,7 +45,7 @@ namespace Sepes.Infrastructure.Model
         // Attributes used for linking.
         // ------------------------------
         public ICollection<StudyDataset> StudyDatasets { get; set; }
-
+        public ICollection<DatasetFirewallRule> FirewallRules { get; set; }
         public ICollection<SandboxDataset> SandboxDatasets { get; set; }
 
         //StudyID is only populated if dataset is StudySpecific.

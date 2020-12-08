@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto.Dataset
+﻿using System.Collections.Generic;
+
+namespace Sepes.Infrastructure.Dto.Dataset
 {
     public class DatasetCreateUpdateInputBaseDto
     {
@@ -9,5 +11,7 @@
         public string Classification { get; set; }
 
         public int DataId { get; set; }
+
+        public List<string> AllowAccessFromAddresses { get; set; }
     }
 }

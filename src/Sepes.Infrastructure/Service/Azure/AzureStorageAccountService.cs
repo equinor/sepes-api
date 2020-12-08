@@ -1,6 +1,7 @@
 ﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
+using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Exceptions;
@@ -8,6 +9,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
             var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
-            if(diagnosticStorageAccount == null)
+            if (diagnosticStorageAccount == null)
             {
                 _logger.LogInformation($"Storage account not found, creating");
 
@@ -50,9 +52,9 @@ namespace Sepes.Infrastructure.Service
                     .CreateAsync(cancellationToken);
 
                 _logger.LogInformation($"Done creating storage account");
-            }           
+            }
 
-            var result = CreateResult(diagnosticStorageAccount);           
+            var result = CreateResult(diagnosticStorageAccount);
 
             return result;
         }
@@ -71,7 +73,7 @@ namespace Sepes.Infrastructure.Service
             var result = CloudResourceCRUDUtil.CreateResultFromIResource(storageAccount);
             result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
             return result;
-        }       
+        }
 
         //public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
         //{
@@ -137,11 +139,11 @@ namespace Sepes.Infrastructure.Service
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
             var resource = await GetResourceAsync(resourceGroupName, resourceName);
-       
+
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-       
+
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
@@ -156,29 +158,42 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        public async Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
-            var account = await _azure.StorageAccounts.Define(name)
+            var creator = _azure.StorageAccounts.Define(name)
             .WithRegion(region)
-            .WithExistingResourceGroup(resourceGroupName)
-            .WithAccessFromAllNetworks()
+            .WithExistingResourceGroup(resourceGroupName);
+
+            if (onlyAllowAccessFrom == null)
+            {
+                creator = creator.WithAccessFromAllNetworks();
+            }
+            else
+            {
+                creator = creator.WithAccessFromAzureServices();
+
+                foreach (var curAddr in onlyAllowAccessFrom)
+                {
+                    creator = creator.WithAccessFromIpAddress(curAddr);
+                }
+            }
+
+            creator = creator
             .WithGeneralPurposeAccountKindV2()
             .WithOnlyHttpsTraffic()
             .WithSku(StorageAccountSkuType.Standard_LRS)
-            .WithTags(tags)
-            .CreateAsync();
+            .WithTags(tags);
 
-            return account;
-        }
+            return await creator.CreateAsync();
+        }    
 
-        public async Task<IRoleAssignment> SetBuiltInRoleAssignment(string resourceGroupName, string resourceName, string userId, BuiltInRole role, CancellationToken cancellationToken = default)
+        public async Task<IStorageAccount> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
-            var storageAccount = await GetResourceAsync(resourceGroupName, resourceName);
-            var user = await _azure.AccessManagement.ActiveDirectoryUsers.GetByIdAsync(userId, cancellationToken);  
-            
-            var assignment = await user.Manager.RoleAssignments.Define("").ForUser(user).WithBuiltInRole(role).WithResourceScope(storageAccount).CreateAsync(cancellationToken);                      
-
-            return assignment;
+            var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
+            var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
+            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, Bypass = Bypass.AzureServices } };
+            var updatereuslt = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
+            return account;
         }
     }
 }

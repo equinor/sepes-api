@@ -115,6 +115,44 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("Datasets");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<int>("DatasetId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DatasetId");
+
+                    b.ToTable("DatasetFirewallRules");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.Region", b =>
                 {
                     b.Property<string>("Key")
@@ -647,6 +685,15 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("VmSizes");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Dataset", "Dataset")
+                        .WithMany("FirewallRules")
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
