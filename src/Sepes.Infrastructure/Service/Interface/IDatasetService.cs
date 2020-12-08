@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Dto.Dataset;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

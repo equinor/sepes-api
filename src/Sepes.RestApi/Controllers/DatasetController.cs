@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
@@ -65,7 +65,7 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> AddFile(int datasetId, [FromForm] IFormFile files, CancellationToken cancellationToken = default)
         {
             var fileAddResult = await _datasetFileService.AddFiles(datasetId, new List<IFormFile> { files }, cancellationToken);
-            return new NoContentResult();
+            return new JsonResult(fileAddResult);
         }
 
         [HttpPost("{datasetId}/files")]
