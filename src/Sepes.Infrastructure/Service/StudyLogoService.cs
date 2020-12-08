@@ -25,11 +25,11 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IUserService _userService;
-        readonly IAzureBlobStorageService _blobService;    
+        readonly IAzureBlobStorageService _blobService;
 
         public StudyLogoService(ILogger<StudyLogoService> logger, SepesDbContext db, IMapper mapper, IUserService userService, IAzureBlobStorageService blobService)
         {
-            _logger = logger;          
+            _logger = logger;
             _db = db;
             _mapper = mapper;
             _userService = userService;
@@ -40,39 +40,50 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo)
         {
-            var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
+            try
+            {
+                var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
 
-            if(uriBuilder == null)
-            {
-                _logger.LogError("Unable to decorate logo urls");
-            }
-            else
-            {
-                DecorateLogoUrlsWithSAS(uriBuilder, hasLogo);
-            } 
-        }
-
-        public async Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
-        {
-            var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
-
-            if (uriBuilder == null)
-            {
-                _logger.LogError("Unable to decorate logo urls");
-            }
-            else
-            {
-                foreach (var curDto in studyDtos)
+                if (uriBuilder == null)
                 {
-                    DecorateLogoUrlsWithSAS(uriBuilder, curDto);
+                    _logger.LogError("Unable to decorate logo urls");
                 }
-            }          
-
-            return studyDtos;
+                else
+                {
+                    DecorateLogoUrlWithSAS(uriBuilder, hasLogo);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to decorate Study item with logo url. Se exception info");
+            }
         }
 
+        public async Task DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
+        {
+            try
+            {
+                var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
 
-        void DecorateLogoUrlsWithSAS(UriBuilder uriBuilder, IHasLogoUrl hasLogo)
+                if (uriBuilder == null)
+                {
+                    _logger.LogError("Unable to decorate logo urls");
+                }
+                else
+                {
+                    foreach (var curDto in studyDtos)
+                    {
+                        DecorateLogoUrlWithSAS(uriBuilder, curDto);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to decorate list of Studies with logo urls. Se exception info");
+            }
+        }
+
+        void DecorateLogoUrlWithSAS(UriBuilder uriBuilder, IHasLogoUrl hasLogo)
         {
             if (!String.IsNullOrWhiteSpace(hasLogo.LogoUrl))
             {
@@ -82,9 +93,9 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 hasLogo.LogoUrl = null;
-            }            
-        }      
-        
+            }
+        }
+
         public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, true);
@@ -168,6 +179,6 @@ namespace Sepes.Infrastructure.Service
                 );
         }
 
-      
+
     }
 }

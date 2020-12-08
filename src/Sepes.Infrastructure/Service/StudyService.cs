@@ -50,7 +50,8 @@ namespace Sepes.Infrastructure.Service
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
 
-            studiesDtos = await _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
+            await _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
+
             return studiesDtos;
         }       
 

@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyLogoService
     {
-        Task<IEnumerable<StudyListItemDto>> DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);
+        Task DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos);
 
         Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);
 
