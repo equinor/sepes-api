@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Storage.Fluent;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
@@ -150,6 +151,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<IResourceGroup, AzureResourceGroupDto>()
                  .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
+
+            CreateMap<IStorageAccount, AzureStorageAccountDto>()
+                .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
 
             CreateMap<CreateVmUserInputDto, VmSettingsDto>();
 
