@@ -58,6 +58,7 @@ namespace Sepes.Infrastructure.Service
 
             var datasetDtos = _mapper.Map<IEnumerable<StudyDatasetDto>>(studyFromDb.StudyDatasets);
 
+
             return datasetDtos;
         }
 

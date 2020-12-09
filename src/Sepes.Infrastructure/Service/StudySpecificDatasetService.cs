@@ -152,6 +152,12 @@ namespace Sepes.Infrastructure.Service
             await HardDeleteAsync(dataset);
         }
 
-      
+        public async Task HardDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default)
+        {
+            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_AddRemove_Dataset, false);
+            var study = dataset.StudyDatasets.SingleOrDefault().Study;
+            await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
+            await HardDeleteAsync(dataset);
+        }
     }
 }

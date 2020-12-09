@@ -75,6 +75,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task HardDeleteAsync(Dataset dataset)
         {
+            dataset.StudyDatasets.Clear();
             _db.Datasets.Remove(dataset);
             await _db.SaveChangesAsync();
         }

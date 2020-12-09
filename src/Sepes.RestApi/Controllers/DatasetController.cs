@@ -68,7 +68,7 @@ namespace Sepes.RestApi.Controller
         {
             if (await _datasetService.IsStudySpecific(id))
             {
-                await _studySpecificDatasetService.SoftDeleteStudySpecificDatasetAsync(id, cancellationToken);
+                await _studySpecificDatasetService.HardDeleteStudySpecificDatasetAsync(id, cancellationToken);
             }
             else
             {
