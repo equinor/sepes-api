@@ -55,13 +55,15 @@ namespace Sepes.Tests.Setup
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
 
             //Azure resource services
-            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
-            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
-            services.AddTransient<IAzureBastionService, AzureBastionService>();
-            services.AddTransient<IAzureVNetService, AzureVNetService>();
-            services.AddTransient<IAzureVmService, AzureVmService>();
-            services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();                 
+            //services.AddTransient<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
+            //services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
+            //services.AddTransient<IAzureBastionService, AzureBastionService>();
+            //services.AddTransient<IAzureVNetService, AzureVNetService>();
+            //services.AddTransient<IAzureVmService, AzureVmService>();
+            //services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
+            //services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            //services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            
 
             return services;
         } 

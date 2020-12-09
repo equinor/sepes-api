@@ -33,14 +33,14 @@ namespace Sepes.RestApi.Controller
         [HttpPut("{studyId}/datasets/{datasetId}")]        
         public async Task<IActionResult> AddExistingDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyDatasetService.AddDatasetToStudyAsync(studyId, datasetId);
+            var updatedStudy = await _studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
         {
-            await _studyDatasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
+            await _studyDatasetService.RemovePreApprovedDatasetFromStudyAsync(studyId, datasetId);
             return new NoContentResult();
         }
 
@@ -50,24 +50,6 @@ namespace Sepes.RestApi.Controller
         {
             var dataset = await _studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
             return new JsonResult(dataset);
-        }
-
-        //STUDY SPECIFIC DATASET
-
-        [HttpPost("{studyId}/datasets/studyspecific")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset)
-        {
-            var updatedStudy = await _studyDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
-        {
-            var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
-            return new JsonResult(updatedStudy);
-        }
+        }        
     }
 }

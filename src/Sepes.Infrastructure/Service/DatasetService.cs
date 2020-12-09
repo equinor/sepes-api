@@ -131,5 +131,17 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
             return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
         }
+
+        public async Task<bool> IsStudySpecific(int datasetId)
+        {
+            var dataset = await GetDatasetOrThrowNoAccessCheckAsync(datasetId);
+            return await IsStudySpecific(dataset);
+
+        }
+
+        public async Task DeleteDatasetAsync(int datasetId)
+        {
+            throw new NotImplementedException("Delete of Pre-Approved datasets not implemented yet");
+        }    
     }
 }

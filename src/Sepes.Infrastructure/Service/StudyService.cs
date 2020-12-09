@@ -23,13 +23,15 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly IStudyLogoService _studyLogoService;
         readonly IStudyDatasetService _studyDatasetService;
+        readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
-        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudyDatasetService studyDatasetService)
+        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudyDatasetService studyDatasetService, IStudySpecificDatasetService studySpecificDatasetService)
             : base(db, mapper, userService)
         {
             _logger = logger;
             _studyLogoService = studyLogoService;
             _studyDatasetService = studyDatasetService;
+            _studySpecificDatasetService = studySpecificDatasetService;
         }
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null)
@@ -165,7 +167,7 @@ namespace Sepes.Infrastructure.Service
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
-            await _studyDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+            await _studySpecificDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
 
             var currentUser = _userService.GetCurrentUser();
             studyFromDb.Closed = true;
@@ -184,7 +186,7 @@ namespace Sepes.Infrastructure.Service
             await _studyLogoService.DeleteAsync(studyFromDb);
 
             // TODO: Possibly keep datasets for archiving/logging purposes.  
-            await _studyDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+            await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
 
             await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);           
 

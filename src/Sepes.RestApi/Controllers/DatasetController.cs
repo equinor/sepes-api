@@ -18,11 +18,13 @@ namespace Sepes.RestApi.Controller
     {
         readonly IDatasetService _datasetService;
         readonly IDatasetFileService _datasetFileService;
+        readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
-        public DatasetController(IDatasetService datasetService, IDatasetFileService datasetFileService)
+        public DatasetController(IDatasetService datasetService, IDatasetFileService datasetFileService, IStudySpecificDatasetService studySpecificDatasetService)
         {
             _datasetService = datasetService;
             _datasetFileService = datasetFileService;
+            _studySpecificDatasetService = studySpecificDatasetService;
         }
 
         [HttpGet]
@@ -60,6 +62,21 @@ namespace Sepes.RestApi.Controller
             var updatedDataset = await _datasetService.UpdateDatasetAsync(id, dataset);
             return new JsonResult(updatedDataset);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteDataset(int id, CancellationToken cancellationToken = default)
+        {
+            if (await _datasetService.IsStudySpecific(id))
+            {
+                await _studySpecificDatasetService.SoftDeleteStudySpecificDatasetAsync(id, cancellationToken);
+            }
+            else
+            {
+                await _datasetService.DeleteDatasetAsync(id);
+            }
+           
+            return new NoContentResult();
+        }     
 
         [HttpPost("{datasetId}/file")]
         public async Task<IActionResult> AddFile(int datasetId, [FromForm] IFormFile files, CancellationToken cancellationToken = default)

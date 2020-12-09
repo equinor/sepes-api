@@ -82,7 +82,7 @@ namespace Sepes.Tests.Services
             var studyDto = AddStudyToTestDatabase(studyId);
             var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
-            await Assert.ThrowsAsync<NotFoundException>(() => datasetService.AddDatasetToStudyAsync(providedStudyId, providedDatasetId));
+            await Assert.ThrowsAsync<NotFoundException>(() => datasetService.AddPreApprovedDatasetToStudyAsync(providedStudyId, providedDatasetId));
         }
 
         [Fact]
@@ -92,10 +92,10 @@ namespace Sepes.Tests.Services
             int studyId = 1;
             SeedTestDatabase(datasetId);
             var studyDto = AddStudyToTestDatabase(studyId);
-            var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
+            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(ServiceProvider);
 
-            await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
-            var dataset = await datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
+            await studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
+            var dataset = await studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
             Assert.NotNull(dataset);
         }
 
@@ -111,7 +111,7 @@ namespace Sepes.Tests.Services
             var studyDto = AddStudyToTestDatabase(studyId);
             var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
-            await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
+            await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.RemoveDatasetFromStudyAsync(providedStudyId, providedDatasetId));
         }
 
@@ -124,7 +124,7 @@ namespace Sepes.Tests.Services
             var studyDto = AddStudyToTestDatabase(studyId);
             var datasetService = ServiceProvider.GetService<IStudyDatasetService>();
 
-            await datasetService.AddDatasetToStudyAsync(studyId, datasetId);
+            await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             await datasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId));
         }

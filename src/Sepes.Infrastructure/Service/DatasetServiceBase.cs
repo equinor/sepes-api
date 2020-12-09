@@ -39,6 +39,18 @@ namespace Sepes.Infrastructure.Service
             return queryable;
         }
 
+        protected async Task<Dataset> GetDatasetOrThrowNoAccessCheckAsync(int datasetId)
+        {
+            var datasetFromDb = await DatasetBaseQueryable(false).FirstOrDefaultAsync(ds => ds.Id == datasetId);
+
+            if (datasetFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("Dataset", datasetId);
+            }
+
+            return datasetFromDb;
+        }
+
         protected async Task<Dataset> GetDatasetOrThrowAsync(int datasetId, UserOperation operation, bool excludeStudySpecific = true)
         {
             var datasetFromDb = await DatasetBaseQueryable(excludeStudySpecific).FirstOrDefaultAsync(ds => ds.Id == datasetId);
@@ -62,7 +74,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         protected async Task HardDeleteAsync(Dataset dataset)
-        {           
+        {
             _db.Datasets.Remove(dataset);
             await _db.SaveChangesAsync();
         }
@@ -89,6 +101,11 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
+        }
+
+        protected async Task<bool> IsStudySpecific(Dataset dataset)
+        {
+            return dataset.StudyId.HasValue && dataset.StudyId.Value > 0;
         }
     }
 }

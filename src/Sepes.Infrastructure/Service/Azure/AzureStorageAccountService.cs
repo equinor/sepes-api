@@ -1,9 +1,11 @@
-﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent;
+﻿using AutoMapper;
+using Microsoft.Azure.Management.Graph.RBAC.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -17,9 +19,13 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
-        public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger) : base(config, logger)
-        {
 
+        IMapper _mapper;
+
+        public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper)
+            : base(config, logger)
+        {
+            _mapper = mapper;
         }
 
         public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
@@ -74,33 +80,6 @@ namespace Sepes.Infrastructure.Service
             result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
             return result;
         }
-
-        //public async Task<IStorageAccount> CreateStorageAccount(Region region, string sandboxName, string resourceGroupName, Dictionary<string, string> tags)
-        //{
-        //    string storageAccountName = AzureResourceNameUtil.StorageAccount(sandboxName);
-
-        //    // Create storage account
-        //    var account = await _azure.StorageAccounts.Define(storageAccountName)
-        //        .WithRegion(region)
-        //        .WithExistingResourceGroup(resourceGroupName)
-        //        .WithAccessFromAllNetworks()
-        //        .WithGeneralPurposeAccountKindV2()
-        //        .WithOnlyHttpsTraffic()
-        //        .WithSku(StorageAccountSkuType.Standard_LRS)
-        //         .WithTags(tags)
-        //        .CreateAsync();
-
-        //    // Get keys to build connectionstring with
-        //    //var keys = await account.GetKeysAsync();
-
-        //    // Build connection string. Maybe return this? Or should access happen through SAS-key?
-        //    //string connectionString = $"DefaultEndpointsProtocol=https;AccountName={account.Name};AccountKey={keys[0].Value};EndpointSuffix=core.windows.net";
-
-        //    // Connect
-        //    //var connectedAccount = CloudStorageAccount.Parse(connectionString);
-
-        //    return account;
-        //}     
 
         public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
         {
@@ -158,7 +137,14 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<IStorageAccount> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<AzureStorageAccountDto> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        {
+            var storageAccount = await CreateStorageAccountInternal(region, resourceGroupName, name, tags, onlyAllowAccessFrom, cancellationToken);
+
+            return _mapper.Map<AzureStorageAccountDto>(storageAccount);
+        }
+
+        async Task<IStorageAccount> CreateStorageAccountInternal(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
             var creator = _azure.StorageAccounts.Define(name)
             .WithRegion(region)
@@ -185,15 +171,15 @@ namespace Sepes.Infrastructure.Service
             .WithTags(tags);
 
             return await creator.CreateAsync();
-        }    
+        }
 
-        public async Task<IStorageAccount> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<AzureStorageAccountDto> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
             var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
             var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
             var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, Bypass = Bypass.AzureServices } };
-            var updatereuslt = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
-            return account;
+            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
+            return _mapper.Map<AzureStorageAccountDto>(account);
         }
     }
 }
