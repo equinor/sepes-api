@@ -35,7 +35,7 @@ namespace Sepes.Tests.Util
             var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup("Very Very Secret Software Inc", "First attempt at finding good data");
             Assert.InRange(resourceGroupName.Length, 6, 64);
             Assert.Contains("rg-study-", resourceGroupName);
-            Assert.Contains("veryverysecretsoftwareinc", resourceGroupName);
+            Assert.Contains("veryverysecretsoftwarei", resourceGroupName);
             Assert.Contains("firstattemptatfindinggood", resourceGroupName);
         }
 
@@ -52,7 +52,7 @@ namespace Sepes.Tests.Util
             var resourceName2 = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "The third test we are going to too");
             Assert.InRange(resourceName2.Length, 4, 24);
             Assert.Contains("stdiag", resourceName2);
-            Assert.Contains("bestest", resourceName2);
+            Assert.Contains("be", resourceName2);
             Assert.Contains("thethird", resourceName2);
 
         }

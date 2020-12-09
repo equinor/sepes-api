@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-        public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger,
+        public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
             IDatasetCloudResourceService datasetCloudResourceService)
             : base(db, mapper, logger, userService)
@@ -33,6 +33,13 @@ namespace Sepes.Infrastructure.Service
         public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)
         {            
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
+
+            // Check that study has WbsCode.
+            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
+            {
+                throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
+            }
+
             DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudyId = studyId;

@@ -12,19 +12,19 @@ namespace Sepes.Tests.Services
 {
     public class StudyServiceTests
     {
-        public ServiceCollection Services { get; private set; }
-        public ServiceProvider ServiceProvider { get; protected set; }
+        ServiceCollection _services;
+        ServiceProvider _serviceProvider;
 
         public StudyServiceTests()
         {
-            Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            Services.AddTransient<IStudyService, StudyService>();
-            ServiceProvider = Services.BuildServiceProvider();
+            _services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
+            _services.AddTransient<IStudyService, StudyService>();
+            _serviceProvider = _services.BuildServiceProvider();
         }
 
         void RefreshTestDb()
         {
-            var db = ServiceProvider.GetService<SepesDbContext>();
+            var db = _serviceProvider.GetService<SepesDbContext>();
             db.Database.EnsureDeleted();
             db.Database.EnsureCreated();
         }
@@ -36,7 +36,7 @@ namespace Sepes.Tests.Services
         public async void CreatingStudyWithoutNameShouldFail(string name)
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             var studyWithInvalidName = new StudyCreateDto()
             {
@@ -53,7 +53,7 @@ namespace Sepes.Tests.Services
         public async void CreatingStudyWithoutVendorShouldFail(string vendor)
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             var studyWithInvalidVendor = new StudyCreateDto()
             {
@@ -74,7 +74,7 @@ namespace Sepes.Tests.Services
         public async void UpdatingStudyDetailsWithoutRequiredFieldsShouldBeWellHandled(string name, string vendor)
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             var initialStudy = new StudyCreateDto()
             {
@@ -103,7 +103,7 @@ namespace Sepes.Tests.Services
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }
@@ -116,7 +116,7 @@ namespace Sepes.Tests.Services
         public async void DeleteStudyAsync_ShouldThrow_IfStudyDoesNotExist(int id)
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.DeleteStudyAsync(id));
         }
@@ -125,7 +125,7 @@ namespace Sepes.Tests.Services
         public async void CloseStudyAsync_ShouldClose_IfStudyExists()
         {
             RefreshTestDb();
-            IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
 
             var initialStudy = new StudyCreateDto()
             {

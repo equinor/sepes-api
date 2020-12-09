@@ -1,57 +1,26 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Interface;
+﻿using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
 using Xunit;
 
 namespace Sepes.Tests.Services
 {
-    public class DatasetServiceTests
+    public class DatasetServiceTests : DatasetServiceTestBase
     {
-        public ServiceCollection Services { get; private set; }
-        public ServiceProvider ServiceProvider { get; protected set; }
+     
 
         public DatasetServiceTests()
+            :base()
         {
-            Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            Services.AddTransient<IStudyService, StudyService>();
-            Services.AddTransient<IDatasetService, DatasetService>();
-            ServiceProvider = Services.BuildServiceProvider();
+    
         }          
 
-        async void SeedTestDatabase(int datasetId)
-        {
-            var db = ServiceProvider.GetService<SepesDbContext>();
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-            Dataset dataset = new Dataset()
-            {
-                Id = datasetId,
-                Name = "TestDataset",
-                Description = "For Testing",
-                Location = "Norway West",
-                Classification = "Internal",
-                StorageAccountName = "testdataset",
-                LRAId = 1337,
-                DataId = 420,
-                SourceSystem = "SAP",
-                CountryOfOrigin = "Norway",
-                StudyId = null
-            };
-
-            db.Datasets.Add(dataset);
-            await db.SaveChangesAsync();
-        }
 
         [Fact]
         public async void GetDatasetsLookupAsync_ShouldReturnDatasets_IfExists()
         {
             SeedTestDatabase(5);
-            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             IEnumerable<DatasetListItemDto> result = await datasetService.GetDatasetsLookupAsync();
             Assert.NotNull(result);
@@ -61,7 +30,7 @@ namespace Sepes.Tests.Services
         public async void GetDatasetsAsync_ShouldReturnDatasets_IfExists()
         {
             SeedTestDatabase(5);
-            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             IEnumerable<DatasetDto> result = await datasetService.GetDatasetsAsync();
             Assert.NotNull(result);
@@ -71,7 +40,7 @@ namespace Sepes.Tests.Services
         public async void GetDatasetByIdAsync_ShouldReturnDataset_IfExists()
         {
             SeedTestDatabase(10);
-            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             DatasetDto result = await datasetService.GetDatasetByDatasetIdAsync(10);
             Assert.NotNull(result);
@@ -85,7 +54,7 @@ namespace Sepes.Tests.Services
         public async void GetDatasetByIdAsync_ShouldThrow_IfDoesNotExist(int id)
         {
             SeedTestDatabase(1);
-            IDatasetService datasetService = ServiceProvider.GetService<IDatasetService>();
+            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByDatasetIdAsync(id);
             await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(async () => await result);
