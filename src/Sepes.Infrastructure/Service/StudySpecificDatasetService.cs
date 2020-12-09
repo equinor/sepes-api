@@ -27,8 +27,7 @@ namespace Sepes.Infrastructure.Service
             IDatasetCloudResourceService datasetCloudResourceService)
             : base(db, mapper, logger, userService)
         {
-            _datasetCloudResourceService = datasetCloudResourceService;
-           
+            _datasetCloudResourceService = datasetCloudResourceService;           
         }       
 
         public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)

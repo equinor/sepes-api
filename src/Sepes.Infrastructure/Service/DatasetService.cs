@@ -135,8 +135,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<bool> IsStudySpecific(int datasetId)
         {
             var dataset = await GetDatasetOrThrowNoAccessCheckAsync(datasetId);
-            return await IsStudySpecific(dataset);
-
+            return IsStudySpecific(dataset);
         }
 
         public async Task DeleteDatasetAsync(int datasetId)

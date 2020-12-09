@@ -21,16 +21,14 @@ namespace Sepes.Infrastructure.Service
     public class StudyService : ServiceBase<Study>, IStudyService
     {
         readonly ILogger _logger;
-        readonly IStudyLogoService _studyLogoService;
-        readonly IStudyDatasetService _studyDatasetService;
+        readonly IStudyLogoService _studyLogoService; 
         readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
-        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudyDatasetService studyDatasetService, IStudySpecificDatasetService studySpecificDatasetService)
+        public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudySpecificDatasetService studySpecificDatasetService)
             : base(db, mapper, userService)
         {
             _logger = logger;
             _studyLogoService = studyLogoService;
-            _studyDatasetService = studyDatasetService;
             _studySpecificDatasetService = studySpecificDatasetService;
         }
 
@@ -79,9 +77,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return studyDetailsDto;
-        }
-
-      
+        }     
 
         public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
@@ -184,8 +180,7 @@ namespace Sepes.Infrastructure.Service
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
             await _studyLogoService.DeleteAsync(studyFromDb);
-
-            // TODO: Possibly keep datasets for archiving/logging purposes.  
+    
             await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
 
             await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);           

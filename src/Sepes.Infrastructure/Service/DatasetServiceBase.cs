@@ -103,7 +103,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        protected async Task<bool> IsStudySpecific(Dataset dataset)
+        protected bool IsStudySpecific(Dataset dataset)
         {
             return dataset.StudyId.HasValue && dataset.StudyId.Value > 0;
         }
