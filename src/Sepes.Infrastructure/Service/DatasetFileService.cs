@@ -94,7 +94,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_Read, false);
 
                 if (IsStudySpecific(dataset))
                 {
@@ -104,7 +104,7 @@ namespace Sepes.Infrastructure.Service
                     }
 
                     //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_Read, false);
                     _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
                 }
                 else
