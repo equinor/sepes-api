@@ -2,6 +2,49 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.4.0](https://github.com/equinor/sepes-api/compare/0.3.0...0.4.0) (2020-12-10)
+
+
+### ⚠ BREAKING CHANGES
+
+* Study details response does not contain resultsAndLearnings property
+
+* fix: now able to get study even though logo functionality is failing
+
+previously, all methhods for study was failing if something went wrong with logo
+
+* refactor: moved dataset dtos into separate folder and changed namespace
+
+* fix: study dataset endpoint now returning url to storage account
+
+* fix: create storage account improve logging
+
+* refactor: dataset file response: renamed SizeInBytes to bytes
+
+* feat(studyspecificdataset): now creating resource group, storage account and accepting upload
+
+* refactor: study specific datasets: prepared the ground for allowed ips, but left out for now
+
+* refactor(datasets): improving service architecture . Separate service for datasets cloud resources
+
+makes it easier to mock and test these components
+
+* fix: added automapper config for azurestorageaccountdto
+
+* test(dataset): fixed existing tests after refactor, and added a few new
+
+* feat(dataset): implemented file upload for study specific datasets
+
+Also updated relevant unit tests
+
+### Bug Fixes
+
+* **rbac:** added missing permissions for admin ([#445](https://github.com/equinor/sepes-api/issues/445)) ([ea8a189](https://github.com/equinor/sepes-api/commit/ea8a189d4b8ee9a576ccefc685227bfac9e42a5b))
+* **study:** delete failed when no dataset resource group was set ([#444](https://github.com/equinor/sepes-api/issues/444)) ([ff30438](https://github.com/equinor/sepes-api/commit/ff30438fa862549897018be534b729462e7078d7))
+
+
+* feat(studyspecificdataset)/implement file upload (#443) ([6dcd4c4](https://github.com/equinor/sepes-api/commit/6dcd4c4663978a94f41a3739f81c29677dcf7227)), closes [#443](https://github.com/equinor/sepes-api/issues/443)
+
 ## [0.3.0](https://github.com/equinor/sepes-api/compare/0.2.5...0.3.0) (2020-12-02)
 
 
