@@ -57,7 +57,11 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _storageAccountService.DeleteStorageAccount(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, cancellationToken);
+                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup) == false && String.IsNullOrWhiteSpace(dataset.StorageAccountName) == false)
+                {
+                    await _storageAccountService.DeleteStorageAccount(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, cancellationToken);
+                }
+              
             }
             catch (Exception ex)
             {
@@ -71,7 +75,10 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _resourceGroupService.Delete(study.StudySpecificDatasetsResourceGroup, cancellationToken);
+                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup) == false)
+                {
+                    await _resourceGroupService.Delete(study.StudySpecificDatasetsResourceGroup, cancellationToken);
+                }
             }
             catch (Exception ex)
             {
