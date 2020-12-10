@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<Sandbox> Sandboxes { get; set; }
 
         public virtual DbSet<Dataset> Datasets { get; set; }
-
+        public virtual DbSet<DatasetFirewallRule> DatasetFirewallRules { get; set; }
         public virtual DbSet<StudyDataset> StudyDatasets { get; set; }
         public virtual DbSet<SandboxDataset> SandboxDatasets { get; set; }
 
@@ -46,6 +46,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<User>().HasKey(v => v.Id);
             modelBuilder.Entity<Study>().HasKey(s => s.Id);
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
+            modelBuilder.Entity<DatasetFirewallRule>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
             modelBuilder.Entity<SandboxDataset>().HasKey(sd => new { sd.SandboxId, sd.DatasetId });
@@ -76,6 +77,12 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.Dataset)
                 .WithMany(d => d.StudyDatasets)
                 .HasForeignKey(sd => sd.DatasetId);
+
+            //STUDY / DATASET RELATION
+            modelBuilder.Entity<DatasetFirewallRule>()
+                .HasOne(fw => fw.Dataset)
+                .WithMany(ds => ds.FirewallRules)
+                .HasForeignKey(fw => fw.DatasetId);
 
 
             //STUDY / PARTICIPANT RELATION
@@ -118,7 +125,6 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasForeignKey(sd => sd.VmSizeKey).OnDelete(DeleteBehavior.Restrict);
         }
 
-
         void AddDefaultValues(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Study>()
@@ -132,6 +138,18 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Dataset>()
                 .Property(b => b.Id)
                 .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<DatasetFirewallRule>()
+              .Property(b => b.Id)
+              .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<DatasetFirewallRule>()
+            .Property(b => b.Created)
+            .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<DatasetFirewallRule>()
+        .Property(b => b.Updated)
+        .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Study>()
                 .Property(b => b.Created)

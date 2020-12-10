@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,14 +13,13 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class DatasetService : ServiceBase<Dataset>, IDatasetService
-    {
-        readonly IUserService _userService;
+    public class DatasetService : DatasetServiceBase, IDatasetService
+    {       
 
-        public DatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
-            : base(db, mapper)
+        public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService)
+            : base(db, mapper, logger, userService)
         {
-            _userService = userService;
+          
         }
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
@@ -55,50 +53,7 @@ namespace Sepes.Infrastructure.Service
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
             return datasetDto;
-        }
-
-        async Task<Dataset> GetDatasetOrThrowAsync(int id, UserOperation operation)
-        {
-            var datasetFromDb = await _db.Datasets
-                .Where(ds => ds.StudyId == null)
-                .Include(s => s.StudyDatasets)
-                .ThenInclude(sd => sd.Study)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (datasetFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("Dataset", id);
-            }
-
-            ThrowIfOperationNotAllowed(operation);
-
-            return datasetFromDb;
-        }
-
-        void ThrowIfOperationNotAllowed(UserOperation operation)
-        {
-            if (StudyAccessUtil.HasAccessToOperation(_userService, operation) == false)
-            {
-                throw new ForbiddenException($"User {_userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
-            }
-        }
-
-
-        void PerformUsualTestForPostedDatasets(DatasetDto datasetDto)
-        {
-            if (String.IsNullOrWhiteSpace(datasetDto.Name))
-            {
-                throw new ArgumentException($"Field Dataset.Name is required. Current value: {datasetDto.Name}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Classification))
-            {
-                throw new ArgumentException($"Field Dataset.Classification is required. Current value: {datasetDto.Classification}");
-            }
-            if (String.IsNullOrWhiteSpace(datasetDto.Location))
-            {
-                throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
-            }
-        }
+       }     
 
         public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
         {
@@ -176,5 +131,16 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
             return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
         }
+
+        public async Task<bool> IsStudySpecific(int datasetId)
+        {
+            var dataset = await GetDatasetOrThrowNoAccessCheckAsync(datasetId);
+            return IsStudySpecific(dataset);
+        }
+
+        public async Task DeleteDatasetAsync(int datasetId)
+        {
+            throw new NotImplementedException("Delete of Pre-Approved datasets not implemented yet");
+        }    
     }
 }

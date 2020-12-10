@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -24,24 +23,24 @@ namespace Sepes.RestApi.Controller
 
         [HttpGet("{studyId}/datasets")]
         [Consumes(MediaTypeNames.Application.Json)]        
-        public async Task<IActionResult> GetDatasetsForStudy(int studyId)
+        public async Task<IActionResult> GetAllStudyDatasetsAsync(int studyId)
         {
-            var dataset = await _studyDatasetService.GetDatasetsForStudy(studyId);
+            var dataset = await _studyDatasetService.GetDatasetsForStudyAsync(studyId);
             return new JsonResult(dataset);
         }
 
         [HttpPut("{studyId}/datasets/{datasetId}")]        
-        public async Task<IActionResult> AddDataSetAsync(int studyId, int datasetId)
+        public async Task<IActionResult> AddPreApprovedExistingDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyDatasetService.AddDatasetToStudyAsync(studyId, datasetId);
+            var updatedStudy = await _studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}/datasets/{datasetId}")]
-        public async Task<IActionResult> RemoveDataSetAsync(int studyId, int datasetId)
+        public async Task<IActionResult> RemovePreApprovedDataSetAsync(int studyId, int datasetId)
         {
-            var updatedStudy = await _studyDatasetService.RemoveDatasetFromStudyAsync(studyId, datasetId);
-            return new JsonResult(updatedStudy);
+            await _studyDatasetService.RemovePreApprovedDatasetFromStudyAsync(studyId, datasetId);
+            return new NoContentResult();
         }
 
         [HttpGet("{studyId}/datasets/{datasetId}")]
@@ -50,22 +49,6 @@ namespace Sepes.RestApi.Controller
         {
             var dataset = await _studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
             return new JsonResult(dataset);
-        }
-
-        [HttpPost("{studyId}/datasets/studyspecific")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> AddStudySpecificDataSet(int studyId, StudySpecificDatasetDto newDataset)
-        {
-            var updatedStudy = await _studyDatasetService.AddStudySpecificDatasetAsync(studyId, newDataset);
-            return new JsonResult(updatedStudy);
-        }
-
-        [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, StudySpecificDatasetDto newDataset)
-        {
-            var updatedStudy = await _studyDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, newDataset);
-            return new JsonResult(updatedStudy);
-        }
+        }        
     }
 }

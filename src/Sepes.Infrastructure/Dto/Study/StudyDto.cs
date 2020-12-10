@@ -9,8 +9,6 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public string Description { get; set; }
 
-        public string ResultsAndLearnings { get; set; }
-
         public string WbsCode { get; set; }
 
         public string Vendor { get; set; }

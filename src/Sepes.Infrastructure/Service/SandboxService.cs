@@ -117,7 +117,7 @@ namespace Sepes.Infrastructure.Service
                     var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
                     var sandboxDto = await GetAsync(createdSandbox.Id, UserOperation.Study_Crud_Sandbox);
 
-                    var tags = AzureResourceTagsFactory.CreateTags(_config, studyDto, sandboxDto);
+                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, study, createdSandbox);
 
                     var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 

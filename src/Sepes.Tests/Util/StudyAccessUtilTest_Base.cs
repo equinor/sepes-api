@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Tests.Constants;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Sepes.Tests.Util
 {
     public class StudyAccessUtilTest_Base
     {
-        protected const int COMMON_USER_ID = 1;
+
         protected const int COMMON_STUDY_ID = 2;
 
         protected ServiceCollection Services;
@@ -134,7 +135,7 @@ namespace Sepes.Tests.Util
             var studyParticipant = study.StudyParticipants.FirstOrDefault();
             Assert.NotNull(studyParticipant);
             Assert.NotNull(studyParticipant.User);
-            Assert.Equal(COMMON_USER_ID, studyParticipant.User.Id);
+            Assert.Equal(UserConstants.COMMON_USER_ID, studyParticipant.User.Id);
         }
     }
 }

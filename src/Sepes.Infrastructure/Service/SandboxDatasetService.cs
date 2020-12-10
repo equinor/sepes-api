@@ -16,13 +16,12 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxDatasetService : ServiceBase<Dataset>, ISandboxDatasetService
     {
-        readonly IUserService _userService;
 
         public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
-            :base(db, mapper)
+            :base(db, mapper, userService)
         {            
 
-            _userService = userService;
+
         }
 
         public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)

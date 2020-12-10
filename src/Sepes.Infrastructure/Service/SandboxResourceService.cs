@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto)
         {
-            var resourceGroupName = AzureResourceNameUtil.ResourceGroup(dto.StudyName, dto.SandboxName);
+            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(dto.StudyName, dto.SandboxName);
             var resourceEntity = await AddInternal(dto.BatchId, dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, resourceGroupName, dto.Tags);
 
             var resourceCreateOperation = resourceEntity.Operations.FirstOrDefault();

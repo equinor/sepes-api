@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,6 +13,8 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
         public string StorageAccountName { get; set; }
+
+        public string StorageAccountId { get; set; }
 
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
@@ -33,10 +35,17 @@ namespace Sepes.Infrastructure.Model
         public string Tags { get; set; }
         public string Description { get; set; }
 
+        public bool? Deleted { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
+
+        [MaxLength(64)]
+        public string DeletedBy { get; set; }
+
         // Attributes used for linking.
         // ------------------------------
         public ICollection<StudyDataset> StudyDatasets { get; set; }
-
+        public ICollection<DatasetFirewallRule> FirewallRules { get; set; }
         public ICollection<SandboxDataset> SandboxDatasets { get; set; }
 
         //StudyID is only populated if dataset is StudySpecific.

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Infrastructure.Dto.Dataset
 {
     public class DatasetListItemDto : UpdateableBaseDto
     {

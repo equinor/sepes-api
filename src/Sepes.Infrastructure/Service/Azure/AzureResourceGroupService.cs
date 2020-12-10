@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,6 +51,21 @@ namespace Sepes.Infrastructure.Service
             return MapToDto(resourceGroup);
         }
 
+        public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            IResourceGroup resourceGroup = null;           
+
+            if (await Exists(resourceGroupName, cancellationToken))
+            {
+                resourceGroup = await GetResourceAsync(resourceGroupName);
+            }
+            else
+            {
+                resourceGroup = await CreateInternal(resourceGroupName, region, tags, cancellationToken);
+            }
+            return MapToDto(resourceGroup);
+        }   
+
         async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
@@ -84,6 +100,11 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
+        async Task<bool> Exists(string resourceGroupName, CancellationToken cancellation)
+        {
+           return await _azure.ResourceGroups.ContainAsync(resourceGroupName, cancellation);
+        }
+
         //public async Task<bool> Exists(string resourceGroupName) => await Exists(resourceGroupName, resourceGroupName);
 
         public async Task<string> GetProvisioningState(string resourceGroupName)
@@ -98,7 +119,7 @@ namespace Sepes.Infrastructure.Service
             return resource.ProvisioningState;
         }
 
-        public async Task Delete(string resourceGroupName)
+        public async Task Delete(string resourceGroupName, CancellationToken cancellation = default)
         {
             try
             {
@@ -106,9 +127,9 @@ namespace Sepes.Infrastructure.Service
                 //Ensure resource is is managed by this instance
                 CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
+                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName, cancellation);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 if(ex.Message.ToLower().Contains("could not be found"))
                 {

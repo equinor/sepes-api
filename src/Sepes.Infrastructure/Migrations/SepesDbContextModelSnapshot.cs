@@ -58,6 +58,16 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("DataId")
                         .HasColumnType("int");
 
+                    b.Property<bool?>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -75,6 +85,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("SourceSystem")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StorageAccountId")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StorageAccountName")
@@ -100,6 +113,44 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Datasets");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<int>("DatasetId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DatasetId");
+
+                    b.ToTable("DatasetFirewallRules");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Region", b =>
@@ -418,6 +469,10 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("ResultsAndLearnings")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("StudySpecificDatasetsResourceGroup")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -630,6 +685,15 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("VmSizes");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Dataset", "Dataset")
+                        .WithMany("FirewallRules")
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
