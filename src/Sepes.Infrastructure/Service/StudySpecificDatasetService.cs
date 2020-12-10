@@ -22,13 +22,21 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-        public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger,
-            IUserService userService,
-            IDatasetCloudResourceService datasetCloudResourceService)
+        public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger, IUserService userService, IDatasetCloudResourceService datasetCloudResourceService)
             : base(db, mapper, logger, userService)
         {
-            _datasetCloudResourceService = datasetCloudResourceService;           
-        }       
+            _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
+        }
+
+        //public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger,
+        //    IUserService userService,
+        //    IDatasetCloudResourceService datasetCloudResourceService)
+        //    : base(db, mapper, logger, userService)
+        //{
+        //    _datasetCloudResourceService = datasetCloudResourceService;           
+        //}       
+
+
 
         public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)
         {            

@@ -18,8 +18,9 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void CreateStudySpecificDataset_WhenStudyIsMissing_ShouldFail()
         {
-            var datasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider);
-            await Assert.ThrowsAsync<NotFoundException>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }));
+            var db = ClearTestDatabase();
+            var service = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider);
+            await Assert.ThrowsAsync<NotFoundException>(() => service.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }));
 
         }
 
