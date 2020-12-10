@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Infrastructure.Dto.Dataset;
+using Sepes.Infrastructure.Dto.Interfaces;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using System.Collections.Generic;
@@ -10,8 +11,6 @@ namespace Sepes.Infrastructure.Dto.Study
         public string Name { get; set; }
 
         public string Description { get; set; }
-
-        public string ResultsAndLearnings { get; set; }
 
         public string WbsCode { get; set; }
 

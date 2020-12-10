@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Azure.Management.Storage.Fluent;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
@@ -42,13 +44,13 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, StudyDatasetDto>();
+            CreateMap<Dataset, StudyDatasetDto>()
+                 .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<DatasetStorageExternalLinkResolver>());
 
             CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
-                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
-
+                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))                
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
 
             CreateMap<SandboxDataset, SandboxDatasetDto>()
@@ -70,6 +72,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.StudyNo,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
                 .ReverseMap();
+
+            CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
@@ -147,6 +151,9 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<IResourceGroup, AzureResourceGroupDto>()
                  .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
+
+            CreateMap<IStorageAccount, AzureStorageAccountDto>()
+                .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
 
             CreateMap<CreateVmUserInputDto, VmSettingsDto>();
 

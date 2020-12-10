@@ -52,19 +52,24 @@ namespace Sepes.Infrastructure.Util
 
         public static string CreateResourceLink(IConfiguration config, SandboxResource resource)
         {
+            return CreateResourceLink(config, resource.ResourceId);
+        }
+
+        public static string CreateResourceLink(IConfiguration config, string resourceId)
+        {
             var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
 
-            if (String.IsNullOrWhiteSpace(resource.ResourceId))
+            if (String.IsNullOrWhiteSpace(resourceId))
             {
                 return null;
             }
 
-            if (resource.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
+            if (resourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
             {
                 return null;
             }
 
-            return CreateResourceLink(domain, resource.ResourceId);
+            return CreateResourceLink(domain, resourceId);
         }
 
         public static string CreateResourceLink(string domain, string resourceId)

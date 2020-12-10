@@ -25,6 +25,9 @@ namespace Sepes.Infrastructure.Model
 
         public string LogoUrl { get; set; }
 
+        [MaxLength(64)]
+        public string StudySpecificDatasetsResourceGroup { get; set; }
+
         public bool? Closed { get; set; }
 
         public DateTime? ClosedAt{ get; set; }

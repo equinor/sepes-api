@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Mocks;
@@ -54,13 +55,15 @@ namespace Sepes.Tests.Setup
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
 
             //Azure resource services
-            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
+            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
             services.AddTransient<IAzureVNetService, AzureVNetService>();
             services.AddTransient<IAzureVmService, AzureVmService>();
             services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();                 
+            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+
 
             return services;
         } 

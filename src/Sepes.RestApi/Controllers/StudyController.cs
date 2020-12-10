@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Service.Interface;
-using System.Linq;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -19,11 +18,12 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
+        readonly IStudyLogoService _studyLogoService;
 
-
-        public StudyController(IStudyService studyService)
+        public StudyController(IStudyService studyService, IStudyLogoService studyLogoService)
         {
             _studyService = studyService;
+            _studyLogoService = studyLogoService;
         }
 
         [HttpGet]
@@ -71,32 +71,29 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedStudy);
         }
 
+        [HttpGet("{studyId}/resultsandlearnings")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetResultsAndLearningsAsync(int studyId)
+        {
+            var resultsAndLearningsFromDb = await _studyService.GetResultsAndLearningsAsync(studyId);
+            return new JsonResult(resultsAndLearningsFromDb);
+        }
+
+        [HttpPut("{studyId}/resultsandlearnings")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
+        {
+            var resultsAndLearningsFromDb = await _studyService.UpdateResultsAndLearningsAsync(studyId, resultsAndLearnings);
+            return new JsonResult(resultsAndLearningsFromDb);
+        }
 
         // For local development, this method requires a running instance of Azure Storage Emulator
         [HttpPut("{studyId}/logo")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
-            var updatedStudy = await _studyService.AddLogoAsync(studyId, studyLogo);
+            var updatedStudy = await _studyLogoService.AddLogoAsync(studyId, studyLogo);
             return new JsonResult(updatedStudy);
-        }
-
-        [HttpGet("{studyId}/logo")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        [Produces(MediaTypeNames.Application.Octet)]
-        // For local development, this method requires a running instance of Azure Storage Emulator
-        public async Task<IActionResult> GetLogo(int studyId)
-        {
-            var logoResponse = await _studyService.GetLogoAsync(studyId);
-
-            string fileType = logoResponse.LogoUrl.Split('.').Last();
-
-            if (fileType.Equals("jpg"))
-            {
-                fileType = "jpeg";
-            }
-
-            return File(new System.IO.MemoryStream(logoResponse.LogoBytes), $"image/{fileType}", $"logo_{studyId}.{fileType}");
         }
     }
 }
