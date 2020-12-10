@@ -9,9 +9,16 @@ All notable changes to this project will be documented in this file. See [standa
 
 * Study details response does not contain resultsAndLearnings property
 
+### Features
+
+* feat(dataset): implemented file upload for study specific datasets
+
+
+### Bug Fixes
+
 * fix: now able to get study even though logo functionality is failing
 
-previously, all methhods for study was failing if something went wrong with logo
+previously, all endpoints for study was failing if something went wrong with logo
 
 * refactor: moved dataset dtos into separate folder and changed namespace
 
@@ -32,12 +39,6 @@ makes it easier to mock and test these components
 * fix: added automapper config for azurestorageaccountdto
 
 * test(dataset): fixed existing tests after refactor, and added a few new
-
-* feat(dataset): implemented file upload for study specific datasets
-
-Also updated relevant unit tests
-
-### Bug Fixes
 
 * **rbac:** added missing permissions for admin ([#445](https://github.com/equinor/sepes-api/issues/445)) ([ea8a189](https://github.com/equinor/sepes-api/commit/ea8a189d4b8ee9a576ccefc685227bfac9e42a5b))
 * **study:** delete failed when no dataset resource group was set ([#444](https://github.com/equinor/sepes-api/issues/444)) ([ff30438](https://github.com/equinor/sepes-api/commit/ff30438fa862549897018be534b729462e7078d7))
