@@ -166,5 +166,10 @@ namespace Sepes.Infrastructure.Service
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await HardDeleteAsync(dataset);
         }
+
+        public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
+        {
+            await _datasetCloudResourceService.DeleteAllStudyRelatedResourcesAsync(study, cancellationToken);
+        }
     }
 }

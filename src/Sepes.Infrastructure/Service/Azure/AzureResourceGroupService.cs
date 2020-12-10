@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
             return resource.ProvisioningState;
         }
 
-        public async Task Delete(string resourceGroupName)
+        public async Task Delete(string resourceGroupName, CancellationToken cancellation = default)
         {
             try
             {
@@ -127,9 +127,9 @@ namespace Sepes.Infrastructure.Service
                 //Ensure resource is is managed by this instance
                 CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName);
+                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName, cancellation);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 if(ex.Message.ToLower().Contains("could not be found"))
                 {

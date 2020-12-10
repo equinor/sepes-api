@@ -26,77 +26,100 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<BlobStorageItemDto>> AddFiles(int datasetId, List<IFormFile> files, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);           
-
-            if (dataset.StudyId.HasValue)
+            try
             {
-                //Verify access to study
-               var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
-                _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+
+                if (IsStudySpecific(dataset))
+                {
+                    //Verify access to study
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                }
+                else
+                {
+                    throw new NotImplementedException("Only Study specific datasets is supported");
+                    //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
+                }
+
+                foreach (var curFile in files)
+                {
+                    await _storageService.UploadFileToBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, curFile.FileName, curFile, cancellationToken);
+                }
+
+                //Todo:  Check that storage account exsists
+                //get hold of relevant storage account
+                //get hold of relevant container
+                //ensure account and container exist, thow if account does not exist
+                //Upload files
+                //Set permissions
+
+                return await GetFileList(datasetId, cancellationToken);
             }
-            else
+            catch (Exception ex)
             {
-                throw new NotImplementedException("Only Study specific datasets is supported");
-                //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
-            }           
+                throw new Exception($"Unable to delete file from Storage Account - {ex.Message}", ex);
+            }
 
-            foreach(var curFile in files)
-            {
-                await _storageService.UploadFileToBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, curFile.FileName, curFile, cancellationToken);
-            }            
-
-            //Todo:  Check that storage account exsists
-            //get hold of relevant storage account
-            //get hold of relevant container
-            //ensure account and container exist, thow if account does not exist
-            //Upload files
-            //Set permissions
-
-            return await GetFileList(datasetId, cancellationToken);
-
-        }      
+        }
 
         public async Task DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
-
-            if (dataset.StudyId.HasValue)
+            try
             {
-                //Verify access to study
-                var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
-                _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+
+                if (IsStudySpecific(dataset))
+                {
+                    //Verify access to study
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                }
+                else
+                {
+                    throw new NotImplementedException("Only Study specific datasets is supported");
+                    //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
+                }
+
+                await _storageService.DeleteFileFromBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, fileName, cancellationToken);
             }
-            else
+            catch (Exception ex)
             {
-                throw new NotImplementedException("Only Study specific datasets is supported");
-                //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
+                throw new Exception($"Unable to delete file from Storage Account - {ex.Message}", ex);
             }
 
-            await _storageService.DeleteFileFromBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, fileName, cancellationToken);
         }
 
         public async Task<List<BlobStorageItemDto>> GetFileList(int datasetId, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
-
-            if (dataset.StudyId.HasValue)
+            try
             {
-                if (String.IsNullOrWhiteSpace(dataset.StorageAccountName))
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+
+                if (IsStudySpecific(dataset))
                 {
-                    throw new Exception($"Storage account name is null Dataset {dataset.Id}");
+                    if (String.IsNullOrWhiteSpace(dataset.StorageAccountName))
+                    {
+                        throw new Exception($"Storage account name is null Dataset {dataset.Id}");
+                    }
+
+                    //Verify access to study
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                }
+                else
+                {
+                    throw new NotImplementedException("Only Study specific datasets is supported");
+                    //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
                 }
 
-                //Verify access to study
-                var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
-                _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
-            }
-            else
-            {
-                throw new NotImplementedException("Only Study specific datasets is supported");
-                //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
-            }           
+                return await _storageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
 
-            return await _storageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
+            }
         }
     }
 }

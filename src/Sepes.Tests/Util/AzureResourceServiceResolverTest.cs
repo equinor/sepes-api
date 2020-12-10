@@ -25,9 +25,8 @@ namespace Sepes.Tests.Util
             //Trying resource group
             var shouldBeNull = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "SomeResourceThatDoesNotExist");
 
-            Assert.Null(shouldBeNull);    
-
-
+            Assert.Null(shouldBeNull); 
+            
             //Trying resource group
             var resourceGroupService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.ResourceGroup);
 

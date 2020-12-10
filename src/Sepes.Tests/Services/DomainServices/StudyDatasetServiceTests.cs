@@ -10,29 +10,18 @@ using Xunit;
 
 namespace Sepes.Tests.Services
 {
-    public class StudyDatasetServiceTests
-    {
-        readonly ServiceCollection _services;
-        readonly ServiceProvider _serviceProvider;
+    public class StudyDatasetServiceTests : DatasetServiceTestBase
+    {     
 
         public StudyDatasetServiceTests()
+            :base()
         {
-            _services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
-            _serviceProvider = _services.BuildServiceProvider();
-        }
+          
+        }    
 
-        SepesDbContext GetFreshTestDatabase()
+        async Task<StudyDetailsDto> RefreshAndAddStudyToTestDb(int studyId, int datasetId)
         {
-            var db = _serviceProvider.GetService<SepesDbContext>();
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-
-            return db;
-        }
-
-        async Task<StudyDetailsDto> AddStudyToTestDatabase(int studyId)
-        {
-            var db = GetFreshTestDatabase();
+            var db = await RefreshAndSeedTestDatabase(datasetId);
 
             var study = new Study()
             {   
@@ -49,41 +38,18 @@ namespace Sepes.Tests.Services
             return mapper.Map<StudyDetailsDto>(study);
         }
 
-        async void SeedTestDatabase(int datasetId)
-        {
-            var db = GetFreshTestDatabase();
-            db.Database.EnsureDeleted();
-            db.Database.EnsureCreated();
-            Dataset dataset = new Dataset()
-            {
-                Id = datasetId,
-                Name = "TestDataset",
-                Description = "For Testing",
-                Location = "Norway West",
-                Classification = "Internal",
-                StorageAccountName = "testdataset",
-                LRAId = 1337,
-                DataId = 420,
-                SourceSystem = "SAP",
-                CountryOfOrigin = "Norway",
-                StudyId = null
-            };
-
-            db.Datasets.Add(dataset);
-            await db.SaveChangesAsync();
-
-        }      
+           
 
         [Theory]
         [InlineData(1337, 1)]
         [InlineData(1, 1337)]
         [InlineData(1337, 1337)]
         public async void AddDatasetToStudyAsync_ShouldThrow_IfDatasetOrStudyDoesNotExist(int providedStudyId, int providedDatasetId)
-        {
-            int datasetId = 1;
+        {           
             int studyId = 1;
-            SeedTestDatabase(datasetId);
-            var studyDto = AddStudyToTestDatabase(studyId);
+            int datasetId = 1;
+            await RefreshAndAddStudyToTestDb(studyId, datasetId);
+          
             var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
 
             await Assert.ThrowsAsync<NotFoundException>(() => studyDatasetService.AddPreApprovedDatasetToStudyAsync(providedStudyId, providedDatasetId));
@@ -92,10 +58,10 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void AddDatasetFromStudyAsync_ShouldAddDataset()
         {
-            int datasetId = 1;
             int studyId = 1;
-            SeedTestDatabase(datasetId);
-            var studyDto = AddStudyToTestDatabase(studyId);
+            int datasetId = 1;
+            await RefreshAndAddStudyToTestDb(studyId, datasetId);
+
             var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
 
             await studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
@@ -109,10 +75,9 @@ namespace Sepes.Tests.Services
         [InlineData(1337, 1337)]
         public async void RemoveDatasetFromStudyAsync_ShouldThrow_IfDatasetOrStudyDoesNotExist(int providedStudyId, int providedDatasetId)
         {
-            int datasetId = 1;
             int studyId = 1;
-            SeedTestDatabase(datasetId);
-            var studyDto = AddStudyToTestDatabase(studyId);
+            int datasetId = 1;
+            await RefreshAndAddStudyToTestDb(studyId, datasetId);
             var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
 
             await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
@@ -122,10 +87,9 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void RemoveDatasetFromStudyAsync_ShouldRemoveDataset()
         {
-            int datasetId = 1;
             int studyId = 1;
-            SeedTestDatabase(datasetId);
-            var studyDto = AddStudyToTestDatabase(studyId);
+            int datasetId = 1;
+            await RefreshAndAddStudyToTestDb(studyId, datasetId);
             var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
 
             await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);

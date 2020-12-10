@@ -1,4 +1,6 @@
 ﻿using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Context;
+using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services
 {
@@ -10,14 +12,14 @@ namespace Sepes.Tests.Services
             : base()
         {
           
-        }    
+        }   
 
 
-        protected async void SeedTestDatabase(int datasetId)
+        protected async Task<SepesDbContext> RefreshAndSeedTestDatabase(int datasetId)
         {
-            var db = GetDatabase();
+            var db = ClearTestDatabase();           
 
-            Dataset dataset = new Dataset()
+            var dataset = new Dataset()
             {
                 Id = datasetId,
                 Name = "TestDataset",
@@ -34,8 +36,7 @@ namespace Sepes.Tests.Services
 
             db.Datasets.Add(dataset);
             await db.SaveChangesAsync();
-        }
-
-           
+            return db;
+        }           
     }
 }

@@ -63,7 +63,20 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Failed to delete resources for study specific dataset", ex);
             }
+        }
 
+        public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
+        {
+            _logger.LogInformation($"DeleteAllStudyRelatedResourcesAsync - Study Id: {study.Id}");
+
+            try
+            {
+                await _resourceGroupService.Delete(study.StudySpecificDatasetsResourceGroup, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to delete resources for study specific dataset", ex);
+            }
         }
 
         async Task CreateStorageAccountForStudySpecificDatasets(Study study, Dataset dataset, CancellationToken cancellationToken = default)

@@ -164,6 +164,7 @@ namespace Sepes.Infrastructure.Service
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
             await _studySpecificDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+            await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);
 
             var currentUser = _userService.GetCurrentUser();
             studyFromDb.Closed = true;
@@ -182,6 +183,7 @@ namespace Sepes.Infrastructure.Service
             await _studyLogoService.DeleteAsync(studyFromDb);
     
             await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+            await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);            
 
             await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);           
 

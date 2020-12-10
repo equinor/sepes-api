@@ -27,7 +27,7 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void CreateStudySpecificDataset_WhenStudyIsMissingWbs_ShouldFail()
         {
-            var db = GetFreshTestDatabase();
+            var db = ClearTestDatabase();
             
             StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", null, 1);
             await db.SaveChangesAsync();

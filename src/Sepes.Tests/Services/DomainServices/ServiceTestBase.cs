@@ -20,7 +20,7 @@ namespace Sepes.Tests.Services
           return _serviceProvider.GetService<SepesDbContext>();     
         }
 
-        protected SepesDbContext GetFreshTestDatabase()
+        protected SepesDbContext ClearTestDatabase()
         {
             var db = GetDatabase();
             db.Database.EnsureDeleted();

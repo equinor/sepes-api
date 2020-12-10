@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
     {
         Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags);
 
-        Task Delete(string resourceGroupName);
+        Task Delete(string resourceGroupName, CancellationToken cancellationToken = default);
         Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default);
 
         //Task<bool> Exists(string resourceGroupName);
