@@ -25,7 +25,8 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForAppRole(UserOperation.Study_Create, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
 
             //STUDY METADATA
-            OperationPermission.CreateForAppRole(UserOperation.Study_Update_Metadata, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Update_Metadata, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Update_Metadata, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Update_Metadata, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //RESULTS AND LEARNINGS, READ
@@ -50,7 +51,8 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //STUDY, ADD/REMOVE PARTICIPANT
-            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //SANDBOX, CRUD
