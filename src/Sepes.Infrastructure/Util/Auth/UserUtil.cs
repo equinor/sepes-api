@@ -1,118 +1,80 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
-using System;
-using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
-    {        
-        const string CLAIM_TENANT = "http://schemas.microsoft.com/identity/claims/tenantid";
-
-        public static UserDto CreateSepesUser(IConfiguration config, IPrincipal principal)
+    {  
+        public static User CreateDbUserFromAzureUser(string objectId,  AzureUserDto azureUser)
         {
-            var claimsPrincipal = principal as ClaimsPrincipal;            
+            var userDb = new User();
+            userDb.ObjectId = objectId;
+            userDb.FullName = azureUser.DisplayName;
+            userDb.UserName = azureUser.UserPrincipalName;
+            userDb.EmailAddress = azureUser.Mail;
+            return userDb;
+        }      
 
-            var user = new UserDto(                
-                GetOid(config, claimsPrincipal),
-                GetUsername(config, claimsPrincipal),
-                GetFullName(config, claimsPrincipal),
-                GetEmail(config, claimsPrincipal));
-
-            ApplyExtendedProps(config, claimsPrincipal, user);
-
-            return user;
-        }
-
-        public static void ApplyExtendedProps(IConfiguration config, IPrincipal principal, UserDto user)
+        public static void ApplyExtendedProps(IConfiguration config, IPrincipalService principalService, UserDto user)
         {
-            if (principal.IsInRole(AppRoles.Admin))
+            if (principalService.IsAdmin())
             {
                 user.Admin = true;
                 user.AppRoles.Add(AppRoles.Admin);
             }
 
-            if (principal.IsInRole(AppRoles.Sponsor))
+            if (principalService.IsSponsor())
             {
                 user.Sponsor = true;
                 user.AppRoles.Add(AppRoles.Sponsor);
             }
 
-            if (principal.IsInRole(AppRoles.DatasetAdmin))
+            if (principalService.IsDatasetAdmin())
             {
                 user.DatasetAdmin = true;
                 user.AppRoles.Add(AppRoles.DatasetAdmin);
             }
-           
+
+            if (principalService.IsEmployee())
+            {
+                user.Employee = true;          
+            }
+        }
+
+        public static bool UserHasAdminRole(IPrincipal principal)
+        {
+            return principal.IsInRole(AppRoles.Admin);
+        }
+
+        public static bool UserHasDatasetAdminRole(IPrincipal principal)
+        {
+            return principal.IsInRole(AppRoles.DatasetAdmin);
+        }
+
+        public static bool UserHasSponsorRole(IPrincipal principal)
+        {
+            return principal.IsInRole(AppRoles.Sponsor);
+        }
+
+        public static bool UserHasEmployeeRole(IConfiguration config, IPrincipal principal)
+        {
             var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(config, ConfigConstants.EMPLOYEE_ROLE);
 
             foreach (var curEmployeeAdGroup in employeeAdGroups)
             {
                 if (principal.IsInRole(curEmployeeAdGroup))
                 {
-                    user.Employee = true;
-                    break;
+                    return true;
                 }
             }
-        }
 
-        public static string GetTenantId(IPrincipal principal)
-        {
-            return GetClaimValue(principal, CLAIM_TENANT);
-        }
-
-        public static string GetOid(IConfiguration config, IPrincipal principal)
-        {
-            var claimKey = config[ConfigConstants.CLAIM_OID];
-            return GetClaimValue(principal, claimKey);
-        }
-
-        public static string GetUsername(IConfiguration config, IPrincipal principal)
-        {
-            var claimKey = config[ConfigConstants.CLAIM_USERNAME];     
-            return GetClaimValue(principal, claimKey);
-        }
-
-        public static string GetEmail(IConfiguration config, IPrincipal principal)
-        {
-            var claimKey = config[ConfigConstants.CLAIM_EMAIL];
-            return GetClaimValue(principal, claimKey).ToLower();
-        }
-
-        public static string GetFullName(IConfiguration config, IPrincipal principal)
-        {
-            var claimKey = config[ConfigConstants.CLAIM_FULLNAME];
-            return GetClaimValue(principal, claimKey);
-        }
-
-        static string GetClaimValue(IPrincipal principal, string claimName)
-        {
-            string claimValue = null;
-
-            if(TryGetClaimValue(principal, claimName, out claimValue))
-            {
-               return claimValue;               
-            }
-
-            throw new NullReferenceException($"Claim with name {claimName} not present!");        
-        }
-
-        static bool TryGetClaimValue(IPrincipal principal, string claimName, out string claimValue)
-        {
-            var claimsPrincipal = principal as ClaimsPrincipal;
-            var relevantClaim = claimsPrincipal.FindFirst(claimName);
-
-            if (relevantClaim == null)
-            {
-                claimValue = null;
-                return false;
-            }
-
-            claimValue = relevantClaim.Value;
-            return true;
+            return false;
         }
     }
 }

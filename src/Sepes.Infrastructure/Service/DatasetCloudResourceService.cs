@@ -111,7 +111,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task AddRoleAssignmentForCurrentUser(Dataset dataset, CancellationToken cancellationToken = default)
         {
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var roleAssignmentId = Guid.NewGuid().ToString();
             var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";

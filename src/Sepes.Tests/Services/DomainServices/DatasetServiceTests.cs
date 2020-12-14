@@ -19,7 +19,7 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void GetDatasetsLookupAsync_ShouldReturnDatasets_IfExists()
         {
-            RefreshAndSeedTestDatabase(5);
+           await  RefreshAndSeedTestDatabase(5);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             IEnumerable<DatasetListItemDto> result = await datasetService.GetDatasetsLookupAsync();
@@ -29,7 +29,7 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void GetDatasetsAsync_ShouldReturnDatasets_IfExists()
         {
-            RefreshAndSeedTestDatabase(5);
+            await RefreshAndSeedTestDatabase(5);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             IEnumerable<DatasetDto> result = await datasetService.GetDatasetsAsync();
@@ -39,7 +39,7 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void GetDatasetByIdAsync_ShouldReturnDataset_IfExists()
         {
-            RefreshAndSeedTestDatabase(10);
+            await RefreshAndSeedTestDatabase(10);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             DatasetDto result = await datasetService.GetDatasetByDatasetIdAsync(10);
@@ -53,7 +53,7 @@ namespace Sepes.Tests.Services
         [InlineData(1337)]
         public async void GetDatasetByIdAsync_ShouldThrow_IfDoesNotExist(int id)
         {
-            RefreshAndSeedTestDatabase(1);
+            await RefreshAndSeedTestDatabase(1);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
             System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByDatasetIdAsync(id);

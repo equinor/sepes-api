@@ -33,12 +33,12 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             var sandboxFromDb = await GetSandboxByIdThrowIfNotFoundAsync(db, sandboxId, withIncludes);
 
-            if (await StudyAccessUtil.HasAccessToOperationForStudy(userService, sandboxFromDb.Study, operation))
+            if (await StudyAccessUtil.HasAccessToOperationForStudyAsync(userService, sandboxFromDb.Study, operation))
             {
                 return sandboxFromDb;
             }
 
-            throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {sandboxFromDb.StudyId}");          
+            throw new ForbiddenException($"User {(await userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {sandboxFromDb.StudyId}");          
         }
 
         public static async Task<Sandbox> GetSandboxByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false)

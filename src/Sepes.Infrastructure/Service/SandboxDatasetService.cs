@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             }          
 
             // Create new linking table
-            var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = _userService.GetCurrentUser().UserName };
+            var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
             await _db.SandboxDatasets.AddAsync(sandboxDataset);
             await _db.SaveChangesAsync();
 

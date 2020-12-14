@@ -114,7 +114,7 @@ namespace Sepes.Infrastructure.Service
 
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
 
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var newResource = new SandboxResource()
             {
@@ -154,7 +154,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated)
         {
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var resource = await GetOrThrowAsync(resourceId);
             resource.ResourceGroupId = updated.ResourceId;
@@ -173,7 +173,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated)
         {
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var resource = await GetOrThrowAsync(resourceId);
             resource.ResourceId = updated.ResourceId;
@@ -224,7 +224,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceDto> MarkAsDeletedAndScheduleDeletion(int id)
         {
-            var user = _userService.GetCurrentUser();
+            var user = await _userService.GetCurrentUserAsync();
 
             var resourceFromDb = await GetOrThrowAsync(id);
 
@@ -286,7 +286,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("SandboxResource", id);
             }
 
-            var user = _userService.GetCurrentUser();
+            var user = await _userService.GetCurrentUserAsync();
 
             MarkAsDeletedInternal(resourceEntity, user.UserName);
 
@@ -315,7 +315,7 @@ namespace Sepes.Infrastructure.Service
 
             if (resource.LastKnownProvisioningState != newProvisioningState)
             {
-                var currentUser = await _userService.GetCurrentUserFromDbAsync();
+                var currentUser = await _userService.GetCurrentUserAsync();
 
                 resource.LastKnownProvisioningState = newProvisioningState;
                 resource.Updated = DateTime.UtcNow;
@@ -351,7 +351,7 @@ namespace Sepes.Infrastructure.Service
                 resourceFromDb.ResourceName = resourceNameInForeignSystem;
             }
 
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             resourceFromDb.Updated = DateTime.UtcNow;
             resourceFromDb.UpdatedBy = currentUser.UserName;

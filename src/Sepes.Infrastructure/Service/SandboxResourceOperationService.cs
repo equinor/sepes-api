@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
         {
             var sandboxResourceFromDb = await GetSandboxResourceOrThrowAsync(sandboxResourceId);
 
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             if (dependsOn == 0)
             {
@@ -116,7 +116,7 @@ namespace Sepes.Infrastructure.Service
      
             public async Task<SandboxResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
         {
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.Status = status;
@@ -147,7 +147,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
         {
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             var itemFromDb = await GetOrThrowAsync(id);
             itemFromDb.TryCount ++;
@@ -205,7 +205,7 @@ namespace Sepes.Infrastructure.Service
 
             if (unfinishedOps != null && unfinishedOps.Count > 0)
             {
-                var currentUser = _userService.GetCurrentUser();
+                var currentUser = await _userService.GetCurrentUserAsync();
 
                 foreach (var curOps in unfinishedOps)
                 {

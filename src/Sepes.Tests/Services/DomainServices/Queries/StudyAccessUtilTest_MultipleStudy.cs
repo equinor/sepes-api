@@ -4,9 +4,9 @@ using Sepes.Infrastructure.Util;
 using System.Linq;
 using Xunit;
 
-namespace Sepes.Tests.Util
+namespace Sepes.Tests.Services.DomainServices.Queries
 {
-    public class StudyAccessUtilTest_MultipleStudy : StudyAccessUtilTest_Base
+    public class StudyAccessUtilTest_MultipleStudy : StudyQueriesTest_Base
     {
         public StudyAccessUtilTest_MultipleStudy()
             : base()

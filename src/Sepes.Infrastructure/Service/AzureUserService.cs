@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Service
             return listUsers;
 
         }
-        public async Task<AzureUserDto> GetUser(string id)
+        public async Task<AzureUserDto> GetUserAsync(string id)
         {
             // Initialize the GraphServiceClient. 
             GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });

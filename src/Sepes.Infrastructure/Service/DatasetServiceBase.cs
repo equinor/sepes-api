@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            ThrowIfOperationNotAllowed(operation);
+            await ThrowIfOperationNotAllowed(operation);
 
             return datasetFromDb;
         }
@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service
         {
             dataset.Deleted = true;
             dataset.DeletedAt = DateTime.UtcNow;
-            dataset.DeletedBy = _userService.GetCurrentUser().UserName;
+            dataset.DeletedBy = (await _userService.GetCurrentUserAsync()).UserName;
             await _db.SaveChangesAsync();
         }
 
@@ -80,11 +80,11 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
         }
 
-        protected void ThrowIfOperationNotAllowed(UserOperation operation)
+        protected async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
-            if (StudyAccessUtil.HasAccessToOperation(_userService, operation) == false)
+            if (StudyAccessUtil.HasAccessToOperation(await _userService.GetCurrentUserWithStudyParticipantsAsync(), operation) == false)
             {
-                throw new ForbiddenException($"User {_userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
+                throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation}");
             }
         }
 
