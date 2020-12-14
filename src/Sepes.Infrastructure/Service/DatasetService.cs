@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
         {
-            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
+            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
 
             var datasetsFromDb = await _db.Datasets
                 .Where(ds => ds.StudyId == null)
@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<DatasetDto>> GetDatasetsAsync()
         {
-            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
+            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
 
             var datasetsFromDb = await _db.Datasets
                 .Where(ds => ds.StudyId == null)
@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
         {
-            ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
+            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
             var newDatasetId = await Add(newDatasetDbModel);

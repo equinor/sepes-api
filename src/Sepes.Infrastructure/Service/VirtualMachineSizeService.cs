@@ -68,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task UpdateVmSizeCache(CancellationToken cancellationToken = default)
         {
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
             var regionsFromDb = await _db.Regions.Include(r => r.VmSizeAssociations).ThenInclude(va => va.VmSize).Where(r => r.Disabled == false).ToListAsync();
 
             if (regionsFromDb == null || (regionsFromDb != null & regionsFromDb.Count() == 0))

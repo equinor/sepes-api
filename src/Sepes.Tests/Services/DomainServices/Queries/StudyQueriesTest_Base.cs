@@ -8,17 +8,16 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Sepes.Tests.Util
+namespace Sepes.Tests.Services.DomainServices.Queries
 {
-    public class StudyAccessUtilTest_Base
+    public class StudyQueriesTest_Base
     {
-
         protected const int COMMON_STUDY_ID = 2;
 
         protected ServiceCollection Services;
         protected ServiceProvider ServiceProvider;
 
-        public StudyAccessUtilTest_Base()
+        public StudyQueriesTest_Base()
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
             ServiceProvider = Services.BuildServiceProvider();
@@ -135,7 +134,7 @@ namespace Sepes.Tests.Util
             var studyParticipant = study.StudyParticipants.FirstOrDefault();
             Assert.NotNull(studyParticipant);
             Assert.NotNull(studyParticipant.User);
-            Assert.Equal(UserConstants.COMMON_USER_ID, studyParticipant.User.Id);
+            Assert.Equal(UserConstants.COMMON_CUR_USER_DB_ID, studyParticipant.User.Id);
         }
     }
 }

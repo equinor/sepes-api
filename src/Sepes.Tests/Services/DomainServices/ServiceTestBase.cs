@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Tests.Constants;
 using Sepes.Tests.Setup;
 
 namespace Sepes.Tests.Services
@@ -27,6 +29,14 @@ namespace Sepes.Tests.Services
             db.Database.EnsureCreated();
 
             return db;
-        } 
+        }
+
+        protected SepesDbContext ClearTestDatabaseAddUser()
+        {
+            var db = ClearTestDatabase();
+            db.Users.Add(new Infrastructure.Model.User() { Id = UserConstants.COMMON_CUR_USER_DB_ID, ObjectId = UserConstants.COMMON_CUR_USER_OBJECTID, FullName = UserConstants.COMMON_CUR_USER_FULL_NAME, EmailAddress = UserConstants.COMMON_CUR_USER_EMAIL, UserName = UserConstants.COMMON_CUR_USER_UPN  });
+            db.SaveChangesAsync();
+            return db;
+        }
     }
 }

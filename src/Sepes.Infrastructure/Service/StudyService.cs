@@ -21,7 +21,7 @@ namespace Sepes.Infrastructure.Service
     public class StudyService : ServiceBase<Study>, IStudyService
     {
         readonly ILogger _logger;
-        readonly IStudyLogoService _studyLogoService; 
+        readonly IStudyLogoService _studyLogoService;
         readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
         public StudyService(SepesDbContext db, IMapper mapper, ILogger<StudyService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudySpecificDatasetService studySpecificDatasetService)
@@ -42,18 +42,49 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                var user = await _userService.GetCurrentUserFromDbAsync();
-                var studiesQueryable = StudyPluralQueries.ActiveStudiesIncludingHiddenQueryable(_db, user.Id);
-                studiesFromDb = await studiesQueryable.ToListAsync();
+                //Get unrestricted studies from db
+                var unrestrictedStudiesTask = await StudyBaseQueries.UnHiddenStudiesQueryable(_db).ToListAsync();
+
+                var user = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+
+                var restrictedStudiesAssociatedWithUser = await StudyBaseQueries.GetStudyParticipantsForUser(_db, user.Id).ToListAsync();
+                var filteredRestrictedStudies = new Dictionary<int, Study>();
+
+                foreach (var curStudyParticipant in restrictedStudiesAssociatedWithUser)
+                {
+                    if (StudyAccessUtil.HasAccessToOperationForStudy(user, curStudyParticipant.Study, UserOperation.Study_Read))
+                    {
+                        if (!filteredRestrictedStudies.ContainsKey(curStudyParticipant.StudyId))
+                        {
+                            filteredRestrictedStudies.Add(curStudyParticipant.StudyId, curStudyParticipant.Study);
+                        }
+                    }
+                }
+
+                //Get studyies from user's study participant list
+                //Union lists together
+
+                //Task.WaitAll(unrestrictedStudiesTask);               
+
+                var unrestrictedStudiesList = unrestrictedStudiesTask;
+
+                foreach(var curUnrestricted in unrestrictedStudiesList)
+                {
+                    if (!filteredRestrictedStudies.ContainsKey(curUnrestricted.Id))
+                    {
+                        filteredRestrictedStudies.Add(curUnrestricted.Id, curUnrestricted);
+                    }
+                }
+
+                studiesFromDb = filteredRestrictedStudies.Values.ToList();
             }
 
             var studiesDtos = _mapper.Map<IEnumerable<StudyListItemDto>>(studiesFromDb);
 
-
             await _studyLogoService.DecorateLogoUrlsWithSAS(studiesDtos);
 
             return studiesDtos;
-        }       
+        }
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)
         {
@@ -77,15 +108,15 @@ namespace Sepes.Infrastructure.Service
             }
 
             return studyDetailsDto;
-        }     
+        }
 
         public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
         {
-            StudyAccessUtil.HasAccessToOperationOrThrow(_userService, UserOperation.Study_Create);
+            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
-            var currentUser = await _userService.GetCurrentUserFromDbAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
             var newStudyId = await Add(studyDb);
@@ -121,7 +152,7 @@ namespace Sepes.Infrastructure.Service
             if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
-            }          
+            }
 
             studyFromDb.Updated = DateTime.UtcNow;
 
@@ -148,7 +179,7 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.ResultsAndLearnings = resultsAndLearnings.ResultsAndLearnings;
             }
 
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
             studyFromDb.Updated = DateTime.UtcNow;
             studyFromDb.UpdatedBy = currentUser.UserName;
 
@@ -166,7 +197,7 @@ namespace Sepes.Infrastructure.Service
             await _studySpecificDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
             await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);
 
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
             studyFromDb.Closed = true;
             studyFromDb.ClosedBy = currentUser.UserName;
             studyFromDb.ClosedAt = DateTime.UtcNow;
@@ -181,11 +212,11 @@ namespace Sepes.Infrastructure.Service
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
             await _studyLogoService.DeleteAsync(studyFromDb);
-    
-            await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
-            await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);            
 
-            await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);           
+            await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+            await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);
+
+            await RemoveSandboxAndRelatedEntriesFromContext(studyFromDb);
 
             await RemoveStudyParticipantsAndRelatedEntries(studyFromDb);
         }
@@ -264,7 +295,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             await _db.SaveChangesAsync();
-        } 
+        }
 
         void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
         {
@@ -285,6 +316,6 @@ namespace Sepes.Infrastructure.Service
             study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
         }
 
-      
+
     }
 }

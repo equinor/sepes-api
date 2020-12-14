@@ -39,8 +39,7 @@ namespace Sepes.Tests.Setup
             services.AddLogging();
             //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
-            services.AddTransient<SandboxResourceOperationService>();
-            services.AddTransient<IUserService, UserServiceMock>();
+            services.AddTransient<SandboxResourceOperationService>();            
             services.AddTransient<IRequestIdService, HasRequestIdMock>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
 
