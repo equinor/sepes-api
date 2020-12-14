@@ -85,7 +85,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to delete file from Storage Account - {ex.Message}", ex);
+                throw new Exception($"Unable to delete file from Storage Account", ex);
             }
 
         }
