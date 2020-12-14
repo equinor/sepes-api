@@ -2,15 +2,16 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Constants;
 
 namespace Sepes.Tests.Setup
 {
     public static class UserFactory
     {
-        public static string OBJECT_ID = "objectId";
-        public static string USERNAME = "testuser";
-        public static string FULLNAME = "Test User";
-        public static string EMAIL = "testuser@equinor.com";
+        public static string OBJECT_ID = UserConstants.COMMON_CUR_USER_OBJECTID;
+        public static string USERNAME = UserConstants.COMMON_CUR_USER_UPN;
+        public static string FULLNAME = UserConstants.COMMON_CUR_USER_FULL_NAME;
+        public static string EMAIL = UserConstants.COMMON_CUR_USER_EMAIL;
 
         public static UserDto GetBasicAuthenticatedUser(bool employee, int userId)
         {
@@ -26,9 +27,9 @@ namespace Sepes.Tests.Setup
         //    return testUser;
         //}
 
-        public static UserDto GetAdmin(int userId) {
+        public static UserDto GetAdmin(int userId, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID) {
 
-            var testUser = new UserDto(OBJECT_ID, USERNAME, FULLNAME, EMAIL, admin: true);
+            var testUser = new UserDto(objectId, USERNAME, FULLNAME, EMAIL, admin: true);
             SetBasicUserProperties(testUser, true, userId);
             return testUser;
         }
@@ -78,9 +79,9 @@ namespace Sepes.Tests.Setup
             return SetupUserServiceMock(GetBasicAuthenticatedUser(employee, userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId)
+        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID)
         {
-            return  SetupUserServiceMock(GetAdmin(userId));     
+            return  SetupUserServiceMock(GetAdmin(userId, objectId));     
         }
 
         public static Mock<IUserService> GetUserServiceMockForSponsor(int userId)
@@ -115,8 +116,7 @@ namespace Sepes.Tests.Setup
         static Mock<IUserService> SetupUserServiceMock(UserDto user)
         {
             var mock = new Mock<IUserService>();
-            mock.Setup(us => us.GetCurrentUser()).Returns(user);
-            mock.Setup(us => us.GetCurrentUserFromDbAsync()).ReturnsAsync(user);
+            mock.Setup(us => us.GetCurrentUserAsync()).ReturnsAsync(user);
             mock.Setup(us => us.GetCurrentUserWithStudyParticipantsAsync()).ReturnsAsync(user);
 
             return mock;

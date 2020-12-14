@@ -11,23 +11,27 @@ namespace Sepes.Infrastructure.Util
     {
       public static async Task DecorateDto(IUserService userService, Study studyDb, StudyPermissionsDto dto)
         {
-            dto.UpdateMetadata = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Update_Metadata);
-            dto.CloseStudy = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Close);
-            dto.DeleteStudy = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Delete);
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
 
-            dto.ReadResulsAndLearnings = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Read_ResultsAndLearnings);
-            dto.UpdateResulsAndLearnings = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Update_ResultsAndLearnings);
+            dto.UpdateMetadata = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Update_Metadata);
+            dto.CloseStudy = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Close);
+            dto.DeleteStudy = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Delete);
 
-            dto.AddRemoveDataset = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);
-            dto.AddRemoveSandbox = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.AddRemoveParticipant = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_AddRemove_Participant);           
+            dto.ReadResulsAndLearnings = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Read_ResultsAndLearnings);
+            dto.UpdateResulsAndLearnings = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Update_ResultsAndLearnings);
+
+            dto.AddRemoveDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);
+            dto.AddRemoveSandbox = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            dto.AddRemoveParticipant = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Participant);           
         }
 
         public static async Task DecorateDto(IUserService userService, Study studyDb, SandboxPermissionsDto dto)
         {
-            dto.Delete = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.Update = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.EditRules = await StudyAccessUtil.HasAccessToOperationForStudy(userService, studyDb, Constants.UserOperation.Study_Crud_Sandbox); //TODO: Revise, should be based on the edit rules operation?
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            dto.Delete = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            dto.Update = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            dto.EditRules = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox); //TODO: Revise, should be based on the edit rules operation?
         }
     }
 }

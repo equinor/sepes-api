@@ -102,7 +102,7 @@ namespace Sepes.Infrastructure.Service
             {
                 createdSandbox = _mapper.Map<Sandbox>(sandboxCreateDto);
 
-                var user = _userService.GetCurrentUser();
+                var user = await _userService.GetCurrentUserAsync();
                 createdSandbox.CreatedBy = user.UserName;
                 createdSandbox.TechnicalContactName = user.FullName;
                 createdSandbox.TechnicalContactEmail = user.EmailAddress;
@@ -304,7 +304,7 @@ namespace Sepes.Infrastructure.Service
 
             int studyId = sandboxFromDb.StudyId;
 
-            var user = _userService.GetCurrentUser();
+            var user = await _userService.GetCurrentUserAsync();
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 

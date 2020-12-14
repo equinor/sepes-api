@@ -86,8 +86,8 @@ namespace Sepes.RestApi
 
             // Token acquisition service based on MSAL.NET
             // and chosen token cache implementation
-            services.AddWebAppCallsProtectedWebApi(_configuration)
-               .AddInMemoryTokenCaches();
+            services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
+               .AddInMemoryTokenCaches();            
 
             DoMigration();
 
@@ -127,6 +127,8 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services)
         {
             //Plumbing
+            
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
             services.AddScoped<IPrincipalService, PrincipalService>();
@@ -334,8 +336,8 @@ namespace Sepes.RestApi
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
+                c.OAuthClientId(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_ID]);
+                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_SECRET]);
                 c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
                 c.OAuthAppName("Sepes Development");
                 c.OAuthScopeSeparator(" ");

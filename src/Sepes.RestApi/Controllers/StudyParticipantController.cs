@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Web;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace Sepes.RestApi.Controller
 
         //Get list of lookup items
         [HttpGet("participants")]
+        [AuthorizeForScopes(Scopes = new[] { "User.Read.All" })]
         public async Task<IActionResult> GetLookupAsync(string search)
         {
             var studyParticipants = await _studyParticipantService.GetLookupAsync(search);

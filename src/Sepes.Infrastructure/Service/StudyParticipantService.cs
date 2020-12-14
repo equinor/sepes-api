@@ -95,9 +95,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);
-
             ValidateRoleNameThrowIfInvalid(role);
+
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);        
 
             if (user.Source == ParticipantSource.Db)
             {
@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
             }
 
-            var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
+            var userFromDb = _userService.GetUserByIdAsync(userId);          
 
             if (userFromDb == null)
             {
@@ -135,7 +135,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(Study studyFromDb, ParticipantLookupDto user, string role)
         { 
-            var userFromAzure = await _azureADUsersService.GetUser(user.ObjectId);
+            var userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
 
             if (userFromAzure == null)
             {

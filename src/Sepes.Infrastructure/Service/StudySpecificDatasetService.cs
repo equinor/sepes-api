@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
             dataset.StudyId = studyId;
             dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
-            var currentUser = _userService.GetCurrentUser();
+            var currentUser = await _userService.GetCurrentUserAsync();
             dataset.CreatedBy = currentUser.UserName;
 
             if (newDatasetInput.AllowAccessFromAddresses != null && newDatasetInput.AllowAccessFromAddresses.Count > 0)

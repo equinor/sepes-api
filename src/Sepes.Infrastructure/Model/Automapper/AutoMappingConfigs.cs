@@ -130,7 +130,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                     .ForMember(dest => dest.Source, source => source.MapFrom(s => ParticipantSource.Db))
                     .ForMember(dest => dest.DatabaseId, source => source.MapFrom(s => s.Id));
 
-            CreateMap<Microsoft.Graph.User, AzureUserDto>();
+            CreateMap<Microsoft.Graph.User, AzureUserDto>();           
 
             CreateMap<Microsoft.Graph.User, ParticipantLookupDto>()
                     .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))

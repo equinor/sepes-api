@@ -64,9 +64,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddHttpContextAccessor();
 
             //Plumbing
-            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
+            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
             builder.Services.AddScoped<IUserService, FunctionUserService>();
-            builder.Services.AddScoped<IPrincipalService, PrincipalService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
 
             //Domain Model Services

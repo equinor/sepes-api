@@ -16,6 +16,12 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveStudiesBaseQueryable(db).Where(s => !s.Restricted);
         }
+
+        public static IQueryable<StudyParticipant> GetStudyParticipantsForUser(SepesDbContext db, int userId)
+        {
+            return db.StudyParticipants.Include(s => s.Study).Where(sp => sp.UserId == userId && (sp.Study.Closed.HasValue == false || (sp.Study.Closed.HasValue && sp.Study.Closed.Value == false) && sp.Study.Restricted));
+        }
+
         public static IQueryable<Study> ActiveStudiesMinimalIncludesQueryable(SepesDbContext db)
         {
             return ActiveStudiesBaseQueryable(db)
