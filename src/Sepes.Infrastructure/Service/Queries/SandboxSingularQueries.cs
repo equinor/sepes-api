@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service.Queries
         public static async Task<Sandbox> GetSandboxByIdThrowIfNotFoundAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
         {
             var sandboxFromDb = await
-                (withIncludes ? SandboxBaseQueries.ActiveStudiesWithIncludesQueryable(db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(db))
+                (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(db))
                 .FirstOrDefaultAsync(s => s.Id == sandboxId);
 
             if (sandboxFromDb == null)

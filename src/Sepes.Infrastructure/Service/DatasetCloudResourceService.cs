@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class DatasetCloudResourceService : IDatasetCloudResourceService
@@ -88,8 +87,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync(cancellationToken);
 
             await _storageAccountService.SetStorageAccountAllowedIPs(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken); 
-
-
         }
 
         public async Task DeleteResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, CancellationToken cancellationToken = default)
@@ -199,6 +196,12 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
+        public Task MakeDatasetAvailableToSandbox(Study study, Dataset dataset, Sandbox sandbox, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+            //Get storage account
+            //Get vnet for sandbox
+            //join storage account to vnet
+        }       
     }
 }

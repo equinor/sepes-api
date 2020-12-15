@@ -76,6 +76,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
+            _logger.LogInformation(SepesEventId.SandboxCreate, "Sandbox {0}: Starting", studyId);
+
             Sandbox createdSandbox = null;
 
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
@@ -141,7 +143,6 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Sandbox creation failed: {ex.Message}", ex);
             }
         }
-
 
         async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes)
         {
@@ -289,7 +290,36 @@ namespace Sepes.Infrastructure.Service
             return resourcesMapped;
         }
 
-      
+        public async Task MoveToNextPhase(int sandboxId)
+        {
+            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
+
+            try
+            {
+                var user = await _userService.GetCurrentUserAsync();
+
+                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.SandboxLock, true);
+
+                var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
+
+                var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
+
+                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
+
+                sandboxFromDb.PhaseHistory.Add(new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName });
+                await _db.SaveChangesAsync();
+                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
+
+                //Make data available
+
+
+                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Moving to next phase failed", ex);
+            }
+        }
 
         public async Task DeleteAsync(int sandboxId)
         {
@@ -464,7 +494,5 @@ namespace Sepes.Infrastructure.Service
 
             return logMessage;
         }
-
-
     }
 }

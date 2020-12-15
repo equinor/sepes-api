@@ -14,6 +14,8 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<Sandbox> Sandboxes { get; set; }
 
+        public virtual DbSet<SandboxPhaseHistory> SandboxPhaseHistory { get; set; }
+
         public virtual DbSet<Dataset> Datasets { get; set; }
         public virtual DbSet<DatasetFirewallRule> DatasetFirewallRules { get; set; }
         public virtual DbSet<StudyDataset> StudyDatasets { get; set; }
@@ -48,6 +50,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Dataset>().HasKey(d => d.Id);
             modelBuilder.Entity<DatasetFirewallRule>().HasKey(d => d.Id);
             modelBuilder.Entity<Sandbox>().HasKey(s => s.Id);
+            modelBuilder.Entity<SandboxPhaseHistory>().HasKey(s => s.Id);
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
             modelBuilder.Entity<SandboxDataset>().HasKey(sd => new { sd.SandboxId, sd.DatasetId });
             modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
@@ -96,6 +99,12 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.StudyParticipants)
                 .HasForeignKey(sd => sd.UserId).OnDelete(DeleteBehavior.Restrict);
 
+            //SANDBOX / SANDBOX PHASE HISTORY RELATION
+            modelBuilder.Entity<SandboxPhaseHistory>()
+                .HasOne(fw => fw.Sandbox)
+                .WithMany(ds => ds.PhaseHistory)
+                .HasForeignKey(fw => fw.SandboxId);
+
 
             //CLOUD RESOURCE / SANDBOX RELATION
             modelBuilder.Entity<SandboxResource>()
@@ -134,6 +143,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Sandbox>()
                 .Property(b => b.Id)
                 .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<SandboxPhaseHistory>()
+            .Property(b => b.Created)
+            .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<Dataset>()
                 .Property(b => b.Id)

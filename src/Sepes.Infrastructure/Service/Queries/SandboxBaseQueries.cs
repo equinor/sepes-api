@@ -19,13 +19,14 @@ namespace Sepes.Infrastructure.Service.Queries
                 .ThenInclude(s=> s.StudyParticipants);
         }
 
-        public static IQueryable<Sandbox> ActiveStudiesWithIncludesQueryable(SepesDbContext db)
+        public static IQueryable<Sandbox> ActiveSandboxesWithIncludesQueryable(SepesDbContext db)
         {
             return ActiveSandboxesMinimalIncludesQueryable(db)
                   .Include(sb => sb.SandboxDatasets)
                     .ThenInclude(sd => sd.Dataset)
                 .Include(sb => sb.Resources)
-                    .ThenInclude(r => r.Operations);
+                    .ThenInclude(r => r.Operations)
+                .Include(sb=> sb.PhaseHistory);
         } 
     }
 }

@@ -10,8 +10,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task EnsureExistFirewallExceptionForApplication(Study study, Dataset dataset, CancellationToken cancellationToken = default);
 
+        Task MakeDatasetAvailableToSandbox(Study study, Dataset dataset, Sandbox sandbox, CancellationToken cancellationToken = default);  
 
         Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default);
+
         Task DeleteResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, CancellationToken cancellationToken = default);
     }
 }

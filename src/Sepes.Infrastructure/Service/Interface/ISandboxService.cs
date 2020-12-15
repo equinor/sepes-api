@@ -19,5 +19,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
         Task ReScheduleSandboxCreation(int sandboxId);
+
+        Task MoveToNextPhase(int sandboxId);
     }
 }
