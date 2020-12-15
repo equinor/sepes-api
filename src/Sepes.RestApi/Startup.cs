@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +29,7 @@ namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
     public class Startup
-    {     
+    {
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
 
@@ -41,7 +43,7 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
-            _configuration = configuration;           
+            _configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -51,22 +53,7 @@ namespace Sepes.RestApi
             Trace.WriteLine(logMsg);
             _logger.LogWarning(logMsg);
 
-
-            // The following line enables Application Insights telemetry collection.
-            // If this is left empty then no logs are made. Unknown if still affects performance.
-            Trace.WriteLine("Configuring Application Insights");
-            //services.AddApplicationInsightsTelemetry();
-
-            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
-                = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
-            // Disables adaptive sampling.
-            aiOptions.EnableAdaptiveSampling = false;
-            aiOptions.InstrumentationKey = _configuration[ConfigConstants.APPI_KEY];
-            aiOptions.EnableDebugLogger = true;
-
-            services.AddHttpContextAccessor();
-
-            services.AddApplicationInsightsTelemetry(aiOptions);
+            AddApplicationInsights(services);          
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
@@ -80,7 +67,7 @@ namespace Sepes.RestApi
                     // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
                     builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
                 });
-            });        
+            });
 
             var enableSensitiveDataLogging = true;
 
@@ -104,34 +91,67 @@ namespace Sepes.RestApi
 
             DoMigration();
 
-            services.AddHttpClient(); 
-            
+            services.AddHttpClient();
+
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
-            services.AddScoped<ICurrentUserService, CurrentUserService>();            
+            RegisterServices(services);
+
+            SetFileUploadLimits(services);
+
+            AddSwagger(services);
+
+            var logMsgDone = "Configuring services done";
+            Trace.WriteLine(logMsgDone);
+            _logger.LogWarning(logMsgDone);
+        }
+
+        void AddApplicationInsights(IServiceCollection services)
+        {
+            // The following line enables Application Insights telemetry collection.
+            // If this is left empty then no logs are made. Unknown if still affects performance.
+            Trace.WriteLine("Configuring Application Insights");
+            //services.AddApplicationInsightsTelemetry();
+
+            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
+                = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
+            // Disables adaptive sampling.
+            aiOptions.EnableAdaptiveSampling = false;
+            aiOptions.InstrumentationKey = _configuration[ConfigConstants.APPI_KEY];
+            aiOptions.EnableDebugLogger = true;
+
+            services.AddApplicationInsightsTelemetry(aiOptions);
+        }
+
+        void RegisterServices(IServiceCollection services)
+        {
+            //Plumbing
+            
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IUserPermissionService, UserPermissionService>();            
+            services.AddScoped<IUserPermissionService, UserPermissionService>();
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
+            services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+
+            //Domain Model Services
+            services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
-            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<IStudyService, StudyService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
-            services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
-            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
-            services.AddTransient<IAzureBastionService, AzureBastionService>();
-            services.AddTransient<IAzureVNetService, AzureVNetService>();
-            services.AddTransient<IAzureVmService, AzureVmService>();
-            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IRegionService, RegionService>();
+
+            //Ext System Facade Services
+            services.AddTransient<IDatasetFileService, DatasetFileService>();
+            services.AddTransient<IStudyLogoService, StudyLogoService>();
+            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
@@ -139,20 +159,47 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+
+            //Azure Services
+            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
+            services.AddTransient<IAzureBastionService, AzureBastionService>();
+            services.AddTransient<IAzureVNetService, AzureVNetService>();
+            services.AddTransient<IAzureVmService, AzureVmService>();
+            services.AddTransient<IAzureQueueService, AzureQueueService>();
+            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
-            services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddTransient<IAzureVmOsService, AzureVmOsService>();
-            services.AddTransient<IRegionService, RegionService>();
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddTransient<IDatasetFileService, DatasetFileService>();
-            services.AddTransient<IStudyLogoService, StudyLogoService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>(); 
+        }
 
+        void SetFileUploadLimits(IServiceCollection services)
+        {
+            services.Configure<IISServerOptions>(options =>
+            {
+                options.MaxRequestBodySize = int.MaxValue;
+            });
 
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
+            });
+
+            services.Configure<FormOptions>(options =>
+            {
+                options.ValueLengthLimit = int.MaxValue;
+                options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
+                options.MultipartHeadersLengthLimit = int.MaxValue;
+            });
+        }
+
+        void AddSwagger(IServiceCollection services)
+        {
             // Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
             {
@@ -192,17 +239,13 @@ namespace Sepes.RestApi
                             Scheme = "oauth2",
                             Name = "Bearer",
                             In = ParameterLocation.Header,
-                            
+
 
                         },
                         new List<string>()
                     }
                 });
             });
-
-            var logMsgDone = "Configuring services done";
-            Trace.WriteLine(logMsgDone);
-            _logger.LogWarning(logMsgDone);
         }
 
         void DoMigration()
@@ -214,13 +257,13 @@ namespace Sepes.RestApi
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {
                 logMessage = "Migrations are disabled and will be skipped!";
-            
+
             }
             else
             {
                 logMessage = "Performing database migrations";
             }
-           
+
             Trace.WriteLine(logMessage);
             _logger.LogWarning(logMessage);
 
@@ -229,7 +272,7 @@ namespace Sepes.RestApi
             if (string.IsNullOrEmpty(sqlConnectionStringOwner))
             {
                 throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
-            }            
+            }
 
             DbContextOptionsBuilder<SepesDbContext> createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
@@ -304,7 +347,7 @@ namespace Sepes.RestApi
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();                
+                endpoints.MapControllers();
             });
 
             var logMsgDone = "Configure done";

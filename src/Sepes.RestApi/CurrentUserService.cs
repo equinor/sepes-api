@@ -17,13 +17,6 @@ namespace Sepes.RestApi
             var identity = _httpContextAccessor.HttpContext?.User?.Identity as System.Security.Claims.ClaimsIdentity;
             var userId = identity.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier").Value;//System.Security.Claims.ClaimTypes.NameIdentifier
             return userId;
-        }
-
-        //public string GetUserFullName()
-        //{
-        //    var identity = _httpContextAccessor.HttpContext?.User?.Identity as System.Security.Claims.ClaimsIdentity;
-        //    var name = identity.FindFirst("name").Value;
-        //    return name;
-        //}
+        }       
     }
 }
