@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceProvisioningService : ISandboxResourceProvisioningService
+    public class ResourceProvisioningService : IResourceProvisioningService
     {
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public SandboxResourceProvisioningService(ILogger<SandboxResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceService sandboxResourceService, ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ISandboxResourceMonitoringService monitoringService)
+        public ResourceProvisioningService(ILogger<ResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceService sandboxResourceService, ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ISandboxResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

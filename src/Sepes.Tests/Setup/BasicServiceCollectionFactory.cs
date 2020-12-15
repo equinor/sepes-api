@@ -51,7 +51,7 @@ namespace Sepes.Tests.Setup
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
+            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
 
             //Azure resource services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
