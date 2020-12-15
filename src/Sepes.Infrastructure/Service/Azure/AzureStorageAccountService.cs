@@ -181,7 +181,7 @@ namespace Sepes.Infrastructure.Service
         {
             var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
             var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
-            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, Bypass = Bypass.AzureServices } };
+            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
             var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
             return _mapper.Map<AzureStorageAccountDto>(account);
         }

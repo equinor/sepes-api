@@ -20,7 +20,7 @@ namespace Sepes.Tests.Services
         {
             var db = ClearTestDatabase();
             var service = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider);
-            await Assert.ThrowsAsync<NotFoundException>(() => service.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }));
+            await Assert.ThrowsAsync<NotFoundException>(() => service.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));
 
         }
 
@@ -34,7 +34,7 @@ namespace Sepes.Tests.Services
             await db.SaveChangesAsync();
 
             var datasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider);        
-            await Assert.ThrowsAsync<Exception>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }));         
+            await Assert.ThrowsAsync<Exception>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));         
         
         }
 

@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudySpecificDatasetService
     {         
-        Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, CancellationToken cancellationToken = default);
+        Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, string clientIp, CancellationToken cancellationToken = default);
 
         Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto newDataset);
 

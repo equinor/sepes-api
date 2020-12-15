@@ -1,14 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants.Auth;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace Sepes.Infrastructure.Service
 {
@@ -35,19 +39,56 @@ namespace Sepes.Infrastructure.Service
             _roleAssignmentService = roleAssignmentService;
         }
 
-        public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, CancellationToken cancellationToken = default)
+        public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
-            try
+            await CreateStorageAccountForStudySpecificDatasets(study, dataset, clientIp, cancellationToken);
+            await AddRoleAssignmentForCurrentUser(dataset, cancellationToken);
+        }
+
+        public async Task EnsureExistFirewallExceptionForApplication(Study study, Dataset dataset, CancellationToken cancellationToken = default)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var serverRule = await CreateServerRule(currentUser);
+
+            bool serverRuleAllreadyExist = false;
+
+            var rulesToRemove = new List<DatasetFirewallRule>();
+            //Get firewall rules from  database, determine of some have to be deleted
+            foreach (var curDbRule in dataset.FirewallRules)
             {
-                await CreateStorageAccountForStudySpecificDatasets(study, dataset, cancellationToken);
-                await AddRoleAssignmentForCurrentUser(dataset, cancellationToken);
+                if (curDbRule.RuleType == DatasetFirewallRuleType.Api)
+                {
+                    if(curDbRule.Address == serverRule.Address)
+                    {
+                        serverRuleAllreadyExist = true;
+                    }
+                    else
+                    {
+                        if (curDbRule.Created.AddMonths(1) < DateTime.UtcNow)
+                        {
+                            rulesToRemove.Add(curDbRule);
+                        }
+                    }                    
+                }
             }
-            catch (Exception ex)
-            {               
-                throw new Exception($"Failed to create resources for study specific dataset", ex);
+
+            foreach (var curRuleToRemove in rulesToRemove)
+            {
+                dataset.FirewallRules.Remove(curRuleToRemove);
             }
+
+            if (!serverRuleAllreadyExist)
+            {
+                dataset.FirewallRules.Add(serverRule);
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+
+            await _storageAccountService.SetStorageAccountAllowedIPs(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken); 
+
 
         }
 
@@ -61,7 +102,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     await _storageAccountService.DeleteStorageAccount(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, cancellationToken);
                 }
-              
+
             }
             catch (Exception ex)
             {
@@ -86,36 +127,78 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task CreateStorageAccountForStudySpecificDatasets(Study study, Dataset dataset, CancellationToken cancellationToken = default)
+        async Task CreateStorageAccountForStudySpecificDatasets(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
-
-            if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
+            try
             {
-                study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
+                _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
+
+                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
+                {
+                    study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
+                }
+
+                var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+
+                await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);
+
+                var currentUser = await _userService.GetCurrentUserAsync();
+
+                dataset.FirewallRules = new List<DatasetFirewallRule>();
+
+                //Add user's client IP
+
+                if (clientIp != "::1")
+                {
+                    dataset.FirewallRules.Add(CreateRule(currentUser, DatasetFirewallRuleType.Client, clientIp));
+                }
+
+                //Add Sepes IP, so that it can uload/download files 
+
+                //Add Sepes IP, so that it can uload/download files 
+                var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
+                dataset.FirewallRules.Add(await CreateServerRule(currentUser));
+
+                var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, onlyAllowAccessFrom: dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken);
+
+                dataset.StorageAccountId = newStorageAccount.Id;
+                dataset.StorageAccountName = newStorageAccount.Name;
+                await _db.SaveChangesAsync();
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to create Azure Storage Account", ex);
+            }
+        }
 
-            var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+        async Task<DatasetFirewallRule> CreateServerRule(UserDto user)
+        {
+            var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
+            return CreateRule(user, DatasetFirewallRuleType.Api, serverPublicIp);
+        }
 
-            await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);
-
-            //var allowAccessFrom = dataset.FirewallRules != null && dataset.FirewallRules.Count > 0 ? dataset.FirewallRules.Select(fw => fw.Address).ToList() : null;
-            var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, onlyAllowAccessFrom: null, cancellationToken);
-
-            dataset.StorageAccountId = newStorageAccount.Id;
-            dataset.StorageAccountName = newStorageAccount.Name;
-            await _db.SaveChangesAsync();
-
-            //Todo: Create firewall rule
+        DatasetFirewallRule CreateRule(UserDto user, DatasetFirewallRuleType ruleType, string ipAddress)
+        {
+            return new DatasetFirewallRule() { CreatedBy = user.UserName, RuleType = ruleType, Address = ipAddress, Created = DateTime.UtcNow };
         }
 
         async Task AddRoleAssignmentForCurrentUser(Dataset dataset, CancellationToken cancellationToken = default)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
+            try
+            {
 
-            var roleAssignmentId = Guid.NewGuid().ToString();
-            var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";
-            await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
+                var currentUser = await _userService.GetCurrentUserAsync();
+
+                var roleAssignmentId = Guid.NewGuid().ToString();
+                var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";
+                await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to create Role Assignment for Storage Account", ex);
+            }
         }
+
+
     }
 }

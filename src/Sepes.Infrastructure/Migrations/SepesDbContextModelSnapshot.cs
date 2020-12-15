@@ -137,6 +137,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("DatasetId")
                         .HasColumnType("int");
 
+                    b.Property<int>("RuleType")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")

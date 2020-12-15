@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System.Net.Mime;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -24,9 +26,11 @@ namespace Sepes.RestApi.Controller
         
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset)
-        {
-            var updatedStudy = await _studySpecificDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset);
+        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, CancellationToken cancellation)
+        {          
+            var clientIp = IpAddressUtil.GetClientIp(HttpContext);        
+
+            var updatedStudy = await _studySpecificDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset, clientIp, cancellation);
             return new JsonResult(updatedStudy);
         }
 

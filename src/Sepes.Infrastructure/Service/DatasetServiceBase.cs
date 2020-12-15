@@ -29,6 +29,7 @@ namespace Sepes.Infrastructure.Service
             var queryable = _db.Datasets
                  .Include(ds => ds.StudyDatasets)
                  .ThenInclude(sd => sd.Study)
+                 .Include(d=> d.FirewallRules)
                  .Where(ds => ds.Deleted.HasValue == false || ds.Deleted.HasValue && ds.Deleted.Value == false);
 
             if (excludeStudySpecific)

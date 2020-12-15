@@ -16,13 +16,14 @@ namespace Sepes.Infrastructure.Service
     public class DatasetFileService : DatasetServiceBase, IDatasetFileService
     {
         readonly IAzureBlobStorageService _storageService;
+        readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-        public DatasetFileService(SepesDbContext db, IMapper mapper, ILogger<DatasetFileService> logger, IUserService userService, IAzureBlobStorageService storageService)
+        public DatasetFileService(SepesDbContext db, IMapper mapper, ILogger<DatasetFileService> logger, IUserService userService, IAzureBlobStorageService storageService, IDatasetCloudResourceService datasetCloudResourceService)
             : base(db, mapper, logger, userService)
         {
             _storageService = storageService;
+            _datasetCloudResourceService = datasetCloudResourceService;
         }
-
 
         public async Task<List<BlobStorageItemDto>> AddFiles(int datasetId, List<IFormFile> files, CancellationToken cancellationToken = default)
         {
@@ -34,6 +35,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
                     _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
                 }
                 else
@@ -45,14 +47,7 @@ namespace Sepes.Infrastructure.Service
                 foreach (var curFile in files)
                 {
                     await _storageService.UploadFileToBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, curFile.FileName, curFile, cancellationToken);
-                }
-
-                //Todo:  Check that storage account exsists
-                //get hold of relevant storage account
-                //get hold of relevant container
-                //ensure account and container exist, thow if account does not exist
-                //Upload files
-                //Set permissions
+                }                
 
                 return await GetFileList(datasetId, cancellationToken);
             }
@@ -60,7 +55,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Unable to delete file from Storage Account - {ex.Message}", ex);
             }
-
         }
 
         public async Task DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
@@ -73,6 +67,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
                     _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
                 }
                 else
@@ -105,6 +100,7 @@ namespace Sepes.Infrastructure.Service
 
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_Read, false);
+                    await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
                     _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
                 }
                 else

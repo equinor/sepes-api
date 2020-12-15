@@ -28,17 +28,7 @@ namespace Sepes.Infrastructure.Service
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
 
-        //public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger,
-        //    IUserService userService,
-        //    IDatasetCloudResourceService datasetCloudResourceService)
-        //    : base(db, mapper, logger, userService)
-        //{
-        //    _datasetCloudResourceService = datasetCloudResourceService;           
-        //}       
-
-
-
-        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, CancellationToken cancellationToken = default)
+        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp ,CancellationToken cancellationToken = default)
         {            
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
 
@@ -49,22 +39,13 @@ namespace Sepes.Infrastructure.Service
             }
 
             DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
+
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudyId = studyId;
             dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
             var currentUser = await _userService.GetCurrentUserAsync();
-            dataset.CreatedBy = currentUser.UserName;
-
-            if (newDatasetInput.AllowAccessFromAddresses != null && newDatasetInput.AllowAccessFromAddresses.Count > 0)
-            {
-                dataset.FirewallRules = new List<DatasetFirewallRule>();
-
-                foreach (var curNewAddress in newDatasetInput.AllowAccessFromAddresses)
-                {
-                    dataset.FirewallRules.Add(new DatasetFirewallRule() { CreatedBy = currentUser.UserName, Address = curNewAddress });
-                }
-            }
+            dataset.CreatedBy = currentUser.UserName;          
 
             await _db.Datasets.AddAsync(dataset);
 
@@ -73,7 +54,18 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(studyFromDb, dataset, cancellationToken);
+            try
+            {
+                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(studyFromDb, dataset, clientIp, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Unable to create resources for Study specific Dataset, deleting dataset");
+                _db.StudyDatasets.Remove(studyDataset);
+                _db.Datasets.Remove(dataset);
+                await _db.SaveChangesAsync();
+                throw;
+            }           
 
             return _mapper.Map<StudyDatasetDto>(dataset);
         }       
@@ -102,7 +94,7 @@ namespace Sepes.Infrastructure.Service
             if (studyDatasetRelation == null)
             {
                 throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
-            }
+            }          
 
             return studyDatasetRelation.Dataset;
         } 
