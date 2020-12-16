@@ -62,6 +62,11 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
+            //Sandbox close / make data available
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            OperationPermission.CreateForStudyRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
+
             //PRE-APPROVED DATASETS
             OperationPermission.CreateForAllNonExternalUser(UserOperation.PreApprovedDataset_Read),
             OperationPermission.CreateForAppRole(UserOperation.PreApprovedDataset_Create_Update_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.DatasetAdmin),

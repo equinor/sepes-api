@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service
                 return;
             }
 
-            var activeResources = await _sandboxResourceService.GetActiveResources();
+            var activeResources = await _sandboxResourceService.GetAllActiveResources();
 
             foreach (var curRes in activeResources)
             {

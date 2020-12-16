@@ -31,8 +31,7 @@ namespace Sepes.Tests.Setup
 
             var studyServiceMock = StudyServiceMockFactory.Create(serviceProvider);
 
-            var sandboxCloudResourceServiceMock = new Mock<ISandboxCloudResourceService>();
-            sandboxCloudResourceServiceMock.Setup(x => x.MakeDatasetsAvailable(It.IsAny<int>(), default(CancellationToken))).Returns(default(Task));
+            var sandboxCloudResourceServiceMock = new Mock<ISandboxCloudResourceService>();        
 
             return new SandboxService(config, db, mapper, logger, userService.Object, studyServiceMock, sandboxCloudResourceServiceMock.Object);
         }      

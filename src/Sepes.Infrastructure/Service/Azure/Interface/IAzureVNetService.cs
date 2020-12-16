@@ -12,5 +12,6 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
       
         Task Delete(string resourceGroupName, string vNetName);
         Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName);
+        Task EnsureSandboxSubnetHasServiceEndpointForStorage(string resourceGroupName, string networkName);
     }
 }

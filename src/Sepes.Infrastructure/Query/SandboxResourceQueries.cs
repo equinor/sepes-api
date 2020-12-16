@@ -84,6 +84,13 @@ namespace Sepes.Infrastructure.Query
             return await queryable.ToListAsync();
         }
 
+        public static IQueryable<SandboxResource> GetSandboxResourcesQueryable(SepesDbContext db, int sandboxId)
+        {
+            var queryable = WithBasicIncludesQueryable(db).Where(sr=> sr.SandboxId == sandboxId);
+
+            return queryable;
+        }
+
         public static async Task<int> GetCreateOperationIdForBastion(SepesDbContext db, int sandboxId)
         {
             var bastionResourceForSandbox = await WithBasicIncludesQueryable(db).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == AzureResourceType.Bastion);

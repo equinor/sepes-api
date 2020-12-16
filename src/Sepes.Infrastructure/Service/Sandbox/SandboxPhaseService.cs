@@ -1,41 +1,34 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
-    {
-        readonly IRequestIdService _requestIdService;
-        readonly IStudyService _studyService;
-        readonly ISandboxCloudResourceService _sandboxCloudResourceService;     
+    {       
+        readonly ISandboxResourceService _sandboxResourceService;
+        readonly IAzureVNetService _azureVNetService;
+        readonly IAzureStorageAccountService _azureStorageAccountService;
 
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService,
-            IRequestIdService requestIdService, IStudyService studyService, ISandboxCloudResourceService sandboxCloudResourceService)
-            :base (config, db, mapper, logger, userService)
+            IUserService userService, ISandboxResourceService sandboxResourceService, IAzureVNetService azureVNetService, IAzureStorageAccountService azureStorageAccountService)
+            : base(config, db, mapper, logger, userService)
         {
         
-            _requestIdService = requestIdService;
-            _studyService = studyService;       
-            _sandboxCloudResourceService = sandboxCloudResourceService;
-        }       
+            _sandboxResourceService = sandboxResourceService;
+            _azureVNetService = azureVNetService;
+            _azureStorageAccountService = azureStorageAccountService;
+        }
 
         public async Task MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
@@ -45,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserAsync();
 
-                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.SandboxLock, true);
+                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
@@ -57,9 +50,8 @@ namespace Sepes.Infrastructure.Service
                 await _db.SaveChangesAsync();
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
 
-                //Make data available
-                //Connect storage account to vnet              
 
+                await MakeDatasetsAvailable(sandboxId, cancellation);
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
             }
@@ -69,6 +61,45 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        
+        async Task MakeDatasetsAvailable(int sandboxId, CancellationToken cancellation = default)
+        {
+            //Make data available
+            //Connect storage account to vnet   
+            var sandbox = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+
+            var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
+
+            var resourceGroupResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
+            var vNetResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+
+            if(resourceGroupResource == null)
+            {
+                throw new Exception($"Could not locate Resource Group entry for Sandbox {sandboxId}");
+            }
+
+            if (vNetResource == null)
+            {
+                throw new Exception($"Could not locate VNet entry for Sandbox {sandboxId}");
+            }
+
+            await _azureVNetService.EnsureSandboxSubnetHasServiceEndpointForStorage(resourceGroupResource.ResourceName, vNetResource.ResourceName);
+
+            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
+            {
+                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
+                {
+                    await MakeDatasetAvailable(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                }
+                else
+                {
+                    throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
+                }
+            }
+        }
+
+        async Task MakeDatasetAvailable(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForSandbox, string vnetForSandbox, CancellationToken cancellation)
+        {
+            await _azureStorageAccountService.AddStorageAccountToVNet(resourceGroupForStorageAccount, storageAccountName, resourceGroupForSandbox, vnetForSandbox, cancellation);
+        }
     }
 }

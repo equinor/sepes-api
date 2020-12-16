@@ -4,15 +4,18 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -35,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOrThrowInternalAsync(id);
         }
 
-        public async Task<List<SandboxResourceLightDto>> GetSandboxResources(int sandboxId)
+        public async Task<List<SandboxResourceLightDto>> GetSandboxResourcesLight(int sandboxId)
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
 
@@ -53,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
       
 
-        public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+        public async Task<List<SandboxResource>> GetAllActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
@@ -80,6 +83,15 @@ namespace Sepes.Infrastructure.Service
             } 
             
             return false;
+        }
+
+        public async Task<List<SandboxResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
+        {
+            var queryable = SandboxResourceQueries.GetSandboxResourcesQueryable(_db, sandboxId);
+
+            var resources = await queryable.ToListAsync(cancellation);
+
+            return _mapper.Map<List<SandboxResourceDto>>(resources);
         }
     }
 }

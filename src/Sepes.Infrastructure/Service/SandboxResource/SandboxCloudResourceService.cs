@@ -155,40 +155,7 @@ namespace Sepes.Infrastructure.Service
             target.ResourceGroupName = source.Name;
             target.ProvisioningState = source.ProvisioningState;
             target.ResourceKey = source.Key;
-        }
-
-        public async Task MakeDatasetsAvailable(int sandboxId, CancellationToken cancellation = default)
-        {
-            var sandbox = await GetOrThrowAsync(sandboxId, UserOperation.SandboxLock, true);
-
-            var resourceGroupForSandbox = "";
-            var vnetForSandbox = "";
-
-            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
-            {
-                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
-                {
-                   
-
-                    await MakeDatasetAvailable(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupForSandbox, vnetForSandbox, cancellation);
-                }
-                else
-                {
-                    throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
-                }
-            }
-
-            //Get dataset list
-
-            //Get vnet for sandbox
-            //Get storage accounts of those
-            //Join storage accounts to vnet
-        }
-
-        async Task MakeDatasetAvailable(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForSandbox, string vnetForSandbox, CancellationToken cancellation)
-        {
-            
-        }
+        }     
 
         public async Task ReScheduleSandboxResourceCreation(int sandboxId)
         {

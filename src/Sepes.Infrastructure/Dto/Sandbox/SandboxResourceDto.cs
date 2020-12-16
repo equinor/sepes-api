@@ -33,6 +33,8 @@ namespace Sepes.Infrastructure.Dto
 
         public string ConfigString { get; set; }
 
+        public bool SandboxControlled { get; set; }
+
         public Dictionary<string, string> Tags
         {
             get;set;

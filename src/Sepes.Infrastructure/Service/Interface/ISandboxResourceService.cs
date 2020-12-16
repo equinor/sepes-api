@@ -1,8 +1,8 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -15,13 +15,14 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync();
 
-        Task<List<SandboxResource>> GetActiveResources();
+        Task<List<SandboxResource>> GetAllActiveResources();
 
 
         Task<bool> ResourceIsDeleted(int resourceId);
 
+        Task<List<SandboxResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default);
 
-        Task<List<SandboxResourceLightDto>> GetSandboxResources(int sandboxId);
+        Task<List<SandboxResourceLightDto>> GetSandboxResourcesLight(int sandboxId);
 
     }
 }

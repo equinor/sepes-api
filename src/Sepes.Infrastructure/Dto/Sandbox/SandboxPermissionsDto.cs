@@ -6,7 +6,9 @@
 
         public bool Delete { get; set; }
 
-        public bool EditRules { get; set; }      
-    
+        public bool EditRules { get; set; } 
+        
+        public bool IncreasePhase { get; set; }
+
     }
 }

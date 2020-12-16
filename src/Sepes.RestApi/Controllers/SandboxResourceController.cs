@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("sandboxes/{sandboxId}/resources")]
         public async Task<IActionResult> GetSandboxResources(int sandboxId)
         {
-            var sandboxes = await _sandboxResourceService.GetSandboxResources(sandboxId);
+            var sandboxes = await _sandboxResourceService.GetSandboxResourcesLight(sandboxId);
             return new JsonResult(sandboxes);
         }
 

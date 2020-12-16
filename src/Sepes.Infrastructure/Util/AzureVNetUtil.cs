@@ -1,0 +1,34 @@
+﻿using Microsoft.Azure.Management.Network.Fluent;
+using Sepes.Infrastructure.Constants;
+using System;
+
+namespace Sepes.Infrastructure.Util
+{
+    public static class AzureVNetUtil
+    {
+        public static ISubnet GetSandboxSubnet(INetwork network)
+        {
+            foreach (var curSubnet in network.Subnets)
+            {
+                if (curSubnet.Value.Name != AzureVNetConstants.BASTION_SUBNET_NAME)
+                {
+                    return curSubnet.Value;
+                }
+            }
+
+            return null;
+        }
+
+        public static ISubnet GetSandboxSubnetOrThrow(INetwork network)
+        {
+            var sandboxSubnet = GetSandboxSubnet(network);
+
+            if (sandboxSubnet == null)
+            {
+                throw new Exception("Could not locate Sandbox subnet");
+            }
+
+            return sandboxSubnet;
+        }
+    }
+}

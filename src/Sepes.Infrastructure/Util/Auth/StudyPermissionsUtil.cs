@@ -32,6 +32,8 @@ namespace Sepes.Infrastructure.Util
             dto.Delete = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
             dto.Update = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
             dto.EditRules = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox); //TODO: Revise, should be based on the edit rules operation?
+            dto.IncreasePhase = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_IncreasePhase); //TODO: Revise, should be based on the edit rules operation?
+
         }
     }
 }

@@ -19,7 +19,7 @@
         Study_Crud_Sandbox,
 
         //Sandbox details and editation
-        SandboxLock,
+        Sandbox_IncreasePhase,
         SandboxUnlock,
         EditRules,
 

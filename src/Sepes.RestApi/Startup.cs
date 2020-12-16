@@ -136,11 +136,11 @@ namespace Sepes.RestApi
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
 
             //Domain Model Services
-            services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyService, StudyService>();
+      
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
-            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
@@ -149,6 +149,8 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
+            services.AddScoped<IVariableService, VariableService>();
+            services.AddTransient<ILookupService, LookupService>();
 
             //Ext System Facade Services
             services.AddTransient<IDatasetFileService, DatasetFileService>();          

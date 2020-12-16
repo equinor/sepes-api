@@ -10,6 +10,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
         Task ReScheduleSandboxResourceCreation(int sandboxId);      
         Task HandleSandboxDeleteAsync(int sandboxId);
-        Task MakeDatasetsAvailable(int sandboxId, CancellationToken cancellation = default);
+     
     }   
 }
