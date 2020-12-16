@@ -1,12 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -21,7 +19,6 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
-
         IMapper _mapper;
 
         public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper)
@@ -174,7 +171,7 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                creator = creator.WithAccessFromAzureServices();
+                //creator = creator.WithAccessFromAzureServices();
 
                 foreach (var curAddr in onlyAllowAccessFrom)
                 {
@@ -195,7 +192,7 @@ namespace Sepes.Infrastructure.Service
         {
             var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
             var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
-            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny, Bypass = Bypass.AzureServices } };
+            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
             var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
             return _mapper.Map<AzureStorageAccountDto>(account);
         }
@@ -234,9 +231,10 @@ namespace Sepes.Infrastructure.Service
                 {
                     if (curRule.VirtualNetworkResourceId == sandboxSubnet.Inner.Id)
                     {
-                        existingRuleFound = true;
-                        curRule.Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow;                 
-                    }
+                        if(curRule.Action == Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)
+                        {
+                            existingRuleFound = true;
+                        } }
                 }
 
                 if (!existingRuleFound)
@@ -246,11 +244,11 @@ namespace Sepes.Infrastructure.Service
                         Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow,                       
                         VirtualNetworkResourceId = sandboxSubnet.Inner.Id
                     });
-                }             
 
-                var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
+                    var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
 
-                var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                    var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                } 
             }
             catch (Exception ex)
             {

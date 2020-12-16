@@ -34,6 +34,8 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
 
+            SandboxPhaseHistory newestHistoryItem = null;
+
             try
             {
                 var user = await _userService.GetCurrentUserAsync();
@@ -46,10 +48,11 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
-                sandboxFromDb.PhaseHistory.Add(new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName });
+                newestHistoryItem = new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName };
+
+                sandboxFromDb.PhaseHistory.Add(newestHistoryItem);
                 await _db.SaveChangesAsync();
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
-
 
                 await MakeDatasetsAvailable(sandboxId, cancellation);
 
@@ -57,7 +60,50 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
+                await AttemptRollback(sandboxId, newestHistoryItem);
                 throw new Exception($"Moving to next phase failed", ex);
+            }
+        }
+
+        async Task AttemptRollback(int sandboxId, SandboxPhaseHistory phaseToRemove)
+        {        
+
+            try
+            {
+                _logger.LogWarning($"Rolling back phase for sandbox {sandboxId}.");
+
+                if (phaseToRemove != null)
+                {
+                    if (phaseToRemove.Id > 0)
+                    {
+                        var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+
+                        if(sandboxFromDb.PhaseHistory.Count > 0 && sandboxFromDb.PhaseHistory.Contains(phaseToRemove))
+                        {
+                            _logger.LogWarning($"Rolling back phase rollback for sandbox {sandboxId}. Phase item: {phaseToRemove.Id}, phase: {phaseToRemove.Phase}");
+                            sandboxFromDb.PhaseHistory.Remove(phaseToRemove);
+                            await _db.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Attempted phase rollback for sandbox {sandboxId} aborted. Phase record not found associated to Sandbox");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogWarning($"Attempted phase rollback for sandbox {sandboxId} aborted. Phase record Id was 0");
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning($"Attempted phase rollback for sandbox {sandboxId} aborted. Phase record was NULL");
+                }
+            }
+            catch (Exception ex)
+            {
+                var additionalInfo = phaseToRemove != null ? $"Phase item: {phaseToRemove.Id}, phase: {phaseToRemove.Phase}" : "";
+
+                _logger.LogError(ex, $"Attempted phase rollback for sandbox {sandboxId} failed. {additionalInfo}");
             }
         }
 
