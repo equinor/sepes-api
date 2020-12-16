@@ -15,6 +15,7 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -23,12 +24,16 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IRequestIdService _requestIdService;
         readonly IAzureResourceGroupService _resourceGroupService;
+        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
+        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
         readonly ISandboxResourceService _sandboxResourceService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxCloudResourceService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxCloudResourceService> logger, IUserService userService,
                 IRequestIdService requestIdService,
+                ISandboxResourceCreateService sandboxResourceCreateService,
+                ISandboxResourceUpdateService sandboxResourceUpdateService,
                 ISandboxResourceService sandboxResourceService,
            ISandboxResourceOperationService sandboxResourceOperationService,
            IProvisioningQueueService provisioningQueueService,
@@ -38,6 +43,8 @@ namespace Sepes.Infrastructure.Service
 
             _requestIdService = requestIdService;
             _resourceGroupService = resourceGroupService;
+            _sandboxResourceCreateService = sandboxResourceCreateService;
+            _sandboxResourceUpdateService = sandboxResourceUpdateService;
             _sandboxResourceService = sandboxResourceService;
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
             _provisioningQueueService = provisioningQueueService;
@@ -49,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _sandboxResourceService.CreateSandboxResourceGroup(dto);
+                await _sandboxResourceCreateService.CreateSandboxResourceGroup(dto);
                 await ScheduleCreateOfSandboxResourceGroup(dto);
 
                 _logger.LogInformation($"Done creating Resource Group for sandbox: {dto.SandboxName}. Scheduling creation of other resources");
@@ -87,7 +94,7 @@ namespace Sepes.Infrastructure.Service
             var azureResourceGroup = await _resourceGroupService.Create(dto.ResourceGroup.ResourceName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
 
-            _ = await _sandboxResourceService.UpdateResourceGroup(dto.ResourceGroup.Id, dto.ResourceGroup);
+            _ = await _sandboxResourceUpdateService.UpdateResourceGroup(dto.ResourceGroup.Id, dto.ResourceGroup);
             _ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
@@ -134,7 +141,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<SandboxResourceDto> CreateResource(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, string configString = null, int dependsOn = 0)
         {
-            var resourceEntry = await _sandboxResourceService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
+            var resourceEntry = await _sandboxResourceCreateService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id });
 
             return resourceEntry;
@@ -148,6 +155,39 @@ namespace Sepes.Infrastructure.Service
             target.ResourceGroupName = source.Name;
             target.ProvisioningState = source.ProvisioningState;
             target.ResourceKey = source.Key;
+        }
+
+        public async Task MakeDatasetsAvailable(int sandboxId, CancellationToken cancellation = default)
+        {
+            var sandbox = await GetOrThrowAsync(sandboxId, UserOperation.SandboxLock, true);
+
+            var resourceGroupForSandbox = "";
+            var vnetForSandbox = "";
+
+            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
+            {
+                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
+                {
+                   
+
+                    await MakeDatasetAvailable(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupForSandbox, vnetForSandbox, cancellation);
+                }
+                else
+                {
+                    throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
+                }
+            }
+
+            //Get dataset list
+
+            //Get vnet for sandbox
+            //Get storage accounts of those
+            //Join storage accounts to vnet
+        }
+
+        async Task MakeDatasetAvailable(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForSandbox, string vnetForSandbox, CancellationToken cancellation)
+        {
+            
         }
 
         public async Task ReScheduleSandboxResourceCreation(int sandboxId)
@@ -233,6 +273,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
+
         public Task<SandboxResourceLightDto> RetryLastOperation(int resourceId)
         {
             throw new NotImplementedException();
@@ -311,5 +352,7 @@ namespace Sepes.Infrastructure.Service
                 curOp.UpdatedBy = currentUser.UserName;
             }
         }
+
+
     }
 }

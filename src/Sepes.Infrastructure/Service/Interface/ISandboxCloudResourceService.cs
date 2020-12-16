@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Sandbox;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -7,8 +8,8 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto);
         Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
-        Task ReScheduleSandboxResourceCreation(int sandboxId);
-
+        Task ReScheduleSandboxResourceCreation(int sandboxId);      
         Task HandleSandboxDeleteAsync(int sandboxId);
+        Task MakeDatasetsAvailable(int sandboxId, CancellationToken cancellation = default);
     }   
 }

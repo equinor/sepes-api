@@ -27,12 +27,14 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly IUserService _userService;
-        readonly IStudyService _studyService;
+        readonly IUserService _userService;        
         readonly ISandboxService _sandboxService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
         readonly ISandboxResourceService _sandboxResourceService;
+        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
+        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
+        readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVmService _azureVmService;
 
@@ -41,11 +43,13 @@ namespace Sepes.Infrastructure.Service
             IConfiguration config,
             SepesDbContext db,
             IMapper mapper,
-            IUserService userService,
-            IStudyService studyService,
+            IUserService userService,            
             ISandboxService sandboxService,
             IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
+            ISandboxResourceCreateService sandboxResourceCreateService,
+            ISandboxResourceUpdateService sandboxResourceUpdateService,
+            ISandboxResourceDeleteService sandboxResourceDeleteService,
             ISandboxResourceService sandboxResourceService,
             IProvisioningQueueService workQueue,
             IAzureVmService azureVmService)
@@ -54,12 +58,14 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _config = config;
             _mapper = mapper;
-            _userService = userService;
-            _studyService = studyService;
+            _userService = userService;            
             _sandboxService = sandboxService;
             _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
             _sandboxResourceService = sandboxResourceService;
+            _sandboxResourceCreateService = sandboxResourceCreateService;
+            _sandboxResourceUpdateService = sandboxResourceUpdateService;
+            _sandboxResourceDeleteService = sandboxResourceDeleteService;
             _workQueue = workQueue;
             _azureVmService = azureVmService;
         }
@@ -72,7 +78,7 @@ namespace Sepes.Infrastructure.Service
 
             var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-            await _sandboxResourceService.ValidateNameThrowIfInvalid(virtualMachineName);
+            await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
 
             var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
@@ -83,12 +89,12 @@ namespace Sepes.Infrastructure.Service
             //Make this dependent on bastion create operation to be completed, since bastion finishes last
             var dependsOn = await SandboxResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
-            var vmResourceEntry = await _sandboxResourceService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+            var vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
 
             //Create vm settings and immeately attach to resource entry
             var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
             vmResourceEntry.ConfigString = vmSettingsString;
-            await _sandboxResourceService.Update(vmResourceEntry.Id, vmResourceEntry);
+            await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = sandboxId;
@@ -108,15 +114,20 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<VmDto> DeleteAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            _ = await GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
+            var vmResource = await GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
 
-            var deletedResource = await _sandboxResourceService.MarkAsDeletedAndScheduleDeletion(id);
+            var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedAsync(id);
 
-            var dtoMappedFromResource = _mapper.Map<VmDto>(deletedResource);
+            _logger.LogInformation($"Delete VM: Enqueing delete operation");
 
-            return dtoMappedFromResource;
+            //Create queue item
+            var queueParentItem = new ProvisioningQueueParentDto();
+            queueParentItem.SandboxId = vmResource.SandboxId;
+            queueParentItem.Description = deleteResourceOperation.Description;
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = deleteResourceOperation.Id });
+            await _workQueue.SendMessageAsync(queueParentItem);            
         }
 
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
@@ -212,7 +223,5 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
-
-
     }
 }

@@ -17,7 +17,7 @@ namespace Sepes.Tests.Services
 
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase(int datasetId)
         {
-            var db = ClearTestDatabase();           
+            var db = await ClearTestDatabase();           
 
             var dataset = new Dataset()
             {

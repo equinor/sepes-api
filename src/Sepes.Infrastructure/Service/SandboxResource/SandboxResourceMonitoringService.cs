@@ -3,8 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Service.Interface;
@@ -17,19 +15,22 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxResourceMonitoringService : ISandboxResourceMonitoringService
     {
+        readonly IServiceProvider _serviceProvider;
         readonly IConfiguration _config;
         readonly ILogger _logger;
-        readonly IServiceProvider _serviceProvider;    
+        
         readonly ISandboxResourceService _sandboxResourceService;
-        readonly IMapper _mapper;
+        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;  
 
-        public SandboxResourceMonitoringService(IConfiguration config, ILogger<SandboxResourceMonitoringService> logger, IServiceProvider serviceProvider, ISandboxResourceService sandboxResourceService, IMapper mapper)
+        public SandboxResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<SandboxResourceMonitoringService> logger, ISandboxResourceService sandboxResourceService, ISandboxResourceUpdateService sandboxResourceUpdateService)
         {
+            _serviceProvider = serviceProvider;
+
             _config = config;
             _logger = logger;
-            _serviceProvider = serviceProvider;
+         
             _sandboxResourceService = sandboxResourceService;
-            _mapper = mapper;
+            _sandboxResourceUpdateService = sandboxResourceUpdateService;      
         }
 
         public async Task StartMonitoringSession()
@@ -151,7 +152,7 @@ namespace Sepes.Infrastructure.Service
                     provisioningState = "Provisioning state was empty";
                 }
 
-                await _sandboxResourceService.UpdateProvisioningState(resource.Id, provisioningState);
+                await _sandboxResourceUpdateService.UpdateProvisioningState(resource.Id, provisioningState);
             }
             catch (Exception ex)
             {

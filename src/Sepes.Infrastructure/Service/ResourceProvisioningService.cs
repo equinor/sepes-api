@@ -18,20 +18,26 @@ namespace Sepes.Infrastructure.Service
         readonly IServiceProvider _serviceProvider;
         readonly IRequestIdService _requestIdService;
         readonly ISandboxResourceService _sandboxResourceService;
+        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
         readonly ISandboxResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
         readonly ISandboxResourceMonitoringService _monitoringService;
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public ResourceProvisioningService(ILogger<ResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService, ISandboxResourceService sandboxResourceService, ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ISandboxResourceMonitoringService monitoringService)
+        public ResourceProvisioningService(ILogger<ResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService,
+            ISandboxResourceService sandboxResourceService,
+            ISandboxResourceUpdateService sandboxResourceUpdateService,
+            ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ISandboxResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
 
             _requestIdService = requestIdService;
             _sandboxResourceService = sandboxResourceService ?? throw new ArgumentNullException(nameof(sandboxResourceService));
+            _sandboxResourceUpdateService = sandboxResourceUpdateService ?? throw new ArgumentNullException(nameof(sandboxResourceUpdateService));
             _sandboxResourceOperationService = sandboxResourceOperationService ?? throw new ArgumentNullException(nameof(sandboxResourceOperationService));
+          
             _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
             _monitoringService = monitoringService;
         }
@@ -264,7 +270,7 @@ namespace Sepes.Infrastructure.Service
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {
                         _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Setting resource id and name!");
-                        await _sandboxResourceService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
+                        await _sandboxResourceUpdateService.UpdateResourceIdAndName(currentResourceOperation.Resource.Id, currentCrudResult.IdInTargetSystem, currentCrudResult.NameInTargetSystem);
                     }
                 }
             }

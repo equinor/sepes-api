@@ -17,16 +17,17 @@ namespace Sepes.Infrastructure.Service.Queries
 
         public static async Task<Sandbox> GetSandboxByIdThrowIfNotFoundAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
         {
-            var sandboxFromDb = await
-                (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(db))
-                .FirstOrDefaultAsync(s => s.Id == sandboxId);
+            var sandboxQueryable =
+                (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(db));
 
-            if (sandboxFromDb == null)
+            var sandbox = await sandboxQueryable.SingleOrDefaultAsync(s => s.Id == sandboxId);
+
+            if (sandbox == null)
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            return sandboxFromDb;
+            return sandbox;
         }
 
         public static async Task<Sandbox> GetSandboxByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation, bool withIncludes = false)

@@ -76,6 +76,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            builder.Services.AddTransient<ISandboxResourceUpdateService, SandboxResourceUpdateService>();
 
             //Ext System Facade Services
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();

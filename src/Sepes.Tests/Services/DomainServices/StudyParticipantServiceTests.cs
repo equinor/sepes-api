@@ -62,7 +62,7 @@ namespace Sepes.Tests.Services
             await Assert.ThrowsAsync<ArgumentException>(() => createTask);
         }
 
-        public Task<StudyParticipantDto> SetupAndAddParticipantForSet(int studyId, string role, string source)
+        public async Task<StudyParticipantDto> SetupAndAddParticipantForSet(int studyId, string role, string source)
         {
             //SETUP          
             var userName = "newUserUsername";
@@ -71,7 +71,7 @@ namespace Sepes.Tests.Services
 
             var participantToAdd = new ParticipantLookupDto() { DatabaseId = UserConstants.COMMON_CUR_USER_DB_ID, ObjectId = UserConstants.COMMON_CUR_USER_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
 
-            RefreshAndPopulateTestDb();
+            await RefreshAndPopulateTestDb();
 
             //GET REQUIRED SERVICES
             var db = _serviceProvider.GetService<SepesDbContext>();
@@ -86,12 +86,12 @@ namespace Sepes.Tests.Services
             if (source == ParticipantSource.Db)
             {
                 var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
+                return await studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
             }
             else
             {
                 var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
+                return await studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
             }
         }       
 
@@ -100,9 +100,9 @@ namespace Sepes.Tests.Services
             return UserFactory.GetUserServiceMockForAdmin(id, objectId);
         }       
 
-        void RefreshAndPopulateTestDb()
+        async Task RefreshAndPopulateTestDb()
         {
-            ClearTestDatabase();
+            await ClearTestDatabase();
             var db = _serviceProvider.GetService<SepesDbContext>();
 
             StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", UserConstants.COMMON_CUR_USER_DB_ID);

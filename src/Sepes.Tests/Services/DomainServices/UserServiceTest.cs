@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Tests.Mocks;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
@@ -22,9 +23,9 @@ namespace Sepes.Tests.Services.DomainServices
         [InlineData(false, true, false, false)]
         [InlineData(false, false, true, false)]
         [InlineData(false, false, false, true)]
-        public async void Requesting_User_ShouldReturnUserObjectWithRelevantProperties(bool admin, bool sponsor, bool datasetAdmin, bool employee)
+        public async Task Requesting_User_ShouldReturnUserObjectWithRelevantProperties(bool admin, bool sponsor, bool datasetAdmin, bool employee)
         {
-            var userService = GetUserServiceWithMocks(admin, sponsor, datasetAdmin, employee);
+            var userService = await GetUserServiceWithMocks(admin, sponsor, datasetAdmin, employee);
 
             var userWithoutStudyParticipants = await userService.GetCurrentUserAsync();
             UserDtoAsserts(userWithoutStudyParticipants, admin, sponsor, datasetAdmin, employee);
@@ -42,9 +43,9 @@ namespace Sepes.Tests.Services.DomainServices
             Assert.Equal(employee, user.Employee);
         }
 
-        UserService GetUserServiceWithMocks(bool admin = false, bool sponsor = false, bool datasetAdmin = false, bool employee = false)
+        async Task<UserService> GetUserServiceWithMocks(bool admin = false, bool sponsor = false, bool datasetAdmin = false, bool employee = false)
         {
-            ClearTestDatabaseAddUser();
+            await ClearTestDatabaseAddUser();
 
             var config = _serviceProvider.GetService<IConfiguration>();
             var db = _serviceProvider.GetService<SepesDbContext>();

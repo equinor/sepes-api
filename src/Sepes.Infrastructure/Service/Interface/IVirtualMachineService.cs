@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmDto> UpdateAsync(int sandboxId, CreateVmUserInputDto newSandbox);
 
-        Task<VmDto> DeleteAsync(int id);
+        Task DeleteAsync(int id);
 
         Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default);
 

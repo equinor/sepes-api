@@ -144,6 +144,9 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            services.AddTransient<ISandboxResourceUpdateService, SandboxResourceUpdateService>();
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
 
