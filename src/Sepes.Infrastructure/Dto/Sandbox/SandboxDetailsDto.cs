@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
 {
-    public class SandboxDetailsDto : UpdateableBaseDto
+    public class SandboxDetailsDto : UpdateableBaseDto, IHasCurrentPhase
     {
         public string Name { get; set; }
 
@@ -16,6 +18,8 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public string TechnicalContactEmail { get; set; }
         public string LinkToCostAnalysis { get; set; }
+
+        public SandboxPhase CurrentPhase { get; set; }
 
         public bool Deleted { get; set; }
 

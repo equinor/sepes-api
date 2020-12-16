@@ -33,5 +33,11 @@ namespace Sepes.Infrastructure.Service.Interface
         Task ValidateNameThrowIfInvalid(string resourceName);
 
         Task<bool> ResourceIsDeleted(int resourceId);
+
+
+        Task<List<SandboxResourceLightDto>> GetSandboxResources(int sandboxId);
+
+     
+
     }
 }

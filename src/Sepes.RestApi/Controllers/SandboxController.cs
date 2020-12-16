@@ -50,14 +50,6 @@ namespace Sepes.RestApi.Controller
         {
             await _sandboxService.DeleteAsync(sandboxId);
             return new NoContentResult();
-        }
-
-        [HttpPut("sandboxes/{sandboxId}/retryCreate")]
-        [Authorize(Roles = AppRoles.Admin)]
-        public async Task<IActionResult> ReScheduleCreation(int sandboxId)
-        {
-            await _sandboxService.ReScheduleSandboxCreation(sandboxId);
-            return new NoContentResult();
-        }
+        }     
     }
 }

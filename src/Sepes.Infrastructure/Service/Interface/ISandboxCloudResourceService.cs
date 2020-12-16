@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Sepes.Infrastructure.Dto.Sandbox;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    interface ISandboxCloudResourceService
+    public interface ISandboxCloudResourceService
     {
-    }
+        Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto);
+        Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
+        Task ReScheduleSandboxResourceCreation(int sandboxId);
+
+        Task HandleSandboxDeleteAsync(int sandboxId);
+    }   
 }

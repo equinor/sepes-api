@@ -1,6 +1,9 @@
-﻿namespace Sepes.Infrastructure.Dto.Sandbox
+﻿using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model;
+
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
-    public class SandboxDto : UpdateableBaseDto
+    public class SandboxDto : UpdateableBaseDto, IHasCurrentPhase
     {
         public string Name { get; set; }
 
@@ -14,7 +17,8 @@
 
         public string TechnicalContactEmail { get; set; }
 
-        public bool Deleted { get; set; }
-     
+        public SandboxPhase CurrentPhase { get; set; }        
+
+        public bool Deleted { get; set; }     
     }
 }

@@ -81,8 +81,10 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            builder.Services.AddTransient<ISandboxCloudResourceService, SandboxCloudResourceService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
+       
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();

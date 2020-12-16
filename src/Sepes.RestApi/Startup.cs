@@ -148,18 +148,20 @@ namespace Sepes.RestApi
             services.AddTransient<IRegionService, RegionService>();
 
             //Ext System Facade Services
-            services.AddTransient<IDatasetFileService, DatasetFileService>();
+            services.AddTransient<IDatasetFileService, DatasetFileService>();          
             services.AddTransient<IStudyLogoService, StudyLogoService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            services.AddTransient<ISandboxCloudResourceService, SandboxCloudResourceService>();
             services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
             services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
+            
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

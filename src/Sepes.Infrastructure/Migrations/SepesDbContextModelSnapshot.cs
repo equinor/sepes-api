@@ -279,6 +279,38 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("SandboxDatasets");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxPhaseHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("Counter")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<int>("Phase")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SandboxId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SandboxId");
+
+                    b.ToTable("SandboxPhaseHistory");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
                 {
                     b.Property<int>("Id")
@@ -733,6 +765,15 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
                         .WithMany("SandboxDatasets")
+                        .HasForeignKey("SandboxId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxPhaseHistory", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
+                        .WithMany("PhaseHistory")
                         .HasForeignKey("SandboxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
