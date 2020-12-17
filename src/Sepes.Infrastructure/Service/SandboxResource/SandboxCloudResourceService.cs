@@ -238,12 +238,45 @@ namespace Sepes.Infrastructure.Service
 
             return logMessage;
         }
-
-
-
-        public Task<SandboxResourceLightDto> RetryLastOperation(int resourceId)
+        public async Task<SandboxResourceLightDto> RetryLastOperation(int resourceId)
         {
-            throw new NotImplementedException();
+            var resource = await _sandboxResourceService.GetByIdAsync(resourceId);
+
+            var sandboxFromDb = await GetOrThrowAsync(resource.SandboxId, UserOperation.Study_Crud_Sandbox, true);
+
+            if (resource.ResourceType != AzureResourceType.VirtualMachine)
+            {
+                throw new ArgumentException("Retry is only supported for Virtual Machines");
+            }
+
+            var relevantOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
+
+            if (relevantOperation == null)
+            {
+                throw new NullReferenceException(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, "Could not locate ANY database entry for VM", resourceId));
+            }
+            else if (String.IsNullOrWhiteSpace(relevantOperation.Status) || relevantOperation.Status == CloudResourceOperationState.NEW || relevantOperation.Status == CloudResourceOperationState.IN_PROGRESS || relevantOperation.Status == CloudResourceOperationState.FAILED || relevantOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+            {
+                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Increasing MAX try count", resourceId));
+
+                relevantOperation.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count  
+
+                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Re-queing item. Previous status was {relevantOperation.Status}", resourceId));
+
+                var queueParentItem = new ProvisioningQueueParentDto();
+                queueParentItem.SandboxId = sandboxFromDb.Id;
+                queueParentItem.Description = $"{relevantOperation} (re-scheduled)";
+
+                await _db.SaveChangesAsync();
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = relevantOperation.Id });
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
+            }
+            else
+            {
+                throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Could not locate RELEVANT database entry for ResourceGroupOperation", resourceId));
+            }
+
+            return _mapper.Map<SandboxResourceLightDto>(resource);
         }
 
         public async Task HandleSandboxDeleteAsync(int sandboxId)
