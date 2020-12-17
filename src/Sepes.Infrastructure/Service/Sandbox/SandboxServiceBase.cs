@@ -29,8 +29,20 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;          
             _userService = userService;
 
-        } 
-        
+        }
+
+        protected async Task<Sandbox> GetWithoutChecks(int sandboxId)
+        {
+            var sandbox = await SandboxSingularQueries.GetSandboxByIdNoChecks(_db, sandboxId);
+
+            if (sandbox == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            return sandbox;
+        }
+
         protected async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes)
         {
             var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, userOperation, withIncludes);

@@ -13,5 +13,10 @@
         public int Port { get; set; }// http (80), https(443), custom (any)       
 
         public RuleAction Action { get; set; } = RuleAction.Allow;
+
+        public override string ToString()
+        {
+            return $"{Name}-{Ip}-{Port}-{Protocol}-{Direction}-{Action}";
+        }
     }
 }

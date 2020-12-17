@@ -30,31 +30,24 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpGet("{ruleId}")]
-        public async Task<IActionResult> GetRules(int vmId, string ruleId)
+        public async Task<IActionResult> GetRule(int vmId, string ruleId)
         {
             var rule = await _service.GetRuleById(vmId, ruleId);
             return new JsonResult(rule);
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> AddRule(int vmId, List<VmRuleDto> updatedRuleSet)
+        public async Task<IActionResult> SetRules(int vmId, List<VmRuleDto> updatedRuleSet)
         {
             var allRules = await _service.SetRules(vmId, updatedRuleSet);
             return new JsonResult(allRules);
         }
 
-        [HttpPut("")]
-        public async Task<IActionResult> UpdateRule(int vmId, VmRuleDto input)
-        {
-            var updatedRule = await _service.UpdateRule(vmId, input);
-            return new JsonResult(updatedRule);
-        }
-
-        [HttpDelete("{ruleId}")]
-        public async Task<IActionResult> DeleteRule(int vmId, string ruleId)
-        {
-            var deletedRule = await _service.DeleteRule(vmId, ruleId);
-            return new JsonResult(deletedRule);
-        }       
+        //[HttpDelete("{ruleId}")]
+        //public async Task<IActionResult> DeleteRule(int vmId, string ruleId)
+        //{
+        //    var deletedRule = await _service.DeleteRule(vmId, ruleId);
+        //    return new JsonResult(deletedRule);
+        //}       
     }
 }

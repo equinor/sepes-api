@@ -16,11 +16,11 @@ namespace Sepes.Infrastructure.Service
         {
 
 
-        }      
+        }
 
         public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
         {
-            var nsg =  await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, nsgName, cancellationToken);
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, nsgName, cancellationToken);
 
             var result = new Dictionary<string, NsgRuleDto>();
 
@@ -36,6 +36,26 @@ namespace Sepes.Infrastructure.Service
             }
 
             return result;
+        }
+
+        public async Task<bool> IsRuleSetTo(string resourceGroupName, string nsgName, string ruleName, RuleAction action, CancellationToken cancellationToken = default)
+        {
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, nsgName, cancellationToken);
+
+            foreach (var curRuleKvp in nsg.SecurityRules)
+            {
+                if (curRuleKvp.Value.Name == ruleName)
+                {
+                    //TODO: VERIFY CHECK
+                    if (curRuleKvp.Value.Access.ToLower() == action.ToString().ToLower())
+                    {
+                        return true;
+                    }
+                }
+            }
+
+
+            return false;
         }
 
 
@@ -113,7 +133,7 @@ namespace Sepes.Infrastructure.Service
                  .Update()
                  .DefineRule(rule.Name);
 
-            var operationStep2 = (rule.Action == RuleAction.Allow ? operationStep1.AllowOutbound() : operationStep1.DenyOutbound())           
+            var operationStep2 = (rule.Action == RuleAction.Allow ? operationStep1.AllowOutbound() : operationStep1.DenyOutbound())
                  .FromAddresses(rule.SourceAddress);
 
             var operationStep3 = (rule.SourcePort == 0 ? operationStep2.FromAnyPort() : operationStep2.FromPort(rule.SourcePort));
@@ -127,7 +147,7 @@ namespace Sepes.Infrastructure.Service
                     .WithDescription(rule.Description)
                 .Attach();
 
-            await operationStep5             
+            await operationStep5
               .ApplyAsync(cancellationToken);
         }
 
@@ -143,7 +163,7 @@ namespace Sepes.Infrastructure.Service
              .UpdateRule(rule.Name);
 
             var operationStep3 = (rule.Action == RuleAction.Allow ? operationStep2.AllowOutbound() : operationStep2.DenyOutbound())
-              .FromAddresses(rule.SourceAddress);            
+              .FromAddresses(rule.SourceAddress);
 
             var operationStep4 = (rule.SourcePort == 0 ? operationStep3.FromAnyPort() : operationStep3.FromPort(rule.SourcePort));
             //ruleMapped.DestinationAddress = "*";

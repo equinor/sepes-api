@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,5 +19,6 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default);
 
         Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForDirection(string resourceGroupName, string nsgName, string direction, CancellationToken cancellationToken = default);
+        Task<bool> IsRuleSetTo(string resourceGroupName, string nsgName, string ruleName, RuleAction action, CancellationToken cancellationToken = default);
     }
 }

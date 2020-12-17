@@ -282,7 +282,7 @@ namespace Sepes.Infrastructure.Service
         public async Task HandleSandboxDeleteAsync(int sandboxId)
         {
             var user = await _userService.GetCurrentUserAsync();
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
+            var sandboxFromDb = await GetWithoutChecks(sandboxId);
 
             SandboxResource sandboxResourceGroup = null;
 

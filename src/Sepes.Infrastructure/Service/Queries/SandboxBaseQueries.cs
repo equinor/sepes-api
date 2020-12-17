@@ -27,6 +27,17 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
                 .Include(sb=> sb.PhaseHistory);
-        } 
+        }
+
+        public static IQueryable<Sandbox> AllSandboxesBaseQueryable(SepesDbContext db)
+        {
+            return db.Sandboxes.Include(s => s.Study)
+                .ThenInclude(s => s.StudyParticipants)
+                 .Include(sb => sb.SandboxDatasets)
+                    .ThenInclude(sd => sd.Dataset)
+                .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations)
+                .Include(sb => sb.PhaseHistory);
+        }
     }
 }

@@ -41,5 +41,26 @@ namespace Sepes.Infrastructure.Util
 
             return null;
         }
+
+        public static List<SandboxResourceDto> GetAllResourcesByType(List<SandboxResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
+        {
+            if (resources == null)
+            {
+                throw new ArgumentNullException("resources");
+            }
+
+            var result = new List<SandboxResourceDto>();
+
+            foreach (var curResource in resources)
+            {
+                if (curResource.ResourceType == resourceType &&
+                    (mustBeSandboxControlled == false || (mustBeSandboxControlled && curResource.SandboxControlled)))
+                {
+                    result.Add(curResource);
+                }
+            }
+
+            return result;
+        }
     }
 }

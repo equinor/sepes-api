@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
@@ -49,35 +50,6 @@ namespace Sepes.Infrastructure.Service
             return vmResource;
         }
 
-        public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        {
-            await ValidateRuleThrowIfInvalid(vmId, input);
-
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-            //Get existing rules from VM settings
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-            ThrowIfRuleExists(vmSettings, input);
-
-            input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
-
-            if (vmSettings.Rules == null)
-            {
-                vmSettings.Rules = new List<VmRuleDto>();
-            }
-
-            vmSettings.Rules.Add(input);
-
-            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-            await _db.SaveChangesAsync();
-
-            await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
-
-            return input;
-        }
-
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
@@ -97,14 +69,17 @@ namespace Sepes.Infrastructure.Service
             }
 
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        }
+        }            
 
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+                       
 
             //Get config string
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+            await ValidateRuleUpdateInputThrowIfNot(vm, vmSettings.Rules, updatedRuleSet);
 
             bool saveAfterwards = false;
 
@@ -114,12 +89,7 @@ namespace Sepes.Infrastructure.Service
                 saveAfterwards = true;
             }
             else
-            {
-                foreach (var curRule in updatedRuleSet)
-                {
-                    await ValidateRuleThrowIfInvalid(vmId, curRule);
-                }
-
+            { 
                 var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Name)).ToList();
                 var rulesThatShouldExistAllready = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Name)).ToList();
 
@@ -169,7 +139,96 @@ namespace Sepes.Infrastructure.Service
             return updatedRuleSet != null ? updatedRuleSet : new List<VmRuleDto>();
         }
 
-        public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        async Task ValidateRuleUpdateInputThrowIfNot(SandboxResource vm, List<VmRuleDto> existingRules, List<VmRuleDto> updatedRuleSet)
+        {
+            var validationErrors = new List<string>();
+
+            var sandbox = await _db.Sandboxes.Include(sb => sb.PhaseHistory).FirstOrDefaultAsync(sb => sb.Id == vm.SandboxId);
+            var curPhase = SandboxPhaseUtil.GetCurrentPhase(sandbox);           
+
+            //VALIDATE OUTBOUND RULE, THERE SHOULD BE ONLY ONE
+            
+            var outboundRules = updatedRuleSet.Where(r => r.Direction == RuleDirection.Outbound).ToList();
+
+            if (outboundRules.Count != 1)
+            {
+                validationErrors.Add($"Multiple outbound rule(s) provided");
+                ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+            }
+
+            var onlyOutboundRuleFromExisting = existingRules.SingleOrDefault(r=> r.Direction == RuleDirection.Outbound);
+            var onlyOutboundRuleFromClient = outboundRules.SingleOrDefault();          
+
+            if (onlyOutboundRuleFromExisting.Name != onlyOutboundRuleFromClient.Name)
+            {
+                validationErrors.Add($"Illegal outbound rule(s) provided");
+                ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+            }
+
+            //If Sandbox is not open, make sure outbound rule has not changed
+            if (curPhase > SandboxPhase.Open)
+            {               
+                if (onlyOutboundRuleFromClient.Direction == RuleDirection.Outbound)
+                {
+                    if (onlyOutboundRuleFromClient.ToString() != onlyOutboundRuleFromExisting.ToString())
+                    {
+                        validationErrors.Add($"Outbound rules cannot be updated when Sandbox is in phase {curPhase}");
+                        ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+                    }                        
+                }
+            }
+
+            //VALIDATE INBOUND RULES
+
+            foreach (var curInboundRule in updatedRuleSet.Where(r => r.Direction == RuleDirection.Inbound).ToList())
+            {
+                if (curInboundRule.Direction > RuleDirection.Outbound)
+                {
+                    validationErrors.Add($"Invalid direction for rule {curInboundRule.Description}: {curInboundRule.Direction}");
+                }
+
+                if (String.IsNullOrWhiteSpace(curInboundRule.Ip))
+                {
+                    validationErrors.Add($"Missing ip for rule {curInboundRule.Description}");
+                }
+
+                if (curInboundRule.Port <= 0)
+                {
+                    validationErrors.Add($"Invalid port for rule {curInboundRule.Description}: {curInboundRule.Port}");
+                }
+
+                if (String.IsNullOrWhiteSpace(curInboundRule.Description))
+                {
+                    validationErrors.Add($"Missing Description for rule {curInboundRule.Description}");
+                }
+            }
+
+            ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+        }       
+
+        public async Task<bool> IsInternetVmRuleSetToDeny(int vmId)
+        {
+            var internetRule = await GetInternetRule(vmId);
+
+            if(internetRule == null)
+            {
+                throw new NotFoundException($"Could not find internet rule for VM {vmId}");
+            }
+
+            return IsRuleSetToDeny(internetRule);          
+        }
+
+        public bool IsRuleSetToDeny(VmRuleDto rule)
+        {
+            if (rule == null)
+            {
+                throw new ArgumentNullException("rule");
+            }
+
+            return rule.Action == RuleAction.Deny;
+        }
+
+        public async Task<VmRuleDto> GetInternetRule(int vmId)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
@@ -178,30 +237,19 @@ namespace Sepes.Infrastructure.Service
 
             if (vmSettings.Rules != null)
             {
-
-                VmRuleDto ruleToRemove = null;
-
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-                if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
+                foreach (var curRule in vmSettings.Rules)
                 {
-                    vmSettings.Rules.Remove(ruleToRemove);
-
-                    ThrowIfRuleExists(vmSettings, input);
-
-                    vmSettings.Rules.Add(input);
-
-                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-                    await _db.SaveChangesAsync();
-
-                    await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-
-                    return input;
+                    if (curRule.Direction == RuleDirection.Outbound)
+                    {
+                        if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+                        {
+                            return curRule;
+                        }
+                    }
                 }
             }
 
-            throw new NotFoundException($"Rule with id {input.Name} does not exist");
+            return null;
         }
 
         public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
@@ -214,52 +262,241 @@ namespace Sepes.Infrastructure.Service
             return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
         }
 
-        public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
-        {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+        //TODO: Probably remove
+        //public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        //{
+        //    await ValidateRuleThrowIfInvalid(vmId, input);
 
-            //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
-            if (vmSettings.Rules != null)
-            {
+        //    //Get existing rules from VM settings
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
-                VmRuleDto ruleToRemove = null;
+        //    ThrowIfRuleExists(vmSettings, input);
 
-                var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
+        //    input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
 
-                if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
-                {
-                    vmSettings.Rules.Remove(ruleToRemove);
+        //    if (vmSettings.Rules == null)
+        //    {
+        //        vmSettings.Rules = new List<VmRuleDto>();
+        //    }
 
-                    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+        //    vmSettings.Rules.Add(input);
 
-                    await _db.SaveChangesAsync();
+        //    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
 
-                    await CreateUpdateOperationAndAddQueueItem(vm, "Delete rule");
+        //    await _db.SaveChangesAsync();
 
-                    return ruleToRemove;
-                }
-            }
+        //    await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
 
-            throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        }
+        //    return input;
+        //}
 
-        async Task ValidateRuleThrowIfInvalid(int vmId, VmRuleDto input)
-        {
-            if (true)
-            {
-                return;
-            }
+        //TODO: Probably remove
+        //public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        //{
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
-            throw new Exception($"Cannot apply rule to VM {vmId}");
-        }
+        //    //Get config string
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
+        //    if (vmSettings.Rules != null)
+        //    {
 
-        void ThrowIfRuleExists(VmSettingsDto vmSettings, VmRuleDto ruleToCompare)
-        {
-            ThrowIfRuleExists(vmSettings.Rules, ruleToCompare);
-        }
+        //        VmRuleDto ruleToRemove = null;
+
+        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
+
+        //        if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
+        //        {
+        //            vmSettings.Rules.Remove(ruleToRemove);
+
+        //            ThrowIfRuleExists(vmSettings, input);
+
+        //            vmSettings.Rules.Add(input);
+
+        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //            await _db.SaveChangesAsync();
+
+        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
+
+        //            return input;
+        //        }
+        //    }
+
+        //    throw new NotFoundException($"Rule with id {input.Name} does not exist");
+        //}
+
+        //public async Task CloseInternet(int vmId, CancellationToken cancellationToken = default)
+        //{
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+
+        //    //Get config string
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+        //    if (vmSettings.Rules != null)
+        //    {
+        //        bool ruleIsChanged = false;
+
+        //        foreach (var curRule in vmSettings.Rules)
+        //        {
+        //            if (curRule.Direction == RuleDirection.Outbound)
+        //            {
+        //                if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+        //                {
+        //                    if (curRule.Action == RuleAction.Allow)
+        //                    {
+        //                        ruleIsChanged = true;
+        //                        curRule.Action = RuleAction.Deny;
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        if (ruleIsChanged)
+        //        {
+        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //            await _db.SaveChangesAsync();
+
+        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
+        //        }
+        //    }
+        //}
+        //TODO: Probably remove
+        //public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        //{
+        //    await ValidateRuleThrowIfInvalid(vmId, input);
+
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+
+        //    //Get existing rules from VM settings
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+        //    ThrowIfRuleExists(vmSettings, input);
+
+        //    input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
+
+        //    if (vmSettings.Rules == null)
+        //    {
+        //        vmSettings.Rules = new List<VmRuleDto>();
+        //    }
+
+        //    vmSettings.Rules.Add(input);
+
+        //    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //    await _db.SaveChangesAsync();
+
+        //    await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
+
+        //    return input;
+        //}
+
+        //TODO: Probably remove
+        //public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
+        //{
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+
+        //    //Get config string
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+        //    if (vmSettings.Rules != null)
+        //    {
+
+        //        VmRuleDto ruleToRemove = null;
+
+        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
+
+        //        if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
+        //        {
+        //            vmSettings.Rules.Remove(ruleToRemove);
+
+        //            ThrowIfRuleExists(vmSettings, input);
+
+        //            vmSettings.Rules.Add(input);
+
+        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //            await _db.SaveChangesAsync();
+
+        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
+
+        //            return input;
+        //        }
+        //    }
+
+        //    throw new NotFoundException($"Rule with id {input.Name} does not exist");
+        //}
+
+        //public async Task CloseInternet(int vmId, CancellationToken cancellationToken = default)
+        //{
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+
+        //    //Get config string
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+        //    if (vmSettings.Rules != null)
+        //    {
+        //        bool ruleIsChanged = false;
+
+        //        foreach (var curRule in vmSettings.Rules)
+        //        {
+        //            if (curRule.Direction == RuleDirection.Outbound)
+        //            {
+        //                if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+        //                {
+        //                    if (curRule.Action == RuleAction.Allow)
+        //                    {
+        //                        ruleIsChanged = true;
+        //                        curRule.Action = RuleAction.Deny;
+        //                    }
+        //                }
+        //            }
+        //        }
+
+        //        if (ruleIsChanged)
+        //        {
+        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //            await _db.SaveChangesAsync();
+
+        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
+        //        }
+        //    }
+        //}
+        //TODO: Probably remove
+        //public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
+        //{
+        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+
+        //    //Get config string
+        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+
+        //    if (vmSettings.Rules != null)
+        //    {
+
+        //        VmRuleDto ruleToRemove = null;
+
+        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
+
+        //        if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
+        //        {
+        //            vmSettings.Rules.Remove(ruleToRemove);
+
+        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+
+        //            await _db.SaveChangesAsync();
+
+        //            await CreateUpdateOperationAndAddQueueItem(vm, "Delete rule");
+
+        //            return ruleToRemove;
+        //        }
+        //    }
+
+        //    throw new NotFoundException($"Rule with id {ruleId} does not exist");
+        //}        
 
         void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
         {
@@ -277,7 +514,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
         {
-            if(await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(vm.Id))
+            if (await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(vm.Id))
             {
                 _logger.LogWarning($"Updating VM {vm.Id}: There is allready an unstarted VM Create or Update operation. Not creating additional");
             }
@@ -292,8 +529,8 @@ namespace Sepes.Infrastructure.Service
 
                 queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id });
 
-                await _workQueue.SendMessageAsync(queueParentItem);             
-            }          
+                await _workQueue.SendMessageAsync(queueParentItem);
+            }
         }
     }
 }
