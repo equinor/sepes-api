@@ -82,9 +82,7 @@ namespace Sepes.Infrastructure.Service
                 if (nextPhase == SandboxPhase.DataAvailable)
                 {
                     await MakeDatasetsAvailable(sandboxFromDb, resourcesForSandbox, cancellation);
-                }
-
-                throw new Exception("test");
+                }               
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
             }

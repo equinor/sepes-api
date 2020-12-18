@@ -14,7 +14,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.Tests.Services
+namespace Sepes.Tests.Services.DomainServices
 {
     public class StudyParticipantServiceTests : ServiceTestBase
     {

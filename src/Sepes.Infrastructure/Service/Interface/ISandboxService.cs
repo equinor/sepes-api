@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<SandboxDetailsDto> GetSandboxDetailsAsync(int sandboxId);
 
-        Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation);
+        Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false);
 
         Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId);
         Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto newSandbox);

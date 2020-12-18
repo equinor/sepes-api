@@ -19,9 +19,8 @@ namespace Sepes.Infrastructure.Service
     public class SandboxService : SandboxServiceBase, ISandboxService
     {      
         readonly IStudyService _studyService;
-        readonly ISandboxCloudResourceService _sandboxCloudResourceService;     
-
-
+        readonly ISandboxCloudResourceService _sandboxCloudResourceService;  
+        
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, IStudyService studyService, ISandboxCloudResourceService sandboxCloudResourceService)
             :base (config, db, mapper, logger, userService)
@@ -30,7 +29,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxCloudResourceService = sandboxCloudResourceService;
         }
 
-        public async Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation)
+        public async Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)
         {
             return await GetDtoAsync(sandboxId, userOperation);
         }

@@ -57,9 +57,9 @@ namespace Sepes.Infrastructure.Service
             return sandbox;
         }
 
-        protected async Task<SandboxDto> GetDtoAsync(int sandboxId, UserOperation userOperation)
+        protected async Task<SandboxDto> GetDtoAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, userOperation, false);
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, userOperation, withIncludes);
             var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
             return sandboxDto;
         }

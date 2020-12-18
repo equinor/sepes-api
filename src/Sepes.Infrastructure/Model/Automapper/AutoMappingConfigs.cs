@@ -16,23 +16,20 @@ namespace Sepes.Infrastructure.Model.Automapper
 {
     public class AutoMappingConfigs : Profile
     {
-
-
         public AutoMappingConfigs()
         {
 
             //STUDY
-            CreateMap<Study, StudyListItemDto>();
+            CreateMap<Study, StudyDto>()
+          .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));    
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
-                    .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
-
-            CreateMap<Study, StudyDto>()    
-              .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d=> d.Deleted.HasValue == false || (d.Deleted.HasValue && d.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted.HasValue == false || (sb.Deleted.HasValue && sb.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
+            CreateMap<Study, StudyListItemDto>();
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
 
@@ -77,9 +74,11 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name));
-                  //.ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
-            ;
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+                  .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
+           
+
+            CreateMap<Sandbox, SandboxListItemDto>();
 
             CreateMap<Sandbox, SandboxDetailsDto>()
          .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
