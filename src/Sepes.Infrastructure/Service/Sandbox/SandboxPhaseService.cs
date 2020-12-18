@@ -50,6 +50,8 @@ namespace Sepes.Infrastructure.Service
 
             SandboxPhaseHistory newestHistoryItem = null;
 
+            bool dataMightHaveBeenChanged = false;
+
             try
             {
                 var user = await _userService.GetCurrentUserAsync();
@@ -68,12 +70,12 @@ namespace Sepes.Infrastructure.Service
 
                 var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
 
-                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
+                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);              
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
                 newestHistoryItem = new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName };
-
+                dataMightHaveBeenChanged = true;
                 sandboxFromDb.PhaseHistory.Add(newestHistoryItem);
                 await _db.SaveChangesAsync();
 
@@ -88,13 +90,18 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase shift failed. Starting rolling back operation", sandboxId);
-                await MakeDatasetsUnAvailable(sandboxId);
-                await AttemptRollbackPhase(sandboxId, newestHistoryItem);
+                _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase shift failed.", sandboxId);
+
+                if (dataMightHaveBeenChanged)
+                {
+                    _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Data might have been changed. Rolling back");
+                    await MakeDatasetsUnAvailable(sandboxId);
+                    await AttemptRollbackPhase(sandboxId, newestHistoryItem);
+                }
+             
                 throw;
             }
         }
-
 
         public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
         {
@@ -159,6 +166,8 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curVm in allVms)
             {
+                anyVmsFound = true;
+
                 var vmInternetRule = await _virtualMachineRuleService.GetInternetRule(curVm.Id);
 
                 //Check if internet is set to open in Sepes

@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,23 +39,27 @@ namespace Sepes.Infrastructure.Service
             var dataasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
 
             return dataasetDtos;
-        }          
+        }   
+        
+      
 
         public async Task<SandboxDatasetDto> Add(int sandboxId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);   
-       
-            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
-            if(datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId != studyFromDb.Id)
-            {
-                throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {studyFromDb.Id}.");
-            }
+            await ValidateAddOrRemoveDataset(sandboxId);
+
+            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
 
             if (datasetFromDb == null)
             {
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
-            }          
+            }
+
+            if (datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId != studyFromDb.Id)
+            {
+                throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {studyFromDb.Id}.");
+            }  
 
             // Create new linking table
             var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
@@ -67,21 +72,40 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxDatasetDto> Remove(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
-            var sandboxDataset = await _db.SandboxDatasets
-                .FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 
-            //Is dataset linked to a study?
-            if (sandboxDataset == null)
+            await ValidateAddOrRemoveDataset(sandboxId);
+
+            var sandboxDatasetRelation = await _db.SandboxDatasets.FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
+
+            //Is dataset actually linked to a study?
+            if (sandboxDatasetRelation == null)
             {
-                throw NotFoundException.CreateForEntity("SandboxDataset", datasetId);
+                throw new ArgumentException($"Dataset cannot be removed from Sandbox. It does not seem to be associated with the Sandbox.");
             }
             else
             {
-                _db.SandboxDatasets.Remove(sandboxDataset);
+                _db.SandboxDatasets.Remove(sandboxDatasetRelation);
                 await _db.SaveChangesAsync();
             }
 
-            return _mapper.Map<SandboxDatasetDto>(sandboxDataset);
-        }  
+            return _mapper.Map<SandboxDatasetDto>(sandboxDatasetRelation);
+        }
+
+        async Task ValidateAddOrRemoveDataset(int sandboxId)
+        {
+            var sandboxFromDb = await GetSandboxByIdNoChecksAsync(sandboxId);
+
+            if (sandboxFromDb == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            var sandboxPhase = SandboxPhaseUtil.GetCurrentPhase(sandboxFromDb);
+
+            if (sandboxPhase > SandboxPhase.Open)
+            {
+                throw new ArgumentException($"Dataset cannot be added to Sandbox. Sandbox phase must be open.");
+            }
+        }
     }
 }
