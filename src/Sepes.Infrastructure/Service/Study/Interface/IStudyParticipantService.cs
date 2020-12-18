@@ -7,9 +7,8 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyParticipantService
     {       
-        Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30);
-
-        Task<StudyParticipantDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName);
-        Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role);
+        Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30);     
+        Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role);
+        Task<StudyParticipantDto> RemoveAsync(int studyId, int userId, string roleName);
     }
 }

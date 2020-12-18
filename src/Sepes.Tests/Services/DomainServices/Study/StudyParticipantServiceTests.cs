@@ -86,12 +86,12 @@ namespace Sepes.Tests.Services.DomainServices
             if (source == ParticipantSource.Db)
             {
                 var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return await studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
+                return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
             }
             else
             {
                 var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return await studyParticipantService.HandleAddParticipantAsync(studyId, participantToAdd, role);
+                return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
             }
         }       
 

@@ -71,7 +71,35 @@ namespace Sepes.Infrastructure.Service
             return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);
         }
 
-        public async Task<StudyParticipantDto> RemoveParticipantFromStudyAsync(int studyId, int userId, string roleName)
+      
+
+        public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
+        {
+            try
+            {
+                ValidateRoleNameThrowIfInvalid(role);
+
+                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);
+
+                if (user.Source == ParticipantSource.Db)
+                {
+                    return await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);
+                }
+                else if (user.Source == ParticipantSource.Azure)
+                {
+                    return await AddAzureUserAsync(studyFromDb, user, role);
+                }
+
+                throw new ArgumentException($"Unknown source for user {user.UserName}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Add participant failed: {ex.Message}", ex);
+            }
+           
+        }
+
+        public async Task<StudyParticipantDto> RemoveAsync(int studyId, int userId, string roleName)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, roleName);
 
@@ -79,7 +107,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"The Study Owner role cannot be deleted");
             }
-            
+
             var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
             if (studyParticipantFromDb == null)
@@ -93,33 +121,15 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
         }
 
-        public async Task<StudyParticipantDto> HandleAddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
-        {
-            ValidateRoleNameThrowIfInvalid(role);
 
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);        
-
-            if (user.Source == ParticipantSource.Db)
-            {
-                return await AddDbUserAsParticipantAsync(studyFromDb, user.DatabaseId.Value, role);
-            }
-            else if (user.Source == ParticipantSource.Azure)
-            {
-                return await AddAzureUserAsParticipantAsync(studyFromDb, user, role);
-            }
-
-            throw new ArgumentException($"Unknown source for user {user.UserName}");
-        }
-
-
-        async Task<StudyParticipantDto> AddDbUserAsParticipantAsync(Study studyFromDb, int userId, string role)
+        async Task<StudyParticipantDto> AddDbUserAsync(Study studyFromDb, int userId, string role)
         { 
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
                 throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
             }
 
-            var userFromDb = _userService.GetUserByIdAsync(userId);          
+            var userFromDb = await _userService.GetUserByIdAsync(userId);          
 
             if (userFromDb == null)
             {
@@ -133,7 +143,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<StudyParticipantDto>(studyParticipant);
         }
 
-        async Task<StudyParticipantDto> AddAzureUserAsParticipantAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        async Task<StudyParticipantDto> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
         { 
             var userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
 
@@ -151,7 +161,7 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                return await AddDbUserAsParticipantAsync(studyFromDb, userDb.Id, role);
+                return await AddDbUserAsync(studyFromDb, userDb.Id, role);
             }
 
             if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
