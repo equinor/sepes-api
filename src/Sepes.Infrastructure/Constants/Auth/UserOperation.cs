@@ -20,8 +20,9 @@
 
         //Sandbox details and editation
         Sandbox_IncreasePhase,
-        SandboxUnlock,
-        EditRules,
+        Sandbox_Unlock,
+        Sandbox_EditInboundRules,
+        Sandbox_OpenInternet,
 
         //Dataset
         PreApprovedDataset_Read,
