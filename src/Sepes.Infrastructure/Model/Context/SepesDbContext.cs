@@ -99,6 +99,17 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.StudyParticipants)
                 .HasForeignKey(sd => sd.UserId).OnDelete(DeleteBehavior.Restrict);
 
+            //SANDBOX / DATASET RELATION
+            modelBuilder.Entity<SandboxDataset>()
+                .HasOne(sd => sd.Sandbox)
+                .WithMany(s => s.SandboxDatasets)
+                .HasForeignKey(sd => sd.SandboxId);
+
+            modelBuilder.Entity<SandboxDataset>()
+                .HasOne(sd => sd.Dataset)
+                .WithMany(d => d.SandboxDatasets)
+                .HasForeignKey(sd => sd.DatasetId);
+
             //SANDBOX / SANDBOX PHASE HISTORY RELATION
             modelBuilder.Entity<SandboxPhaseHistory>()
                 .HasOne(fw => fw.Sandbox)
