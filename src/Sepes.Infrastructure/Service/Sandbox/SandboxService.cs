@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
             var sandboxDto = _mapper.Map<SandboxDetailsDto>(sandboxFromDb);
 
-            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions);
+            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions, sandboxDto.CurrentPhase);
 
             return sandboxDto;
         }

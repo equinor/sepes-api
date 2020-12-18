@@ -172,8 +172,13 @@ namespace Sepes.Infrastructure.Service
                 {
                     if (onlyOutboundRuleFromClient.ToString() != onlyOutboundRuleFromExisting.ToString())
                     {
-                        validationErrors.Add($"Outbound rules cannot be updated when Sandbox is in phase {curPhase}");
-                        ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+                        var currentUser = await _userService.GetCurrentUserAsync();
+
+                        if (currentUser.Admin == false)
+                        {
+                            validationErrors.Add($"Only admin can updated outgoing rules when Sandbox is in phase {curPhase}");
+                            ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
+                        }                    
                     }                        
                 }
             }
