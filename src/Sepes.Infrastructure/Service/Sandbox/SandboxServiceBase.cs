@@ -2,12 +2,14 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -60,6 +62,12 @@ namespace Sepes.Infrastructure.Service
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, userOperation, false);
             var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
             return sandboxDto;
+        }
+
+        protected void InitiatePhaseHistory(Sandbox sandbox, UserDto currentUser)
+        {
+            sandbox.PhaseHistory = new List<SandboxPhaseHistory>();
+            sandbox.PhaseHistory.Add(new SandboxPhaseHistory { Counter = 0, Phase = SandboxPhase.Open, CreatedBy = currentUser.UserName });
         }
     }
 }

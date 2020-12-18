@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -133,11 +132,7 @@ namespace Sepes.Infrastructure.Service
             }
         } 
         
-        public void InitiatePhaseHistory(Sandbox sandbox, UserDto currentUser)
-        {
-            sandbox.PhaseHistory = new List<SandboxPhaseHistory>();
-            sandbox.PhaseHistory.Add(new SandboxPhaseHistory { Counter = 0, Phase = SandboxPhase.Open, CreatedBy = currentUser.UserName });
-        }      
+           
 
         public async Task DeleteAsync(int sandboxId)
         {

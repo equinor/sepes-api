@@ -58,6 +58,12 @@ namespace Sepes.Infrastructure.Service
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
+                if (currentPhaseItem == null)
+                {
+                    InitiatePhaseHistory(sandboxFromDb, user);
+                    currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
+                }
+
                 var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
 
                 var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
@@ -78,11 +84,15 @@ namespace Sepes.Infrastructure.Service
                     await MakeDatasetsAvailable(sandboxFromDb, resourcesForSandbox, cancellation);
                 }
 
+                throw new Exception("test");
+
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
             }
             catch (Exception ex)
             {
-                await AttemptRollback(sandboxId, newestHistoryItem);
+                _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase shift failed. Starting rolling back operation", sandboxId);
+                await MakeDatasetsUnAvailable(sandboxId);
+                await AttemptRollbackPhase(sandboxId, newestHistoryItem);
                 throw;
             }
         }
@@ -94,10 +104,23 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
 
+            validationErrors.AddRange(VerifyThatSandboxHasDatasets(sandbox));
             validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(sandbox, resourcesForSandbox));
             validationErrors.AddRange(await VerifyInternetClosed(sandbox, resourcesForSandbox, cancellation));
 
-            ValidationUtils.ThrowIfValidationErrors("Phase change not allowed", validationErrors);            
+            ValidationUtils.ThrowIfValidationErrors("Phase change not allowed", validationErrors);
+        }
+
+        List<string> VerifyThatSandboxHasDatasets(Sandbox sandbox)
+        {
+            var validationErrors = new List<string>();
+
+            if (sandbox.SandboxDatasets.Count == 0)
+            {               
+                validationErrors.Add($"Sandbox contains no Datasets");
+            }
+
+            return validationErrors;
         }
 
         List<string> VerifyBasicResourcesIsFinishedAsync(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox)
@@ -108,23 +131,23 @@ namespace Sepes.Infrastructure.Service
             {
                 if (curResource.SandboxControlled)
                 {
-                    foreach(var curOperation in curResource.Operations)
+                    foreach (var curOperation in curResource.Operations)
                     {
                         if (curOperation.OperationType == CloudResourceOperationType.CREATE && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
                         {
                             validationErrors.Add($"Basic resources not set up for Sandbox {sandbox.Id}");
                             return validationErrors;
                         }
-                    } 
+                    }
                 }
             }
 
             return validationErrors;
-            
+
         }
 
 
-            async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
+        async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
         {
             var validationErrors = new List<string>();
 
@@ -133,6 +156,8 @@ namespace Sepes.Infrastructure.Service
             var allVms = SandboxResourceUtil.GetAllResourcesByType(resourcesForSandbox, AzureResourceType.VirtualMachine, false);
 
             var networkSecurityGroup = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.NetworkSecurityGroup, true);
+
+            bool anyVmsFound = false;
 
             foreach (var curVm in allVms)
             {
@@ -152,6 +177,11 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Unfinished operation exists for VM {curVm.ResourceName}");
                 }
+            }
+
+            if (anyVmsFound == false)
+            {
+                validationErrors.Add($"Sandbox contains no Virtual Machines");
             }
 
             return validationErrors;
@@ -187,9 +217,9 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task AttemptRollback(int sandboxId, SandboxPhaseHistory phaseToRemove)
-        {
 
+        async Task AttemptRollbackPhase(int sandboxId, SandboxPhaseHistory phaseToRemove)
+        {
             try
             {
                 _logger.LogWarning($"Rolling back phase for sandbox {sandboxId}.");
@@ -220,6 +250,8 @@ namespace Sepes.Infrastructure.Service
                 {
                     _logger.LogWarning($"Attempted phase rollback for sandbox {sandboxId} aborted. Phase record was NULL");
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -228,5 +260,57 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogError(ex, $"Attempted phase rollback for sandbox {sandboxId} failed. {additionalInfo}");
             }
         }
+
+        async Task MakeDatasetsUnAvailable(int sandboxId)
+        {
+            var sandbox = await GetWithoutChecks(sandboxId);
+            var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId);
+            await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
+        }
+
+        async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
+        {
+            var resourceGroupResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
+            var vNetResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+
+            if (resourceGroupResource == null)
+            {
+                throw new Exception($"Could not locate Resource Group entry for Sandbox {sandbox.Id}");
+            }
+
+            if (vNetResource == null)
+            {
+                throw new Exception($"Could not locate VNet entry for Sandbox {sandbox.Id}");
+            }
+
+
+
+            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
+            {
+                try
+                {
+                    if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
+                    {
+                        await _azureStorageAccountService.RemoveStorageAccountFromVNet(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                    }
+                    else
+                    {
+                        throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Unable to make dataset {curDatasetRelation.Dataset.Name} unavailable");
+
+                    if (!continueOnError)
+                    {
+                        throw;
+                    }
+
+                }
+
+            }
+        }
+
     }
 }
