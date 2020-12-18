@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Service
 
                 var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
 
-                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);              
+                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
@@ -84,7 +84,7 @@ namespace Sepes.Infrastructure.Service
                 if (nextPhase == SandboxPhase.DataAvailable)
                 {
                     await MakeDatasetsAvailable(sandboxFromDb, resourcesForSandbox, cancellation);
-                }               
+                }
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
             }
@@ -98,7 +98,7 @@ namespace Sepes.Infrastructure.Service
                     await MakeDatasetsUnAvailable(sandboxId);
                     await AttemptRollbackPhase(sandboxId, newestHistoryItem);
                 }
-             
+
                 throw;
             }
         }
@@ -121,7 +121,7 @@ namespace Sepes.Infrastructure.Service
             var validationErrors = new List<string>();
 
             if (sandbox.SandboxDatasets.Count == 0)
-            {               
+            {
                 validationErrors.Add($"Sandbox contains no Datasets");
             }
 
@@ -134,15 +134,13 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curResource in resourcesForSandbox)
             {
-                if (curResource.SandboxControlled)
+                foreach (var curOperation in curResource.Operations)
                 {
-                    foreach (var curOperation in curResource.Operations)
+                    if (curOperation.OperationType == CloudResourceOperationType.CREATE && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
                     {
-                        if (curOperation.OperationType == CloudResourceOperationType.CREATE && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
-                        {
-                            validationErrors.Add($"Basic resources not set up for Sandbox {sandbox.Id}");
-                            return validationErrors;
-                        }
+                        validationErrors.Add($"One or more resources are beging created, updated or deleted");
+
+                        return validationErrors;
                     }
                 }
             }
@@ -150,6 +148,8 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
 
         }
+
+
 
 
         async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
