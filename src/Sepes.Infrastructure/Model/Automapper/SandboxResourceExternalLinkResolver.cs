@@ -5,7 +5,7 @@ using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class SandboxResourceExternalLinkResolver : IValueResolver<SandboxResource, IHasLinkToExtSystem, string>
+    public class SandboxResourceExternalLinkResolver : IValueResolver<CloudResource, IHasLinkToExtSystem, string>
     {
         public readonly IConfiguration _config;
         public SandboxResourceExternalLinkResolver(IConfiguration config)
@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             this._config = config;
         }       
 
-        public string Resolve(SandboxResource source, IHasLinkToExtSystem destination, string destMember, ResolutionContext context)
+        public string Resolve(CloudResource source, IHasLinkToExtSystem destination, string destMember, ResolutionContext context)
         {
             return AzureResourceUtil.CreateResourceLink(_config, source);
         }

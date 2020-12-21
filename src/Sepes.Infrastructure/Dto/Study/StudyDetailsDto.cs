@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public ICollection<DatasetDto> Datasets { get; set; }
 
-        public ICollection<SandboxDto> Sandboxes { get; set; }
+        public ICollection<SandboxListItemDto> Sandboxes { get; set; }
 
         public List<StudyParticipantDto> Participants { get; set; }
         

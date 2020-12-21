@@ -19,6 +19,156 @@ namespace Sepes.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ConfigString")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime?>("Deleted")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastKnownProvisioningState")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Region")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceGroupId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceGroupName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ResourceType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SandboxControlled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SandboxId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudyId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Tags")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SandboxId");
+
+                    b.HasIndex("StudyId");
+
+                    b.ToTable("CloudResources");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("BatchId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CarriedOutBySessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CloudResourceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("CreatedBySessionId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("DependsOnOperationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LatestError")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MaxTryCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OperationType")
+                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(32);
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TryCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CloudResourceId");
+
+                    b.HasIndex("DependsOnOperationId");
+
+                    b.ToTable("CloudResourceOperations");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
                 {
                     b.Property<int>("Id")
@@ -135,6 +285,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<int>("DatasetId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RuleType")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Updated")
@@ -276,15 +429,15 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("SandboxDatasets");
                 });
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxPhaseHistory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("ConfigString")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Counter")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -295,135 +448,17 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<DateTime?>("Deleted")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LastKnownProvisioningState")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Region")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceGroupId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceGroupName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceKey")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ResourceType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("SandboxControlled")
-                        .HasColumnType("bit");
+                    b.Property<int>("Phase")
+                        .HasColumnType("int");
 
                     b.Property<int>("SandboxId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("StudyId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Tags")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Updated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
 
                     b.HasKey("Id");
 
                     b.HasIndex("SandboxId");
 
-                    b.HasIndex("StudyId");
-
-                    b.ToTable("SandboxResources");
-                });
-
-            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResourceOperation", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("BatchId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("CarriedOutBySessionId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("CreatedBySessionId")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("DependsOnOperationId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("LatestError")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MaxTryCount")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OperationType")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
-
-                    b.Property<int>("SandboxResourceId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TryCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Updated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DependsOnOperationId");
-
-                    b.HasIndex("SandboxResourceId");
-
-                    b.ToTable("SandboxResourceOperations");
+                    b.ToTable("SandboxPhaseHistory");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
@@ -687,6 +722,33 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("VmSizes");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
+                        .WithMany("Resources")
+                        .HasForeignKey("SandboxId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
+                        .WithMany("CloudResources")
+                        .HasForeignKey("StudyId");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.CloudResource", "Resource")
+                        .WithMany("Operations")
+                        .HasForeignKey("CloudResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.CloudResourceOperation", "DependsOnOperation")
+                        .WithMany("DependantOnThisOperation")
+                        .HasForeignKey("DependsOnOperationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
                 {
                     b.HasOne("Sepes.Infrastructure.Model.Dataset", "Dataset")
@@ -735,30 +797,12 @@ namespace Sepes.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResource", b =>
+            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxPhaseHistory", b =>
                 {
                     b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
-                        .WithMany("Resources")
+                        .WithMany("PhaseHistory")
                         .HasForeignKey("SandboxId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
-                        .WithMany("CloudResources")
-                        .HasForeignKey("StudyId");
-                });
-
-            modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxResourceOperation", b =>
-                {
-                    b.HasOne("Sepes.Infrastructure.Model.SandboxResourceOperation", "DependsOnOperation")
-                        .WithMany("DependantOnThisOperation")
-                        .HasForeignKey("DependsOnOperationId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Sepes.Infrastructure.Model.SandboxResource", "Resource")
-                        .WithMany("Operations")
-                        .HasForeignKey("SandboxResourceId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

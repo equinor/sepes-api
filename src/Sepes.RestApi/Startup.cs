@@ -136,30 +136,42 @@ namespace Sepes.RestApi
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
 
             //Domain Model Services
-            services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IStudyCreateUpdateService, StudyCreateUpdateService>();
+            services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
-            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
-            services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
+            services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
+            services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
+            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
+            services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
+            services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
+            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();          
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
+            services.AddScoped<IVariableService, VariableService>();
+            services.AddTransient<ILookupService, LookupService>();
 
             //Ext System Facade Services
-            services.AddTransient<IDatasetFileService, DatasetFileService>();
+            services.AddTransient<IDatasetFileService, DatasetFileService>();          
             services.AddTransient<IStudyLogoService, StudyLogoService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
-            services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
+            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();          
+            services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
+            
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

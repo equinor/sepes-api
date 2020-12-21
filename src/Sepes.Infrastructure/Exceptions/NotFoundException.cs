@@ -30,9 +30,9 @@ namespace Sepes.Infrastructure.Exceptions
             return new NotFoundException($"{entityName} with {field} = {fieldValue} not found!", inner);
         }
 
-        public static NotFoundException CreateForSandboxResource(int id, Exception inner = null)
+        public static NotFoundException CreateForCloudResource(int id, Exception inner = null)
         {
-            var sbExMessage = new StringBuilder($"SandboxResource with id {id} not found");         
+            var sbExMessage = new StringBuilder($"CloudResource with id {id} not found");         
 
             return new NotFoundException(sbExMessage.ToString(), inner);
         }

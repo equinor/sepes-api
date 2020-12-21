@@ -16,23 +16,20 @@ namespace Sepes.Infrastructure.Model.Automapper
 {
     public class AutoMappingConfigs : Profile
     {
-
-
         public AutoMappingConfigs()
         {
 
             //STUDY
-            CreateMap<Study, StudyListItemDto>();
+            CreateMap<Study, StudyDto>()
+          .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));    
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).ToList()))
-                    .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
-
-            CreateMap<Study, StudyDto>()    
-              .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d=> d.Deleted.HasValue == false || (d.Deleted.HasValue && d.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted.HasValue == false || (sb.Deleted.HasValue && sb.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
+            CreateMap<Study, StudyListItemDto>();
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
 
@@ -77,13 +74,18 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
-                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name));
+                 .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
+                  .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
+           
+
+            CreateMap<Sandbox, SandboxListItemDto>();
 
             CreateMap<Sandbox, SandboxDetailsDto>()
          .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
          .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
-         .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>());
+         .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>())
+           .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
 
             /*
             CreateMap<Sandbox, DatasetSandboxDto>()
@@ -98,7 +100,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxCreateDto, Sandbox>();
 
-            CreateMap<SandboxResource, SandboxResourceLightDto>()
+            CreateMap<CloudResource, SandboxResourceLightDto>()
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
@@ -109,17 +111,17 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //CLOUD RESOURCE
 
-            CreateMap<SandboxResource, SandboxResourceDto>()
+            CreateMap<CloudResource, CloudResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
                 .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
             .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
-            CreateMap<SandboxResourceDto, SandboxResource>()
+            CreateMap<CloudResourceDto, CloudResource>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
 
-            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>();
-            CreateMap<SandboxResourceOperationDto, SandboxResourceOperation>();
+            CreateMap<CloudResourceOperation, CloudResourceOperationDto>();
+            CreateMap<CloudResourceOperationDto, CloudResourceOperation>();
 
 
             //USERS/PARTICIPANTS
@@ -157,11 +159,11 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<CreateVmUserInputDto, VmSettingsDto>();
 
-            CreateMap<SandboxResourceDto, VmDto>()
+            CreateMap<CloudResourceDto, VmDto>()
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                  .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
 
-            CreateMap<SandboxResource, VmDto>()
+            CreateMap<CloudResource, VmDto>()
            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
             .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name))
             .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))

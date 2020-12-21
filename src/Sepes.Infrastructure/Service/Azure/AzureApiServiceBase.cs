@@ -148,10 +148,11 @@ namespace Sepes.Infrastructure.Service.Azure
     }
 
 
-  
 
-class TokenResponse
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+    class TokenResponse
     {
+       
         public string access_token { get; set; }
 
         public string token_type { get; set; }

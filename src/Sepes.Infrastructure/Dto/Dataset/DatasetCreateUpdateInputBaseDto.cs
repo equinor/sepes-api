@@ -10,8 +10,6 @@ namespace Sepes.Infrastructure.Dto.Dataset
 
         public string Classification { get; set; }
 
-        public int DataId { get; set; }
-
-        public List<string> AllowAccessFromAddresses { get; set; }
+        public int DataId { get; set; }      
     }
 }

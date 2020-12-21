@@ -8,7 +8,6 @@ using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup
 {
-
     public static class StudyServiceMockFactory
     {
         public static IStudyService Create(ServiceProvider serviceProvider)
@@ -17,11 +16,35 @@ namespace Sepes.Tests.Setup
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudyService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
+
+            var logoServiceMock = new Mock<IStudyLogoService>();
+
+            return new StudyService(db, mapper, logger, userService.Object, logoServiceMock.Object);
+        }
+
+        public static IStudyCreateUpdateService CreateUpdateService(ServiceProvider serviceProvider)
+        {
+            var db = serviceProvider.GetService<SepesDbContext>();
+            var mapper = serviceProvider.GetService<IMapper>();
+            var logger = serviceProvider.GetService<ILogger<StudyCreateUpdateService>>();
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);   
+
+            var logoServiceMock = new Mock<IStudyLogoService>();
+
+            return new StudyCreateUpdateService(db, mapper, logger, userService.Object, logoServiceMock.Object);
+        }
+
+        public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)
+        {
+            var db = serviceProvider.GetService<SepesDbContext>();
+            var mapper = serviceProvider.GetService<IMapper>();
+            var logger = serviceProvider.GetService<ILogger<StudyDeleteService>>();
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);
             var studySpecificDatasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(serviceProvider);
 
             var logoServiceMock = new Mock<IStudyLogoService>();
 
-            return new StudyService(db, mapper, logger, userService.Object, logoServiceMock.Object, studySpecificDatasetService);
-        }      
+            return new StudyDeleteService(db, mapper, logger, userService.Object, logoServiceMock.Object, studySpecificDatasetService);
+        }
     }
 }

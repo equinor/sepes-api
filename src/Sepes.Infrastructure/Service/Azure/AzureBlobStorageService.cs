@@ -223,7 +223,7 @@ namespace Sepes.Infrastructure.Service.Azure
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Something went wrong when creating BlobServiceClient");
-                throw new Exception($"Unable to create BlobServiceClient", ex);
+                throw new Exception($"Unable to connect to Azure Storage Account", ex);
             }
         }
 
@@ -254,6 +254,13 @@ namespace Sepes.Infrastructure.Service.Azure
         async Task<string> GetAccessKey(string resourceGroup, string accountName, CancellationToken cancellationToken = default)
         {
             var storageAccount = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroup, accountName, cancellationToken);
+
+            if(storageAccount == null)
+            {
+                _logger.LogError($"Storage account {accountName} not found in resource group {resourceGroup}");
+                throw new Exception("Storage account not found");
+            }
+
             return await GetKey(storageAccount, cancellationToken);
         }
 

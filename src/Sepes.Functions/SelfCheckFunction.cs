@@ -9,15 +9,13 @@ namespace Sepes.Functions
 {
     public class SelfCheckFunction
     {
-        readonly IConfiguration _config;
-
-        public SelfCheckFunction(IConfiguration config)
+        public SelfCheckFunction()
         {
-            _config = config;
+          
         }
 
         [FunctionName("SelfCheck")]
-        public async Task Run([TimerTrigger("0 */30 * * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public Task Run([TimerTrigger("0 */30 * * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
         {
             var databaseOkay = true;
             var provisioningQueueOkay = true;
@@ -25,7 +23,8 @@ namespace Sepes.Functions
             var selfMonitoringStringBuilder = new StringBuilder($"Self check started at {DateTime.UtcNow}: ");
             selfMonitoringStringBuilder.Append(GenerateKeyValue("db", databaseOkay));
             selfMonitoringStringBuilder.Append(GenerateKeyValue("resource queue", provisioningQueueOkay));
-            log.LogWarning(selfMonitoringStringBuilder.ToString());         
+            log.LogWarning(selfMonitoringStringBuilder.ToString());
+            return Task.CompletedTask;
         }
 
         static string GenerateKeyValue(string key, bool okay)

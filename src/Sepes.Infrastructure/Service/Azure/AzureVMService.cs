@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
             var passwordReference = vmSettings.Password;
             string password = await GetPasswordFromKeyVault(passwordReference);
@@ -88,7 +88,7 @@ namespace Sepes.Infrastructure.Service
             var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);
             var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(vm.PrimaryNetworkInterfaceId, cancellationToken);
 
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
 
             await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
 
@@ -459,7 +459,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Delete VM rules
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(configString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(configString);
 
             foreach (var curRule in vmSettings.Rules)
             {

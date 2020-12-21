@@ -19,7 +19,6 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
-
         IMapper _mapper;
 
         public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper)
@@ -85,18 +84,30 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
 
-            if(resource != null)
+            if (resource != null)
             {
                 //Ensure resource is is managed by this instance
                 CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
                 await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
-            }      
+            }
         }
 
         public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
             var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName, cancellationToken);
+            return resource;
+        }
+
+        public async Task<IStorageAccount> GetResourceOrThrowAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
+
+            if (resource == null)
+            {
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+            }
+
             return resource;
         }
 
@@ -160,7 +171,7 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                creator = creator.WithAccessFromAzureServices();
+                //creator = creator.WithAccessFromAzureServices();
 
                 foreach (var curAddr in onlyAllowAccessFrom)
                 {
@@ -181,9 +192,155 @@ namespace Sepes.Infrastructure.Service
         {
             var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
             var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
-            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, Bypass = Bypass.AzureServices } };
+            var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
             var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
             return _mapper.Map<AzureStorageAccountDto>(account);
+        }
+
+     
+
+        public async Task AddStorageAccountToVNet(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForVnet, string vNetName, CancellationToken cancellation)
+        {
+            try
+            {
+                var storageAccount = await GetResourceOrThrowAsync(resourceGroupForStorageAccount, storageAccountName, cancellation);
+                var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupForVnet, vNetName, cancellation);
+
+                if (network == null)
+                {
+                    throw NotFoundException.CreateForAzureResource(vNetName, resourceGroupForVnet);
+                }
+
+                var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
+
+                var networkRuleSet = GetRuleSetReadyForUpdate(storageAccount);              
+
+                //See if the relevant rule is allready added for this network
+
+                bool existingRuleFound = false;
+                VirtualNetworkRule existingRule = null;
+
+                if(GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out existingRule))
+                {
+                    if (existingRule.Action == Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)
+                    {
+                        existingRuleFound = true;
+                    }                   
+                }              
+
+                if (!existingRuleFound)
+                {
+                    networkRuleSet.VirtualNetworkRules.Add(new VirtualNetworkRule()
+                    {                        
+                        Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow,
+                        VirtualNetworkResourceId = sandboxSubnet.Inner.Id
+                    });
+
+                    var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
+
+                    var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Could not add Storage Account {storageAccountName} to VNet {vNetName}", ex);
+            }
+        }
+
+        public async Task RemoveStorageAccountFromVNet(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForVnet, string vNetName, CancellationToken cancellation)
+        {
+            try
+            {
+                var storageAccount = await GetResourceOrThrowAsync(resourceGroupForStorageAccount, storageAccountName, cancellation);
+                var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupForVnet, vNetName, cancellation);
+
+                if (network == null)
+                {
+                    throw NotFoundException.CreateForAzureResource(vNetName, resourceGroupForVnet);
+                }
+
+                var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
+
+                var networkRuleSet = GetRuleSetReadyForUpdate(storageAccount);
+
+                //See if the relevant rule is allready added for this network
+
+                bool existingRuleFound = false;
+                VirtualNetworkRule existingRule = null;
+
+                if (GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out existingRule))
+                {
+                    existingRuleFound = true;
+                }
+
+                if (existingRuleFound)
+                {
+                    networkRuleSet = RemoveVNetFromRuleSet(networkRuleSet, sandboxSubnet.Inner.Id);                  
+
+                    var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
+
+                    var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Could not add Storage Account {storageAccountName} to VNet {vNetName}", ex);
+            }
+        }
+
+        NetworkRuleSet GetRuleSetReadyForUpdate(IStorageAccount storageAccount)
+        {
+            var networkRuleSet = storageAccount.Inner.NetworkRuleSet;
+
+            if (networkRuleSet == null)
+            {
+                networkRuleSet = new NetworkRuleSet();
+            }
+
+            if (networkRuleSet.VirtualNetworkRules == null)
+            {
+                networkRuleSet.VirtualNetworkRules = new List<VirtualNetworkRule>();
+            }
+
+            return networkRuleSet;
+        }
+
+        NetworkRuleSet RemoveVNetFromRuleSet(NetworkRuleSet oldRuleSet, string subnetId)
+        {
+            var newRuleSet = new NetworkRuleSet();
+            newRuleSet.Bypass = oldRuleSet.Bypass;
+            newRuleSet.DefaultAction = oldRuleSet.DefaultAction;
+            newRuleSet.IpRules = oldRuleSet.IpRules;       
+
+            if(newRuleSet.VirtualNetworkRules == null)
+            {
+                newRuleSet.VirtualNetworkRules = new List<VirtualNetworkRule>();
+            }
+
+            foreach (var curVirtualNetworkRule in oldRuleSet.VirtualNetworkRules)
+            {
+                if (curVirtualNetworkRule.VirtualNetworkResourceId != subnetId)
+                {
+                    newRuleSet.VirtualNetworkRules.Add(curVirtualNetworkRule);
+                }
+            }
+
+            return newRuleSet;
+        }
+
+        bool GetRuleForSubnet(NetworkRuleSet networkRuleSet, string subnetId, out VirtualNetworkRule virtualNetworkRule)
+        {
+            foreach (var curRule in networkRuleSet.VirtualNetworkRules)
+            {
+                if (curRule.VirtualNetworkResourceId == subnetId)
+                {
+                    virtualNetworkRule = curRule;
+                    return true;
+                }
+            }
+
+            virtualNetworkRule = null;
+            return false;
         }
     }
 }

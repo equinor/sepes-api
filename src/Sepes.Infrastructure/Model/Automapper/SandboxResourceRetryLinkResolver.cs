@@ -7,7 +7,7 @@ using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class SandboxResourceRetryLinkResolver : IValueResolver<SandboxResource, SandboxResourceLightDto, string>
+    public class SandboxResourceRetryLinkResolver : IValueResolver<CloudResource, SandboxResourceLightDto, string>
     {
         public readonly IConfiguration _config;
         public SandboxResourceRetryLinkResolver(IConfiguration config)
@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             this._config = config;
         }       
 
-        public string Resolve(SandboxResource source, SandboxResourceLightDto destination, string destMember, ResolutionContext context)
+        public string Resolve(CloudResource source, SandboxResourceLightDto destination, string destMember, ResolutionContext context)
         {            
             var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 

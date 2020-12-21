@@ -7,9 +7,9 @@ namespace Sepes.Functions
 {
     public class SandboxResourceMonitoringFunction
     {
-        readonly ISandboxResourceMonitoringService _resourceMonitoringService;
+        readonly ICloudResourceMonitoringService _resourceMonitoringService;
 
-        public SandboxResourceMonitoringFunction(ISandboxResourceMonitoringService resourceMonitoringService)
+        public SandboxResourceMonitoringFunction(ICloudResourceMonitoringService resourceMonitoringService)
         {
             _resourceMonitoringService = resourceMonitoringService;
         }
@@ -18,6 +18,7 @@ namespace Sepes.Functions
         //Run every hour: "0 * * * *"        
         [FunctionName("SandboxResourceMonitoring")]
         public async Task Run([TimerTrigger("0 * * * *", RunOnStartup =true)]TimerInfo myTimer, ILogger log)
+
         {
            await _resourceMonitoringService.StartMonitoringSession();
         }       
