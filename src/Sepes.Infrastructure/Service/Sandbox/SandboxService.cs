@@ -113,7 +113,7 @@ namespace Sepes.Infrastructure.Service
 
                     await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     if(createdSandbox.Id > 0)
                     {

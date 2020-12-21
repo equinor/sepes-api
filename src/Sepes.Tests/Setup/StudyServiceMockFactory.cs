@@ -27,8 +27,7 @@ namespace Sepes.Tests.Setup
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudyCreateUpdateService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
-            var studySpecificDatasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(serviceProvider);
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);   
 
             var logoServiceMock = new Mock<IStudyLogoService>();
 

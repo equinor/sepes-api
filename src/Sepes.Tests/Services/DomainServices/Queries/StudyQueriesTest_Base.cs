@@ -43,6 +43,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
             return db;
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0059:Unnecessary assignment of a value", Justification = "<Pending>")]
         protected SepesDbContext GetContextWithAdvancedTestData()
         {
             var db = GetEmptyContext();
