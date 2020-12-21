@@ -59,7 +59,7 @@ namespace Sepes.Tests.Services.DomainServices
         {
             var createTask = SetupAndAddParticipantForSet(studyId, role, source);
 
-            await Assert.ThrowsAsync<ArgumentException>(() => createTask);
+            await Assert.ThrowsAsync<Exception>(() => createTask);
         }
 
         public async Task<StudyParticipantDto> SetupAndAddParticipantForSet(int studyId, string role, string source)
@@ -69,7 +69,7 @@ namespace Sepes.Tests.Services.DomainServices
             var userEmail = userName + "@somedomain.com";
             var userFullName = "Newly Added User";
 
-            var participantToAdd = new ParticipantLookupDto() { DatabaseId = UserConstants.COMMON_CUR_USER_DB_ID, ObjectId = UserConstants.COMMON_CUR_USER_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
+            var participantToAdd = new ParticipantLookupDto() { DatabaseId = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
 
             await RefreshAndPopulateTestDb();
 
@@ -82,6 +82,7 @@ namespace Sepes.Tests.Services.DomainServices
 
             //Used to get current user
             var userServiceMock = GetUserServiceMock(UserConstants.COMMON_CUR_USER_DB_ID, UserConstants.COMMON_CUR_USER_OBJECTID);
+            userServiceMock.Setup(service => service.GetUserByIdAsync(UserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
 
             if (source == ParticipantSource.Db)
             {
