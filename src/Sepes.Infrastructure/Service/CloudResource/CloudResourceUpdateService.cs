@@ -19,7 +19,7 @@ namespace Sepes.Infrastructure.Service
            
         }     
 
-        public async Task<SandboxResourceDto> UpdateResourceGroup(int resourceId, SandboxResourceDto updated)
+        public async Task<CloudResourceDto> UpdateResourceGroup(int resourceId, CloudResourceDto updated)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-        public async Task<SandboxResourceDto> Update(int resourceId, SandboxResourceDto updated)
+        public async Task<CloudResourceDto> Update(int resourceId, CloudResourceDto updated)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<SandboxResourceDto> UpdateResourceIdAndName(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
+        public async Task<CloudResourceDto> UpdateResourceIdAndName(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)
         {
             if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
             {

@@ -2,7 +2,7 @@
 {
     public class ProvisioningQueueChildDto
     { 
-        public int SandboxResourceOperationId { get; set; }   
+        public int ResourceOperationId { get; set; }   
         
     }
 }

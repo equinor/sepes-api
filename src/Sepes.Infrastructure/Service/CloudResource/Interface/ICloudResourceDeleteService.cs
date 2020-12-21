@@ -1,11 +1,12 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Infrastructure.Dto;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ICloudResourceDeleteService
-    { 
-        //DESTRUCTION
-        Task<SandboxResourceOperationDto> MarkAsDeletedAsync(int resourceId);
+    {         
+        Task<CloudResourceDto> MarkAsDeletedAsync(int resourceId);
+
+        Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId);
     }
 }

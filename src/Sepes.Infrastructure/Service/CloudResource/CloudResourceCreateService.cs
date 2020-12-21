@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
             //_ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
-        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
+        public async Task<CloudResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
+        public async Task<CloudResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
         {
             var newResource = await AddInternal(dto.BatchId, dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, resourceName, dto.Tags, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString);
 
@@ -75,7 +75,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ValidateNameThrowIfInvalid(string resourceName)
         {
-            if(await _db.SandboxResources.Where(r=> r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
+            if(await _db.CloudResources.Where(r=> r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
             {
                 throw new Exception($"Resource with name {resourceName} allready exists!");
             }

@@ -111,17 +111,17 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //CLOUD RESOURCE
 
-            CreateMap<CloudResource, SandboxResourceDto>()
+            CreateMap<CloudResource, CloudResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
                 .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
             .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
-            CreateMap<SandboxResourceDto, CloudResource>()
+            CreateMap<CloudResourceDto, CloudResource>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
 
-            CreateMap<CloudResourceOperation, SandboxResourceOperationDto>();
-            CreateMap<SandboxResourceOperationDto, CloudResourceOperation>();
+            CreateMap<CloudResourceOperation, CloudResourceOperationDto>();
+            CreateMap<CloudResourceOperationDto, CloudResourceOperation>();
 
 
             //USERS/PARTICIPANTS
@@ -159,7 +159,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<CreateVmUserInputDto, VmSettingsDto>();
 
-            CreateMap<SandboxResourceDto, VmDto>()
+            CreateMap<CloudResourceDto, VmDto>()
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                  .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
 

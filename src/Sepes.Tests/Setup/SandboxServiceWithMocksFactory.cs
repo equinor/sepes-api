@@ -3,12 +3,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sepes.Tests.Setup
 {
@@ -31,9 +28,10 @@ namespace Sepes.Tests.Setup
 
             var studyServiceMock = StudyServiceMockFactory.Create(serviceProvider);
 
-            var sandboxCloudResourceServiceMock = new Mock<ISandboxCloudResourceService>();        
+            var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
+            var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(config, db, mapper, logger, userService.Object, studyServiceMock, sandboxCloudResourceServiceMock.Object);
+            return new SandboxService(config, db, mapper, logger, userService.Object, studyServiceMock, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

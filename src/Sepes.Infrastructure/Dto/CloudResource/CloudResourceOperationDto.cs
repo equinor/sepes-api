@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Infrastructure.Dto
 {
-    public class SandboxResourceOperationDto : UpdateableBaseDto
+    public class CloudResourceOperationDto : UpdateableBaseDto
     {
         public string Description { get; set; }
         public string OperationType { get; set; }
@@ -22,9 +22,9 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public int? DependsOnOperationId { get; set; }
     
 
-        public SandboxResourceOperationDto DependsOnOperation { get; set; }
+        public CloudResourceOperationDto DependsOnOperation { get; set; }
 
 
-        public SandboxResourceDto Resource { get; set; }
+        public CloudResourceDto Resource { get; set; }
     }
 }

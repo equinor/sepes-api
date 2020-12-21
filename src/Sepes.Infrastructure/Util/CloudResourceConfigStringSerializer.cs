@@ -4,7 +4,7 @@ using Sepes.Infrastructure.Dto.VirtualMachine;
 
 namespace Sepes.Infrastructure.Util
 {
-    public static class SandboxResourceConfigStringSerializer
+    public static class CloudResourceConfigStringSerializer
     {    
 
         public static VmSettingsDto VmSettings(string settingAsString)

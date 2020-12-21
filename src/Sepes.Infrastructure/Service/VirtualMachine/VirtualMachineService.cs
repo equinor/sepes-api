@@ -31,7 +31,7 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxService _sandboxService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
-        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceReadService _sandboxResourceService;
         readonly ICloudResourceCreateService _sandboxResourceCreateService;
         readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
         readonly ICloudResourceDeleteService _sandboxResourceDeleteService;
@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceCreateService sandboxResourceCreateService,
             ICloudResourceUpdateService sandboxResourceUpdateService,
             ICloudResourceDeleteService sandboxResourceDeleteService,
-            ICloudResourceService sandboxResourceService,
+            ICloudResourceReadService sandboxResourceService,
             IProvisioningQueueService workQueue,
             IAzureVmService azureVmService)
         {
@@ -84,10 +84,10 @@ namespace Sepes.Infrastructure.Service
 
             var region = RegionStringConverter.Convert(sandbox.Region);
 
-            var resourceGroup = await SandboxResourceQueries.GetResourceGroupEntry(_db, sandboxId);
+            var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
             //Make this dependent on bastion create operation to be completed, since bastion finishes last
-            var dependsOn = await SandboxResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
+            var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
             var vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
 
@@ -100,7 +100,7 @@ namespace Sepes.Infrastructure.Service
             queueParentItem.SandboxId = sandboxId;
             queueParentItem.Description = $"Create VM for Sandbox: {sandboxId}";
 
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
 
             await _workQueue.SendMessageAsync(queueParentItem);
 
@@ -118,7 +118,7 @@ namespace Sepes.Infrastructure.Service
         {
             var vmResource = await GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
 
-            var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedAsync(id);
+            var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id);
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
 
@@ -126,7 +126,7 @@ namespace Sepes.Infrastructure.Service
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = vmResource.SandboxId;
             queueParentItem.Description = deleteResourceOperation.Description;
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = deleteResourceOperation.Id });
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id });
             await _workQueue.SendMessageAsync(queueParentItem);            
         }
 
@@ -134,7 +134,7 @@ namespace Sepes.Infrastructure.Service
         {
             var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Read);
 
-            var virtualMachines = await SandboxResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
+            var virtualMachines = await CloudResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
 
             var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);
 
@@ -148,7 +148,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vmResource == null)
             {
-                throw NotFoundException.CreateForSandboxResource(vmId);
+                throw NotFoundException.CreateForCloudResource(vmId);
             }
 
             var dto = await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
@@ -194,17 +194,17 @@ namespace Sepes.Infrastructure.Service
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 
-            var diagStorageResource = await SandboxResourceQueries.GetDiagStorageAccountEntry(_db, sandboxId);
+            var diagStorageResource = await CloudResourceQueries.GetDiagStorageAccountEntry(_db, sandboxId);
             vmSettings.DiagnosticStorageAccountName = diagStorageResource.ResourceName;
 
-            var networkResource = await SandboxResourceQueries.GetNetworkEntry(_db, sandboxId);
+            var networkResource = await CloudResourceQueries.GetNetworkEntry(_db, sandboxId);
             vmSettings.NetworkName = networkResource.ResourceName;
 
-            var networkSetting = SandboxResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
+            var networkSetting = CloudResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
 
             vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(vmId);
-            return SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+            return CloudResourceConfigStringSerializer.Serialize(vmSettings);
         }
 
         async Task<string> StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(int studyId, int sandboxId, string password)

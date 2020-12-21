@@ -75,15 +75,19 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ISandboxService, SandboxService>();
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
-            builder.Services.AddTransient<ICloudResourceService, CloudResourceService>();
+            builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
+            builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
+            builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
+            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
             //Ext System Facade Services
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
-            builder.Services.AddTransient<ICloudResourceOperationService, CloudResourceOperationService>();
-            builder.Services.AddTransient<ISandboxCloudResourceService, SandboxCloudResourceService>();
+            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
        

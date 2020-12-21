@@ -23,22 +23,25 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly SepesDbContext _db;
         readonly IUserService _userService;
-        readonly ICloudResourceService _sandboxResourceService;
-        readonly ICloudResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceReadService _sandboxResourceService;
+        readonly ICloudResourceOperationReadService _sandboxResourceOperationReadService;
+        readonly ICloudResourceOperationCreateService _sandboxResourceOperationCreateService;
         readonly IProvisioningQueueService _workQueue;
 
         public VirtualMachineRuleService(ILogger<VirtualMachineService> logger,
             SepesDbContext db,
             IUserService userService,
-            ICloudResourceService sandboxResourceService,
-            ICloudResourceOperationService sandboxResourceOperationService,
+            ICloudResourceReadService sandboxResourceService,
+            ICloudResourceOperationReadService sandboxResourceOperationReadService,
+            ICloudResourceOperationCreateService sandboxResourceOperationCreateService,
             IProvisioningQueueService workQueue)
         {
             _logger = logger;
             _db = db;
             _userService = userService;
             _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceOperationService = sandboxResourceOperationService;
+            _sandboxResourceOperationReadService = sandboxResourceOperationReadService;
+            _sandboxResourceOperationCreateService = sandboxResourceOperationCreateService;
             _workQueue = workQueue;
         }
 
@@ -55,7 +58,7 @@ namespace Sepes.Infrastructure.Service
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             if (vmSettings.Rules != null)
             {
@@ -77,7 +80,7 @@ namespace Sepes.Infrastructure.Service
                        
 
             //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             await ValidateRuleUpdateInputThrowIfNot(vm, vmSettings.Rules, updatedRuleSet);
 
@@ -129,7 +132,7 @@ namespace Sepes.Infrastructure.Service
 
             if (saveAfterwards)
             {
-                vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
+                vm.ConfigString = CloudResourceConfigStringSerializer.Serialize(vmSettings);
 
                 await _db.SaveChangesAsync();
 
@@ -238,7 +241,7 @@ namespace Sepes.Infrastructure.Service
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
             //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             if (vmSettings.Rules != null)
             {
@@ -262,7 +265,7 @@ namespace Sepes.Infrastructure.Service
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
         }
@@ -519,20 +522,20 @@ namespace Sepes.Infrastructure.Service
 
         async Task CreateUpdateOperationAndAddQueueItem(CloudResource vm, string description)
         {
-            if (await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(vm.Id))
+            if (await _sandboxResourceOperationReadService.HasUnstartedCreateOrUpdateOperation(vm.Id))
             {
                 _logger.LogWarning($"Updating VM {vm.Id}: There is allready an unstarted VM Create or Update operation. Not creating additional");
             }
             else
             {
                 //If un started update allready exist, no need to create update op?
-                var vmUpdateOperation = await _sandboxResourceOperationService.CreateUpdateOperationAsync(vm.Id);
+                var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
                 var queueParentItem = new ProvisioningQueueParentDto();
                 queueParentItem.SandboxId = vm.SandboxId;
                 queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
 
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { SandboxResourceOperationId = vmUpdateOperation.Id });
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmUpdateOperation.Id });
 
                 await _workQueue.SendMessageAsync(queueParentItem);
             }

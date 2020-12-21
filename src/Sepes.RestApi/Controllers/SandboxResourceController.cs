@@ -14,13 +14,15 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class SandboxResourceController : ControllerBase
     {
-        readonly ICloudResourceService _sandboxResourceService;
-        readonly ISandboxCloudResourceService _sandboxCloudResourceService;
+        readonly ICloudResourceReadService _sandboxResourceService;
+        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
+        readonly ISandboxResourceRetryService _sandboxResourceRetryService;
 
-        public SandboxResourceController(ICloudResourceService sandboxResourceService, ISandboxCloudResourceService sandboxCloudResourceService)
+        public SandboxResourceController(ICloudResourceReadService sandboxResourceService, ISandboxResourceCreateService sandboxResourceCreateService, ISandboxResourceRetryService sandboxResourceRetryService)
         {
             _sandboxResourceService = sandboxResourceService;
-            _sandboxCloudResourceService = sandboxCloudResourceService;
+            _sandboxResourceCreateService = sandboxResourceCreateService;
+            _sandboxResourceRetryService = sandboxResourceRetryService;
         }       
 
         [HttpGet("sandboxes/{sandboxId}/resources")]
@@ -33,7 +35,7 @@ namespace Sepes.RestApi.Controller
         [HttpPut("resources/{resourceId}/retry")]
         public async Task<IActionResult> RetryLastOperation(int resourceId)
         {
-            var resource = await _sandboxCloudResourceService.RetryLastOperation(resourceId);
+            var resource = await _sandboxResourceRetryService.RetryLastOperation(resourceId);
             return new JsonResult(resource);
         }
 
@@ -41,7 +43,7 @@ namespace Sepes.RestApi.Controller
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> ReScheduleCreation(int sandboxId)
         {
-            await _sandboxCloudResourceService.ReScheduleSandboxResourceCreation(sandboxId);
+            await _sandboxResourceRetryService.ReScheduleSandboxResourceCreation(sandboxId);
             return new NoContentResult();
         }
     }

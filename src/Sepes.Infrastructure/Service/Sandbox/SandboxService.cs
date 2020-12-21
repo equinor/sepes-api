@@ -19,14 +19,16 @@ namespace Sepes.Infrastructure.Service
     public class SandboxService : SandboxServiceBase, ISandboxService
     {      
         readonly IStudyService _studyService;
-        readonly ISandboxCloudResourceService _sandboxCloudResourceService;  
-        
+        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
+        readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
+
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, IStudyService studyService, ISandboxCloudResourceService sandboxCloudResourceService)
+            IUserService userService, IStudyService studyService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             :base (config, db, mapper, logger, userService)
         { 
             _studyService = studyService;       
-            _sandboxCloudResourceService = sandboxCloudResourceService;
+            _sandboxResourceCreateService = sandboxCloudResourceService;
+            _sandboxResourceDeleteService = sandboxResourceDeleteService;
         }
 
         public async Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)
@@ -109,7 +111,7 @@ namespace Sepes.Infrastructure.Service
                     //This objects gets passed around
                     var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = createdSandbox.Id, StudyName = studyDto.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
 
-                    await _sandboxCloudResourceService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
+                    await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
                 catch (Exception ex)
                 {
@@ -152,7 +154,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            await _sandboxCloudResourceService.HandleSandboxDeleteAsync(sandboxId);           
+            await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId);           
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
         }     

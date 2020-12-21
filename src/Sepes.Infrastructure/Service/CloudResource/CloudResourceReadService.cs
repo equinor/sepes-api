@@ -20,9 +20,9 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class CloudResourceService : CloudResourceServiceBase, ICloudResourceService
+    public class CloudResourceReadService : CloudResourceServiceBase, ICloudResourceReadService
     { 
-        public CloudResourceService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceService> logger, IUserService userService)
+        public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService)
          : base(db, config, mapper, logger, userService)
         { 
         } 
@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
       
 
-        public async Task<List<CloudResource>> GetAllActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+        public async Task<List<CloudResource>> GetAllActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
@@ -65,12 +65,12 @@ namespace Sepes.Infrastructure.Service
        
        
 
-        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
+        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
         public async Task<bool> ResourceIsDeleted(int resourceId)
         {
-            var resource = await _db.SandboxResources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
+            var resource = await _db.CloudResources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
 
             if(resource == null)
             {
@@ -85,13 +85,13 @@ namespace Sepes.Infrastructure.Service
             return false;
         }
 
-        public async Task<List<SandboxResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
+        public async Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
         {
-            var queryable = SandboxResourceQueries.GetSandboxResourcesQueryable(_db, sandboxId);
+            var queryable = CloudResourceQueries.GetSandboxResourcesQueryable(_db, sandboxId);
 
             var resources = await queryable.ToListAsync(cancellation);
 
-            return _mapper.Map<List<SandboxResourceDto>>(resources);
+            return _mapper.Map<List<CloudResourceDto>>(resources);
         }
     }
 }

@@ -21,8 +21,8 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
     {
-        readonly ICloudResourceService _sandboxResourceService;
-        readonly ICloudResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceReadService _sandboxResourceService;
+        readonly ICloudResourceOperationReadService _sandboxResourceOperationService;
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
         readonly IAzureVNetService _azureVNetService;
@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ICloudResourceService sandboxResourceService, ICloudResourceOperationService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
+            IUserService userService, ICloudResourceReadService sandboxResourceService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVNetService azureVNetService, IAzureStorageAccountService azureStorageAccountService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService)
         {
@@ -103,7 +103,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
+        public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
         {
             var validationErrors = new List<string>();
 
@@ -128,7 +128,7 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
         }
 
-        List<string> VerifyBasicResourcesIsFinishedAsync(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox)
+        List<string> VerifyBasicResourcesIsFinishedAsync(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox)
         {
             var validationErrors = new List<string>();
 
@@ -152,15 +152,15 @@ namespace Sepes.Infrastructure.Service
 
 
 
-        async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
+        async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
         {
             var validationErrors = new List<string>();
 
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
 
-            var allVms = SandboxResourceUtil.GetAllResourcesByType(resourcesForSandbox, AzureResourceType.VirtualMachine, false);
+            var allVms = CloudResourceUtil.GetAllResourcesByType(resourcesForSandbox, AzureResourceType.VirtualMachine, false);
 
-            var networkSecurityGroup = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.NetworkSecurityGroup, true);
+            var networkSecurityGroup = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.NetworkSecurityGroup, true);
 
             bool anyVmsFound = false;
 
@@ -194,10 +194,10 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
         }
 
-        async Task MakeDatasetsAvailable(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
+        async Task MakeDatasetsAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
         {
-            var resourceGroupResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
-            var vNetResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+            var resourceGroupResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
+            var vNetResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
 
             if (resourceGroupResource == null)
             {
@@ -275,10 +275,10 @@ namespace Sepes.Infrastructure.Service
             await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
         }
 
-        async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<SandboxResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
+        async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
         {
-            var resourceGroupResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
-            var vNetResource = SandboxResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+            var resourceGroupResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
+            var vNetResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
 
             if (resourceGroupResource == null)
             {

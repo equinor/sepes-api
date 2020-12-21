@@ -144,10 +144,13 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
-            services.AddTransient<ICloudResourceService, CloudResourceService>();
+            services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
             services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
+            services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
+            services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
+            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();          
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -159,8 +162,9 @@ namespace Sepes.RestApi
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
-            services.AddTransient<ISandboxCloudResourceService, SandboxCloudResourceService>();
-            services.AddTransient<ICloudResourceOperationService, CloudResourceOperationService>();
+            services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();          
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();

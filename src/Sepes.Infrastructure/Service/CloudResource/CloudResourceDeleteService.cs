@@ -4,9 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -17,67 +15,97 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceDeleteService : CloudResourceServiceBase, ICloudResourceDeleteService
-    {
-        readonly IRequestIdService _requestIdService;
-        readonly ICloudResourceOperationService _sandboxResourceOperationService;
+    {       
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
+        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
+        readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
-        public CloudResourceDeleteService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceDeleteService> logger, IUserService userService, IRequestIdService requestIdService, ICloudResourceOperationService sandboxResourceOperationService)
+        public CloudResourceDeleteService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceDeleteService> logger, IUserService userService,
+           
+            ICloudResourceOperationReadService cloudResourceOperationService, ICloudResourceOperationCreateService cloudResourceOperationCreateService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
+            )
          : base(db, config, mapper, logger, userService)
         {           
-            _requestIdService = requestIdService;
-            _sandboxResourceOperationService = sandboxResourceOperationService;
-
+            _cloudResourceOperationReadService = cloudResourceOperationService;
+            _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
+            _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
         }
 
-        public async Task<SandboxResourceOperationDto> MarkAsDeletedAsync(int id)
+        public async Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId)
         {
+            var resourceFromDb = await GetOrThrowInternalAsync(resourceId);
+
+            var deletePrefixForLogMessages = $"Marking resource {resourceId} ({resourceFromDb.ResourceType}) for deletion";
+
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Aborting all other operations for Resource");
+
+            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperations(resourceId);
+
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Marking db entry as deleted");
+
+            MarkAsDeletedInternal(resourceFromDb, currentUser.UserName);           
+
+            var deleteOperation = await EnsureExistsDeleteOperationInternalAsync(currentUser, deletePrefixForLogMessages, resourceFromDb);
+
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Done!");
+
+            return _mapper.Map<CloudResourceOperationDto>(deleteOperation);
+        }
+
+        public async Task<CloudResourceDto> MarkAsDeletedAsync(int resourceId)
+        {
+            var resourceFromDb = await GetOrThrowInternalAsync(resourceId);
+
             var user = await _userService.GetCurrentUserAsync();
 
-            var resourceFromDb = await GetOrThrowInternalAsync(id);
+            var deletePrefixForLogMessages = $"Marking resource {resourceId} ({resourceFromDb.ResourceType}) for deletion";
 
-            var deleteOperationDescription = $"Delete resource {id} ({resourceFromDb.ResourceType})";
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Aborting all other operations for Resource");
 
-            _logger.LogInformation($"{deleteOperationDescription}: Abort all other operations for Resource");
+            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperations(resourceId);
 
-            await _sandboxResourceOperationService.AbortAllUnfinishedCreateOrUpdateOperations(id);
-
-            var deleteOperation = await _sandboxResourceOperationService.GetUnfinishedDeleteOperation(id);
-
-            if (deleteOperation == null)
-            {
-                _logger.LogInformation($"{deleteOperationDescription}: Creating delete operation");
-
-                deleteOperation = new CloudResourceOperation()
-                {
-                    Description = AzureResourceUtil.CreateDescriptionForResourceOperation(resourceFromDb.ResourceType, CloudResourceOperationType.DELETE, resourceFromDb.SandboxId, id),
-                    CreatedBy = user.UserName,
-                    BatchId = Guid.NewGuid().ToString(),
-                    CreatedBySessionId = _requestIdService.GetRequestId(),
-                    OperationType = CloudResourceOperationType.DELETE,
-                    CloudResourceId = resourceFromDb.Id,
-                    MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
-                };
-
-                resourceFromDb.Operations.Add(deleteOperation);
-            }
-            else
-            {
-                _logger.LogInformation($"{deleteOperationDescription}: Existing delete operation found, re-queueing that");
-                deleteOperation.TryCount = 0;
-            }
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Marking db entry as deleted");
 
             MarkAsDeletedInternal(resourceFromDb, user.UserName);
 
-            await _db.SaveChangesAsync();         
+            await _db.SaveChangesAsync();
 
-            _logger.LogInformation($"{deleteOperationDescription}: Done!");
+            _logger.LogInformation($"{deletePrefixForLogMessages}: Done!");
 
-            return _mapper.Map<SandboxResourceOperationDto>(deleteOperation);
+            return _mapper.Map<CloudResourceDto>(resourceFromDb);
+        }
+
+        async Task<CloudResourceOperation> EnsureExistsDeleteOperationInternalAsync(UserDto currentUser, string deleteDescription, CloudResource resource)
+        {
+            _logger.LogInformation($"{deleteDescription}: Ensuring delete operation exist");
+
+            var deleteOperation = await _cloudResourceOperationReadService.GetUnfinishedDeleteOperation(resource.Id);
+
+            if (deleteOperation == null)
+            {
+                _logger.LogInformation($"{deleteDescription}: Creating delete operation");
+
+                deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resource.Id,
+                    AzureResourceUtil.CreateDescriptionForResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId, resource.Id));
+
+            }
+            else
+            {
+                _logger.LogInformation($"{deleteDescription}: Existing delete operation found, re-queueing that");
+                await _cloudResourceOperationUpdateService.ReInitiateAsync(resource.Id);
+                
+            }
+
+            return deleteOperation;
         }
 
         async Task<CloudResource> MarkAsDeletedByIdInternalAsync(int id)
         {
-            var resourceEntity = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
+            var resourceEntity = await _db.CloudResources.FirstOrDefaultAsync(s => s.Id == id);
 
             if (resourceEntity == null)
             {

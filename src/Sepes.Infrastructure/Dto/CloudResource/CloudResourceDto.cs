@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
-    public class SandboxResourceDto : UpdateableBaseDto
+    public class CloudResourceDto : UpdateableBaseDto
     {
         public int SandboxId { get; set; }
 
@@ -42,6 +42,6 @@ namespace Sepes.Infrastructure.Dto
 
         public string Region { get; set; }
 
-        public List<SandboxResourceOperationDto> Operations { get; set; }
+        public List<CloudResourceOperationDto> Operations { get; set; }
     }
 }

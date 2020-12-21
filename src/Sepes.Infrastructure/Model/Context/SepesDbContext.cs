@@ -25,9 +25,9 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
-        public virtual DbSet<CloudResource> SandboxResources { get; set; }
+        public virtual DbSet<CloudResource> CloudResources { get; set; }
 
-        public virtual DbSet<CloudResourceOperation> SandboxResourceOperations { get; set; }
+        public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
 

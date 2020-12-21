@@ -19,10 +19,10 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly ILogger _logger;
         
-        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceReadService _sandboxResourceService;
         readonly ICloudResourceUpdateService _sandboxResourceUpdateService;  
 
-        public CloudResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<CloudResourceMonitoringService> logger, ICloudResourceService sandboxResourceService, ICloudResourceUpdateService sandboxResourceUpdateService)
+        public CloudResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<CloudResourceMonitoringService> logger, ICloudResourceReadService sandboxResourceService, ICloudResourceUpdateService sandboxResourceUpdateService)
         {
             _serviceProvider = serviceProvider;
 
@@ -105,7 +105,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
-        public async Task<string> GetProvisioningState(SandboxResourceDto resource)
+        public async Task<string> GetProvisioningState(CloudResourceDto resource)
         {
             return await GetProvisioningState(resource.ResourceId, resource.ResourceType, resource.ResourceGroupName, resource.ResourceName);
         }

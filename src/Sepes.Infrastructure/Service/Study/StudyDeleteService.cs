@@ -76,19 +76,19 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (curOperation.DependsOnOperation != null)
                         {
-                            if (_db.SandboxResourceOperations.Contains(curOperation.DependsOnOperation))
+                            if (_db.CloudResourceOperations.Contains(curOperation.DependsOnOperation))
                             {
-                                _db.SandboxResourceOperations.Remove(curOperation.DependsOnOperation);
+                                _db.CloudResourceOperations.Remove(curOperation.DependsOnOperation);
                             }
                         }
 
-                        if (_db.SandboxResourceOperations.Contains(curOperation))
+                        if (_db.CloudResourceOperations.Contains(curOperation))
                         {
-                            _db.SandboxResourceOperations.Remove(curOperation);
+                            _db.CloudResourceOperations.Remove(curOperation);
                         }
                     }
 
-                    _db.SandboxResources.Remove(curResource);
+                    _db.CloudResources.Remove(curResource);
                 }
 
                 _db.Sandboxes.Remove(curSandbox);

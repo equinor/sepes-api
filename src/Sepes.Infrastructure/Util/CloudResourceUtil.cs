@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Sepes.Infrastructure.Util
 {
-    public static class SandboxResourceUtil
+    public static class CloudResourceUtil
     {
         public static CloudResource GetSibilingResource(CloudResource resource, string resourceType)
         {
@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Util
             return resource.Sandbox.Resources.FirstOrDefault(r => r.ResourceType == resourceType);
         }
 
-        public static SandboxResourceDto GetResourceByType(List<SandboxResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
+        public static CloudResourceDto GetResourceByType(List<CloudResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
         {
             if(resources == null)
             {
@@ -42,14 +42,14 @@ namespace Sepes.Infrastructure.Util
             return null;
         }
 
-        public static List<SandboxResourceDto> GetAllResourcesByType(List<SandboxResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
+        public static List<CloudResourceDto> GetAllResourcesByType(List<CloudResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
         {
             if (resources == null)
             {
                 throw new ArgumentNullException("resources");
             }
 
-            var result = new List<SandboxResourceDto>();
+            var result = new List<CloudResourceDto>();
 
             foreach (var curResource in resources)
             {

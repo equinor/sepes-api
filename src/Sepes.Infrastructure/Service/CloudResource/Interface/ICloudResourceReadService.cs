@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface ICloudResourceService
+    public interface ICloudResourceReadService
     {
 
         Task<CloudResource> GetByIdAsync(int id);
-        Task<SandboxResourceDto> GetDtoByIdAsync(int id);
+        Task<CloudResourceDto> GetDtoByIdAsync(int id);
 
         Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync();
 
@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<bool> ResourceIsDeleted(int resourceId);
 
-        Task<List<SandboxResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default);
+        Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default);
 
         Task<List<SandboxResourceLightDto>> GetSandboxResourcesLight(int sandboxId);
 

@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Util
     {
         public static string GetOsName(CloudResource resource)
         {
-            var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(resource.ConfigString);
+            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(resource.ConfigString);
 
             if (vmSettings != null)
             {

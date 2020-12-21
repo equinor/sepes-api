@@ -10,33 +10,33 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Query
 {
-    public static class SandboxResourceQueries
+    public static class CloudResourceQueries
     {
         public static async Task<CloudResource> GetResourceGroupEntry(SepesDbContext db, int sandboxId)
         {
-            return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.ResourceGroup);
+            return await GetSingleResourceEntry(db, sandboxId, AzureResourceType.ResourceGroup);
         }
 
         public static async Task<CloudResource> GetDiagStorageAccountEntry(SepesDbContext db, int sandboxId)
         {
-            return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.StorageAccount);
+            return await GetSingleResourceEntry(db, sandboxId, AzureResourceType.StorageAccount);
         }
 
         public static async Task<CloudResource> GetNetworkEntry(SepesDbContext db, int sandboxId)
         {
-            return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.VirtualNetwork);
+            return await GetSingleResourceEntry(db, sandboxId, AzureResourceType.VirtualNetwork);
         }
 
         static IQueryable<CloudResource> WithBasicIncludesQueryable(SepesDbContext db)
         {
-            return db.SandboxResources
+            return db.CloudResources
                 .Include(r => r.Operations)
                 .Include(sr=> sr.Sandbox)
                     .ThenInclude(sb=> sb.Study)
                         .ThenInclude(s=> s.StudyParticipants);
         }
 
-        public static async Task<CloudResource> GetSingleSandboxResourceEntry(SepesDbContext db, int sandboxId, string resourceType)
+        public static async Task<CloudResource> GetSingleResourceEntry(SepesDbContext db, int sandboxId, string resourceType)
         {
             var resourceEntry = await WithBasicIncludesQueryable(db).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == resourceType && r.SandboxControlled);
 
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Query
             return resourceEntry;
         }
 
-        public static IQueryable<CloudResource> GetSandboxResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
+        public static IQueryable<CloudResource> GetResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
         {
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Query
             return resourceQuerable;
         }
 
-        public static IQueryable<CloudResource> GetSandboxResource(SepesDbContext db, int resourceId)
+        public static IQueryable<CloudResource> GetResource(SepesDbContext db, int resourceId)
         {
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
@@ -74,7 +74,7 @@ namespace Sepes.Infrastructure.Query
 
         public static IQueryable<CloudResource> GetSandboxVirtualMachines(SepesDbContext db, int sandboxId)
         {
-            return GetSandboxResourcesByType(db, sandboxId, AzureResourceType.VirtualMachine);           
+            return GetResourcesByType(db, sandboxId, AzureResourceType.VirtualMachine);           
         }
 
         public static async Task<List<CloudResource>> GetSandboxVirtualMachinesList(SepesDbContext db, int sandboxId)

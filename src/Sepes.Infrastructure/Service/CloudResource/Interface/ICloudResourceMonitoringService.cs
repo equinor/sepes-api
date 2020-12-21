@@ -8,6 +8,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task CheckForOrphanResources();
         Task StartMonitoringSession();
 
-        Task<string> GetProvisioningState(SandboxResourceDto resource);
+        Task<string> GetProvisioningState(CloudResourceDto resource);
     }
 }

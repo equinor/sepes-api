@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
+            var networkSettings = CloudResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
 
             var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
 

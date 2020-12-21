@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service.Queries
 
         static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
         {
-            var sandboxId = await db.SandboxResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
+            var sandboxId = await db.CloudResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
             return sandboxId;
         }         
     }

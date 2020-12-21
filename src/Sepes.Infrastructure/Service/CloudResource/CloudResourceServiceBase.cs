@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task<CloudResource> GetInternalAsync(int id)
         {
-           return await _db.SandboxResources
+           return await _db.CloudResources
                     .Include(r => r.Sandbox)
                     .ThenInclude(s => s.Resources)
                     .Include(r => r.Operations)
@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        public async Task<SandboxResourceDto> GetDtoByIdAsync(int id)
+        public async Task<CloudResourceDto> GetDtoByIdAsync(int id)
         {
             var entityFromDb = await GetOrThrowInternalAsync(id);
             var dto = MapEntityToDto(entityFromDb);
@@ -52,9 +52,9 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        protected SandboxResourceDto MapEntityToDto(CloudResource entity) => _mapper.Map<SandboxResourceDto>(entity);
+        protected CloudResourceDto MapEntityToDto(CloudResource entity) => _mapper.Map<CloudResourceDto>(entity);
 
-        public async Task<List<CloudResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+        public async Task<List<CloudResource>> GetActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
