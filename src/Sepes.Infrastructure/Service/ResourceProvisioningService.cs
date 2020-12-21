@@ -17,18 +17,18 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
         readonly IRequestIdService _requestIdService;
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
+        readonly ICloudResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
-        readonly ISandboxResourceMonitoringService _monitoringService;
+        readonly ICloudResourceMonitoringService _monitoringService;
 
         public static readonly string UnitTestPrefix = "unit-test";
 
         public ResourceProvisioningService(ILogger<ResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService,
-            ISandboxResourceService sandboxResourceService,
-            ISandboxResourceUpdateService sandboxResourceUpdateService,
-            ISandboxResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ISandboxResourceMonitoringService monitoringService)
+            ICloudResourceService sandboxResourceService,
+            ICloudResourceUpdateService sandboxResourceUpdateService,
+            ICloudResourceOperationService sandboxResourceOperationService, IProvisioningQueueService workQueue, ICloudResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));

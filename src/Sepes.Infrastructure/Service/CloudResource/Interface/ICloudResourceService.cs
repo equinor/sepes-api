@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface ISandboxResourceService
+    public interface ICloudResourceService
     {
 
-        Task<SandboxResource> GetByIdAsync(int id);
+        Task<CloudResource> GetByIdAsync(int id);
         Task<SandboxResourceDto> GetDtoByIdAsync(int id);
 
-        Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync();
+        Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync();
 
-        Task<List<SandboxResource>> GetAllActiveResources();
+        Task<List<CloudResource>> GetAllActiveResources();
 
 
         Task<bool> ResourceIsDeleted(int resourceId);

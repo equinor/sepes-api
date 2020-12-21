@@ -24,18 +24,18 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IRequestIdService _requestIdService;
         readonly IAzureResourceGroupService _resourceGroupService;
-        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
-        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceCreateService _sandboxResourceCreateService;
+        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxCloudResourceService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxCloudResourceService> logger, IUserService userService,
                 IRequestIdService requestIdService,
-                ISandboxResourceCreateService sandboxResourceCreateService,
-                ISandboxResourceUpdateService sandboxResourceUpdateService,
-                ISandboxResourceService sandboxResourceService,
-           ISandboxResourceOperationService sandboxResourceOperationService,
+                ICloudResourceCreateService sandboxResourceCreateService,
+                ICloudResourceUpdateService sandboxResourceUpdateService,
+                ICloudResourceService sandboxResourceService,
+           ICloudResourceOperationService sandboxResourceOperationService,
            IProvisioningQueueService provisioningQueueService,
              IAzureResourceGroupService resourceGroupService)
               : base(config, db, mapper, logger, userService)
@@ -185,7 +185,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate RELEVANT database entry for ResourceGroupOperation"));
             }
 
-            var operations = new List<SandboxResourceOperation>();
+            var operations = new List<CloudResourceOperation>();
 
             foreach (var curResource in sandboxFromDb.Resources)
             {
@@ -284,7 +284,7 @@ namespace Sepes.Infrastructure.Service
             var user = await _userService.GetCurrentUserAsync();
             var sandboxFromDb = await GetWithoutChecks(sandboxId);
 
-            SandboxResource sandboxResourceGroup = null;
+            CloudResource sandboxResourceGroup = null;
 
             if (sandboxFromDb.Resources.Count > 0)
             {
@@ -311,13 +311,13 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
 
-                var deleteOperation = new SandboxResourceOperation()
+                var deleteOperation = new CloudResourceOperation()
                 {
                     CreatedBy = user.UserName,
                     BatchId = Guid.NewGuid().ToString(),
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = sandboxResourceGroup.Id,
+                    CloudResourceId = sandboxResourceGroup.Id,
                     Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType, CloudResourceOperationType.DELETE, sandboxResourceGroup.SandboxId) + ". (Delete of SandBox resource group and all resources within)",
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
@@ -343,7 +343,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        void SetAllOperationsToAborted(UserDto currentUser, SandboxResource resource)
+        void SetAllOperationsToAborted(UserDto currentUser, CloudResource resource)
         {
             foreach (var curOp in resource.Operations)
             {

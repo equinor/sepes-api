@@ -23,15 +23,15 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly SepesDbContext _db;
         readonly IUserService _userService;
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceOperationService _sandboxResourceOperationService;
         readonly IProvisioningQueueService _workQueue;
 
         public VirtualMachineRuleService(ILogger<VirtualMachineService> logger,
             SepesDbContext db,
             IUserService userService,
-            ISandboxResourceService sandboxResourceService,
-            ISandboxResourceOperationService sandboxResourceOperationService,
+            ICloudResourceService sandboxResourceService,
+            ICloudResourceOperationService sandboxResourceOperationService,
             IProvisioningQueueService workQueue)
         {
             _logger = logger;
@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Service
             _workQueue = workQueue;
         }
 
-        async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperation operation)
+        async Task<CloudResource> GetVmResourceEntry(int vmId, UserOperation operation)
         {
             _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
@@ -139,7 +139,7 @@ namespace Sepes.Infrastructure.Service
             return updatedRuleSet != null ? updatedRuleSet : new List<VmRuleDto>();
         }
 
-        async Task ValidateRuleUpdateInputThrowIfNot(SandboxResource vm, List<VmRuleDto> existingRules, List<VmRuleDto> updatedRuleSet)
+        async Task ValidateRuleUpdateInputThrowIfNot(CloudResource vm, List<VmRuleDto> existingRules, List<VmRuleDto> updatedRuleSet)
         {
             var validationErrors = new List<string>();
 
@@ -517,7 +517,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task CreateUpdateOperationAndAddQueueItem(SandboxResource vm, string description)
+        async Task CreateUpdateOperationAndAddQueueItem(CloudResource vm, string description)
         {
             if (await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(vm.Id))
             {

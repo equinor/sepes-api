@@ -7,9 +7,9 @@ namespace Sepes.Functions
 {
     public class SandboxResourceMonitoringFunction
     {
-        readonly ISandboxResourceMonitoringService _resourceMonitoringService;
+        readonly ICloudResourceMonitoringService _resourceMonitoringService;
 
-        public SandboxResourceMonitoringFunction(ISandboxResourceMonitoringService resourceMonitoringService)
+        public SandboxResourceMonitoringFunction(ICloudResourceMonitoringService resourceMonitoringService)
         {
             _resourceMonitoringService = resourceMonitoringService;
         }

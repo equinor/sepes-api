@@ -100,7 +100,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxCreateDto, Sandbox>();
 
-            CreateMap<SandboxResource, SandboxResourceLightDto>()
+            CreateMap<CloudResource, SandboxResourceLightDto>()
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
@@ -111,17 +111,17 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             //CLOUD RESOURCE
 
-            CreateMap<SandboxResource, SandboxResourceDto>()
+            CreateMap<CloudResource, SandboxResourceDto>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
                 .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
             .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
-            CreateMap<SandboxResourceDto, SandboxResource>()
+            CreateMap<SandboxResourceDto, CloudResource>()
                 .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
 
-            CreateMap<SandboxResourceOperation, SandboxResourceOperationDto>();
-            CreateMap<SandboxResourceOperationDto, SandboxResourceOperation>();
+            CreateMap<CloudResourceOperation, SandboxResourceOperationDto>();
+            CreateMap<SandboxResourceOperationDto, CloudResourceOperation>();
 
 
             //USERS/PARTICIPANTS
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                  .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name));
 
-            CreateMap<SandboxResource, VmDto>()
+            CreateMap<CloudResource, VmDto>()
            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
             .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name))
             .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))

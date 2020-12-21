@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Util
             return messageBuilder.ToString();
         }
 
-        public static string CreateResourceLink(IConfiguration config, SandboxResource resource)
+        public static string CreateResourceLink(IConfiguration config, CloudResource resource)
         {
             return CreateResourceLink(config, resource.ResourceId);
         }

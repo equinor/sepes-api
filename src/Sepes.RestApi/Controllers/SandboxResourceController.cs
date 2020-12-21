@@ -14,10 +14,10 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class SandboxResourceController : ControllerBase
     {
-        readonly ISandboxResourceService _sandboxResourceService;
+        readonly ICloudResourceService _sandboxResourceService;
         readonly ISandboxCloudResourceService _sandboxCloudResourceService;
 
-        public SandboxResourceController(ISandboxResourceService sandboxResourceService, ISandboxCloudResourceService sandboxCloudResourceService)
+        public SandboxResourceController(ICloudResourceService sandboxResourceService, ISandboxCloudResourceService sandboxCloudResourceService)
         {
             _sandboxResourceService = sandboxResourceService;
             _sandboxCloudResourceService = sandboxCloudResourceService;

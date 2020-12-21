@@ -10,10 +10,10 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceUpdateService : SandboxResourceServiceBase, ISandboxResourceUpdateService
+    public class CloudResourceUpdateService : CloudResourceServiceBase, ICloudResourceUpdateService
     {       
 
-        public SandboxResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceUpdateService> logger, IUserService userService)
+        public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService)
          : base(db, config, mapper, logger, userService)
         {           
            

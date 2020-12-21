@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceDeleteService : SandboxResourceServiceBase, ISandboxResourceDeleteService
+    public class CloudResourceDeleteService : CloudResourceServiceBase, ICloudResourceDeleteService
     {
         readonly IRequestIdService _requestIdService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceOperationService _sandboxResourceOperationService;
 
-        public SandboxResourceDeleteService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService, IRequestIdService requestIdService, ISandboxResourceOperationService sandboxResourceOperationService)
+        public CloudResourceDeleteService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceDeleteService> logger, IUserService userService, IRequestIdService requestIdService, ICloudResourceOperationService sandboxResourceOperationService)
          : base(db, config, mapper, logger, userService)
         {           
             _requestIdService = requestIdService;
@@ -47,14 +47,14 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogInformation($"{deleteOperationDescription}: Creating delete operation");
 
-                deleteOperation = new SandboxResourceOperation()
+                deleteOperation = new CloudResourceOperation()
                 {
                     Description = AzureResourceUtil.CreateDescriptionForResourceOperation(resourceFromDb.ResourceType, CloudResourceOperationType.DELETE, resourceFromDb.SandboxId, id),
                     CreatedBy = user.UserName,
                     BatchId = Guid.NewGuid().ToString(),
                     CreatedBySessionId = _requestIdService.GetRequestId(),
                     OperationType = CloudResourceOperationType.DELETE,
-                    SandboxResourceId = resourceFromDb.Id,
+                    CloudResourceId = resourceFromDb.Id,
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                 };
 
@@ -75,7 +75,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxResourceOperationDto>(deleteOperation);
         }
 
-        async Task<SandboxResource> MarkAsDeletedByIdInternalAsync(int id)
+        async Task<CloudResource> MarkAsDeletedByIdInternalAsync(int id)
         {
             var resourceEntity = await _db.SandboxResources.FirstOrDefaultAsync(s => s.Id == id);
 
@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
             return resourceEntity;
         }
 
-        SandboxResource MarkAsDeletedInternal(SandboxResource resource, string deletedBy)
+        CloudResource MarkAsDeletedInternal(CloudResource resource, string deletedBy)
         {
             resource.DeletedBy = deletedBy;
             resource.Deleted = DateTime.UtcNow;

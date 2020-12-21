@@ -31,10 +31,10 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxService _sandboxService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
-        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;
-        readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceCreateService _sandboxResourceCreateService;
+        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
+        readonly ICloudResourceDeleteService _sandboxResourceDeleteService;
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVmService _azureVmService;
 
@@ -47,10 +47,10 @@ namespace Sepes.Infrastructure.Service
             ISandboxService sandboxService,
             IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
-            ISandboxResourceCreateService sandboxResourceCreateService,
-            ISandboxResourceUpdateService sandboxResourceUpdateService,
-            ISandboxResourceDeleteService sandboxResourceDeleteService,
-            ISandboxResourceService sandboxResourceService,
+            ICloudResourceCreateService sandboxResourceCreateService,
+            ICloudResourceUpdateService sandboxResourceUpdateService,
+            ICloudResourceDeleteService sandboxResourceDeleteService,
+            ICloudResourceService sandboxResourceService,
             IProvisioningQueueService workQueue,
             IAzureVmService azureVmService)
         {
@@ -177,7 +177,7 @@ namespace Sepes.Infrastructure.Service
             return vmExternalLink;
         }
 
-        async Task<SandboxResource> GetVmResourceEntry(int vmId, UserOperation operation)
+        async Task<CloudResource> GetVmResourceEntry(int vmId, UserOperation operation)
         {
             _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);

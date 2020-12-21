@@ -20,20 +20,20 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceService : SandboxResourceServiceBase, ISandboxResourceService
+    public class CloudResourceService : CloudResourceServiceBase, ICloudResourceService
     { 
-        public SandboxResourceService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceService> logger, IUserService userService)
+        public CloudResourceService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceService> logger, IUserService userService)
          : base(db, config, mapper, logger, userService)
         { 
         } 
         
-        public async Task<SandboxResource> GetByIdAsync(int id)
+        public async Task<CloudResource> GetByIdAsync(int id)
         {
             var entityFromDb = await GetOrThrowAsync(id);
             return entityFromDb;
         }  
 
-        public async Task<SandboxResource> GetOrThrowAsync(int id)
+        public async Task<CloudResource> GetOrThrowAsync(int id)
         {
             return await GetOrThrowInternalAsync(id);
         }
@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
       
 
-        public async Task<List<SandboxResource>> GetAllActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+        public async Task<List<CloudResource>> GetAllActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)
@@ -65,7 +65,7 @@ namespace Sepes.Infrastructure.Service
        
        
 
-        public async Task<IEnumerable<SandboxResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
+        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.SandboxResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
         public async Task<bool> ResourceIsDeleted(int resourceId)

@@ -39,18 +39,18 @@ namespace Sepes.Tests.Setup
             services.AddLogging();
             //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
-            services.AddTransient<SandboxResourceOperationService>();            
+            services.AddTransient<CloudResourceOperationService>();            
             services.AddTransient<IRequestIdService, HasRequestIdMock>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
 
             //Sepes Services
-            services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            services.AddTransient<ICloudResourceService, CloudResourceService>();
             services.AddTransient<IVariableService, VariableService>();
             services.AddTransient<IStudyService, StudyService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();
-            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            services.AddTransient<ICloudResourceOperationService, CloudResourceOperationService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
 
             //Azure resource services

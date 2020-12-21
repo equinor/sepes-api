@@ -18,11 +18,11 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceCreateService : SandboxResourceServiceBase, ISandboxResourceCreateService
+    public class CloudResourceCreateService : CloudResourceServiceBase, ICloudResourceCreateService
     {
         readonly IRequestIdService _requestIdService;
 
-        public SandboxResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<SandboxResourceCreateService> logger, IUserService userService, IRequestIdService requestIdService)
+        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IRequestIdService requestIdService)
          : base(db, config, mapper, logger, userService)
         {           
             _requestIdService = requestIdService;    
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
             //_ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
-        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
+        public async Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
         {
             try
             {
@@ -81,7 +81,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<SandboxResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, string resourceName, Dictionary<string, string> tags, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
+        async Task<CloudResource> AddInternal(string batchId, int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, string resourceName, Dictionary<string, string> tags, bool sandboxControlled = true, int dependentOn = 0, string configString = null)
         {
            await ValidateNameThrowIfInvalid(resourceName);
 
@@ -91,7 +91,7 @@ namespace Sepes.Infrastructure.Service
 
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var newResource = new SandboxResource()
+            var newResource = new CloudResource()
             {
                 ResourceGroupId = resourceGroupId,
                 ResourceGroupName = resourceGroupName,
@@ -104,8 +104,8 @@ namespace Sepes.Infrastructure.Service
                 Tags = tagsString,
                 ConfigString = configString,
 
-                Operations = new List<SandboxResourceOperation> {
-                    new SandboxResourceOperation()
+                Operations = new List<CloudResourceOperation> {
+                    new CloudResourceOperation()
                     {
                     Description = AzureResourceUtil.CreateDescriptionForResourceOperation(type, CloudResourceOperationType.CREATE, sandboxId),
                     BatchId = batchId,

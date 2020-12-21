@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface ISandboxResourceOperationService
+    public interface ICloudResourceOperationService
     {
         Task<SandboxResourceOperationDto> AddAsync(int sandboxResourceId, SandboxResourceOperationDto operationDto);
 
@@ -19,11 +19,11 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<bool> ExistsPreceedingUnfinishedOperationsAsync(SandboxResourceOperationDto operationDto);
 
-        Task<List<SandboxResourceOperation>> GetUnfinishedOperations(int resourceId);
+        Task<List<CloudResourceOperation>> GetUnfinishedOperations(int resourceId);
 
-        Task<SandboxResourceOperation> GetUnfinishedDeleteOperation(int resourceId);
+        Task<CloudResourceOperation> GetUnfinishedDeleteOperation(int resourceId);
 
-        Task<List<SandboxResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId);
+        Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId);
 
         Task<bool> OperationIsFinishedAndSucceededAsync(int operationId);
         Task<bool> HasUnstartedCreateOrUpdateOperation(int resourceId);

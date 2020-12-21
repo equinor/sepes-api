@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface ISandboxResourceMonitoringService
+    public interface ICloudResourceMonitoringService
     {        
         Task CheckForOrphanResources();
         Task StartMonitoringSession();

@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureVmUtil
     {
-        public static string GetOsName(SandboxResource resource)
+        public static string GetOsName(CloudResource resource)
         {
             var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(resource.ConfigString);
 

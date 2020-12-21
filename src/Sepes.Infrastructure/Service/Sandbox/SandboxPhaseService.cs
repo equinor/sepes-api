@@ -21,8 +21,8 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
     {
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceOperationService _sandboxResourceOperationService;
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceOperationService _sandboxResourceOperationService;
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
         readonly IAzureVNetService _azureVNetService;
@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ISandboxResourceService sandboxResourceService, ISandboxResourceOperationService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
+            IUserService userService, ICloudResourceService sandboxResourceService, ICloudResourceOperationService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVNetService azureVNetService, IAzureStorageAccountService azureStorageAccountService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService)
         {

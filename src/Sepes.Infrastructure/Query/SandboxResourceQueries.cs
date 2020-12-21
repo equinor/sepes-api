@@ -12,22 +12,22 @@ namespace Sepes.Infrastructure.Query
 {
     public static class SandboxResourceQueries
     {
-        public static async Task<SandboxResource> GetResourceGroupEntry(SepesDbContext db, int sandboxId)
+        public static async Task<CloudResource> GetResourceGroupEntry(SepesDbContext db, int sandboxId)
         {
             return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.ResourceGroup);
         }
 
-        public static async Task<SandboxResource> GetDiagStorageAccountEntry(SepesDbContext db, int sandboxId)
+        public static async Task<CloudResource> GetDiagStorageAccountEntry(SepesDbContext db, int sandboxId)
         {
             return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.StorageAccount);
         }
 
-        public static async Task<SandboxResource> GetNetworkEntry(SepesDbContext db, int sandboxId)
+        public static async Task<CloudResource> GetNetworkEntry(SepesDbContext db, int sandboxId)
         {
             return await GetSingleSandboxResourceEntry(db, sandboxId, AzureResourceType.VirtualNetwork);
         }
 
-        static IQueryable<SandboxResource> WithBasicIncludesQueryable(SepesDbContext db)
+        static IQueryable<CloudResource> WithBasicIncludesQueryable(SepesDbContext db)
         {
             return db.SandboxResources
                 .Include(r => r.Operations)
@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Query
                         .ThenInclude(s=> s.StudyParticipants);
         }
 
-        public static async Task<SandboxResource> GetSingleSandboxResourceEntry(SepesDbContext db, int sandboxId, string resourceType)
+        public static async Task<CloudResource> GetSingleSandboxResourceEntry(SepesDbContext db, int sandboxId, string resourceType)
         {
             var resourceEntry = await WithBasicIncludesQueryable(db).SingleOrDefaultAsync(r => r.SandboxId == sandboxId && r.ResourceType == resourceType && r.SandboxControlled);
 
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Query
             return resourceEntry;
         }
 
-        public static IQueryable<SandboxResource> GetSandboxResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
+        public static IQueryable<CloudResource> GetSandboxResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
         {
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Query
             return resourceQuerable;
         }
 
-        public static IQueryable<SandboxResource> GetSandboxResource(SepesDbContext db, int resourceId)
+        public static IQueryable<CloudResource> GetSandboxResource(SepesDbContext db, int resourceId)
         {
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
@@ -72,19 +72,19 @@ namespace Sepes.Infrastructure.Query
             return resourceQuerable;
         }
 
-        public static IQueryable<SandboxResource> GetSandboxVirtualMachines(SepesDbContext db, int sandboxId)
+        public static IQueryable<CloudResource> GetSandboxVirtualMachines(SepesDbContext db, int sandboxId)
         {
             return GetSandboxResourcesByType(db, sandboxId, AzureResourceType.VirtualMachine);           
         }
 
-        public static async Task<List<SandboxResource>> GetSandboxVirtualMachinesList(SepesDbContext db, int sandboxId)
+        public static async Task<List<CloudResource>> GetSandboxVirtualMachinesList(SepesDbContext db, int sandboxId)
         {
             var queryable = GetSandboxVirtualMachines(db, sandboxId);
 
             return await queryable.ToListAsync();
         }
 
-        public static IQueryable<SandboxResource> GetSandboxResourcesQueryable(SepesDbContext db, int sandboxId)
+        public static IQueryable<CloudResource> GetSandboxResourcesQueryable(SepesDbContext db, int sandboxId)
         {
             var queryable = WithBasicIncludesQueryable(db).Where(sr=> sr.SandboxId == sandboxId);
 

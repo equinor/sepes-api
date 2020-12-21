@@ -13,16 +13,16 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceMonitoringService : ISandboxResourceMonitoringService
+    public class CloudResourceMonitoringService : ICloudResourceMonitoringService
     {
         readonly IServiceProvider _serviceProvider;
         readonly IConfiguration _config;
         readonly ILogger _logger;
         
-        readonly ISandboxResourceService _sandboxResourceService;
-        readonly ISandboxResourceUpdateService _sandboxResourceUpdateService;  
+        readonly ICloudResourceService _sandboxResourceService;
+        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;  
 
-        public SandboxResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<SandboxResourceMonitoringService> logger, ISandboxResourceService sandboxResourceService, ISandboxResourceUpdateService sandboxResourceUpdateService)
+        public CloudResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<CloudResourceMonitoringService> logger, ICloudResourceService sandboxResourceService, ICloudResourceUpdateService sandboxResourceUpdateService)
         {
             _serviceProvider = serviceProvider;
 
@@ -111,7 +111,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
-        async Task<string> GetProvisioningState(SandboxResource resource)
+        async Task<string> GetProvisioningState(CloudResource resource)
         {
             return await GetProvisioningState(resource.ResourceId, resource.ResourceType, resource.ResourceGroupName, resource.ResourceName);
         }
@@ -141,7 +141,7 @@ namespace Sepes.Infrastructure.Service
         }
 
         //Fetches the provisioning state for the resource and write this on our record of the resource
-        async Task GetAndLogProvisioningState(SandboxResource resource)
+        async Task GetAndLogProvisioningState(CloudResource resource)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
 
         // Checks Tags from Resource in Azure with information from db. 
         // Makes sure they are equal.
-        async Task CheckAndUpdateTags(SandboxResource resource)
+        async Task CheckAndUpdateTags(CloudResource resource)
         {
             try
             {

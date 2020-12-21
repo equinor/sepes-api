@@ -144,10 +144,10 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantService, StudyParticipantService>();
-            services.AddTransient<ISandboxResourceService, SandboxResourceService>();
-            services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
-            services.AddTransient<ISandboxResourceUpdateService, SandboxResourceUpdateService>();
-            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+            services.AddTransient<ICloudResourceService, CloudResourceService>();
+            services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
+            services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
+            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -160,8 +160,8 @@ namespace Sepes.RestApi
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<ISandboxCloudResourceService, SandboxCloudResourceService>();
-            services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
-            services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
+            services.AddTransient<ICloudResourceOperationService, CloudResourceOperationService>();
+            services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();

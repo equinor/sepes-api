@@ -13,16 +13,16 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceServiceBase : SandboxServiceBase
+    public class CloudResourceServiceBase : SandboxServiceBase
     {       
 
-        public SandboxResourceServiceBase(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger logger, IUserService userService)
+        public CloudResourceServiceBase(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger logger, IUserService userService)
          : base(config, db, mapper, logger, userService)
         {           
           
         }
 
-        protected async Task<SandboxResource> GetInternalAsync(int id)
+        protected async Task<CloudResource> GetInternalAsync(int id)
         {
            return await _db.SandboxResources
                     .Include(r => r.Sandbox)
@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        protected async Task<SandboxResource> GetOrThrowInternalAsync(int id)
+        protected async Task<CloudResource> GetOrThrowInternalAsync(int id)
         {
             var entityFromDb = await GetInternalAsync(id);
 
@@ -52,9 +52,9 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        protected SandboxResourceDto MapEntityToDto(SandboxResource entity) => _mapper.Map<SandboxResourceDto>(entity);
+        protected SandboxResourceDto MapEntityToDto(CloudResource entity) => _mapper.Map<SandboxResourceDto>(entity);
 
-        public async Task<List<SandboxResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
+        public async Task<List<CloudResource>> GetActiveResources() => await _db.SandboxResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
                                                                                                    .Where(sr => !sr.Deleted.HasValue)

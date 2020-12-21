@@ -25,9 +25,9 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<StudyParticipant> StudyParticipants { get; set; }
 
-        public virtual DbSet<SandboxResource> SandboxResources { get; set; }
+        public virtual DbSet<CloudResource> SandboxResources { get; set; }
 
-        public virtual DbSet<SandboxResourceOperation> SandboxResourceOperations { get; set; }
+        public virtual DbSet<CloudResourceOperation> SandboxResourceOperations { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
 
@@ -54,8 +54,8 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<StudyDataset>().HasKey(sd => new { sd.StudyId, sd.DatasetId });
             modelBuilder.Entity<SandboxDataset>().HasKey(sd => new { sd.SandboxId, sd.DatasetId });
             modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
-            modelBuilder.Entity<SandboxResource>().HasKey(r => r.Id);
-            modelBuilder.Entity<SandboxResourceOperation>().HasKey(o => o.Id);
+            modelBuilder.Entity<CloudResource>().HasKey(r => r.Id);
+            modelBuilder.Entity<CloudResourceOperation>().HasKey(o => o.Id);
 
             modelBuilder.Entity<Region>().HasKey(r => r.Key);
             modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
@@ -118,17 +118,17 @@ namespace Sepes.Infrastructure.Model.Context
 
 
             //CLOUD RESOURCE / SANDBOX RELATION
-            modelBuilder.Entity<SandboxResource>()
+            modelBuilder.Entity<CloudResource>()
                 .HasOne(cr => cr.Sandbox)
                 .WithMany(d => d.Resources)
                 .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<SandboxResourceOperation>()
+            modelBuilder.Entity<CloudResourceOperation>()
                 .HasOne(cr => cr.Resource)
                 .WithMany(d => d.Operations)
-                .HasForeignKey(sd => sd.SandboxResourceId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.CloudResourceId).OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<SandboxResourceOperation>()
+            modelBuilder.Entity<CloudResourceOperation>()
                 .HasOne(o => o.DependsOnOperation)
                 .WithMany(o => o.DependantOnThisOperation)
              .HasForeignKey(sd => sd.DependsOnOperationId).OnDelete(DeleteBehavior.Restrict);
@@ -211,19 +211,19 @@ namespace Sepes.Infrastructure.Model.Context
                 .Property(b => b.Created)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandboxResource>()
+            modelBuilder.Entity<CloudResource>()
                 .Property(sr => sr.Created)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandboxResource>()
+            modelBuilder.Entity<CloudResource>()
                 .Property(sr => sr.Updated)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandboxResourceOperation>()
+            modelBuilder.Entity<CloudResourceOperation>()
                 .Property(sro => sro.Created)
                 .HasDefaultValueSql("getutcdate()");
 
-            modelBuilder.Entity<SandboxResourceOperation>()
+            modelBuilder.Entity<CloudResourceOperation>()
                 .Property(sro => sro.Updated)
                 .HasDefaultValueSql("getutcdate()");
 

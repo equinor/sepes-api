@@ -15,14 +15,14 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceOperationService : ISandboxResourceOperationService
+    public class CloudResourceOperationService : ICloudResourceOperationService
     {
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
 
-        public SandboxResourceOperationService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
+        public CloudResourceOperationService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
         {
             _db = db;
             _mapper = mapper;
@@ -33,7 +33,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxResourceOperationDto> AddAsync(int sandboxResourceId, SandboxResourceOperationDto operationDto)
         {
             var sandboxResourceFromDb = await GetSandboxResourceOrThrowAsync(sandboxResourceId);
-            var newOperation = _mapper.Map<SandboxResourceOperation>(operationDto);
+            var newOperation = _mapper.Map<CloudResourceOperation>(operationDto);
 
             sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
@@ -71,7 +71,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            var newOperation = new SandboxResourceOperation()
+            var newOperation = new CloudResourceOperation()
             {
                 Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, CloudResourceOperationType.UPDATE, sandboxResourceId),
                 BatchId = batchId,
@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
             return itemDto;
         }
 
-        async Task<SandboxResourceOperation> GetOrThrowAsync(int id)
+        async Task<CloudResourceOperation> GetOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResourceOperations
                 .Include(o => o.DependsOnOperation)
@@ -160,7 +160,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<SandboxResourceOperationDto>(itemFromDb);
         }
 
-        private async Task<SandboxResource> GetSandboxResourceOrThrowAsync(int id)
+        private async Task<CloudResource> GetSandboxResourceOrThrowAsync(int id)
         {
             var entityFromDb = await _db.SandboxResources
                 .Include(sr => sr.Operations)
@@ -187,7 +187,7 @@ namespace Sepes.Infrastructure.Service
             return itemFromDb.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
         }
 
-        public async Task<List<SandboxResourceOperation>> GetUnfinishedOperations(int resourceId)
+        public async Task<List<CloudResourceOperation>> GetUnfinishedOperations(int resourceId)
         {
             var preceedingOpsQueryable = GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(resourceId);
             return await preceedingOpsQueryable.ToListAsync();
@@ -199,7 +199,7 @@ namespace Sepes.Infrastructure.Service
             return await preceedingOpsQueryable.AnyAsync();
         }
 
-        public async Task<List<SandboxResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId)
+        public async Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId)
         {
             var unfinishedOps = await GetUnfinishedOperations(resourceId);
 
@@ -220,28 +220,28 @@ namespace Sepes.Infrastructure.Service
             return unfinishedOps;
         }
 
-        public async Task<SandboxResourceOperation> GetUnfinishedDeleteOperation(int resourceId)
+        public async Task<CloudResourceOperation> GetUnfinishedDeleteOperation(int resourceId)
         {
             return await _db.SandboxResourceOperations
-               .Where(o => o.SandboxResourceId == resourceId
+               .Where(o => o.CloudResourceId == resourceId
                && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
                ).FirstOrDefaultAsync();
         }
 
-        IQueryable<SandboxResourceOperation> GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
+        IQueryable<CloudResourceOperation> GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
         {
             return _db.SandboxResourceOperations
-                .Where(o => o.SandboxResourceId == resourceId
+                .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
                 && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
                 );
         }
 
-        IQueryable<SandboxResourceOperation> GetPreceedingUnstartedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
+        IQueryable<CloudResourceOperation> GetPreceedingUnstartedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)
         {
             return _db.SandboxResourceOperations
-                .Where(o => o.SandboxResourceId == resourceId
+                .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
                 && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW)

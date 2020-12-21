@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface ISandboxResourceCreateService
+    public interface ICloudResourceCreateService
     {
         //GENERAL METHODS
         Task<SandboxResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0);
@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto);
 
-        Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, SandboxResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
+        Task<SandboxResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
 
      
 

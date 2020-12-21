@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Util
 {
     public static class SandboxResourceUtil
     {
-        public static SandboxResource GetSibilingResource(SandboxResource resource, string resourceType)
+        public static CloudResource GetSibilingResource(CloudResource resource, string resourceType)
         {
             if (resource.Sandbox == null)
             {
