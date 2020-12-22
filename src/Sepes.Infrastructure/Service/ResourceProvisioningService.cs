@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -58,21 +59,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<bool> CheckAndHandleTryCount(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation)
-        {
-            if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
-            {
-                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
-
-                currentResourceOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED);
-                await _workQueue.DeleteMessageAsync(queueParentItem);
-
-                return true;
-            }
-
-            return false;
-
-        }
+       
 
         public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
         {
@@ -82,9 +69,9 @@ namespace Sepes.Infrastructure.Service
             CloudResourceOperationDto currentResourceOperation = null;
 
             //Get's re-used amonong child elements because the operations might share variables
-            var currentCrudInput = new CloudResourceCRUDInput();
+            var currentCrudInput = new ResourceProvisioningParameters();
 
-            CloudResourceCRUDResult currentCrudResult = null;
+            ResourceProvisioningResult currentCrudResult = null;
 
             var deleteFromQueueAfterCompletion = true;
 
@@ -192,7 +179,23 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        async Task<CloudResourceCRUDResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, CloudResourceOperationDto currentResourceOperation, CloudResourceCRUDInput currentCrudInput, CloudResourceCRUDResult currentCrudResult)
+        async Task<bool> CheckAndHandleTryCount(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation)
+        {
+            if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
+            {
+                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
+
+                currentResourceOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED);
+                await _workQueue.DeleteMessageAsync(queueParentItem);
+
+                return true;
+            }
+
+            return false;
+
+        }
+
+        async Task<ResourceProvisioningResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, CloudResourceOperationDto currentResourceOperation, ResourceProvisioningParameters currentCrudInput, ResourceProvisioningResult currentCrudResult)
         {
 
             var resource = currentResourceOperation.Resource;
@@ -203,7 +206,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Setting operation to In Progress");
 
 
-            var service = AzureResourceServiceResolver.GetCRUDService(_serviceProvider, resourceType);
+            var service = AzureResourceServiceResolver.GetProvisioningService(_serviceProvider, resourceType);
 
             if (service == null)
             {
@@ -239,11 +242,11 @@ namespace Sepes.Infrastructure.Service
                 }
                 else
                 {
-                    currentResourceOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+                    currentResourceOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId());
 
 
                     var cancellationTokenSource = new CancellationTokenSource();
-                    Task<CloudResourceCRUDResult> currentCrudResultTask = null;
+                    Task<ResourceProvisioningResult> currentCrudResultTask = null;
 
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {
@@ -281,7 +284,7 @@ namespace Sepes.Infrastructure.Service
             }
             else if (currentResourceOperation.OperationType == CloudResourceOperationType.DELETE)
             {
-                currentResourceOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+                currentResourceOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentResourceOperation.Id, _requestIdService.GetRequestId());
 
                 if (currentResourceOperation.Resource.ResourceType == AzureResourceType.ResourceGroup)
                 {

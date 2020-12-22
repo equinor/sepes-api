@@ -6,6 +6,7 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -23,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
@@ -41,26 +42,26 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var bastion = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
             var result = CreateResult(bastion);
             return result;
         }
 
-        CloudResourceCRUDResult CreateResult(BastionHost bastion)
+        ResourceProvisioningResult CreateResult(BastionHost bastion)
         {
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(bastion);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(bastion);
             crudResult.CurrentProvisioningState = bastion.ProvisioningState.ToString();
             return crudResult;
         }
 
-        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             await Delete(parameters.ResourceGroupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
             return crudResult;
         }
 
@@ -157,7 +158,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

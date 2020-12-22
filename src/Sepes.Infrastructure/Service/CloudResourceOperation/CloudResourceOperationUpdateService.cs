@@ -52,14 +52,14 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
-        public async Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId, string status)
+        public async Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
             var operationFromDb = await GetResourceOperationOrThrowAsync(id);
             operationFromDb.TryCount++;
             operationFromDb.CarriedOutBySessionId = requestId;
-            operationFromDb.Status = status;
+            operationFromDb.Status = CloudResourceOperationState.IN_PROGRESS;
             operationFromDb.Updated = DateTime.UtcNow;
             operationFromDb.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();

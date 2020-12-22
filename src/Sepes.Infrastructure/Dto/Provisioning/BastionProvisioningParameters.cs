@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Azure.ResourceProvisioningParameters
+﻿namespace Sepes.Infrastructure.Dto.Provisioning
 {
     public class BastionProvisioningParameters
     {

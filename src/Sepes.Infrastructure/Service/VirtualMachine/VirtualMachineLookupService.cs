@@ -40,7 +40,9 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             var result = new List<VmDiskLookupDto>();
 
@@ -70,13 +72,15 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Unable to get available OS from azure for sandbox {sandboxId}");
+                _logger.LogCritical(ex, $"Unable to get available OS from azure for sandbox {sandboxId}");
             }
 
             return result;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    public interface IAzureVmService : IHasProvisioningState, IHasTags, IPerformCloudResourceCRUD
+    public interface IAzureVmService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
     {
         Task<IVirtualMachine> CreateAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, 
                                     string subnetName, string userName, string password, string vmSize, 

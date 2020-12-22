@@ -6,6 +6,7 @@ using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -27,7 +28,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
@@ -64,7 +65,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
@@ -73,9 +74,9 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        CloudResourceCRUDResult CreateResult(IStorageAccount storageAccount)
+        ResourceProvisioningResult CreateResult(IStorageAccount storageAccount)
         {
-            var result = CloudResourceCRUDUtil.CreateResultFromIResource(storageAccount);
+            var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
             result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
             return result;
         }
@@ -142,12 +143,12 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

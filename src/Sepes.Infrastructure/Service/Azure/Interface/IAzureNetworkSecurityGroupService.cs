@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    public interface IAzureNetworkSecurityGroupService : IHasProvisioningState, IHasTags, IPerformCloudResourceCRUD
+    public interface IAzureNetworkSecurityGroupService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
     {     
         Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken));
         

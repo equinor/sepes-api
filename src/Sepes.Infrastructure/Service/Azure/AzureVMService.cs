@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Config;
@@ -34,7 +35,7 @@ namespace Sepes.Infrastructure.Service
             _nsgRuleService = nsgRuleService;
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
@@ -81,7 +82,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Updating VM {parameters.Name}");
 
@@ -97,7 +98,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        async Task UpdateVmRules(CloudResourceCRUDInput parameters, VmSettingsDto vmSettings, string privateIp, CancellationToken cancellationToken = default)
+        async Task UpdateVmRules(ResourceProvisioningParameters parameters, VmSettingsDto vmSettings, string privateIp, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Setting desired VM rules for {parameters.Name}");
 
@@ -190,7 +191,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Done setting desired VM rules for {parameters.Name}");
         }
 
-        async Task<int> FindNextPriority(CloudResourceCRUDInput parameters, Dictionary<string, NsgRuleDto> existingRulesForVm, int startingAt, int increaseBy, int highestAllowed, string direction, CancellationToken cancellationToken = default)
+        async Task<int> FindNextPriority(ResourceProvisioningParameters parameters, Dictionary<string, NsgRuleDto> existingRulesForVm, int startingAt, int increaseBy, int highestAllowed, string direction, CancellationToken cancellationToken = default)
         {
             var existingRuleForSameVmWithHighestPriority = existingRulesForVm.Values.Where(r => r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
 
@@ -203,7 +204,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        async Task<int> FindNextPriority(CloudResourceCRUDInput parameters, int startingAt, int increaseBy, int highestAllowed, string direction, CancellationToken cancellationToken = default)
+        async Task<int> FindNextPriority(ResourceProvisioningParameters parameters, int startingAt, int increaseBy, int highestAllowed, string direction, CancellationToken cancellationToken = default)
         {
             var allExistingRulesInNsg = await _nsgRuleService.GetNsgRulesForDirection(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, direction, cancellationToken);
 
@@ -254,7 +255,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var vm = await GetAsync(parameters.ResourceGroupName, parameters.Name);
             var result = CreateCRUDResult(vm);
@@ -410,7 +411,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             string provisioningState = null;
 
@@ -427,7 +428,7 @@ namespace Sepes.Infrastructure.Service
                 provisioningState = CloudResourceProvisioningStates.NOTFOUND;
             }
 
-            return CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            return ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
         }
 
         public async Task DeleteAsync(string resourceGroupName, string virtualMachineName, string networkSecurityGroupName, string configString)
@@ -519,9 +520,9 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        CloudResourceCRUDResult CreateCRUDResult(IVirtualMachine vm)
+        ResourceProvisioningResult CreateCRUDResult(IVirtualMachine vm)
         {
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(vm);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(vm);
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
@@ -578,7 +579,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogWarning($"Unable to fetch public IP settings for VM {vm.Name}");
+                _logger.LogWarning(ex, $"Unable to fetch public IP settings for VM {vm.Name}");
             }
 
             vmDto.NICs.Add(CreateNicDto(primaryNic));

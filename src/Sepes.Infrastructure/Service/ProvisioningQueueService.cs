@@ -61,7 +61,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds)
         {
-            _logger.LogInformation($"Queue: Increasing message invisibility message for message {message.MessageId} with description \"{message.Description}\" by {invisibleForInSeconds} seconds.");
+            _logger.LogInformation($"Queue: Increasing message invisibility for {message.MessageId} with description \"{message.Description}\" by {invisibleForInSeconds} seconds.");
             var messageAsJson = JsonConvert.SerializeObject(message);
             var updateReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);
             message.PopReceipt = updateReceipt.PopReceipt;

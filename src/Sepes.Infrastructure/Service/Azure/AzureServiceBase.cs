@@ -1,15 +1,13 @@
-﻿
-using Microsoft.Azure.Management.Fluent;
+﻿using Microsoft.Azure.Management.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Model.Config;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -60,15 +58,14 @@ namespace Sepes.Infrastructure.Service
           
         }
 
-        protected string GetSharedVariableThrowIfNotFoundOrEmpty(CloudResourceCRUDInput parameters, string variableName, string descriptionForErrorMessage)
+        protected string GetSharedVariableThrowIfNotFoundOrEmpty(ResourceProvisioningParameters parameters, string variableName, string descriptionForErrorMessage)
         {
-            string sharedVariableValue = null;
-
-            if (parameters.TryGetSharedVariable(variableName, out sharedVariableValue) == false)
-            {                
+            if (parameters.TryGetSharedVariable(variableName, out string sharedVariableValue) == false)
+            {
                 throw new ArgumentException($"{this.GetType().Name}: Missing {descriptionForErrorMessage} from input");
             }
-            else if(String.IsNullOrWhiteSpace(sharedVariableValue)){
+            else if (String.IsNullOrWhiteSpace(sharedVariableValue))
+            {
                 throw new ArgumentException($"{this.GetType().Name}: Empty {descriptionForErrorMessage} from input");
             }
 

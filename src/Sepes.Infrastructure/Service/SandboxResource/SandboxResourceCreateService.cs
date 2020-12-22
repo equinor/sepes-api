@@ -83,7 +83,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Creating Resource Group for sandbox: {dto.SandboxId}");
 
             var resourceCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault();
-            await _cloudResourceOperationUpdateService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
+            await _cloudResourceOperationUpdateService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId());
 
             var azureResourceGroup = await _azureResourceGroupService.Create(dto.ResourceGroup.ResourceName, dto.Region, dto.Tags);
             ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
