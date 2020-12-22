@@ -161,7 +161,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyLogoService, StudyLogoService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();            
-            services.AddTransient<IResourceProvisioningService, ProvisioningQueueItemService>();
+            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();          

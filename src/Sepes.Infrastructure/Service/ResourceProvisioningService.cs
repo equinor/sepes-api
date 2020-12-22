@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class ProvisioningQueueItemService : IResourceProvisioningService
+    public class ResourceProvisioningService : IResourceProvisioningService
     {
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
@@ -25,7 +25,8 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
         readonly ICloudResourceMonitoringService _monitoringService;
 
-        public ProvisioningQueueItemService(ILogger<ResourceProvisioningService> logger,
+        public ResourceProvisioningService(
+            ILogger<ResourceProvisioningService> logger,
             IServiceProvider serviceProvider,
             IRequestIdService requestIdService,
             IProvisioningQueueService workQueue,

@@ -85,7 +85,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
             //Ext System Facade Services            
-            builder.Services.AddTransient<IResourceProvisioningService, ProvisioningQueueItemService>();
+            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
