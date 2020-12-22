@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service
         protected readonly IAzure _azure;
         protected readonly AzureCredentials _credentials;
 
-        protected string _subscriptionId { get; set; }
+        protected string _subscriptionId;
 
 
         public AzureServiceBase(IConfiguration config, ILogger logger)

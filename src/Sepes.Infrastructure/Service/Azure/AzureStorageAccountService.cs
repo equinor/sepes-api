@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {
-        IMapper _mapper;
+        readonly IMapper _mapper;
 
         public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper)
             : base(config, logger)
@@ -160,7 +160,7 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<AzureStorageAccountDto>(storageAccount);
         }
 
-        async Task<IStorageAccount> CreateStorageAccountInternal(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        async Task<IStorageAccount> CreateStorageAccountInternal(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellation = default)
         {
             var creator = _azure.StorageAccounts.Define(name)
             .WithRegion(region)
@@ -186,13 +186,13 @@ namespace Sepes.Infrastructure.Service
             .WithSku(StorageAccountSkuType.Standard_LRS)
             .WithTags(tags);
 
-            return await creator.CreateAsync();
+            return await creator.CreateAsync(cancellation);
         }
 
         public async Task<AzureStorageAccountDto> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
             var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
-            var ipRulesList = onlyAllowAccessFrom == null ? null : onlyAllowAccessFrom.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
+            var ipRulesList = onlyAllowAccessFrom?.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
             var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
             var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
             return _mapper.Map<AzureStorageAccountDto>(account);
@@ -219,15 +219,14 @@ namespace Sepes.Infrastructure.Service
                 //See if the relevant rule is allready added for this network
 
                 bool existingRuleFound = false;
-                VirtualNetworkRule existingRule = null;
 
-                if(GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out existingRule))
+                if (GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out VirtualNetworkRule existingRule))
                 {
                     if (existingRule.Action == Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)
                     {
                         existingRuleFound = true;
-                    }                   
-                }              
+                    }
+                }
 
                 if (!existingRuleFound)
                 {
@@ -266,10 +265,9 @@ namespace Sepes.Infrastructure.Service
 
                 //See if the relevant rule is allready added for this network
 
-                bool existingRuleFound = false;
-                VirtualNetworkRule existingRule = null;
+                bool existingRuleFound = false;            
 
-                if (GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out existingRule))
+                if (GetRuleForSubnet(networkRuleSet, sandboxSubnet.Inner.Id, out VirtualNetworkRule existingRule))
                 {
                     existingRuleFound = true;
                 }
@@ -308,12 +306,14 @@ namespace Sepes.Infrastructure.Service
 
         NetworkRuleSet RemoveVNetFromRuleSet(NetworkRuleSet oldRuleSet, string subnetId)
         {
-            var newRuleSet = new NetworkRuleSet();
-            newRuleSet.Bypass = oldRuleSet.Bypass;
-            newRuleSet.DefaultAction = oldRuleSet.DefaultAction;
-            newRuleSet.IpRules = oldRuleSet.IpRules;       
+            var newRuleSet = new NetworkRuleSet
+            {
+                Bypass = oldRuleSet.Bypass,
+                DefaultAction = oldRuleSet.DefaultAction,
+                IpRules = oldRuleSet.IpRules
+            };
 
-            if(newRuleSet.VirtualNetworkRules == null)
+            if (newRuleSet.VirtualNetworkRules == null)
             {
                 newRuleSet.VirtualNetworkRules = new List<VirtualNetworkRule>();
             }

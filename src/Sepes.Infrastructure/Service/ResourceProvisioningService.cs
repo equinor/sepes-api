@@ -90,7 +90,7 @@ namespace Sepes.Infrastructure.Service
 
                         OperationCheckUtils.ThrowIfPossiblyInProgress(currentOperation);
 
-                        await OperationCheckUtils.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, _resourceOperationReadService, _resourceOperationUpdateService);
+                        await OperationCheckUtils.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, _resourceOperationReadService);
 
                         var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
 

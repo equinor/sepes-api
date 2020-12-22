@@ -46,9 +46,8 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
-            string networkSecurityGroupName = null; //Comes from Network Security Group Service 
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out networkSecurityGroupName) == false)
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName) == false)
             {
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
@@ -76,7 +75,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var networkDto = new AzureVNetDto();
 

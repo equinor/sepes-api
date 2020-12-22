@@ -124,12 +124,11 @@ namespace Sepes.Infrastructure.Service
                             ruleMapped.DestinationAddress = privateIp;
                             ruleMapped.DestinationPort = curRule.Port;
 
-                            NsgRuleDto existingRule = null;
                             //get existing rule and use that name
-                            if (existingRules.TryGetValue(curRule.Name, out existingRule))
+                            if (existingRules.TryGetValue(curRule.Name, out NsgRuleDto existingRule))
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
-                                ruleMapped.Priority = existingRule.Priority;
+                                ruleMapped.Priority = ((NsgRuleDto)null).Priority;
                                 await _nsgRuleService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
@@ -155,11 +154,10 @@ namespace Sepes.Infrastructure.Service
                                 ruleMapped.DestinationPort = curRule.Port;
                             }
 
-                            NsgRuleDto existingRule = null;
-                            if (existingRules.TryGetValue(curRule.Name, out existingRule))
+                            if (existingRules.TryGetValue(curRule.Name, out NsgRuleDto existingRule))
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
-                                ruleMapped.Priority = existingRule.Priority; //Ensure same priority is re-used
+                                ruleMapped.Priority = ((NsgRuleDto)null).Priority; //Ensure same priority is re-used
                                 await _nsgRuleService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
@@ -288,7 +286,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<IVirtualMachine> CreateAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<IVirtualMachine> CreateAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
         {
             IVirtualMachine vm;
 
@@ -406,14 +404,13 @@ namespace Sepes.Infrastructure.Service
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
 
-            var updatedVm = await vm.Update()
+           await vm.Update()
                  .WithNewDataDisk(sizeInGB).ApplyAsync();
-
         }
 
         public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
-            string provisioningState = null;
+            string provisioningState;
 
             try
             {

@@ -28,9 +28,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            string subnetId = null;
-
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out subnetId) == false)
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out string subnetId) == false)
             {
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
@@ -66,7 +64,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var publicIpName = AzureResourceNameUtil.BastionPublicIp(bastionName);
 

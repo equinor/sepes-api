@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -111,15 +112,15 @@ namespace Sepes.RestApi
         {
             // The following line enables Application Insights telemetry collection.
             // If this is left empty then no logs are made. Unknown if still affects performance.
-            Trace.WriteLine("Configuring Application Insights");
-            //services.AddApplicationInsightsTelemetry();
+            Trace.WriteLine("Configuring Application Insights");        
 
-            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
-                = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
-            // Disables adaptive sampling.
-            aiOptions.EnableAdaptiveSampling = false;
-            aiOptions.InstrumentationKey = _configuration[ConfigConstants.APPI_KEY];
-            aiOptions.EnableDebugLogger = true;
+            var aiOptions = new ApplicationInsightsServiceOptions
+                {
+                    // Disables adaptive sampling.
+                    EnableAdaptiveSampling = false,
+                    InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
+                    EnableDebugLogger = true
+                };
 
             services.AddApplicationInsightsTelemetry(aiOptions);
         }

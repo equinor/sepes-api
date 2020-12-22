@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
-            IResourceGroup resourceGroup = null;           
+            IResourceGroup resourceGroup;
 
             if (await Exists(resourceGroupName, cancellationToken))
             {
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Service
             return MapToDto(resourceGroup);
         }   
 
-        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)

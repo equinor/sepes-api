@@ -178,22 +178,7 @@ namespace Sepes.Infrastructure.Service
 
 
         }
-
-        async Task<bool> CheckAndHandleTryCount(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation)
-        {
-            if (currentResourceOperation.TryCount >= currentResourceOperation.MaxTryCount)
-            {
-                _logger.LogWarning($"{CreateOperationLogMessagePrefix(currentResourceOperation)}Max retry count exceeded: {currentResourceOperation.TryCount}, Aborting!");
-
-                currentResourceOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentResourceOperation.Id, CloudResourceOperationState.FAILED);
-                await _workQueue.DeleteMessageAsync(queueParentItem);
-
-                return true;
-            }
-
-            return false;
-
-        }
+       
 
         async Task<ResourceProvisioningResult> HandleCRUD(ProvisioningQueueParentDto queueParentItem, ProvisioningQueueChildDto queueChildItem, CloudResourceOperationDto currentResourceOperation, ResourceProvisioningParameters currentCrudInput, ResourceProvisioningResult currentCrudResult)
         {
@@ -215,7 +200,7 @@ namespace Sepes.Infrastructure.Service
 
             var nsg = CloudResourceUtil.GetSibilingResource(await _resourceReadService.GetByIdAsync(resource.Id), AzureResourceType.NetworkSecurityGroup);
 
-            currentCrudInput.ResetButKeepSharedVariables(currentCrudResult != null ? currentCrudResult.NewSharedVariables : null);
+            currentCrudInput.ResetButKeepSharedVariables(currentCrudResult?.NewSharedVariables);
             currentCrudInput.Name = resource.ResourceName;
             currentCrudInput.StudyName = resource.StudyName;
             currentCrudInput.DatabaseId = resource.Id;
@@ -223,7 +208,7 @@ namespace Sepes.Infrastructure.Service
             currentCrudInput.SandboxName = resource.SandboxName;
             currentCrudInput.ResourceGroupName = resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(resource.Region);
-            currentCrudInput.NetworkSecurityGroupName = nsg != null ? nsg.ResourceName : null;
+            currentCrudInput.NetworkSecurityGroupName = nsg?.ResourceName;
             currentCrudInput.Tags = resource.Tags;
             currentCrudInput.ConfigurationString = resource.ConfigString;
             currentCrudResult = null;
@@ -246,7 +231,8 @@ namespace Sepes.Infrastructure.Service
 
 
                     var cancellationTokenSource = new CancellationTokenSource();
-                    Task<ResourceProvisioningResult> currentCrudResultTask = null;
+
+                    Task<ResourceProvisioningResult> currentCrudResultTask;
 
                     if (currentResourceOperation.OperationType == CloudResourceOperationType.CREATE)
                     {

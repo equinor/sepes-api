@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             }
         }
 
-        public static async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ICloudResourceOperationReadService operationReadService, ICloudResourceOperationUpdateService operationUpdateService)
+        public static async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ICloudResourceOperationReadService operationReadService)
         {
             if (operation.DependsOnOperationId.HasValue)
             {
