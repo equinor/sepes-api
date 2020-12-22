@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class ResourceProvisioningService : IResourceProvisioningService
+    public class ResourceProvisioningService_OLD : IResourceProvisioningService
     {
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
         public static readonly string UnitTestPrefix = "unit-test";
 
-        public ResourceProvisioningService(ILogger<ResourceProvisioningService> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService,
+        public ResourceProvisioningService_OLD(ILogger<ResourceProvisioningService_OLD> logger, IServiceProvider serviceProvider, IRequestIdService requestIdService,
             ICloudResourceReadService resourceService,
             ICloudResourceUpdateService resourceUpdateService,
             ICloudResourceOperationReadService resourceOperationReadService,
