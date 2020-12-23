@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,6 +14,9 @@ namespace Sepes.Infrastructure.Service.Interface
        
         Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId);          
 
-        Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId);      
+        Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperationsAsync(int resourceId);
+        Task<CloudResourceOperationDto> SetQueueInformationAsync(int id, string messageId, string popReceipt, DateTimeOffset nextVisibleOn);
+
+        Task<CloudResourceOperationDto> ClearQueueInformationAsync(int id);
     }
 }

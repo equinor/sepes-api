@@ -46,7 +46,8 @@ namespace Sepes.Infrastructure.Service
                 var convertedMessage = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
 
                 convertedMessage.MessageId = messageFromQueue.MessageId;
-                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;              
+                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;
+                convertedMessage.NextVisibleOn = messageFromQueue.NextVisibleOn;
 
                 return convertedMessage;
             }
@@ -65,11 +66,12 @@ namespace Sepes.Infrastructure.Service
             var messageAsJson = JsonConvert.SerializeObject(message);
             var updateReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);
             message.PopReceipt = updateReceipt.PopReceipt;
+            message.NextVisibleOn = updateReceipt.NextVisibleOn;
             _logger.LogInformation($"Queue: Message {message.MessageId} will be visible again at {updateReceipt.NextVisibleOn} (UTC)");
 
         }
 
-        public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, CancellationToken cancellationToken = default)
+        public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, int? invisibleForInSeconds = default, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Re-queuing message: {message.Description}, having {message.Children.Count} children.");
 
@@ -77,7 +79,9 @@ namespace Sepes.Infrastructure.Service
             message.DequeueCount = 0;
             message.PopReceipt = null;
             message.MessageId = null;
-            await SendMessageAsync(message, cancellationToken: cancellationToken);           
+
+            TimeSpan invisibleForTimespan = invisibleForInSeconds.HasValue ? new TimeSpan(0, 0, invisibleForInSeconds.Value);
+            await SendMessageAsync(message, visibilityTimeout : invisibleForTimespan, cancellationToken: cancellationToken);           
         }
     }
 }

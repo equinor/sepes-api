@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt };
+                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt, NextVisibleOn = firstMessage.NextVisibleOn };
             }
 
             return null;

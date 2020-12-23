@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -26,9 +27,16 @@ namespace Sepes.Infrastructure.Model
 
         public string CarriedOutBySessionId { get; set; }
 
+        [MaxLength(256)]
         public string Description { get; set; }
 
-        public string LatestError { get; set; }    
+        public string LatestError { get; set; }
+
+        [MaxLength(64)]
+        public string QueueMessageId { get; set; }
+        [MaxLength(64)]
+        public string QueueMessagePopReceipt { get; set; }
+        public DateTime? QueueMessageVisibleAgainAt { get; set; }
 
         public CloudResource Resource { get; set; }
         

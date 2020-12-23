@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -48,19 +49,19 @@ namespace Sepes.Infrastructure.Service
             _monitoringService = monitoringService;
         }
 
-        public async Task DequeueWorkAndPerformIfAny()
+        public async Task DequeueAndHandleWork()
         {
             var work = await _workQueue.RecieveMessageAsync();
 
             while (work != null)
             {
-                await HandleQueueItem(work);
+                await HandleWork(work);
                 work = await _workQueue.RecieveMessageAsync();
             }
         }
 
 
-        public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
+        public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation(ProvisioningLogUtil.QueueParent(queueParentItem));
 
@@ -70,9 +71,7 @@ namespace Sepes.Infrastructure.Service
             //Get's re-used amonong child elements because the operations might share variables
             var currentProvisioningParameters = new ResourceProvisioningParameters();
 
-            ResourceProvisioningResult currentProvisioningResult = null;
-
-            var deleteFromQueueAfterCompletion = true;
+            ResourceProvisioningResult currentProvisioningResult = null;         
 
             try
             {
@@ -90,7 +89,7 @@ namespace Sepes.Infrastructure.Service
 
                         OperationCheckUtils.ThrowIfPossiblyInProgress(currentOperation);
 
-                        await OperationCheckUtils.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, _resourceOperationReadService);
+                        await OperationCheckUtils.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, queueParentItem, _resourceOperationReadService);
 
                         var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
 
@@ -124,50 +123,84 @@ namespace Sepes.Infrastructure.Service
                             throw new ProvisioningException("Unknown operation type", CloudResourceOperationState.ABORTED);
                         }
 
-                       
+                        _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Successfully handeled operation"));
                     }
                     catch (ProvisioningException ex) //Inner loop, ordinary exception is not catched
                     {
-                        //Update operation status  
-
                         _logger.LogError(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation failed"));
 
                         if (String.IsNullOrWhiteSpace(ex.NewOperationStatus) == false)
                         {
-                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
-                        }
+                           currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
+                        }                      
 
                         if (ex.ProceedWithOtherOperations == false)
                         {
                             throw;
                         }  
                     }
-                } //foreach
 
-                if (deleteFromQueueAfterCompletion)
-                {
-                    _logger.LogInformation($"Deleting handling queue message: {queueParentItem.MessageId}");
-                    await _workQueue.DeleteMessageAsync(queueParentItem);
-                }
+                    
+                } //foreach               
 
-                _logger.LogInformation($"Finished handling queue message: {queueParentItem.MessageId}");              
+                _logger.LogInformation($"Done handling message: {queueParentItem.MessageId}");
+
+                await MoveUpAnyDependentOperations(queueParentItem);
 
             }
             catch (ProvisioningException ex) //Outer loop catch 1
             {
                 if (ex.DeleteFromQueue)
                 {
+                    _logger.LogWarning($"Deleting message {queueParentItem.MessageId} from queue after exception");
                     await _workQueue.DeleteMessageAsync(queueParentItem);
                 }
                 else if(ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
                 {
-                    await _workQueue.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
-                } 
+                    if(currentOperation.TryCount < currentOperation.MaxTryCount)
+                    {
+                        if(queueParentItem.DequeueCount == 5)
+                        {
+                            _logger.LogWarning($"Re-queing message {queueParentItem.MessageId} after exception");
+                            await _workQueue.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Increasing invisibility for message {queueParentItem.MessageId} after exception");
+                            await _workQueue.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
+                        }
+                    }                                     
+                }
+
+                if (ex.StoreQueueInfoOnOperation)
+                {
+                    currentOperation = await _resourceOperationUpdateService.SetQueueInformationAsync(currentOperation.Id, queueParentItem.MessageId, queueParentItem.PopReceipt, queueParentItem.NextVisibleOn.Value);
+                }
             }
-            catch (Exception ex) //Outer loop catch
+            catch (Exception ex) //Outer loop catch 2
             {
-                _logger.LogCritical(ex, $"Error occured while processing message {queueParentItem.MessageId}, message description: {queueParentItem.Description}. See exception info for details ");
+                _logger.LogCritical(ex, $"Unhandeled exception occured while processing message {queueParentItem.MessageId}, message description: {queueParentItem.Description}. See exception info for details ");
+                await _workQueue.DeleteMessageAsync(queueParentItem);
             }
         }
-    }
+
+        public async Task MoveUpAnyDependentOperations(ProvisioningQueueParentDto queueParentItem)
+        {
+            try
+            {
+                CloudResourceOperationDto currentOperation = null;
+                foreach (var queueChildItem in queueParentItem.Children)
+                {
+                    //Same batch? 
+                    //Unfinished?
+                    //THen move up
+                }
+                }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        }
 }

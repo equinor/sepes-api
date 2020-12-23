@@ -159,7 +159,7 @@ namespace Sepes.Infrastructure.Service
 
             VmSize curSize = null;
 
-            if (availableSizesDict.TryGetValue(dto.SizeName, out curSize))
+            if (String.IsNullOrWhiteSpace(dto.SizeName) == false &&  availableSizesDict.TryGetValue(dto.SizeName, out curSize))
             {
                 dto.Size = _mapper.Map<VmSizeDto>(curSize);
             }

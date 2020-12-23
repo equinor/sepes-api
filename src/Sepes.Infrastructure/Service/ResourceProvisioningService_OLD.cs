@@ -48,20 +48,20 @@ namespace Sepes.Infrastructure.Service
             _monitoringService = monitoringService;
         }
 
-        public async Task DequeueWorkAndPerformIfAny()
+        public async Task DequeueAndHandleWork()
         {
             var work = await _workQueue.RecieveMessageAsync();
 
             while (work != null)
             {
-                await HandleQueueItem(work);
+                await HandleWork(work);
                 work = await _workQueue.RecieveMessageAsync();
             }
         }
 
        
 
-        public async Task HandleQueueItem(ProvisioningQueueParentDto queueParentItem)
+        public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation($"Handling message: {queueParentItem.MessageId}. Message description: {queueParentItem.Description}");
 

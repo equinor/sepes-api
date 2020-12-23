@@ -5,8 +5,8 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IResourceProvisioningService
     {
-        Task DequeueWorkAndPerformIfAny();
+        Task DequeueAndHandleWork();
 
-        Task HandleQueueItem(ProvisioningQueueParentDto work);       
+        Task HandleWork(ProvisioningQueueParentDto work);       
     }
 }

@@ -133,7 +133,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(256)")
+                        .HasMaxLength(256);
 
                     b.Property<string>("LatestError")
                         .HasColumnType("nvarchar(max)");
@@ -144,6 +145,17 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("OperationType")
                         .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
+
+                    b.Property<string>("QueueMessageId")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("QueueMessagePopReceipt")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime?>("QueueMessageVisibleAgainAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .HasColumnType("nvarchar(max)");

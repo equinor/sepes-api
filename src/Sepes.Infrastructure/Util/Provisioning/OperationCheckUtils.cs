@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Interface;
 using System;
@@ -23,9 +24,9 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static void ThrowIfResourceIsDeletedAndOperationIsNotADelete(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType != CloudResourceOperationType.DELETE && operation.Resource.Deleted.HasValue)
+            if (operation.Resource.Deleted.HasValue && operation.OperationType != CloudResourceOperationType.DELETE)
             {
-                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: true, deleteFromQueue: true);
+                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true);
             }
         }
 
@@ -40,7 +41,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             }
         }
 
-        public static async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ICloudResourceOperationReadService operationReadService)
+        public static async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ProvisioningQueueParentDto queueParentItem, ICloudResourceOperationReadService operationReadService)
         {
             if (operation.DependsOnOperationId.HasValue)
             {
@@ -48,14 +49,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
                 {
                     var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 
-                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy);                               
+                    bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
+
+                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation);                               
 
                 }
-              
-
-                //If single operation
-                //Add message details to operation for others to pick up
-                //TODO: Just store this on every operation from beginning?
             }
         }
 

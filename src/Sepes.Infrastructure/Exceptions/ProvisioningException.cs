@@ -5,13 +5,15 @@ namespace Sepes.Infrastructure.Exceptions
 {
     public class ProvisioningException : Exception
     {
-        public ProvisioningException(string message, string newOperationStatus = null, bool proceedWithOtherOperations = false, bool deleteFromQueue = false, int? postponeQueueItemFor = default, Exception innerException = null)
+        public ProvisioningException(string message, string newOperationStatus = null, bool proceedWithOtherOperations = false, bool deleteFromQueue = false, int? postponeQueueItemFor = default, bool storeQueueInfoOnOperation = false, Exception innerException = null)
             :base(message, innerException)
         {
-            DeleteFromQueue = deleteFromQueue;
-            PostponeQueueItemFor = postponeQueueItemFor;
             NewOperationStatus = newOperationStatus;
             ProceedWithOtherOperations = proceedWithOtherOperations;
+            DeleteFromQueue = deleteFromQueue;
+            PostponeQueueItemFor = postponeQueueItemFor;
+            StoreQueueInfoOnOperation = storeQueueInfoOnOperation;
+          
         }
 
         public bool DeleteFromQueue { get; set; }
@@ -21,6 +23,8 @@ namespace Sepes.Infrastructure.Exceptions
         public string NewOperationStatus { get; set; }
 
         public bool ProceedWithOtherOperations { get; set; }
+
+        public bool StoreQueueInfoOnOperation { get; set; }
 
         public string GetMessageSummary()
         {

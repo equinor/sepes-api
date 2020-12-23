@@ -67,6 +67,40 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
+        public async Task<CloudResourceOperationDto> SetQueueInformationAsync(int id, string messageId, string popReceipt, DateTimeOffset nextVisibleOn)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+
+            operationFromDb.QueueMessageId = messageId;
+            operationFromDb.QueueMessagePopReceipt = popReceipt;
+            operationFromDb.QueueMessageVisibleAgainAt = nextVisibleOn.UtcDateTime;
+
+            operationFromDb.Updated = DateTime.UtcNow;
+            operationFromDb.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }
+
+        public async Task<CloudResourceOperationDto> ClearQueueInformationAsync(int id)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+
+            operationFromDb.QueueMessageId = null;
+            operationFromDb.QueueMessagePopReceipt = null;
+            operationFromDb.QueueMessageVisibleAgainAt = null;
+
+            operationFromDb.Updated = DateTime.UtcNow;
+            operationFromDb.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }
+
         public async Task<CloudResourceOperationDto> ReInitiateAsync(int id)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
@@ -84,7 +118,7 @@ namespace Sepes.Infrastructure.Service
         }
       
 
-        public async Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperations(int resourceId)
+        public async Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperationsAsync(int resourceId)
         {
             var unfinishedOps = await GetUnfinishedOperations(resourceId);
 
@@ -103,6 +137,8 @@ namespace Sepes.Infrastructure.Service
             }
 
             return unfinishedOps;
-        }  
+        }
+
+      
     }
 }
