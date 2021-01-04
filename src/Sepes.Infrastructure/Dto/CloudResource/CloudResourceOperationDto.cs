@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -20,11 +21,17 @@ namespace Sepes.Infrastructure.Dto
         public string CarriedOutBySessionId { get; set; }
 
         public int? DependsOnOperationId { get; set; }
-    
+        
+        public string QueueMessageId { get; set; }
+       
+        public string QueueMessagePopReceipt { get; set; }
+
+        public DateTime? QueueMessageVisibleAgainAt { get; set; }
+
+        public CloudResourceDto Resource { get; set; }
 
         public CloudResourceOperationDto DependsOnOperation { get; set; }
 
-
-        public CloudResourceDto Resource { get; set; }
+        public List<CloudResourceOperationDto> DependantOnThisOperation { get; set; }
     }
 }

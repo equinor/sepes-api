@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
@@ -17,5 +18,8 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public string PopReceipt { get; set; }
         [JsonIgnore]
         public int DequeueCount { get; set; }
+
+        [JsonIgnore]
+        public DateTimeOffset? NextVisibleOn { get; set; }
     }
 }

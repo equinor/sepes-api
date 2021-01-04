@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -65,10 +66,13 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", sandboxFromDb.StudyId, sandboxId);
 
                 //Create queue item
-                var queueParentItem = new ProvisioningQueueParentDto();
-                queueParentItem.SandboxId = sandboxId;
-                queueParentItem.Description = deleteOperation.Description;
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = deleteOperation.Id });
+                var queueParentItem = new ProvisioningQueueParentDto
+                {
+                    SandboxId = sandboxId,
+                    Description = deleteOperation.Description,
+                    Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteOperation.Id } }
+                };
+               
                 await _provisioningQueueService.SendMessageAsync(queueParentItem, visibilityTimeout: TimeSpan.FromSeconds(10));
             }
             else

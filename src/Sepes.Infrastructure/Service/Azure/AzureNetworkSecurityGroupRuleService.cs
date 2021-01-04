@@ -92,7 +92,7 @@ namespace Sepes.Infrastructure.Service
             .FromAnyPort()
             .ToAddresses(rule.DestinationAddress);
 
-            var decidePort = await (rule.DestinationPort == 0 ? operationWithRules.ToAnyPort() : operationWithRules.ToPort(rule.DestinationPort))
+            _ = await (rule.DestinationPort == 0 ? operationWithRules.ToAnyPort() : operationWithRules.ToPort(rule.DestinationPort))
             .WithAnyProtocol()
             .WithPriority(rule.Priority)
             .WithDescription(rule.Description)
@@ -116,8 +116,7 @@ namespace Sepes.Infrastructure.Service
                 .FromAddresses(rule.SourceAddress)
             .FromAnyPort()
               .ToAddresses(rule.DestinationAddress);
-
-            var decidePort = (rule.DestinationPort == 0 ? updateRuleOp.ToAnyPort() : updateRuleOp.ToPort(rule.DestinationPort))
+            _ = (rule.DestinationPort == 0 ? updateRuleOp.ToAnyPort() : updateRuleOp.ToPort(rule.DestinationPort))
 
            .WithAnyProtocol()
            .WithPriority(rule.Priority)
@@ -183,7 +182,7 @@ namespace Sepes.Infrastructure.Service
         public async Task DeleteRule(string resourceGroupName, string securityGroupName,
                                 string ruleName, CancellationToken cancellationToken = default)
         {
-            var updatedNsg = await _azure.NetworkSecurityGroups
+            await _azure.NetworkSecurityGroups
                  .GetByResourceGroup(resourceGroupName, securityGroupName)
                  .Update()
                  .WithoutRule(ruleName)

@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Util
 {
     //Finds correct service based on the resource type
     public static class AzureResourceServiceResolver
-    { 
+    {
         //List<IHasProvisioningState> services
         public static IHasProvisioningState GetServiceWithProvisioningState(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Util
             _ => null,
         };
 
-        public static IPerformCloudResourceCRUD GetCRUDService(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        public static IPerformResourceProvisioning GetProvisioningService(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
             AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
@@ -42,5 +42,18 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
             _ => null,
         };
+
+        public static IPerformResourceProvisioning GetProvisioningServiceOrThrow(IServiceProvider serviceProvider, string resourceType)
+        {
+            var service = GetProvisioningService(serviceProvider, resourceType);
+
+            if (service == null)
+            {
+                throw new NullReferenceException($"Unable to resolve provisioning service for type {resourceType}");
+            }
+
+            return service;
+        }
     }
 }
+

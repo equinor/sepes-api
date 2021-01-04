@@ -6,14 +6,16 @@ namespace Sepes.Infrastructure.Service
 {
     public class FunctionUserService : IUserService
     {
-        UserDto _cachedUser;
+        readonly UserDto _cachedUser;
         
         public FunctionUserService()
         {
             _cachedUser = new UserDto("9b0c65cf-9f14-4476-8796-b2de016e1af1", "workeruser@equinor.com", "Worker User", "workeruser@equinor.com", false, false, false);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<UserDto> GetCurrentUserAsync()
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             return _cachedUser;
         }

@@ -96,9 +96,11 @@ namespace Sepes.Infrastructure.Service
             vmResourceEntry.ConfigString = vmSettingsString;
             await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = sandboxId;
-            queueParentItem.Description = $"Create VM for Sandbox: {sandboxId}";
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                SandboxId = sandboxId,
+                Description = $"Create VM for Sandbox: {sandboxId}"
+            };
 
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
 
@@ -121,12 +123,14 @@ namespace Sepes.Infrastructure.Service
             var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id);
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
-
-            //Create queue item
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = vmResource.SandboxId;
-            queueParentItem.Description = deleteResourceOperation.Description;
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id });
+            
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                SandboxId = vmResource.SandboxId,
+                Description = deleteResourceOperation.Description,
+                Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
+            };
+          
             await _workQueue.SendMessageAsync(queueParentItem);            
         }
 
@@ -157,9 +161,8 @@ namespace Sepes.Infrastructure.Service
 
             var availableSizesDict = availableSizes.ToDictionary(s => s.Key, s => s);
 
-            VmSize curSize = null;
 
-            if (availableSizesDict.TryGetValue(dto.SizeName, out curSize))
+            if (String.IsNullOrWhiteSpace(dto.SizeName) == false && availableSizesDict.TryGetValue(dto.SizeName, out VmSize curSize))
             {
                 dto.Size = _mapper.Map<VmSizeDto>(curSize);
             }
@@ -170,9 +173,11 @@ namespace Sepes.Infrastructure.Service
         public async Task<VmExternalLink> GetExternalLink(int vmId)
         {
             var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
-            var vmExternalLink = new VmExternalLink();
-            vmExternalLink.LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource);
-            vmExternalLink.Id = vmId;
+            var vmExternalLink = new VmExternalLink
+            {
+                Id = vmId,
+                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)               
+            };
 
             return vmExternalLink;
         }

@@ -62,5 +62,10 @@ namespace Sepes.Infrastructure.Util
 
             return result;
         }
+
+        public static bool IsDeleted(CloudResourceDto resource)
+        {
+            return resource.Deleted.HasValue;
+        }       
     }
 }

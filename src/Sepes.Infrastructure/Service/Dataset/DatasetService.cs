@@ -138,7 +138,9 @@ namespace Sepes.Infrastructure.Service
             return IsStudySpecific(dataset);
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task DeleteDatasetAsync(int datasetId)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             throw new NotImplementedException("Delete of Pre-Approved datasets not implemented yet");
         }    

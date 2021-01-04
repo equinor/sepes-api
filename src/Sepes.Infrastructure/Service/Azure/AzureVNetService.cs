@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -23,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
@@ -45,9 +46,8 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
-            string networkSecurityGroupName = null; //Comes from Network Security Group Service 
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out networkSecurityGroupName) == false)
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName) == false)
             {
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
@@ -59,7 +59,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
             var crudResult = CreateResult(vNetDto);
@@ -67,15 +67,15 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        CloudResourceCRUDResult CreateResult(AzureVNetDto networkDto)
+        ResourceProvisioningResult CreateResult(AzureVNetDto networkDto)
         {
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(networkDto.Network);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(networkDto.Network);
             crudResult.CurrentProvisioningState = networkDto.ProvisioningState;
             crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.BASTION_SUBNET_ID, networkDto.BastionSubnetId);
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var networkDto = new AzureVNetDto();
 
@@ -191,12 +191,12 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

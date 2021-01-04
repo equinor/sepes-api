@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,12 +37,13 @@ namespace Sepes.CloudResourceWorker
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
-            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
-             = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
-            // Disables adaptive sampling.
-            aiOptions.EnableAdaptiveSampling = false;
-            aiOptions.InstrumentationKey = appiKey;
-            aiOptions.EnableDebugLogger = true;
+            var aiOptions= new ApplicationInsightsServiceOptions
+             {
+                 // Disables adaptive sampling.
+                 EnableAdaptiveSampling = false,
+                 InstrumentationKey = appiKey,
+                 EnableDebugLogger = true
+             };
 
             builder.Services.AddApplicationInsightsTelemetry(aiOptions);
 
@@ -82,7 +84,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
-            //Ext System Facade Services
+            //Ext System Facade Services            
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();

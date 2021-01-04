@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -24,23 +25,23 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
             var resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
 
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
 
             _logger.LogInformation($"Done creating Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
             return crudResult;   
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var resourceGroup = await GetResourceAsync(parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(resourceGroup);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
             return crudResult;
         }
@@ -53,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
-            IResourceGroup resourceGroup = null;           
+            IResourceGroup resourceGroup;
 
             if (await Exists(resourceGroupName, cancellationToken))
             {
@@ -66,7 +67,7 @@ namespace Sepes.Infrastructure.Service
             return MapToDto(resourceGroup);
         }   
 
-        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             IResourceGroup resourceGroup = await _azure.ResourceGroups
                     .Define(resourceGroupName)
@@ -77,12 +78,12 @@ namespace Sepes.Infrastructure.Service
             return resourceGroup;
         }
 
-        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             await Delete(parameters.ResourceGroupName);
 
             //var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
             return crudResult;
         }
 
@@ -171,7 +172,7 @@ namespace Sepes.Infrastructure.Service
             _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }

@@ -29,7 +29,7 @@ namespace Sepes.CloudResourceWorker
             transformedQueueItem.PopReceipt = myQueueItem.PopReceipt;
             transformedQueueItem.DequeueCount = myQueueItem.DequeueCount;
 
-          await  _provisioningService.HandleQueueItem(transformedQueueItem);          
+          await  _provisioningService.HandleWork(transformedQueueItem);          
         }
     }
 }

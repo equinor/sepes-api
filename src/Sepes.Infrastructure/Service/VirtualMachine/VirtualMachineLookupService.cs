@@ -40,25 +40,21 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
-        public async Task<double> CalculateSizePrice(string size, CancellationToken cancellationToken = default)
-        {
-            var vmPrice = await _costService.GetSizePrice(size, cancellationToken);
-
-            return vmPrice;
-        }
-
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
-            var result = new List<VmDiskLookupDto>();
-
-            result.Add(new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" });
-            result.Add(new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" });
+            var result = new List<VmDiskLookupDto>
+            {
+                new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" },
+                new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" },
+                new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" },
+                new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" },
+                new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" },
+                new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" },
+                new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" },
+                new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" }
+            };
 
             return result;
         }
@@ -77,30 +73,34 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogCritical($"Unable to get available OS from azure for sandbox {sandboxId}");
+                _logger.LogCritical(ex, $"Unable to get available OS from azure for sandbox {sandboxId}");
             }
 
             return result;
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default)
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
 
-            var result = new List<VmOsDto>();
+            var result = new List<VmOsDto>
+            {
 
-            //Windows
-            result.Add(new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2019datacentercore", DisplayValue = "Windows Server 2019 Datacenter Core", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" });
-            result.Add(new VmOsDto() { Key = "win2016datacentercore", DisplayValue = "Windows Server 2016 Datacenter Core", Category = "windows" });
+                //Windows
+                new VmOsDto() { Key = "win2019datacenter", DisplayValue = "Windows Server 2019 Datacenter", Category = "windows" },
+                new VmOsDto() { Key = "win2019datacentercore", DisplayValue = "Windows Server 2019 Datacenter Core", Category = "windows" },
+                new VmOsDto() { Key = "win2016datacenter", DisplayValue = "Windows Server 2016 Datacenter", Category = "windows" },
+                new VmOsDto() { Key = "win2016datacentercore", DisplayValue = "Windows Server 2016 Datacenter Core", Category = "windows" },
 
-            //Linux
-            result.Add(new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" });
-            result.Add(new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" });
+                //Linux
+                new VmOsDto() { Key = "ubuntults", DisplayValue = "Ubuntu 1804 LTS", Category = "linux" },
+                new VmOsDto() { Key = "ubuntu16lts", DisplayValue = "Ubuntu 1604 LTS", Category = "linux" },
+                new VmOsDto() { Key = "rhel", DisplayValue = "RedHat 7 LVM", Category = "linux" },
+                new VmOsDto() { Key = "debian", DisplayValue = "Debian 10", Category = "linux" },
+                new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" }
+            };
 
             return result;
         }      

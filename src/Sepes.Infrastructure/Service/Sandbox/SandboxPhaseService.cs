@@ -110,7 +110,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
 
             validationErrors.AddRange(VerifyThatSandboxHasDatasets(sandbox));
-            validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(sandbox, resourcesForSandbox));
+            validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(resourcesForSandbox));
             validationErrors.AddRange(await VerifyInternetClosed(sandbox, resourcesForSandbox, cancellation));
 
             ValidationUtils.ThrowIfValidationErrors("Phase change not allowed", validationErrors);
@@ -128,7 +128,7 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
         }
 
-        List<string> VerifyBasicResourcesIsFinishedAsync(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox)
+        List<string> VerifyBasicResourcesIsFinishedAsync(List<CloudResourceDto> resourcesForSandbox)
         {
             var validationErrors = new List<string>();
 
@@ -136,10 +136,9 @@ namespace Sepes.Infrastructure.Service
             {
                 foreach (var curOperation in curResource.Operations)
                 {
-                    if (curOperation.OperationType == CloudResourceOperationType.CREATE && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
+                    if (curOperation.Status == CloudResourceOperationState.IN_PROGRESS)
                     {
                         validationErrors.Add($"One or more resources are beging created, updated or deleted");
-
                         return validationErrors;
                     }
                 }
@@ -148,8 +147,6 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
 
         }
-
-
 
 
         async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)

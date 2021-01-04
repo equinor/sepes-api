@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"{deletePrefixForLogMessages}: Aborting all other operations for Resource");
 
-            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperations(resourceId);
+            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperationsAsync(resourceId);
 
             var currentUser = await _userService.GetCurrentUserAsync();
 
@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"{deletePrefixForLogMessages}: Aborting all other operations for Resource");
 
-            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperations(resourceId);
+            await _cloudResourceOperationUpdateService.AbortAllUnfinishedCreateOrUpdateOperationsAsync(resourceId);
 
             _logger.LogInformation($"{deletePrefixForLogMessages}: Marking db entry as deleted");
 
