@@ -136,10 +136,9 @@ namespace Sepes.Infrastructure.Service
             {
                 foreach (var curOperation in curResource.Operations)
                 {
-                    if (curOperation.OperationType == CloudResourceOperationType.CREATE && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
+                    if (curOperation.Status == CloudResourceOperationState.IN_PROGRESS)
                     {
                         validationErrors.Add($"One or more resources are beging created, updated or deleted");
-
                         return validationErrors;
                     }
                 }
