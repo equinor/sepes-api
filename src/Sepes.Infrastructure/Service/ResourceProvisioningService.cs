@@ -207,8 +207,7 @@ namespace Sepes.Infrastructure.Service
             try
             {
                 int movedUpCount = 0;
-
-                var operationsToMoveUp = new List<CloudResourceOperationDto>();
+              
                 CloudResourceOperationDto currentOperation = null;
 
                 foreach (var queueChildItem in queueParentItem.Children)
@@ -234,7 +233,9 @@ namespace Sepes.Infrastructure.Service
                                             await _workQueue.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
 
                                             //Clear stored message details on operation record
-                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);                                            
+                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
+
+                                            movedUpCount++;
                                         }
 
                                     }
