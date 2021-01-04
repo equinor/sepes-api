@@ -71,7 +71,7 @@ namespace Sepes.Infrastructure.Service
             //Get's re-used amonong child elements because the operations might share variables
             var currentProvisioningParameters = new ResourceProvisioningParameters();
 
-            ResourceProvisioningResult currentProvisioningResult = null;         
+            ResourceProvisioningResult currentProvisioningResult = null;
 
             try
             {
@@ -107,7 +107,7 @@ namespace Sepes.Infrastructure.Service
                             else
                             {
                                 currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
-                                currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationReadService, _logger);
+                                currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationUpdateService, _logger);
                             }
 
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
@@ -115,7 +115,7 @@ namespace Sepes.Infrastructure.Service
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))
                         {
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
-                            currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _logger);
+                            currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
                         }
                         else
@@ -127,24 +127,32 @@ namespace Sepes.Infrastructure.Service
                     }
                     catch (ProvisioningException ex) //Inner loop, ordinary exception is not catched
                     {
-                        _logger.LogError(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation failed"));
+                        if (ex.LogAsWarning)
+                        {
+                            _logger.LogWarning(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation aborted"));
+                        }
+                        else
+                        {
+                            _logger.LogError(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation failed"));
+                        }                      
 
                         if (String.IsNullOrWhiteSpace(ex.NewOperationStatus) == false)
                         {
-                           currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
-                        }                      
+                            currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
+                        }
 
                         if (ex.ProceedWithOtherOperations == false)
                         {
                             throw;
-                        }  
+                        }
                     }
 
-                    
+
                 } //foreach               
 
                 _logger.LogInformation($"Done handling message: {queueParentItem.MessageId}");
 
+                await _workQueue.DeleteMessageAsync(queueParentItem);
                 await MoveUpAnyDependentOperations(queueParentItem);
 
             }
@@ -155,11 +163,11 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogWarning($"Deleting message {queueParentItem.MessageId} from queue after exception");
                     await _workQueue.DeleteMessageAsync(queueParentItem);
                 }
-                else if(ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
+                else if (ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
                 {
-                    if(currentOperation.TryCount < currentOperation.MaxTryCount)
+                    if (currentOperation.TryCount < currentOperation.MaxTryCount)
                     {
-                        if(queueParentItem.DequeueCount == 5)
+                        if (queueParentItem.DequeueCount == 5)
                         {
                             _logger.LogWarning($"Re-queing message {queueParentItem.MessageId} after exception");
                             await _workQueue.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
@@ -169,12 +177,20 @@ namespace Sepes.Infrastructure.Service
                             _logger.LogWarning($"Increasing invisibility for message {queueParentItem.MessageId} after exception");
                             await _workQueue.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
                         }
-                    }                                     
+                    }
                 }
 
                 if (ex.StoreQueueInfoOnOperation)
                 {
-                    currentOperation = await _resourceOperationUpdateService.SetQueueInformationAsync(currentOperation.Id, queueParentItem.MessageId, queueParentItem.PopReceipt, queueParentItem.NextVisibleOn.Value);
+                    if(queueParentItem.NextVisibleOn.HasValue == false)
+                    {
+                        _logger.LogError($"Could not store queue info on operation from message {queueParentItem.MessageId}, no next visible time exist");
+                    }
+                    else
+                    {
+                        currentOperation = await _resourceOperationUpdateService.SetQueueInformationAsync(currentOperation.Id, queueParentItem.MessageId, queueParentItem.PopReceipt, queueParentItem.NextVisibleOn.Value);
+                    }
+                    
                 }
             }
             catch (Exception ex) //Outer loop catch 2
@@ -186,21 +202,67 @@ namespace Sepes.Infrastructure.Service
 
         public async Task MoveUpAnyDependentOperations(ProvisioningQueueParentDto queueParentItem)
         {
+            _logger.LogInformation($"Moving up relevant dependent operations on message: {queueParentItem.MessageId}");
+
             try
             {
+                int movedUpCount = 0;
+
+                var operationsToMoveUp = new List<CloudResourceOperationDto>();
                 CloudResourceOperationDto currentOperation = null;
+
                 foreach (var queueChildItem in queueParentItem.Children)
                 {
-                    //Same batch? 
-                    //Unfinished?
-                    //THen move up
+                    currentOperation = await _resourceOperationReadService.GetByIdAsync(queueChildItem.ResourceOperationId);
+
+                    if (currentOperation.DependantOnThisOperation != null && currentOperation.DependantOnThisOperation.Count > 0)
+                    {
+                        foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
+                        {
+                            if (CloudResourceUtil.IsDeleted(curDependantOnThisOp.Resource) == false)
+                            {
+                                if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
+                                {
+                                    if (String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) == false && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
+                                    {
+                                        if (curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15))
+                                        {
+                                            //Create a new queue item for immediate pickup
+                                            await AddNewQueueMessageForOperation(curDependantOnThisOp);
+
+                                            //Delete existing message
+                                            await _workQueue.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
+
+                                            //Clear stored message details on operation record
+                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);                                            
+                                        }
+
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
-                }
+
+                _logger.LogInformation($"Done moving up relevant dependent operations on message: {queueParentItem.MessageId}. Moved up {movedUpCount} operations");
+            }
             catch (Exception ex)
             {
-
-                throw;
+                _logger.LogError(ex, $"Failed when moving up dependent operations for message: {queueParentItem.MessageId}");               
             }
         }
+
+        async Task AddNewQueueMessageForOperation(CloudResourceOperationDto operation)
+        {
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                SandboxId = operation.Resource.SandboxId,
+                Description = operation.Description
+            };
+
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+
+            await _workQueue.SendMessageAsync(queueParentItem, visibilityTimeout: TimeSpan.FromSeconds(5));
         }
+    }
 }

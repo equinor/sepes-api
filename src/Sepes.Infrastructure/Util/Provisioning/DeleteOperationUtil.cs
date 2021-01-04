@@ -5,7 +5,9 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util.Provisioning
@@ -20,7 +22,8 @@ namespace Sepes.Infrastructure.Util.Provisioning
         public static async Task<ResourceProvisioningResult> HandleDelete(
            CloudResourceOperationDto operation,
            ResourceProvisioningParameters currentCrudInput,
-           IPerformResourceProvisioning provisioningService,  
+           IPerformResourceProvisioning provisioningService,
+           ICloudResourceOperationUpdateService operationUpdateService,
            ILogger logger)
         {
             try
@@ -31,11 +34,18 @@ namespace Sepes.Infrastructure.Util.Provisioning
                 {
                     logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Deleting {operation.Resource.ResourceType}"));
 
-                   var result = await provisioningService.Delete(currentCrudInput);
+                    var deleteTask = provisioningService.Delete(currentCrudInput);
 
-                    logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Operation finished"));
+                    while (!deleteTask.IsCompleted)
+                    {
+                        operation = await operationUpdateService.TouchAsync(operation.Id);
 
-                    return result;
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                    }
+
+                    logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Delete Operation finished"));
+
+                    return deleteTask.Result;
                 }
 
 

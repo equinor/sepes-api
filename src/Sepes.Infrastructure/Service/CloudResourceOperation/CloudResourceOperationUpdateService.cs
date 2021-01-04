@@ -67,6 +67,18 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
+        public async Task<CloudResourceOperationDto> TouchAsync(int id)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var operationFromDb = await GetResourceOperationOrThrowAsync(id);          
+            operationFromDb.Updated = DateTime.UtcNow;
+            operationFromDb.UpdatedBy = currentUser.UserName;
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }
+
         public async Task<CloudResourceOperationDto> SetQueueInformationAsync(int id, string messageId, string popReceipt, DateTimeOffset nextVisibleOn)
         {
             var currentUser = await _userService.GetCurrentUserAsync();

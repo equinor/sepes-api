@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             {
                 if (operation.Updated.AddMinutes(2) >= DateTime.UtcNow) //If changed less than two minutes ago
                 {
-                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60);
+                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true);
                 }
             }
         }
@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                     bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
 
-                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation);                               
+                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true);                               
 
                 }
             }

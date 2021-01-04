@@ -35,6 +35,13 @@ namespace Sepes.Infrastructure.Service
             await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
         }
 
+        // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
+        public async Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            _logger.LogInformation($"Queue: Deleting message: {messageId}");
+            await _queueService.DeleteMessageAsync(messageId, popReceipt);
+        }
+
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
         public async Task<ProvisioningQueueParentDto> RecieveMessageAsync()
         {
@@ -80,8 +87,10 @@ namespace Sepes.Infrastructure.Service
             message.PopReceipt = null;
             message.MessageId = null;
 
-            TimeSpan invisibleForTimespan = invisibleForInSeconds.HasValue ? new TimeSpan(0, 0, invisibleForInSeconds.Value);
+            TimeSpan invisibleForTimespan = invisibleForInSeconds.HasValue ? new TimeSpan(0, 0, invisibleForInSeconds.Value) : new TimeSpan(0, 0, 10);
             await SendMessageAsync(message, visibilityTimeout : invisibleForTimespan, cancellationToken: cancellationToken);           
         }
+
+     
     }
 }

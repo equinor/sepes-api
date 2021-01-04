@@ -13,6 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task DeleteMessageAsync(ProvisioningQueueParentDto message);
 
+        Task DeleteMessageAsync(string messageId, string popReceipt);
+
         Task DeleteQueueAsync();
 
         Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds);

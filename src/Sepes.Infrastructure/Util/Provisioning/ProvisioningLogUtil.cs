@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static string Operation(CloudResourceOperationDto currentResourceOperation, string suffix)
         {
-            return $"{currentResourceOperation.Id} | {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType.ToUpper()} | attempt ({currentResourceOperation.TryCount}/{currentResourceOperation.MaxTryCount}) | {suffix}";
+            return $"{currentResourceOperation.Resource.SandboxName} | {currentResourceOperation.Id} | {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType.ToUpper()} | attempt ({currentResourceOperation.TryCount}/{currentResourceOperation.MaxTryCount}) | {suffix}";
         }
     }
 }

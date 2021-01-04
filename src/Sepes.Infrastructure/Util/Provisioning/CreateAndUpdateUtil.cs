@@ -31,7 +31,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             IPerformResourceProvisioning provisioningService,
             ICloudResourceReadService resourceReadService,
             ICloudResourceUpdateService resourceUpdateService,
-            ICloudResourceOperationReadService operationReadService,
+            ICloudResourceOperationUpdateService operationUpdateService,
             ILogger logger)
         {
             try
@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                 while (!currentCrudResultTask.IsCompleted)
                 {
-                    operation = await operationReadService.GetByIdAsync(operation.Id);
+                    operation = await operationUpdateService.TouchAsync(operation.Id);
 
                     if (await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
                     {

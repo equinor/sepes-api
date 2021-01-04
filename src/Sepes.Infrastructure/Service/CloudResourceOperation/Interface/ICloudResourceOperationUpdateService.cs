@@ -11,7 +11,9 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<CloudResourceOperationDto> ReInitiateAsync(int id);
 
         Task<CloudResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null);
-       
+
+        Task<CloudResourceOperationDto> TouchAsync(int id);
+
         Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId);          
 
         Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperationsAsync(int resourceId);
