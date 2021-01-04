@@ -351,6 +351,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("VmSizeKey")
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
                     b.HasKey("RegionKey", "VmSizeKey");
 
                     b.HasIndex("VmSizeKey");
