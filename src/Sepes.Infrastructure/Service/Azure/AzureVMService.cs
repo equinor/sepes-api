@@ -128,7 +128,7 @@ namespace Sepes.Infrastructure.Service
                             if (existingRules.TryGetValue(curRule.Name, out NsgRuleDto existingRule))
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
-                                ruleMapped.Priority = ((NsgRuleDto)null).Priority;
+                                ruleMapped.Priority = existingRule.Priority;
                                 await _nsgRuleService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
@@ -157,7 +157,7 @@ namespace Sepes.Infrastructure.Service
                             if (existingRules.TryGetValue(curRule.Name, out NsgRuleDto existingRule))
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
-                                ruleMapped.Priority = ((NsgRuleDto)null).Priority; //Ensure same priority is re-used
+                                ruleMapped.Priority = existingRule.Priority; //Ensure same priority is re-used
                                 await _nsgRuleService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else

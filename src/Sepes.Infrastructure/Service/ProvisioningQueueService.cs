@@ -22,10 +22,18 @@ namespace Sepes.Infrastructure.Service
             _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
-        public async Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        public async Task<ProvisioningQueueParentDto> SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Adding message: {message.Description}, having {message.Children.Count} children");
-            await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message, visibilityTimeout, cancellationToken);
+            var serializedMessage = JsonConvert.SerializeObject(message);
+            var sendtMessage = await _queueService.SendMessageAsync(serializedMessage, visibilityTimeout, cancellationToken);
+
+            message.MessageId = sendtMessage.MessageId;
+            message.PopReceipt = sendtMessage.PopReceipt;
+            message.NextVisibleOn = sendtMessage.NextVisibleOn;
+
+            return message;
+
         }
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
@@ -88,9 +96,9 @@ namespace Sepes.Infrastructure.Service
             message.MessageId = null;
 
             TimeSpan invisibleForTimespan = invisibleForInSeconds.HasValue ? new TimeSpan(0, 0, invisibleForInSeconds.Value) : new TimeSpan(0, 0, 10);
-            await SendMessageAsync(message, visibilityTimeout : invisibleForTimespan, cancellationToken: cancellationToken);           
+            await SendMessageAsync(message, visibilityTimeout: invisibleForTimespan, cancellationToken: cancellationToken);
         }
 
-     
+
     }
 }

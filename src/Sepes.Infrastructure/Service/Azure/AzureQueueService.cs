@@ -27,18 +27,14 @@ namespace Sepes.Infrastructure.Service
             _queueName = queueName;
         }
 
-        public async Task SendMessageAsync(string message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<QueueStorageItemDto> SendMessageAsync(string message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             var client = await CreateQueueClient();
             var base64Message = Base64Encode(message);
-            await client.SendMessageAsync(base64Message, visibilityTimeout, cancellationToken: cancellationToken);
-        }
+            var sendResponse = await client.SendMessageAsync(base64Message, visibilityTimeout, cancellationToken: cancellationToken);
 
-        public async Task SendMessageAsync<T>(T message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var serializedMessage = JsonConvert.SerializeObject(message);
-            await SendMessageAsync(serializedMessage, visibilityTimeout, cancellationToken);
-        }
+            return new QueueStorageItemDto() { MessageId = sendResponse.Value.MessageId, MessageText = message, PopReceipt = sendResponse.Value.PopReceipt, NextVisibleOn = sendResponse.Value.TimeNextVisible };          
+        }       
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
         public async Task<QueueStorageItemDto> RecieveMessageAsync()

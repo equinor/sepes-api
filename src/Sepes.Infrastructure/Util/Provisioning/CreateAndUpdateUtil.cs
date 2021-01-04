@@ -66,7 +66,14 @@ namespace Sepes.Infrastructure.Util.Provisioning
             }
             catch (Exception ex)
             {
-                throw new ProvisioningException($"Create/Update provisioning failed", innerException: ex);
+                if(ex.InnerException != null && ex.InnerException.Message.Contains("A task was canceled"))
+                {
+                    throw new ProvisioningException($"Resource provisioning (Create/update) aborted.", logAsWarning: true, innerException: ex.InnerException);
+                }
+                else
+                {
+                    throw new ProvisioningException($"Resource provisioning (Create/update) failed.", innerException: ex);
+                }
             }
         }
 

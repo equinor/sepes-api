@@ -14,11 +14,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Status == CloudResourceOperationState.ABORTED)
             {
-                throw new ProvisioningException($"Operation is aborted", proceedWithOtherOperations: false, deleteFromQueue: true);
+                throw new ProvisioningException($"Operation is aborted", proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
             }
             else if (operation.TryCount >= operation.MaxTryCount)
             {
-                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.FAILED, proceedWithOtherOperations: false, deleteFromQueue: true);
+                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.FAILED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
             }
         }
 
@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Resource.Deleted.HasValue && operation.OperationType != CloudResourceOperationType.DELETE)
             {
-                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true);
+                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
             }
         }
 

@@ -7,7 +7,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IProvisioningQueueService
     {
-        Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default);
+        Task<ProvisioningQueueParentDto> SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default);
 
         Task<ProvisioningQueueParentDto> RecieveMessageAsync();     
 
