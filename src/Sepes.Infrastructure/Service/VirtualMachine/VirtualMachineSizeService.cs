@@ -103,8 +103,7 @@ namespace Sepes.Infrastructure.Service
                     foreach (var curAzureSku in resourceSkusFromAzure)
                     {
                         if (existingSizeItemsForRegion.TryGetValue(curAzureSku.Name, out curVmSizeInDb))
-                        {
-                            //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
+                        {                         
                             curVmSizeInDb.Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name);
 
                             if (ShouldBeExcluded(curVmSizeInDb))
@@ -115,10 +114,14 @@ namespace Sepes.Infrastructure.Service
                                 continue;
                             }
                             else
-                            {
+                            { 
                                 PopulateVmSizeProps(curAzureSku, curVmSizeInDb);
                                 curVmSizeInDb.DisplayText = AzureVmUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
-                            
+
+                                //Get updated price for VM Size
+                                var regionAssociation = curVmSizeInDb.RegionAssociations.Where(ra => ra.VmSizeKey == curAzureSku.Name).SingleOrDefault();
+                                regionAssociation.Price = await _azureCostManagementService.GetVmPrice(curRegionFromDb.Key, curVmSizeInDb.Key);
+
                                 await _db.SaveChangesAsync();
                                 validSkusFromAzure.Add(curVmSizeInDb.Key);
                             }
@@ -127,16 +130,14 @@ namespace Sepes.Infrastructure.Service
                         {
                             //Size item might exist in db for other region
                             curVmSizeInDb = await _db.VmSizes.FirstOrDefaultAsync(r => r.Key == curAzureSku.Name);
-                            
+
 
                             if (curVmSizeInDb == null)
                             {
                                 curVmSizeInDb = new VmSize() { Key = curAzureSku.Name, CreatedBy = currentUser.UserName, Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name) };
-                                //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
                             }
                             else
-                            {
-                                //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
+                            {                             
                                 curVmSizeInDb.Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name);
                             }
 
@@ -148,14 +149,14 @@ namespace Sepes.Infrastructure.Service
 
                             PopulateVmSizeProps(curAzureSku, curVmSizeInDb);
                             curVmSizeInDb.DisplayText = AzureVmUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
-                            
 
                             //Add to lookup
                             existingSizeItemsForRegion.Add(curAzureSku.Name, curVmSizeInDb);
-                            var priceOfVm = _azureCostManagementService.GetVmPrice(curRegionFromDb.Key, curVmSizeInDb.Key).Result;
+                            var priceOfVm = await _azureCostManagementService.GetVmPrice(curRegionFromDb.Key, curVmSizeInDb.Key);
+
                             //Add to DB
                             curRegionFromDb.VmSizeAssociations.Add(new RegionVmSize() { Region = curRegionFromDb, VmSize = curVmSizeInDb, Price = priceOfVm });
-                        
+
                             await _db.SaveChangesAsync();
                             validSkusFromAzure.Add(curVmSizeInDb.Key);
 
@@ -169,10 +170,10 @@ namespace Sepes.Infrastructure.Service
                         {
                             var toRemoveFromDb = curRegionFromDb.VmSizeAssociations.FirstOrDefault(ra => ra.VmSizeKey == curDbSize.Key);
 
-                            if(toRemoveFromDb != null)
+                            if (toRemoveFromDb != null)
                             {
                                 curRegionFromDb.VmSizeAssociations.Remove(toRemoveFromDb);
-                            }                           
+                            }
                         }
                     }
 
