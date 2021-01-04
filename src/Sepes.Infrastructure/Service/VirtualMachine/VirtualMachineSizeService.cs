@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Region {region} not found or disabled.");
             }
 
-            var sizes = relevantDbRegion.VmSizeAssociations.Select(va => va.VmSize).OrderBy(s=> s.Price).ToList();
+            var sizes = relevantDbRegion.VmSizeAssociations.OrderBy(s => s.Price).Select(va => va.VmSize).ToList();
 
             return sizes;
         }
@@ -104,7 +104,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (existingSizeItemsForRegion.TryGetValue(curAzureSku.Name, out curVmSizeInDb))
                         {
-                            curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
+                            //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
                             curVmSizeInDb.Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name);
 
                             if (ShouldBeExcluded(curVmSizeInDb))
@@ -132,11 +132,11 @@ namespace Sepes.Infrastructure.Service
                             if (curVmSizeInDb == null)
                             {
                                 curVmSizeInDb = new VmSize() { Key = curAzureSku.Name, CreatedBy = currentUser.UserName, Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name) };
-                                curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
+                                //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
                             }
                             else
                             {
-                                curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
+                                //curVmSizeInDb.Price = _azureCostManagementService.GetSizePrice(curVmSizeInDb.Key).Result;
                                 curVmSizeInDb.Category = AzureVmUtil.GetSizeCategory(curAzureSku.Name);
                             }
 
@@ -152,9 +152,9 @@ namespace Sepes.Infrastructure.Service
 
                             //Add to lookup
                             existingSizeItemsForRegion.Add(curAzureSku.Name, curVmSizeInDb);
-
+                            var priceOfVm = _azureCostManagementService.GetVmPrice(curRegionFromDb.Key, curVmSizeInDb.Key).Result;
                             //Add to DB
-                            curRegionFromDb.VmSizeAssociations.Add(new RegionVmSize() { Region = curRegionFromDb, VmSize = curVmSizeInDb });
+                            curRegionFromDb.VmSizeAssociations.Add(new RegionVmSize() { Region = curRegionFromDb, VmSize = curVmSizeInDb, Price = priceOfVm });
                         
                             await _db.SaveChangesAsync();
                             validSkusFromAzure.Add(curVmSizeInDb.Key);
