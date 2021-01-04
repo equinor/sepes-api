@@ -9,5 +9,6 @@
         public Region Region { get; set; }
 
         public VmSize VmSize { get; set; }
+        public double Price { get; set; }
     }
 }

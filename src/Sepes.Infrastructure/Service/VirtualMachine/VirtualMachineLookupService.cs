@@ -40,6 +40,13 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
+        public async Task<double> CalculateSizePrice(string size, CancellationToken cancellationToken = default)
+        {
+            var vmPrice = await _costService.GetSizePrice(size, cancellationToken);
+
+            return vmPrice;
+        }
+
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
         {
             var result = new List<VmDiskLookupDto>();
