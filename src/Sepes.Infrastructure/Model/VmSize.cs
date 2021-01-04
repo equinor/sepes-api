@@ -23,6 +23,8 @@ namespace Sepes.Infrastructure.Model
 
         public int MaxNetworkInterfaces { get; set; }
 
+        public double Price { get; set; }
+
         public ICollection<RegionVmSize> RegionAssociations { get; set; }
     }
 }

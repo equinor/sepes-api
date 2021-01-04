@@ -714,6 +714,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("OsDiskSizeInMB")
                         .HasColumnType("int");
 
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
                     b.Property<int>("ResourceDiskSizeInMB")
                         .HasColumnType("int");
 
