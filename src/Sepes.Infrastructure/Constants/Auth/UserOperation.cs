@@ -19,9 +19,10 @@
         Study_Crud_Sandbox,
 
         //Sandbox details and editation
-        SandboxLock,
-        SandboxUnlock,
-        EditRules,
+        Sandbox_IncreasePhase,
+        Sandbox_Unlock,
+        Sandbox_EditInboundRules,
+        Sandbox_OpenInternet,
 
         //Dataset
         PreApprovedDataset_Read,

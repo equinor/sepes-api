@@ -22,10 +22,18 @@ namespace Sepes.Infrastructure.Service
             _queueService.Init(config[ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING], "sandbox-resource-operations-queue");
         }
 
-        public async Task SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        public async Task<ProvisioningQueueParentDto> SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Adding message: {message.Description}, having {message.Children.Count} children");
-            await _queueService.SendMessageAsync<ProvisioningQueueParentDto>(message, visibilityTimeout, cancellationToken);
+            var serializedMessage = JsonConvert.SerializeObject(message);
+            var sendtMessage = await _queueService.SendMessageAsync(serializedMessage, visibilityTimeout, cancellationToken);
+
+            message.MessageId = sendtMessage.MessageId;
+            message.PopReceipt = sendtMessage.PopReceipt;
+            message.NextVisibleOn = sendtMessage.NextVisibleOn;
+
+            return message;
+
         }
 
         // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
@@ -33,6 +41,13 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Queue: Deleting message: {message.MessageId} with description \"{message.Description}\", having {message.Children.Count} children");
             await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+        }
+
+        // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
+        public async Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            _logger.LogInformation($"Queue: Deleting message: {messageId}");
+            await _queueService.DeleteMessageAsync(messageId, popReceipt);
         }
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
@@ -46,7 +61,8 @@ namespace Sepes.Infrastructure.Service
                 var convertedMessage = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
 
                 convertedMessage.MessageId = messageFromQueue.MessageId;
-                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;              
+                convertedMessage.PopReceipt = messageFromQueue.PopReceipt;
+                convertedMessage.NextVisibleOn = messageFromQueue.NextVisibleOn;
 
                 return convertedMessage;
             }
@@ -61,15 +77,16 @@ namespace Sepes.Infrastructure.Service
 
         public async Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds)
         {
-            _logger.LogInformation($"Queue: Increasing message invisibility message for message {message.MessageId} with description \"{message.Description}\" by {invisibleForInSeconds} seconds.");
+            _logger.LogInformation($"Queue: Increasing message invisibility for {message.MessageId} with description \"{message.Description}\" by {invisibleForInSeconds} seconds.");
             var messageAsJson = JsonConvert.SerializeObject(message);
             var updateReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);
             message.PopReceipt = updateReceipt.PopReceipt;
+            message.NextVisibleOn = updateReceipt.NextVisibleOn;
             _logger.LogInformation($"Queue: Message {message.MessageId} will be visible again at {updateReceipt.NextVisibleOn} (UTC)");
 
         }
 
-        public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, CancellationToken cancellationToken = default)
+        public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, int? invisibleForInSeconds = default, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Re-queuing message: {message.Description}, having {message.Children.Count} children.");
 
@@ -77,7 +94,11 @@ namespace Sepes.Infrastructure.Service
             message.DequeueCount = 0;
             message.PopReceipt = null;
             message.MessageId = null;
-            await SendMessageAsync(message, cancellationToken: cancellationToken);           
+
+            TimeSpan invisibleForTimespan = invisibleForInSeconds.HasValue ? new TimeSpan(0, 0, invisibleForInSeconds.Value) : new TimeSpan(0, 0, 10);
+            await SendMessageAsync(message, visibilityTimeout: invisibleForTimespan, cancellationToken: cancellationToken);
         }
+
+
     }
 }

@@ -65,5 +65,9 @@ namespace Sepes.Infrastructure.Service
             return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
         }
 
+        protected async Task<Sandbox> GetSandboxByIdNoChecksAsync(int sandboxId)
+        {
+            return await SandboxSingularQueries.GetSandboxByIdNoChecks(_db, sandboxId);
+        }
     }
 }

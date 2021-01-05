@@ -1,6 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
 using System.Threading.Tasks;
 
@@ -17,7 +16,7 @@ namespace Sepes.Infrastructure.Service
 
         public  async Task<UserPermissionDto> GetUserPermissionsAsync()
         {
-            var userFromDb = await _userService.GetCurrentUserFromDbAsync();
+            var userFromDb = await _userService.GetCurrentUserAsync();
 
             var result = new UserPermissionDto();
 
@@ -29,9 +28,11 @@ namespace Sepes.Infrastructure.Service
             result.Sponsor = userFromDb.Sponsor;
             result.DatasetAdmin = userFromDb.DatasetAdmin;
 
-            result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(_userService, Constants.UserOperation.Study_Create);
-            result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(_userService, Constants.UserOperation.PreApprovedDataset_Read);
-            result.CanEdit_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(_userService, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            var currentUser = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.Study_Create);
+            result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.PreApprovedDataset_Read);
+            result.CanEdit_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             return result;
         } 

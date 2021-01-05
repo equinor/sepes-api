@@ -39,8 +39,8 @@ namespace Sepes.RestApi.Controllers
         [HttpDelete("{vmId}")]
         public async Task<IActionResult> DeleteAsync(int vmId)
         {
-            var deleted = await _vmService.DeleteAsync(vmId);
-            return new JsonResult(deleted);
+            await _vmService.DeleteAsync(vmId);
+            return new NoContentResult();
         }
 
         [HttpGet("forsandbox/{sandboxId}")]

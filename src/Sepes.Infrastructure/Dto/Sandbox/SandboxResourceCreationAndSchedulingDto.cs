@@ -20,15 +20,15 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public Dictionary<string, string> Tags { get; set; }
 
-        public SandboxResourceDto ResourceGroup { get; set; }
+        public CloudResourceDto ResourceGroup { get; set; }
 
-        public SandboxResourceDto DiagnosticsStorage { get; set; }
+        public CloudResourceDto DiagnosticsStorage { get; set; }
 
-        public SandboxResourceDto NetworkSecurityGroup { get; set; }
+        public CloudResourceDto NetworkSecurityGroup { get; set; }
 
-        public SandboxResourceDto Network { get; set; }
+        public CloudResourceDto Network { get; set; }
 
-        public SandboxResourceDto Bastion { get; set; }
+        public CloudResourceDto Bastion { get; set; }
         public SandboxResourceCreationAndSchedulingDto()
         {
 

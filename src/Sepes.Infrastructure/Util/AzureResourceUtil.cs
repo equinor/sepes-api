@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Text;
 
@@ -10,10 +10,9 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceUtil
     {
-
-        public static CloudResourceCRUDResult CreateResultFromIResource(IResource resource)
+        public static ResourceProvisioningResult CreateResultFromIResource(IResource resource)
         {
-            return new CloudResourceCRUDResult() { Resource = resource, Success = true };
+            return new ResourceProvisioningResult() { Resource = resource};
         }
 
         public static void ThrowIfResourceIsNull(IResource resource, string resourceType, string name, string errorMessagePrefix)
@@ -50,7 +49,7 @@ namespace Sepes.Infrastructure.Util
             return messageBuilder.ToString();
         }
 
-        public static string CreateResourceLink(IConfiguration config, SandboxResource resource)
+        public static string CreateResourceLink(IConfiguration config, CloudResource resource)
         {
             return CreateResourceLink(config, resource.ResourceId);
         }

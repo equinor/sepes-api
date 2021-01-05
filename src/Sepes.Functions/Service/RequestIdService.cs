@@ -17,9 +17,8 @@ namespace Sepes.CloudResourceWorker.Service
 
         public string GetRequestId()
         {
-            string requestId = null;
 
-            if (PotentialRequestIdIsNotEmpty(_telemetryClient.Context.Operation.Id, out requestId))
+            if (PotentialRequestIdIsNotEmpty(_telemetryClient.Context.Operation.Id, out string requestId))
             {
                 return requestId;
             }
@@ -43,8 +42,10 @@ namespace Sepes.CloudResourceWorker.Service
             {
                 var telemetry = new RequestTelemetry();
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 TelemetryConfiguration
                     .Active
+#pragma warning restore CS0618 // Type or member is obsolete
                     .TelemetryInitializers
                     .OfType<OperationCorrelationTelemetryInitializer>()
                     .Single()

@@ -1,9 +1,11 @@
 ﻿using Microsoft.Azure.Management.Network.Fluent;
+using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -15,18 +17,18 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class AzureVNetService : AzureServiceBase, IAzureVNetService
-    { 
+    {
         public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger)
-            :base (config, logger)
-        {         
-          
+            : base(config, logger)
+        {
+
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Network for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var networkSettings = SandboxResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
+            var networkSettings = CloudResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
 
             var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
 
@@ -39,26 +41,25 @@ namespace Sepes.Infrastructure.Service
                 throw new NotImplementedException("Update Network not implemented");
             }
 
-          
+
             var crudResult = CreateResult(vNetDto);
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
-            string networkSecurityGroupName = null; //Comes from Network Security Group Service 
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out networkSecurityGroupName) == false)
+            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName) == false)
             {
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
 
-            await ApplySecurityGroup(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);       
+            await ApplySecurityGroup(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);
 
             _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
             return crudResult;
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
             var crudResult = CreateResult(vNetDto);
@@ -66,21 +67,21 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        CloudResourceCRUDResult CreateResult(AzureVNetDto networkDto)
+        ResourceProvisioningResult CreateResult(AzureVNetDto networkDto)
         {
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(networkDto.Network);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(networkDto.Network);
             crudResult.CurrentProvisioningState = networkDto.ProvisioningState;
             crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.BASTION_SUBNET_ID, networkDto.BastionSubnetId);
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
-            var networkDto = new AzureVNetDto();          
+            var networkDto = new AzureVNetDto();
 
             var addressSpace = "10.100.0.0/23";  //Can have 512 adresses, but must reserve some; 10.100.0.0-10.100.1.255
 
-            var bastionSubnetName = "AzureBastionSubnet";
+            var bastionSubnetName = AzureVNetConstants.BASTION_SUBNET_NAME;
             var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255         
 
             networkDto.SandboxSubnetName = sandboxSubnetName;
@@ -89,16 +90,32 @@ namespace Sepes.Infrastructure.Service
             networkDto.Network = await _azure.Networks.Define(networkName)
                 .WithRegion(region)
                 .WithExistingResourceGroup(resourceGroupName)
-                
                 .WithAddressSpace(addressSpace)
                 .WithSubnet(bastionSubnetName, bastionSubnetAddress)
-                .WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  
+                .DefineSubnet(networkDto.SandboxSubnetName).WithAddressPrefix(sandboxSubnetAddress).WithAccessFromService(ServiceEndpointType.MicrosoftStorage).Attach() //To allow storage accounts to be added
+                                                                                                                                                                         //.WithSubnet(networkDto.SandboxSubnetName, sandboxSubnetAddress)  .W
                 .WithTags(tags)
                 .CreateAsync(cancellationToken);
 
             networkDto.ProvisioningState = networkDto.Network.Inner.ProvisioningState.ToString();
 
             return networkDto;
+        }
+
+        public async Task EnsureSandboxSubnetHasServiceEndpointForStorage(string resourceGroupName, string networkName)
+        {
+            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+
+            //Ensure resource is is managed by this instance         
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+
+            var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
+
+            await network.Update()
+                .UpdateSubnet(sandboxSubnet.Name)
+                .WithAccessFromService(ServiceEndpointType.MicrosoftStorage)
+                .Parent()
+                .ApplyAsync();
         }
 
         public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
@@ -116,7 +133,7 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
-        }      
+        }
 
         public async Task Delete(string resourceGroupName, string networkName)
         {
@@ -135,7 +152,7 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
 
-            if(resource == null)
+            if (resource == null)
             {
                 return null;
             }
@@ -174,12 +191,12 @@ namespace Sepes.Infrastructure.Service
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-        public Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             throw new NotImplementedException();
         }
 
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }
@@ -193,7 +210,7 @@ namespace Sepes.Infrastructure.Service
 
         //    var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
 
-        //    var bastionSubnetName = "AzureBastionSubnet";
+        //    var bastionSubnetName = AzureVNetConstants.BASTION_SUBNET_NAME;
         //    var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
 
         //    var sandboxSubnetName = $"snet-{sandboxName}";

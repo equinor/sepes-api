@@ -40,14 +40,16 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_Update_ResultsAndLearnings, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //STUDY CLOSE
-            OperationPermission.CreateForAppRole(UserOperation.Study_Close, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Close, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Close, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Close, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //STUDY DELETE
             OperationPermission.CreateForAppRole(UserOperation.Study_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),     
 
             //STUDY, DATASETS
-            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Dataset, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
             //STUDY, ADD/REMOVE PARTICIPANT
@@ -56,8 +58,24 @@ namespace Sepes.Infrastructure.Constants.Auth
             OperationPermission.CreateForStudyRole(UserOperation.Study_AddRemove_Participant, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //SANDBOX, CRUD
-            OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin, AppRoles.Sponsor),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
             OperationPermission.CreateForStudyRole(UserOperation.Study_Crud_Sandbox, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
+
+             //SANDBOX, INBOUND RULES
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_EditInboundRules, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_EditInboundRules, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            OperationPermission.CreateForStudyRole(UserOperation.Sandbox_EditInboundRules, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
+
+            //SANDBOX, OPEN INTERNET RULE
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_OpenInternet, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_OpenInternet, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            OperationPermission.CreateForStudyRole(UserOperation.Sandbox_OpenInternet, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
+
+            //Sandbox close / make data available
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:false, AppRoles.Admin),
+            OperationPermission.CreateForAppRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            OperationPermission.CreateForStudyRole(UserOperation.Sandbox_IncreasePhase, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep, StudyRoles.VendorAdmin),
 
             //PRE-APPROVED DATASETS
             OperationPermission.CreateForAllNonExternalUser(UserOperation.PreApprovedDataset_Read),

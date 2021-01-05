@@ -28,8 +28,10 @@ namespace Sepes.Infrastructure.Model
 
         public string DeletedBy { get; set; }
 
-        public List<SandboxResource> Resources{ get; set; }
+        public List<CloudResource> Resources{ get; set; }
 
         public List<SandboxDataset> SandboxDatasets { get; set; }
-    }
+
+        public List<SandboxPhaseHistory> PhaseHistory { get; set; }
+    }   
 }

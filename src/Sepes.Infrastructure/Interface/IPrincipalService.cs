@@ -1,9 +1,15 @@
-﻿using System.Security.Principal;
-
-namespace Sepes.Infrastructure.Interface
+﻿namespace Sepes.Infrastructure.Interface
 {
     public interface IPrincipalService
     {
-        IPrincipal GetPrincipal();    
+        public bool IsEmployee();
+
+        public bool IsAdmin();
+
+        public bool IsSponsor();
+
+        public bool IsDatasetAdmin();
+
+       
     }
 }

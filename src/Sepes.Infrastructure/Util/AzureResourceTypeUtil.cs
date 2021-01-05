@@ -5,7 +5,7 @@ namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceTypeUtil
     {
-       public static string GetUserFriendlyName(SandboxResource resource)
+       public static string GetUserFriendlyName(CloudResource resource)
         {
             var resourceType = resource.ResourceType;
 

@@ -1,5 +1,6 @@
 ﻿
 using AutoMapper;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,12 +37,13 @@ namespace Sepes.CloudResourceWorker
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
-            Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions aiOptions
-             = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
-            // Disables adaptive sampling.
-            aiOptions.EnableAdaptiveSampling = false;
-            aiOptions.InstrumentationKey = appiKey;
-            aiOptions.EnableDebugLogger = true;
+            var aiOptions= new ApplicationInsightsServiceOptions
+             {
+                 // Disables adaptive sampling.
+                 EnableAdaptiveSampling = false,
+                 InstrumentationKey = appiKey,
+                 EnableDebugLogger = true
+             };
 
             builder.Services.AddApplicationInsightsTelemetry(aiOptions);
 
@@ -64,9 +66,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddHttpContextAccessor();
 
             //Plumbing
-            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
+            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
             builder.Services.AddScoped<IUserService, FunctionUserService>();
-            builder.Services.AddScoped<IPrincipalService, PrincipalService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
 
             //Domain Model Services
@@ -76,14 +77,22 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ISandboxService, SandboxService>();
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
-            builder.Services.AddTransient<ISandboxResourceService, SandboxResourceService>();
+            builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
+            builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
+            builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
+            builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
+            builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
+            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
-            //Ext System Facade Services
-            builder.Services.AddTransient<ISandboxResourceProvisioningService, SandboxResourceProvisioningService>();
-            builder.Services.AddTransient<ISandboxResourceMonitoringService, SandboxResourceMonitoringService>();
-            builder.Services.AddTransient<ISandboxResourceOperationService, SandboxResourceOperationService>();
+            //Ext System Facade Services            
+            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
+            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
+       
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();

@@ -14,25 +14,25 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class StudyAccessUtil
     {
-        public static void HasAccessToOperationOrThrow(IUserService userService, UserOperation operation)
+        public static void HasAccessToOperationOrThrow(UserDto currentUser, UserOperation operation)
         {
-            if (HasAccessToOperation(userService, operation) == false)
+            if (HasAccessToOperation(currentUser, operation) == false)
             {
-                throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation}");
+                throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation}");
             }
         }
 
-        public static bool HasAccessToOperation(IUserService userService, UserOperation operation)
+        public static bool HasAccessToOperation(UserDto currentUser, UserOperation operation)
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
             //First thest this, as it's the most common operation and it requires no db access
-            if (IsAllowedForEmployeesWithoutAnyRoles(userService, onlyRelevantOperations))
+            if (IsAllowedForEmployeesWithoutAnyRoles(currentUser, onlyRelevantOperations))
             {
                 return true;
             }
 
-            if (IsAllowedBasedOnAppRoles(userService, onlyRelevantOperations))
+            if (IsAllowedBasedOnAppRoles(currentUser, onlyRelevantOperations))
             {
                 return true;
             }
@@ -40,32 +40,38 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
-        public static async Task<Study> HasAccessToOperationForStudyOrThrow(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        public static Study HasAccessToOperationForStudyOrThrow(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
         {
-            if (await HasAccessToOperationForStudy(userService, study, operation, newRole))
+            if (HasAccessToOperationForStudy(currentUser, study, operation, newRole))
             {
                 return study;
             }
 
-            throw new ForbiddenException($"User {userService.GetCurrentUser().EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+            throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
         }
 
-        public static async Task<bool> HasAccessToOperationForStudy(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        public static async Task<bool> HasAccessToOperationForStudyAsync(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        {
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            return HasAccessToOperationForStudy(currentUser, study, operation, newRole);
+        }
+
+        public static bool HasAccessToOperationForStudy(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
             //First thest this, as it's the most common operation and it requires no db access
-            if (IsAllowedForEmployeesWithoutAnyRoles(userService, onlyRelevantOperations, study))
+            if (IsAllowedForEmployeesWithoutAnyRoles(currentUser, onlyRelevantOperations, study))
             {
                 return true;
             }
 
-            if (await IsAllowedBasedOnAppRoles(userService, onlyRelevantOperations, study, operation, newRole))
+            if (IsAllowedBasedOnAppRoles(currentUser, onlyRelevantOperations, study, operation, newRole))
             {
                 return true;
             }
 
-            if (await IsAllowedBasedOnStudyRoles(userService, onlyRelevantOperations, study, operation, newRole))
+            if (IsAllowedBasedOnStudyRoles(currentUser, onlyRelevantOperations, study, operation, newRole))
             {
                 return true;
             }
@@ -73,10 +79,8 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
-        public static bool IsAllowedForEmployeesWithoutAnyRoles(IUserService userService, IEnumerable<OperationPermission> relevantOperations, Study study = null)
+        public static bool IsAllowedForEmployeesWithoutAnyRoles(UserDto currentUser, IEnumerable<OperationPermission> relevantOperations, Study study = null)
         {
-            var currentUser = userService.GetCurrentUser();
-
             if (!currentUser.Employee)
             {
                 return false;
@@ -92,14 +96,12 @@ namespace Sepes.Infrastructure.Util.Auth
             return operationsAllowedWithoutRoles.Any();
         }
 
-        static bool IsAllowedBasedOnAppRoles(IUserService userService, IEnumerable<OperationPermission> relevantOperations)
+        static bool IsAllowedBasedOnAppRoles(UserDto currentUser, IEnumerable<OperationPermission> relevantOperations)
         {
             var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
 
             if (allowedForAppRolesQueryable.Any())
             {
-                var currentUser = userService.GetCurrentUser();
-
                 foreach (var curAllowance in allowedForAppRolesQueryable)
                 {
                     if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
@@ -112,7 +114,7 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
-        static async Task<bool> IsAllowedBasedOnAppRoles(IUserService userService, IEnumerable<OperationPermission> relevantOperations, Study study, UserOperation operation, string newRole = null)
+        static bool IsAllowedBasedOnAppRoles(UserDto currentUser, IEnumerable<OperationPermission> relevantOperations, Study study, UserOperation operation, string newRole = null)
         {
             var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
 
@@ -123,15 +125,13 @@ namespace Sepes.Infrastructure.Util.Auth
 
             if (allowedForAppRolesQueryable.Any())
             {
-                var currentUserDb = await userService.GetCurrentUserWithStudyParticipantsAsync();
-
                 foreach (var curAllowance in allowedForAppRolesQueryable)
                 {
-                    if (UserHasAnyOfTheseAppRoles(currentUserDb, curAllowance.AllowedForRoles))
+                    if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
                     {
                         if (curAllowance.AppliesOnlyIfUserIsStudyOwner)
                         {
-                            if (UserHasAnyOfTheseStudyRoles(currentUserDb.Id, study, operation, newRole, StudyRoles.StudyOwner))
+                            if (UserHasAnyOfTheseStudyRoles(currentUser.Id, study, operation, newRole, StudyRoles.StudyOwner))
                             {
                                 return true;
                             }
@@ -146,10 +146,9 @@ namespace Sepes.Infrastructure.Util.Auth
             }
 
             return false;
-
         }
 
-        static async Task<bool> IsAllowedBasedOnStudyRoles(IUserService userService, IEnumerable<OperationPermission> relevantOperations, Study study, UserOperation operation, string newRole = null)
+        static bool IsAllowedBasedOnStudyRoles(UserDto currentUser, IEnumerable<OperationPermission> relevantOperations, Study study, UserOperation operation, string newRole = null)
         {
             var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(relevantOperations);
 
@@ -160,8 +159,6 @@ namespace Sepes.Infrastructure.Util.Auth
 
             if (allowedForStudyRolesQueryable.Any())
             {
-                var currentUser = await userService.GetCurrentUserFromDbAsync();
-
                 foreach (var curOpWithRole in allowedForStudyRolesQueryable)
                 {
                     if (UserHasAnyOfTheseStudyRoles(currentUser.Id, study, curOpWithRole.AllowedForRoles, operation, newRole))
@@ -173,8 +170,6 @@ namespace Sepes.Infrastructure.Util.Auth
 
             return false;
         }
-
-
 
         static bool UserHasAnyOfTheseStudyRoles(int userId, Study study, HashSet<string> requiredRoles, UserOperation operation, string newRole = null)
         {

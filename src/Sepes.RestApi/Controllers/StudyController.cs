@@ -18,11 +18,15 @@ namespace Sepes.RestApi.Controller
     public class StudyController : ControllerBase
     {
         readonly IStudyService _studyService;
+        readonly IStudyCreateUpdateService _studyCreateUpdateService;
+        readonly IStudyDeleteService _studyDeleteService;
         readonly IStudyLogoService _studyLogoService;
 
-        public StudyController(IStudyService studyService, IStudyLogoService studyLogoService)
+        public StudyController(IStudyService studyService, IStudyCreateUpdateService studyCreateUpdateService, IStudyDeleteService studyDeleteService,IStudyLogoService studyLogoService)
         {
             _studyService = studyService;
+            _studyCreateUpdateService = studyCreateUpdateService;          
+            _studyDeleteService = studyDeleteService;
             _studyLogoService = studyLogoService;
         }
 
@@ -43,14 +47,14 @@ namespace Sepes.RestApi.Controller
         [HttpPost]
         public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
         {
-            var study = await _studyService.CreateStudyAsync(newStudy);
+            var study = await _studyCreateUpdateService.CreateStudyAsync(newStudy);
             return new JsonResult(study);
         }
 
         [HttpDelete("{studyId}")]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            await _studyService.CloseStudyAsync(studyId); //Todo: Switch to correct method
+            await _studyDeleteService.CloseStudyAsync(studyId); //Todo: Switch to correct method
             return new NoContentResult();
         }
 
@@ -67,7 +71,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
-            var updatedStudy = await _studyService.UpdateStudyMetadataAsync(studyId, study);
+            var updatedStudy = await _studyCreateUpdateService.UpdateStudyMetadataAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
 
@@ -83,7 +87,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
         {
-            var resultsAndLearningsFromDb = await _studyService.UpdateResultsAndLearningsAsync(studyId, resultsAndLearnings);
+            var resultsAndLearningsFromDb = await _studyCreateUpdateService.UpdateResultsAndLearningsAsync(studyId, resultsAndLearnings);
             return new JsonResult(resultsAndLearningsFromDb);
         }
 

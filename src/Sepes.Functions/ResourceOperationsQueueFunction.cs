@@ -11,9 +11,9 @@ namespace Sepes.CloudResourceWorker
 {
     public class ResourceOperationsQueueFunction
     {    
-        readonly ISandboxResourceProvisioningService _provisioningService;
+        readonly IResourceProvisioningService _provisioningService;
 
-        public ResourceOperationsQueueFunction(ISandboxResourceProvisioningService provisioningService)
+        public ResourceOperationsQueueFunction(IResourceProvisioningService provisioningService)
         {
             _provisioningService = provisioningService;
         }
@@ -29,7 +29,7 @@ namespace Sepes.CloudResourceWorker
             transformedQueueItem.PopReceipt = myQueueItem.PopReceipt;
             transformedQueueItem.DequeueCount = myQueueItem.DequeueCount;
 
-          await  _provisioningService.HandleQueueItem(transformedQueueItem);          
+          await  _provisioningService.HandleWork(transformedQueueItem);          
         }
     }
 }

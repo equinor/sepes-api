@@ -7,9 +7,9 @@ namespace Sepes.Infrastructure.Util
     public static class AzureResourceStatusUtil
     {  
 
-        public static SandboxResourceOperation DecideWhatOperationToBaseStatusOn(SandboxResource resource)
+        public static CloudResourceOperation DecideWhatOperationToBaseStatusOn(CloudResource resource)
         {
-            SandboxResourceOperation baseStatusOnThisOperation = null;
+            CloudResourceOperation baseStatusOnThisOperation = null;
 
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
             {
@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Util
         }
 
 
-        public static string ResourceStatus(SandboxResource resource)
+        public static string ResourceStatus(CloudResource resource)
         {          
 
             if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
@@ -81,7 +81,7 @@ namespace Sepes.Infrastructure.Util
             return "n/a";     
            
         }
-        static bool AbleToCreateStatusForOngoingWork(SandboxResourceOperation operation, out string status)
+        static bool AbleToCreateStatusForOngoingWork(CloudResourceOperation operation, out string status)
         {
             string resourceBaseStatus = null;
 

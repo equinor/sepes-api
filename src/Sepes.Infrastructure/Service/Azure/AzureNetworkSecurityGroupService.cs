@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -25,7 +26,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<CloudResourceCRUDResult> EnsureCreated(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
           
@@ -45,7 +46,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<CloudResourceCRUDResult> GetSharedVariables(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
             var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
@@ -54,18 +55,18 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public async Task<CloudResourceCRUDResult> Delete(CloudResourceCRUDInput parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             await Delete(parameters.ResourceGroupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromProvisioningState(provisioningState);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
             return crudResult;
         }
 
-        CloudResourceCRUDResult CreateResult(INetworkSecurityGroup nsg)
+        ResourceProvisioningResult CreateResult(INetworkSecurityGroup nsg)
         {
-            var crudResult = CloudResourceCRUDUtil.CreateResultFromIResource(nsg);
+            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(nsg);
             crudResult.CurrentProvisioningState = nsg.Inner.ProvisioningState.ToString();
             crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, nsg.Name);
             return crudResult;
@@ -188,161 +189,9 @@ namespace Sepes.Infrastructure.Service
             }
 
             return result;
-        }
-
-        public async Task AddInboundRule(string resourceGroupName, string securityGroupName,
-                                      NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {
-            var createOperation = _azure.NetworkSecurityGroups
-                 .GetByResourceGroup(resourceGroupName, securityGroupName)
-                 .Update()
-                 .DefineRule(rule.Name);
-
-            var operationWithRules = (rule.Action == RuleAction.Allow ? createOperation.AllowInbound() : createOperation.DenyInbound())
-            .FromAddresses(rule.SourceAddress)
-            .FromAnyPort()
-            .ToAddresses(rule.DestinationAddress);
-
-            var decidePort = await (rule.DestinationPort == 0 ? operationWithRules.ToAnyPort() : operationWithRules.ToPort(rule.DestinationPort))
-            .WithAnyProtocol()
-            .WithPriority(rule.Priority)
-            .Attach()
-            .ApplyAsync(cancellationToken);
-        }
-
-        public async Task UpdateInboundRule(string resourceGroupName, string securityGroupName,
-                                 NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {
-            var updateNsgOperation = _azure.NetworkSecurityGroups
-                 .GetByResourceGroup(resourceGroupName, securityGroupName)
-                 .Update();
-
-
-            var updateRuleOp = updateNsgOperation
-             .UpdateRule(rule.Name);
-            //Decide of allow or deny
-            (rule.Action == RuleAction.Allow ? updateRuleOp.AllowInbound() : updateRuleOp.DenyInbound())
-
-                .FromAddresses(rule.SourceAddress)
-            .FromAnyPort()
-              .ToAddresses(rule.DestinationAddress);
-
-            var decidePort = (rule.DestinationPort == 0 ? updateRuleOp.ToAnyPort() : updateRuleOp.ToPort(rule.DestinationPort))
-
-           .WithAnyProtocol()
-           .WithPriority(rule.Priority);
-
-            await updateNsgOperation.ApplyAsync();
-        }
-
-        public async Task AddOutboundRule(string resourceGroupName, string securityGroupName,
-                                    NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {
-            var operationStep1 = _azure.NetworkSecurityGroups
-                 .GetByResourceGroup(resourceGroupName, securityGroupName)
-                 .Update()
-                 .DefineRule(rule.Name);
-
-            var operationStep2 = (rule.Action == RuleAction.Allow ? operationStep1.AllowOutbound() : operationStep1.DenyOutbound())           
-                 .FromAddresses(rule.SourceAddress);
-
-            var operationStep3 = (rule.SourcePort == 0 ? operationStep2.FromAnyPort() : operationStep2.FromPort(rule.SourcePort));
-
-            var operationStep4 = (rule.DestinationAddress == "*" ? operationStep3.ToAnyAddress() : operationStep3.ToAddress(rule.DestinationAddress));
-
-            var operationStep5 = operationStep4
-                .ToAnyPort()
-                .WithAnyProtocol()
-                .WithPriority(rule.Priority)
-                .Attach();
-
-            await operationStep5
-              .ApplyAsync(cancellationToken);
-        }
-
-
-        public async Task UpdateOutboundRule(string resourceGroupName, string securityGroupName,
-                                   NsgRuleDto rule, CancellationToken cancellationToken = default)
-        {
-            var operationStep1 = _azure.NetworkSecurityGroups
-                 .GetByResourceGroup(resourceGroupName, securityGroupName)
-                 .Update();
-
-            var operationStep2 = operationStep1
-             .UpdateRule(rule.Name);
-
-            var operationStep3 = (rule.Action == RuleAction.Allow ? operationStep2.AllowOutbound() : operationStep2.DenyOutbound())
-              .FromAddresses(rule.SourceAddress);            
-
-            var operationStep4 = (rule.SourcePort == 0 ? operationStep3.FromAnyPort() : operationStep3.FromPort(rule.SourcePort));
-            //ruleMapped.DestinationAddress = "*";
-            //ruleMapped.DestinationPort = 0;
-
-            var operationStep5 = (rule.DestinationAddress == "*" ? operationStep4.ToAnyAddress() : operationStep2.ToAddress(rule.DestinationAddress));
-
-            _ = operationStep5
-                  .ToAnyPort()
-                  .WithAnyProtocol()
-                  .WithPriority(rule.Priority);
-
-            await operationStep1.ApplyAsync();
-        }
-
-        public async Task DeleteRule(string resourceGroupName, string securityGroupName,
-                                string ruleName, CancellationToken cancellationToken = default)
-        {
-            var updatedNsg = await _azure.NetworkSecurityGroups
-                 .GetByResourceGroup(resourceGroupName, securityGroupName)
-                 .Update()
-                 .WithoutRule(ruleName)
-                .ApplyAsync();
-
-        }
-
-        public async Task NsgAllowInboundPort(string resourceGroupName, string securityGroupName,
-                                              string ruleName,
-                                              int priority,
-                                              string[] internalAddresses,
-                                              int toPort, CancellationToken cancellationToken = default)
-        {
-            await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
-                .Update()
-                .DefineRule(ruleName)//Maybe "AllowOutgoing" + portvariable
-                .AllowInbound()
-                .FromAddresses(internalAddresses)
-                .FromAnyPort()
-                .ToAnyAddress()
-                .ToPort(toPort)
-                .WithAnyProtocol()
-                .WithPriority(priority)
-                .Attach()
-                .ApplyAsync();
-        }
-
-        public async Task NsgAllowOutboundPort(string resourceGroupName, string securityGroupName,
-                                               string ruleName,
-                                               int priority,
-                                               string[] externalAddresses,
-                                               int toPort, CancellationToken cancellationToken = default)
-        {
-            await _azure.NetworkSecurityGroups
-                .GetByResourceGroup(resourceGroupName, securityGroupName) //can be changed to get by ID
-                .Update()
-                .DefineRule(ruleName)
-                .AllowOutbound()
-                .FromAnyAddress()
-                .FromAnyPort()
-                .ToAddresses(externalAddresses)
-                .ToPort(toPort)
-                .WithAnyProtocol()
-                .WithPriority(priority)
-                .Attach()
-                .ApplyAsync();
-        }
-
-
-        public Task<CloudResourceCRUDResult> Update(CloudResourceCRUDInput parameters, CancellationToken cancellationToken = default)
+        }  
+        
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }

@@ -10,10 +10,8 @@ namespace Sepes.Infrastructure.Service
     {
         void Init(string connectionString, string queueName);
 
-        Task SendMessageAsync(string messageText, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken));
-
-        Task SendMessageAsync<T>(T messageObj, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default(CancellationToken));
-
+        Task<QueueStorageItemDto> SendMessageAsync(string messageText, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default);
+       
         // Gets first message without removing from queue, but makes it invisible for 30 seconds.
         Task<QueueStorageItemDto> RecieveMessageAsync();
 

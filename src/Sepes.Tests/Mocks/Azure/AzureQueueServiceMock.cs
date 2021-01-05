@@ -1,5 +1,4 @@
-﻿
-using Azure.Storage.Queues.Models;
+﻿using Azure.Storage.Queues.Models;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service;
@@ -15,7 +14,7 @@ namespace Sepes.Tests.Mocks.Azure
     {
         Queue<QueueStorageItemDto> _queue = new Queue<QueueStorageItemDto>();
 
-        Dictionary<string, QueueMessageWrapper> _invisibleItems = new Dictionary<string, QueueMessageWrapper>();
+        readonly Dictionary<string, QueueMessageWrapper> _invisibleItems = new Dictionary<string, QueueMessageWrapper>();
 
         public void Init(string connectionString, string queueName)
         {
@@ -37,12 +36,10 @@ namespace Sepes.Tests.Mocks.Azure
         {
             AddBackItemsThatShouldBeVisibleAgain();
 
-            QueueStorageItemDto dequeuedMessage = null;
-
-            if (_queue.TryDequeue(out dequeuedMessage))
+            if (_queue.TryDequeue(out QueueStorageItemDto dequeuedMessage))
             {
-                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();               
-                _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage, 30));            
+                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();
+                _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage, 30));
 
                 return dequeuedMessage;
             }
@@ -54,9 +51,7 @@ namespace Sepes.Tests.Mocks.Azure
         {
             AddBackItemsThatShouldBeVisibleAgain();
 
-            QueueMessageWrapper itemToUpdate = null;
-
-            if (_invisibleItems.TryGetValue(message.MessageId, out itemToUpdate))
+            if (_invisibleItems.TryGetValue(message.MessageId, out QueueMessageWrapper itemToUpdate))
             {
                 if (message.PopReceipt == itemToUpdate.PopReceipt)
                 {
@@ -78,18 +73,17 @@ namespace Sepes.Tests.Mocks.Azure
 
         public async Task DeleteMessageAsync(QueueStorageItemDto message)
         {
-            QueueMessageWrapper itemToDelete = null;
-
-            if (_invisibleItems.TryGetValue(message.MessageId, out itemToDelete))
+            if (_invisibleItems.TryGetValue(message.MessageId, out QueueMessageWrapper itemToDelete))
             {
-                if(message.PopReceipt == itemToDelete.PopReceipt)
+                if (message.PopReceipt == itemToDelete.PopReceipt)
                 {
                     _invisibleItems[message.MessageId] = null;
-                }                            
+                }
             }
         }
 
         public async Task DeleteQueueAsync()
+
         {
             AddBackItemsThatShouldBeVisibleAgain();
             _queue = new Queue<QueueStorageItemDto>();
@@ -97,8 +91,6 @@ namespace Sepes.Tests.Mocks.Azure
 
         void AddBackItemsThatShouldBeVisibleAgain()
         {
-            List<QueueMessageWrapper> addBackIn = new List<QueueMessageWrapper>();
-
             var shouldBeVisibleAgain = _invisibleItems.Values.Where(i => i.VisibleAgain <= DateTime.UtcNow).ToList();
 
            if(shouldBeVisibleAgain.Count > 0)
@@ -128,14 +120,9 @@ namespace Sepes.Tests.Mocks.Azure
         public Task DeleteMessageAsync(string messageId, string popReceipt)
         {
             throw new NotImplementedException();
-        }
-
-        public Task SendMessageAsync(string messageText, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SendMessageAsync<T>(T messageObj, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        } 
+        
+        Task<QueueStorageItemDto> IAzureQueueService.SendMessageAsync(string messageText, TimeSpan? visibilityTimeout, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

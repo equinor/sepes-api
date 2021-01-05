@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Service.Azure
             scopes = newScopes;
         }
 
-        protected async Task<string> AquireTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<string> AquireTokenAsync(CancellationToken cancellationToken = default)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace Sepes.Infrastructure.Service.Azure
             }
         }
 
-        protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -91,7 +91,7 @@ namespace Sepes.Infrastructure.Service.Azure
             }
         }
 
-        protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, CancellationToken cancellationToken = default(CancellationToken))
+        protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -142,16 +142,17 @@ namespace Sepes.Infrastructure.Service.Azure
             }
             catch (Exception ex)
             {
-                throw new Exception($"{this.GetType()}: Response for {method.ToString()} against the url {url} failed", ex);
+                throw new Exception($"{this.GetType()}: Response for {method} against the url {url} failed", ex);
             }
         }
     }
 
 
-  
 
-class TokenResponse
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
+    class TokenResponse
     {
+       
         public string access_token { get; set; }
 
         public string token_type { get; set; }

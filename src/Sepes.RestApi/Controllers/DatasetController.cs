@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Service.Interface;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,13 +15,11 @@ namespace Sepes.RestApi.Controller
     public class DatasetController : ControllerBase
     {
         readonly IDatasetService _datasetService;
-        readonly IDatasetFileService _datasetFileService;
         readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
-        public DatasetController(IDatasetService datasetService, IDatasetFileService datasetFileService, IStudySpecificDatasetService studySpecificDatasetService)
+        public DatasetController(IDatasetService datasetService, IStudySpecificDatasetService studySpecificDatasetService)
         {
             _datasetService = datasetService;
-            _datasetFileService = datasetFileService;
             _studySpecificDatasetService = studySpecificDatasetService;
         }
 
@@ -77,33 +73,5 @@ namespace Sepes.RestApi.Controller
            
             return new NoContentResult();
         }     
-
-        [HttpPost("{datasetId}/file")]
-        public async Task<IActionResult> AddFile(int datasetId, [FromForm] IFormFile files, CancellationToken cancellationToken = default)
-        {
-            var fileAddResult = await _datasetFileService.AddFiles(datasetId, new List<IFormFile> { files }, cancellationToken);
-            return new JsonResult(fileAddResult);
-        }
-
-        [HttpPost("{datasetId}/files")]
-        public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files, CancellationToken cancellationToken = default)
-        {
-            var fileAddResult = await _datasetFileService.AddFiles(datasetId, files, cancellationToken);
-            return new JsonResult(fileAddResult);
-        }
-
-        [HttpGet("{datasetId}/files")]
-        public async Task<IActionResult> GetFileList(int datasetId, CancellationToken cancellationToken = default)
-        {
-            var files = await _datasetFileService.GetFileList(datasetId, cancellationToken);
-            return new JsonResult(files);
-        }
-
-        [HttpDelete("{datasetId}/files/fileName")]
-        public async Task<IActionResult> DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
-        {
-            await _datasetFileService.DeleteFile(datasetId, fileName, cancellationToken);
-            return new NoContentResult();
-        }
     }
 }

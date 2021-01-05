@@ -12,9 +12,9 @@ namespace Sepes.RestApi.Controllers
     [Authorize(Roles = AppRoles.Admin)]
     public class ProcessWorkQueueController : ControllerBase
     {
-        readonly ISandboxResourceProvisioningService _service;
+        readonly IResourceProvisioningService _service;
 
-        public ProcessWorkQueueController(ISandboxResourceProvisioningService service)
+        public ProcessWorkQueueController(IResourceProvisioningService service)
         {
             _service = service;
         }
@@ -24,7 +24,7 @@ namespace Sepes.RestApi.Controllers
         [Authorize(Roles = AppRoles.Admin)]
         public async Task<IActionResult> Work()
         {
-           await _service.DequeueWorkAndPerformIfAny();
+           await _service.DequeueAndHandleWork();
             return new OkResult();
         }   
 
