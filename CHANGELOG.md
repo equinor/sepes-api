@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.2](https://github.com/equinor/sepes-api/compare/0.4.1...0.4.2) (2021-01-05)
+
+
+### Features
+
+* **dataset:** deny connections and make available to sandbox ([#454](https://github.com/equinor/sepes-api/issues/454)) ([844c710](https://github.com/equinor/sepes-api/commit/844c7102ac577a8135dd4a1fe49f8460ed36575a)), closes [#458](https://github.com/equinor/sepes-api/issues/458)
+
+
+### Bug Fixes
+
+* **auth:** fixed login redirect issue. Not requiring User.Read scope on signin anymore ([1f74345](https://github.com/equinor/sepes-api/commit/1f74345f87e49744738425dd4c63be8e88121f36))
+* **dataset:** increased dataset max upload size ([23be629](https://github.com/equinor/sepes-api/commit/23be62957e9b50fdae780dea438dee3e6abfec35))
+* **rbac:** admin was still missing some permissions that only he shold have ([37087f1](https://github.com/equinor/sepes-api/commit/37087f1f1beffccd05739386995acd5ef1080913))
+* **sandbox:** sort sizes by price with lowest cost first ([#462](https://github.com/equinor/sepes-api/issues/462)) ([f56f01d](https://github.com/equinor/sepes-api/commit/f56f01d9402cc78d257452e9a4aea9e811a17b50)), closes [#423](https://github.com/equinor/sepes-api/issues/423)
+* **worker:** decreased time taken for VM creation to start ([#463](https://github.com/equinor/sepes-api/issues/463)) ([f0fe1f7](https://github.com/equinor/sepes-api/commit/f0fe1f74fef8c320d871f3a203aa060891d52850))
+
 ### [0.4.1](https://github.com/equinor/sepes-api/compare/0.4.0...0.4.1) (2020-12-10)
 
 ## [0.4.0](https://github.com/equinor/sepes-api/compare/0.3.0...0.4.0) (2020-12-10)
