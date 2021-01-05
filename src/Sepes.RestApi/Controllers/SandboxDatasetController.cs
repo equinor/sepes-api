@@ -29,6 +29,15 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(datasets);
         }
 
+
+        [HttpGet("{sandboxId}/availabledatasets")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetAvailableDatasetsForSandbox(int sandboxId)
+        {
+            var datasets = await _service.AllAvailable(sandboxId);
+            return new JsonResult(datasets);
+        }
+
         [HttpPut("{sandboxId}/datasets/{datasetId}")]
         public async Task<IActionResult> AddDataSetAsync(int sandboxId, int datasetId)
         {

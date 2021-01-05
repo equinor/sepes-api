@@ -19,8 +19,8 @@ namespace Sepes.Infrastructure.Service
     {
 
         public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
-            :base(db, mapper, userService)
-        {            
+            : base(db, mapper, userService)
+        {
 
 
         }
@@ -30,18 +30,33 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read);
 
             var datasetsFromDb = await _db.SandboxDatasets
-                .Include(sd=> sd.Dataset)
-                .Include(s=> s.Sandbox)
-                .ThenInclude(sb=> sb.Study)
-                .Where(ds => ds.SandboxId == sandboxId)          
-                .ToListAsync();   
-            
-            var dataasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
+                .Include(sd => sd.Dataset)
+                .Include(s => s.Sandbox)
+                .ThenInclude(sb => sb.Study)
+                .Where(ds => ds.SandboxId == sandboxId)
+                .ToListAsync();
 
-            return dataasetDtos;
-        }   
-        
-      
+            var datasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
+
+            return datasetDtos;
+        }
+
+        public async Task<IEnumerable<AvailableDatasetDto>> AllAvailable(int sandboxId)
+        {
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read, true);
+
+            var availableDatasets = studyFromDb
+                .StudyDatasets
+                .Select(sd => new AvailableDatasetDto()
+                {
+                    DatasetId = sd.DatasetId,
+                    Name = sd.Dataset.Name,
+                    Classification = sd.Dataset.Classification,
+                    AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
+                });        
+
+            return availableDatasets;
+        }
 
         public async Task Add(int sandboxId, int datasetId)
         {
@@ -73,7 +88,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
             await _db.SandboxDatasets.AddAsync(sandboxDataset);
             await _db.SaveChangesAsync();
-        }     
+        }
 
         public async Task Remove(int sandboxId, int datasetId)
         {
@@ -92,7 +107,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _db.SandboxDatasets.Remove(sandboxDatasetRelation);
                 await _db.SaveChangesAsync();
-            }           
+            }
         }
 
         async Task ValidateAddOrRemoveDataset(int sandboxId)
@@ -111,5 +126,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Dataset cannot be added to Sandbox. Sandbox phase must be open.");
             }
         }
+
+
     }
 }
