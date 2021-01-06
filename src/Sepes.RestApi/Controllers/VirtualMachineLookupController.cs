@@ -32,6 +32,13 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
+        [HttpPost("{sandboxId}/calculatedVmprice")]
+        public async Task<IActionResult> GetCalculatedVmPrice(int sandboxId, CalculateVmPriceUserInputDto input)
+        {
+            var createdVm = await _vmSizeService.CalculateVmPrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
         [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
         public string CalculateName(string studyName, string sandboxName, string userSuffix)
         {

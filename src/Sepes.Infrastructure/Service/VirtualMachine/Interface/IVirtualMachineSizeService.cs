@@ -13,6 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<VmSize>> AvailableSizes(string region, CancellationToken cancellationToken = default);      
 
         Task UpdateVmSizeCache(CancellationToken cancellationToken = default);
+
+        Task<double> CalculateVmPrice(int sandboxId, CalculateVmPriceUserInputDto input, CancellationToken cancellationToken = default);
         
     }
 }

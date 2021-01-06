@@ -29,6 +29,8 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
 
+        public virtual DbSet<RegionVmSize> RegionVmSize { get; set; }
+
         public virtual DbSet<Variable> Variables { get; set; }
 
         //Cloud provider cache
