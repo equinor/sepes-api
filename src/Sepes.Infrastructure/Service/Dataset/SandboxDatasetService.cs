@@ -19,8 +19,8 @@ namespace Sepes.Infrastructure.Service
     {
 
         public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
-            :base(db, mapper, userService)
-        {            
+            : base(db, mapper, userService)
+        {
 
 
         }
@@ -30,20 +30,35 @@ namespace Sepes.Infrastructure.Service
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read);
 
             var datasetsFromDb = await _db.SandboxDatasets
-                .Include(sd=> sd.Dataset)
-                .Include(s=> s.Sandbox)
-                .ThenInclude(sb=> sb.Study)
-                .Where(ds => ds.SandboxId == sandboxId)          
-                .ToListAsync();   
-            
-            var dataasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
+                .Include(sd => sd.Dataset)
+                .Include(s => s.Sandbox)
+                .ThenInclude(sb => sb.Study)
+                .Where(ds => ds.SandboxId == sandboxId)
+                .ToListAsync();
 
-            return dataasetDtos;
-        }   
-        
-      
+            var datasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
 
-        public async Task<SandboxDatasetDto> Add(int sandboxId, int datasetId)
+            return datasetDtos;
+        }
+
+        public async Task<IEnumerable<AvailableDatasetDto>> AllAvailable(int sandboxId)
+        {
+            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read, true);
+
+            var availableDatasets = studyFromDb
+                .StudyDatasets
+                .Select(sd => new AvailableDatasetDto()
+                {
+                    DatasetId = sd.DatasetId,
+                    Name = sd.Dataset.Name,
+                    Classification = sd.Dataset.Classification,
+                    AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
+                });        
+
+            return availableDatasets;
+        }
+
+        public async Task Add(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -59,17 +74,23 @@ namespace Sepes.Infrastructure.Service
             if (datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId != studyFromDb.Id)
             {
                 throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {studyFromDb.Id}.");
-            }  
+            }
 
-            // Create new linking table
+            var sandboxDatasetRelation = await _db.SandboxDatasets.FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
+
+            //Is dataset allready linked to this sandbox?
+            if (sandboxDatasetRelation != null)
+            {
+                throw new ArgumentException($"Dataset is allready added to Sandbox.");
+            }
+
+            // Create new entry in the relation table
             var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
             await _db.SandboxDatasets.AddAsync(sandboxDataset);
             await _db.SaveChangesAsync();
+        }
 
-            return _mapper.Map<SandboxDatasetDto>(sandboxDataset);
-        }     
-
-        public async Task<SandboxDatasetDto> Remove(int sandboxId, int datasetId)
+        public async Task Remove(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -77,18 +98,16 @@ namespace Sepes.Infrastructure.Service
 
             var sandboxDatasetRelation = await _db.SandboxDatasets.FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 
-            //Is dataset actually linked to a study?
+            //Is dataset actually linked to this sandbox?
             if (sandboxDatasetRelation == null)
             {
-                throw new ArgumentException($"Dataset cannot be removed from Sandbox. It does not seem to be associated with the Sandbox.");
+                throw new ArgumentException($"Dataset could not be removed from Sandbox, as it is not associated with it.");
             }
             else
             {
                 _db.SandboxDatasets.Remove(sandboxDatasetRelation);
                 await _db.SaveChangesAsync();
             }
-
-            return _mapper.Map<SandboxDatasetDto>(sandboxDatasetRelation);
         }
 
         async Task ValidateAddOrRemoveDataset(int sandboxId)
@@ -107,5 +126,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Dataset cannot be added to Sandbox. Sandbox phase must be open.");
             }
         }
+
+
     }
 }

@@ -25,22 +25,31 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetDatasetsForSandbox(int sandboxId)
         {
-            var dataset = await _service.GetAll(sandboxId);
-            return new JsonResult(dataset);
+            var datasets = await _service.GetAll(sandboxId);
+            return new JsonResult(datasets);
+        }
+
+
+        [HttpGet("{sandboxId}/availabledatasets")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetAvailableDatasetsForSandbox(int sandboxId)
+        {
+            var datasets = await _service.AllAvailable(sandboxId);
+            return new JsonResult(datasets);
         }
 
         [HttpPut("{sandboxId}/datasets/{datasetId}")]
         public async Task<IActionResult> AddDataSetAsync(int sandboxId, int datasetId)
         {
-            var updatedStudy = await _service.Add(sandboxId, datasetId);
-            return new JsonResult(updatedStudy);
+            await _service.Add(sandboxId, datasetId);
+            return new NoContentResult();
         }
 
         [HttpDelete("{sandboxId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int sandboxId, int datasetId)
         {
-            var updatedStudy = await _service.Remove(sandboxId, datasetId);
-            return new JsonResult(updatedStudy);
+            await _service.Remove(sandboxId, datasetId);
+            return new NoContentResult();
         } 
     }
 }
