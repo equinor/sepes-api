@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Config;
 using System;
@@ -18,6 +19,7 @@ namespace Sepes.Infrastructure.Util
 
             DecorateWithManagedByTags(tags, config);
             DecorateWithCostAllocationTags(tags, config, study);
+            DecorateWithStudyOwnerTags(tags, sandbox.Study);
             DecorateWithSandboxTags(tags, sandbox);
 
             return tags;
@@ -28,11 +30,23 @@ namespace Sepes.Infrastructure.Util
             var tags = CreateBaseTags(study.Name);
 
             DecorateWithManagedByTags(tags, config);
-            DecorateWithCostAllocationTags(tags, config, study);          
+            DecorateWithCostAllocationTags(tags, config, study);
+            DecorateWithStudyOwnerTags(tags, study);
 
             return tags;
         }
-     
+
+        public static Dictionary<string, string> StudySpecificDatasourceStorageAccountTags(IConfiguration config, Study study, string datasetName)
+        {
+            var tags = StudySpecificDatasourceResourceGroupTags(config, study);
+            tags.Add("DatasetName", datasetName);
+            return tags;
+        }
+
+        static Dictionary<string, string> CreateBaseTags(string studyName)
+        {
+            return new Dictionary<string, string>() { { "CreatedByMachine", Environment.MachineName }, { "StudyName", studyName } };
+        }
 
         public static void DecorateWithManagedByTags(Dictionary<string, string> tags, IConfiguration config)
         {
@@ -51,12 +65,22 @@ namespace Sepes.Infrastructure.Util
             tags.Add(costAllocationCodeTagName, study.WbsCode);
         }
 
-        public static void DecorateWithSandboxTags(Dictionary<string, string> tags, Sandbox sandbox)
+        public static void DecorateWithStudyOwnerTags(Dictionary<string, string> tags, Study study)
         {
+            var ownerParticipant = study.StudyParticipants.FirstOrDefault(sp => sp.RoleName == StudyRoles.StudyOwner);
+
             // TODO: Get Owner Name and Email from Roles!
-            //tags.Add("StudyOwnerName", study.OwnerName);
-            //tags.Add("StudyOwnerEmail", study.OwnerEmail);
+            if (ownerParticipant != null)
+            {
+                tags.Add("StudyOwnerName", ownerParticipant.User.FullName);
+                tags.Add("StudyOwnerEmail", ownerParticipant.User.EmailAddress);
+            }                   
+        }
+
+        public static void DecorateWithSandboxTags(Dictionary<string, string> tags, Sandbox sandbox)
+        {            
             tags.Add("SandboxName", sandbox.Name);
+
             tags.Add("TechnicalContactName", sandbox.TechnicalContactName);
             tags.Add("TechnicalContactEmail", sandbox.TechnicalContactEmail);
         } 
@@ -67,12 +91,7 @@ namespace Sepes.Infrastructure.Util
             tags.Add("IsUnitTest", "true");
             return tags;
             // var tags = new Dictionary<string, string>() { { "CreatedByMachine", Environment.MachineName } };
-        }
-
-        static Dictionary<string, string> CreateBaseTags(string studyName)
-        {
-            return new Dictionary<string, string>() { { "CreatedByMachine", Environment.MachineName }, { "StudyName", studyName } };
-        }
+        }       
 
         public static string TagDictionaryToString(Dictionary<string, string> tags)
         {
@@ -115,8 +134,6 @@ namespace Sepes.Infrastructure.Util
             {
                 throw new Exception($"Resource is missing tag: {tagName}");
             }
-
-
         }
 
         public static void CheckIfResourceIsManagedByThisInstanceThrowIfNot(IConfiguration config, IDictionary<string, string> resourceTags)
@@ -124,10 +141,6 @@ namespace Sepes.Infrastructure.Util
             var expectedTagValueFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.MANAGED_BY);
 
             AzureResourceTagsFactory.ContainsTagWithValueThrowIfError(resourceTags, MANAGED_BY_TAG_NAME, expectedTagValueFromConfig);
-
-
-
-
         }
 
     }

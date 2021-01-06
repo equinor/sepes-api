@@ -71,6 +71,9 @@ namespace Sepes.Infrastructure.Service
 
             var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(createdVm.PrimaryNetworkInterfaceId, cancellationToken);
 
+            //Add tags to NIC
+            await primaryNic.UpdateTags().WithTags(parameters.Tags).ApplyTagsAsync();
+
             await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
 
             var result = CreateCRUDResult(createdVm);
