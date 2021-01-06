@@ -68,6 +68,12 @@ namespace Sepes.Infrastructure.Service
             return sizes;
         }
 
+        public async Task<double> CalculateVmPrice(int sandboxId, CalculateVmPriceUserInputDto input, CancellationToken cancellationToken = default)
+        {
+            var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
+            var priceOfVm = await _db.RegionVmSize.Where(x => x.Region.Key == sandbox.Region && x.VmSizeKey == input.Size).SingleOrDefaultAsync();
+            return priceOfVm.Price;
+        }
 
         public async Task UpdateVmSizeCache(CancellationToken cancellationToken = default)
         {
