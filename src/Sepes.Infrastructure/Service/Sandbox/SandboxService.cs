@@ -38,12 +38,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDetailsDto> GetSandboxDetailsAsync(int sandboxId)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
-            var sandboxDto = _mapper.Map<SandboxDetailsDto>(sandboxFromDb);
-
-            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions, sandboxDto.CurrentPhase);
-
-            return sandboxDto;
+            return await GetSandboxDetailsInternalAsync(sandboxId);
         }
 
         public async Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId)

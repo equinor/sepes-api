@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -31,6 +32,16 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;          
             _userService = userService;
 
+        }
+
+        protected async Task<SandboxDetailsDto> GetSandboxDetailsInternalAsync(int sandboxId)
+        {
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
+            var sandboxDto = _mapper.Map<SandboxDetailsDto>(sandboxFromDb);
+
+            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions, sandboxDto.CurrentPhase);
+
+            return sandboxDto;
         }
 
         protected async Task<Sandbox> GetWithoutChecks(int sandboxId)
