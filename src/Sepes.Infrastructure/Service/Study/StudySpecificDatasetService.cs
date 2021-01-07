@@ -67,12 +67,18 @@ namespace Sepes.Infrastructure.Service
                 throw;
             }           
 
-            return _mapper.Map<StudyDatasetDto>(dataset);
+            var datasetDto = _mapper.Map<StudyDatasetDto>(dataset);
+
+            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+
+            return datasetDto;
         }       
 
         public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DataSetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
+
+            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
 
             var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId, UserOperation.Study_AddRemove_Dataset);
 
@@ -82,7 +88,11 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return _mapper.Map<StudyDatasetDto>(datasetFromDb);
+            var datasetDto = _mapper.Map<StudyDatasetDto>(datasetFromDb);
+
+            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+
+            return datasetDto;
         }
 
         async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId, UserOperation operation)
