@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Status == CloudResourceOperationState.IN_PROGRESS)
             {
-                if (operation.Updated.AddMinutes(2) >= DateTime.UtcNow) //If changed less than two minutes ago
+                if (operation.Updated.AddMinutes(1) >= DateTime.UtcNow) //If changed less than two minutes ago
                 {
                     throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true);
                 }
