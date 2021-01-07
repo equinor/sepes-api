@@ -42,11 +42,11 @@ namespace Sepes.Infrastructure.Service
 
             if (dependsOn == 0)
             {
-                var mustDependOn = await CheckIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);  
+                var mustWaitFor = await CheckAnyIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);  
                 
-                if(mustDependOn != null)
+                if(mustWaitFor != null)
                 {
-                    dependsOn = mustDependOn.Id;
+                    dependsOn = mustWaitFor.Id;
                 }
             }
 
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOperationDtoInternal(newOperation.Id);
         }
 
-        async Task<CloudResourceOperation> CheckIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
+        async Task<CloudResourceOperation> CheckAnyIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
         {
 
             bool mostRecentOperation = true;
