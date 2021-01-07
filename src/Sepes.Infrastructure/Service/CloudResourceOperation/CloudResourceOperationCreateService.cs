@@ -13,14 +13,13 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationCreateService : CloudResourceOperationServiceBase, ICloudResourceOperationCreateService
-    {  
+    {
         readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
 
         public CloudResourceOperationCreateService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
             : base(db, mapper)
         {
-           
             _userService = userService;
             _requestIdService = requestIdService;
         }
@@ -43,26 +42,11 @@ namespace Sepes.Infrastructure.Service
 
             if (dependsOn == 0)
             {
-                var previousOperation = sandboxResourceFromDb.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
-
-                if (previousOperation != null)
+                var mustDependOn = await CheckIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);  
+                
+                if(mustDependOn != null)
                 {
-                    if (previousOperation.OperationType == CloudResourceOperationType.DELETE)
-                    {
-                        throw new Exception($"Error when adding operation to resource {sandboxResourceId}, resource allready marked for deletion");
-                    }
-                    else if (previousOperation.OperationType == CloudResourceOperationType.UPDATE)
-                    {
-                        //If previous operation is waiting for some other op, it's best this also gets in line
-                        if (previousOperation.DependsOnOperationId.HasValue)
-                        {
-                            dependsOn = previousOperation.Id;
-                        }
-                    }
-                    else
-                    {
-                        dependsOn = previousOperation.Id;
-                    }
+                    dependsOn = mustDependOn.Id;
                 }
             }
 
@@ -71,16 +55,66 @@ namespace Sepes.Infrastructure.Service
                 Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, CloudResourceOperationType.UPDATE, sandboxResourceId),
                 BatchId = batchId,
                 OperationType = CloudResourceOperationType.UPDATE,
+                Status = CloudResourceOperationState.NEW,
                 CreatedBy = currentUser.UserName,
                 CreatedBySessionId = _requestIdService.GetRequestId(),
                 DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?),
                 MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
             };
 
-
             sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
             return await GetOperationDtoInternal(newOperation.Id);
+        }
+
+        async Task<CloudResourceOperation> CheckIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
+        {
+
+            bool mostRecentOperation = true;
+
+            foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
+            {
+                if (curOperation.OperationType == CloudResourceOperationType.DELETE)
+                {
+                    throw new Exception($"Error when adding operation to resource {resource.Id}, resource allready marked for deletion");
+                }
+
+                if (mostRecentOperation && curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                {
+                    return null;
+                }
+
+                if (curOperation.OperationType == CloudResourceOperationType.UPDATE)
+                {
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    {
+                        //If very old, set to aborted and continue the search
+                        if (curOperation.Updated.AddMinutes(1) < DateTime.UtcNow)
+                        {
+                            curOperation.Status = CloudResourceOperationState.ABORTED;
+                            curOperation.Updated = DateTime.UtcNow;
+                            curOperation.UpdatedBy = currentUser.UserName;
+                            await _db.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            return curOperation;
+                        }
+                    }
+                }
+
+                if (curOperation.OperationType == CloudResourceOperationType.CREATE)
+                {
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    {                   
+                        return curOperation;
+                    }
+                }
+
+                mostRecentOperation = false;
+            }
+
+            return null;
         }
 
         public async Task<CloudResourceOperation> CreateDeleteOperationAsync(int sandboxResourceId, string description, string batchId = null)
@@ -91,10 +125,11 @@ namespace Sepes.Infrastructure.Service
 
             var deleteOperation = new CloudResourceOperation()
             {
-                CreatedBy = user.UserName,  
+                CreatedBy = user.UserName,
                 BatchId = batchId,
                 CloudResourceId = sandboxResourceId,
                 OperationType = CloudResourceOperationType.DELETE,
+                Status = CloudResourceOperationState.NEW,
                 CreatedBySessionId = _requestIdService.GetRequestId(),
                 MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
                 Description = description
@@ -105,6 +140,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return deleteOperation;
-        } 
+        }
     }
 }

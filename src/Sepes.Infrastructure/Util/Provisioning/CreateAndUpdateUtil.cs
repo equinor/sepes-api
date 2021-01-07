@@ -72,7 +72,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
                 }
                 else
                 {
-                    throw new ProvisioningException($"Resource provisioning (Create/update) failed.", innerException: ex);
+                    throw new ProvisioningException($"Resource provisioning (Create/update) failed.", CloudResourceOperationState.FAILED, postponeQueueItemFor: 10, innerException: ex);
                 }
             }
         }
