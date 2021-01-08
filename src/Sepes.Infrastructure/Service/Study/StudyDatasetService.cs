@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var datasetDto = _mapper.Map<StudyDatasetDto>(studyDatasetRelation.Dataset);
+            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }

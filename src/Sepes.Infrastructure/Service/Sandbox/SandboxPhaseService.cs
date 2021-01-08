@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -44,7 +45,7 @@ namespace Sepes.Infrastructure.Service
             _nsgRuleService = nsgRuleService;
         }
 
-        public async Task MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
+        public async Task<SandboxDetailsDto> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
 
@@ -87,6 +88,8 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
+
+                return await GetSandboxDetailsInternalAsync(sandboxId);
             }
             catch (Exception ex)
             {

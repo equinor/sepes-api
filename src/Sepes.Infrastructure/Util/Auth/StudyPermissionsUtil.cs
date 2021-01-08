@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Infrastructure.Dto.Dataset;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
@@ -34,6 +35,22 @@ namespace Sepes.Infrastructure.Util
             dto.EditInboundRules = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_EditInboundRules);
             dto.OpenInternet = phase > SandboxPhase.Open ? currentUser.Admin : StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_OpenInternet); //TODO: was it really only admin who could do this?
             dto.IncreasePhase = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_IncreasePhase);
+        }
+
+        public static async Task DecorateDtoStudySpecific(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
+        {
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            dto.EditDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);
+            dto.DeleteDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);          
+        }
+
+        public static async Task DecorateDtoPreApproved(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
+        {
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            dto.EditDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            dto.DeleteDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
         }
     }
 }
