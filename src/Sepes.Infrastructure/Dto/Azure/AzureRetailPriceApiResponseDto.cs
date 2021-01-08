@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Dto.Azure
         public string armSkuName { get; set; } //"Standard_F16s"
 
     }
-    public class AzurePriceResponseDto
+    public class AzureRetailPriceApiResponseDto
     {
         public string BillingCurrency { get; set; }
         public string CustomerEntityId { get; set; }
