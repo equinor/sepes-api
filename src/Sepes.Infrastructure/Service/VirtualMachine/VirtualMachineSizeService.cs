@@ -72,7 +72,17 @@ namespace Sepes.Infrastructure.Service
         {
             var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
             var priceOfVm = await _db.RegionVmSize.Where(x => x.Region.Key == sandbox.Region && x.VmSizeKey == input.Size).SingleOrDefaultAsync();
-            return priceOfVm.Price;
+
+            var priceOfDisks = 0.0;
+
+            foreach (var disk in input.DataDisks)
+            {
+                //var diskSize = await _db.DiskSizes.Where(x => x.Size == disk).SingleOrDefaultAsync();
+                var priceOfDisk = await _db.RegionDiskSize.Where(x => x.Region.Key == sandbox.Region && x.VmDiskKey == disk).SingleOrDefaultAsync();
+                priceOfDisks += priceOfDisk.Price;
+            }
+            
+            return priceOfVm.Price + priceOfDisks;
         }
 
         public async Task UpdateVmSizeCache(CancellationToken cancellationToken = default)
