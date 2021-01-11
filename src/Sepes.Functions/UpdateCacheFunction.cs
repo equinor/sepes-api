@@ -22,7 +22,7 @@ namespace Sepes.Functions
         [FunctionName("UpdateAllCaches")]
         public async Task Run([TimerTrigger("0 */6 * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
         {
-            //await _vmSizeService.UpdateVmSizeCache();
+            await _vmSizeService.UpdateVmSizeCache();
             await _virtualMachineDiskService.UpdateVmDiskSizeCache();
         }
     }
