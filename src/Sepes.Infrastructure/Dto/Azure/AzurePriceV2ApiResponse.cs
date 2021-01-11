@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Azure
 {
@@ -10,7 +8,8 @@ namespace Sepes.Infrastructure.Dto.Azure
     }
 
     public class Offer
-    {
+    {    
+        public int size { get; set; }
         public Dictionary<string, PriceValue> prices;
 
         public string pricingTypes { get; set; }

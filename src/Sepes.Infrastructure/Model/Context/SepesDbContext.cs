@@ -37,6 +37,7 @@ namespace Sepes.Infrastructure.Model.Context
         //Cloud provider cache
         public virtual DbSet<Region> Regions { get; set; }
         public virtual DbSet<VmSize> VmSizes { get; set; }
+        public virtual DbSet<DiskSize> DiskSizes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -148,6 +149,17 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.VmSize)
                 .WithMany(d => d.RegionAssociations)
                 .HasForeignKey(sd => sd.VmSizeKey).OnDelete(DeleteBehavior.Restrict);
+
+            //Cloud Region, Vm Disk Size
+            modelBuilder.Entity<RegionDiskSize>()
+                .HasOne(sd => sd.Region)
+                .WithMany(s => s.DiskSizeAssociations)
+                .HasForeignKey(sd => sd.RegionKey).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RegionDiskSize>()
+                .HasOne(sd => sd.DiskSize)
+                .WithMany(d => d.RegionAssociations)
+                .HasForeignKey(sd => sd.VmDiskKey).OnDelete(DeleteBehavior.Restrict);
         }
 
         void AddDefaultValues(ModelBuilder modelBuilder)
@@ -243,6 +255,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<VmSize>()
             .Property(sro => sro.Created)
             .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<DiskSize>()
+          .Property(sro => sro.Created)
+          .HasDefaultValueSql("getutcdate()");
         }
     }
 }

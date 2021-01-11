@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Azure
 {
@@ -8,9 +6,9 @@ namespace Sepes.Infrastructure.Dto.Azure
     {
         public Dictionary<string, DiskType> Types { get; set; } = new Dictionary<string, DiskType>();
     }
-
     public class DiskType
     {
+        public int size { get; set; }
         public double price;
     }
 }

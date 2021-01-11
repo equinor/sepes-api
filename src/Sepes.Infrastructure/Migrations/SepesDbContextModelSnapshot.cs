@@ -318,6 +318,32 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("DatasetFirewallRules");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DiskSize", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("DisplayText")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<int>("Size")
+                        .HasColumnType("int");
+
+                    b.HasKey("Key");
+
+                    b.ToTable("DiskSizes");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.Region", b =>
                 {
                     b.Property<string>("Key")
@@ -341,6 +367,24 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("Regions");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.RegionDiskSize", b =>
+                {
+                    b.Property<string>("RegionKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("VmDiskKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
+                    b.HasKey("RegionKey", "VmDiskKey");
+
+                    b.HasIndex("VmDiskKey");
+
+                    b.ToTable("RegionDiskSize");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
@@ -770,6 +814,21 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("FirewallRules")
                         .HasForeignKey("DatasetId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.RegionDiskSize", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Region", "Region")
+                        .WithMany("DiskSizeAssociations")
+                        .HasForeignKey("RegionKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.DiskSize", "DiskSize")
+                        .WithMany("RegionAssociations")
+                        .HasForeignKey("VmDiskKey")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 

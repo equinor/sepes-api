@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Service
 
             if (regionsFromDb == null || (regionsFromDb != null & regionsFromDb.Count() == 0))
             {
-                throw new Exception($"Could not update Vm Size Cache, Regions found in DB");
+                throw new Exception($"Could not update Vm Size Cache, No regions found in DB");
             }
 
             foreach (var curRegionFromDb in regionsFromDb)

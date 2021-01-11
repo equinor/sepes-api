@@ -45,6 +45,11 @@ namespace Sepes.Infrastructure.Util
             return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
         }
 
+        public static string GetDiskSizeDisplayTextForDropdown(int diskSize)
+        {
+            return $"{diskSize} GB";
+        }
+
         public static string GetOsCategory(List<VmOsDto> osList, string operatingSystemName)
         {
             var foundOs = osList.Where(os => os.Key == operatingSystemName).FirstOrDefault();
