@@ -5,33 +5,24 @@ using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
-    public class AzureCostManagementService : AzureApiServiceBase, IAzureCostManagementService
+    public class AzureDiskPriceService : AzureApiServiceBase, IAzureDiskPriceService
     {
-        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
+        public AzureDiskPriceService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
         {
         }
-        public async Task<double> GetVmPrice(string region, string size, CancellationToken cancellationToken = default(CancellationToken))
+
+        public async Task<double> GetDiskPrice(string region, string size, CancellationToken cancellationToken = default)
         {
-            //Size
-            var sizePriceUrl = $"https://prices.azure.com/api/retail/prices?$filter=serviceName eq 'Virtual Machines' and armRegionName eq '{region}' and armSkuName eq '{size}' and priceType eq 'Consumption'";
-
-            var sizePrices = await GetResponse<AzureRetailPriceApiResponseDto>(sizePriceUrl, false, cancellationToken);
-
-            var relevantPricesInOrder = sizePrices.Items.Where(p => p.effectiveStartDate <= DateTime.UtcNow).OrderBy(p => p.meterName.ToLower().Contains("spot") || p.meterName.ToLower().Contains("low")).ThenByDescending(p => p.retailPrice).ToList();
-
-            var relevantPriceItem = relevantPricesInOrder.FirstOrDefault();
-            
-            //Disk
             var diskPriceUrl = $"https://azure.microsoft.com/api/v2/pricing/managed-disks/calculator";
 
             //Here is the prices in the structure they are received, but with a lot of unwanted info left out
-            var diskPrices = await GetResponse<AzurePriceV2ApiResponse>(diskPriceUrl, false, cancellationToken);           
+            var diskPrices = await GetResponse<AzurePriceV2ApiResponse>(diskPriceUrl, false, cancellationToken);
 
             //Transponse it around to a Region -> Size -> Price hiearchy
             var diskPriceByRegion = new Dictionary<string, AzureDiskPriceForRegion>();
@@ -57,33 +48,23 @@ namespace Sepes.Infrastructure.Service.Azure
                 }
             }
 
-            
             //Example usage: "Get price for premiumssd-p2 (the 8gb one) in norwayeast"
             double priceWeAreLookingFor = default;
 
-            AzureDiskPriceForRegion pricesForRelevantRegion = null;           
+            AzureDiskPriceForRegion pricesForRelevantRegion = null;
 
             //Why are there suddenly a dash in regions here
             if (diskPriceByRegion.TryGetValue("norway-east", out pricesForRelevantRegion))
             {
                 DiskType diskTypeWithPrice = null;
 
-                if(pricesForRelevantRegion.Types.TryGetValue("premiumssd-p2", out diskTypeWithPrice))
+                if (pricesForRelevantRegion.Types.TryGetValue("premiumssd-p2", out diskTypeWithPrice))
                 {
                     priceWeAreLookingFor = diskTypeWithPrice.price;
                 }
             }
-            
-
-
-            //var relevantDiskPriceItem = diskPrices.offers.PremiumssdP1.prices.AsiaPacificEast.value;
-
-            if (relevantPriceItem == null)
-            {
-                return 0.0;
-            }
-
-            return (relevantPriceItem.retailPrice * 730); //Prices are per hour, azure defaults to 730 hours/month in their web interface
+            return priceWeAreLookingFor;
+                
         }
-    }
+        }
 }

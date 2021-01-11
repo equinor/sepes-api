@@ -30,6 +30,7 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
 
         public virtual DbSet<RegionVmSize> RegionVmSize { get; set; }
+        public virtual DbSet<RegionDiskSize> RegionDiskSize { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
 
@@ -61,7 +62,9 @@ namespace Sepes.Infrastructure.Model.Context
 
             modelBuilder.Entity<Region>().HasKey(r => r.Key);
             modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
+            modelBuilder.Entity<DiskSize>().HasKey(r => r.Key);
             modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
+            modelBuilder.Entity<RegionDiskSize>().HasKey(r => new { r.RegionKey, r.VmDiskKey });
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
