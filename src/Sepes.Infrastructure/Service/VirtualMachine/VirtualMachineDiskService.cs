@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
             var currentUser = await _userService.GetCurrentUserAsync();
             var regionsFromDb = await _db.Regions.Include(r => r.DiskSizeAssociations).ThenInclude(va => va.DiskSize).Where(r => r.Disabled == false).ToListAsync();
 
-            if (regionsFromDb == null || (regionsFromDb != null & regionsFromDb.Count() == 0))
+            if (regionsFromDb.Count() == 0)
             {
                 throw new Exception($"Could not update Vm Disk Cache, No regions found in DB");
             }
