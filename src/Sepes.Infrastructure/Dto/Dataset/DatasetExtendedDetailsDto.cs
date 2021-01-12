@@ -1,5 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Dto.Dataset
 {
+    /*
     public class DatasetExtendedDetailsDto
     {
         public int DataId { get; set; }
@@ -16,4 +17,5 @@
         public string AreaL2 { get; set; }
         public string Tags { get; set; }
     }
+    */
 }

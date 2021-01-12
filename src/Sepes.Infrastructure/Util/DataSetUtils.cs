@@ -25,8 +25,8 @@ namespace Sepes.Infrastructure.Util
                 datasetFromDb.DataId = updatedDataset.DataId;
             }
         }
-
-        public static void UpdateDatasetExtendedDetails(Dataset datasetToUpdate, DatasetExtendedDetailsDto details)
+        /*
+        public static void UpdateDatasetExtendedDetails(Dataset datasetToUpdate, DatasetDto details)
         {
             if (details.LRAId != datasetToUpdate.LRAId)
             {
@@ -69,6 +69,7 @@ namespace Sepes.Infrastructure.Util
                 datasetToUpdate.Description = details.Description;
             }
         }
+        */
 
         public static void PerformUsualTestForPostedDatasets(DatasetCreateUpdateInputBaseDto datasetDto)
         {

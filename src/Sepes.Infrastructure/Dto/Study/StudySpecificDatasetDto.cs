@@ -1,5 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Dto.Study
 {
+    /*
     public class StudySpecificDatasetDto : UpdateableBaseDto
     {
         public string Name { get; set; }
@@ -19,4 +20,5 @@
 
         public int StudyNo { get; set; }
     }
+    */
 }
