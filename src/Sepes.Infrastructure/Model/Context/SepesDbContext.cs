@@ -30,12 +30,14 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
 
         public virtual DbSet<RegionVmSize> RegionVmSize { get; set; }
+        public virtual DbSet<RegionDiskSize> RegionDiskSize { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
 
         //Cloud provider cache
         public virtual DbSet<Region> Regions { get; set; }
         public virtual DbSet<VmSize> VmSizes { get; set; }
+        public virtual DbSet<DiskSize> DiskSizes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,7 +63,9 @@ namespace Sepes.Infrastructure.Model.Context
 
             modelBuilder.Entity<Region>().HasKey(r => r.Key);
             modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
+            modelBuilder.Entity<DiskSize>().HasKey(r => r.Key);
             modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
+            modelBuilder.Entity<RegionDiskSize>().HasKey(r => new { r.RegionKey, r.VmDiskKey });
         }
 
         void AddRelationships(ModelBuilder modelBuilder)
@@ -145,6 +149,17 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.VmSize)
                 .WithMany(d => d.RegionAssociations)
                 .HasForeignKey(sd => sd.VmSizeKey).OnDelete(DeleteBehavior.Restrict);
+
+            //Cloud Region, Vm Disk Size
+            modelBuilder.Entity<RegionDiskSize>()
+                .HasOne(sd => sd.Region)
+                .WithMany(s => s.DiskSizeAssociations)
+                .HasForeignKey(sd => sd.RegionKey).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RegionDiskSize>()
+                .HasOne(sd => sd.DiskSize)
+                .WithMany(d => d.RegionAssociations)
+                .HasForeignKey(sd => sd.VmDiskKey).OnDelete(DeleteBehavior.Restrict);
         }
 
         void AddDefaultValues(ModelBuilder modelBuilder)
@@ -240,6 +255,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<VmSize>()
             .Property(sro => sro.Created)
             .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<DiskSize>()
+          .Property(sro => sro.Created)
+          .HasDefaultValueSql("getutcdate()");
         }
     }
 }

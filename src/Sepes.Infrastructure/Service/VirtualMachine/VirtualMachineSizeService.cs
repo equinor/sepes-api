@@ -72,7 +72,17 @@ namespace Sepes.Infrastructure.Service
         {
             var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
             var priceOfVm = await _db.RegionVmSize.Where(x => x.Region.Key == sandbox.Region && x.VmSizeKey == input.Size).SingleOrDefaultAsync();
-            return priceOfVm.Price;
+
+            var priceOfDisks = 0.0;
+
+            foreach (var disk in input.DataDisks)
+            {
+                //var diskSize = await _db.DiskSizes.Where(x => x.Size == disk).SingleOrDefaultAsync();
+                var priceOfDisk = await _db.RegionDiskSize.Where(x => x.Region.Key == sandbox.Region && x.VmDiskKey == disk).SingleOrDefaultAsync();
+                priceOfDisks += priceOfDisk.Price;
+            }
+            
+            return priceOfVm.Price + priceOfDisks;
         }
 
         public async Task UpdateVmSizeCache(CancellationToken cancellationToken = default)
@@ -82,7 +92,7 @@ namespace Sepes.Infrastructure.Service
 
             if (regionsFromDb == null || (regionsFromDb != null & regionsFromDb.Count() == 0))
             {
-                throw new Exception($"Could not update Vm Size Cache, Regions found in DB");
+                throw new Exception($"Could not update Vm Size Cache, No regions found in DB");
             }
 
             foreach (var curRegionFromDb in regionsFromDb)

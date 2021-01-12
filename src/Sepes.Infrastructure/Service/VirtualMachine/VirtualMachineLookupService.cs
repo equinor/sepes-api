@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AutoMapper;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -7,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -15,15 +20,21 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger _logger;
         readonly ISandboxService _sandboxService;
         readonly IAzureCostManagementService _costService;
+        readonly SepesDbContext _db;
+        readonly IMapper _mapper;
 
         public VirtualMachineLookupService(
             ILogger<VirtualMachineService> logger,
+            SepesDbContext db,
+            IMapper mapper,
             ISandboxService sandboxService,
             IAzureCostManagementService costService)
         {
+            _db = db;
             _logger = logger;
             _sandboxService = sandboxService;
             _costService = costService;
+            _mapper = mapper;
         }
 
         public string CalculateName(string studyName, string sandboxName, string userPrefix)
@@ -44,6 +55,9 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
+            var vmDisks = await _db.DiskSizes.Include(x => x).ToListAsync();
+            var sortedByPrice = vmDisks.OrderBy(x => x.Size);
+            /*
             var result = new List<VmDiskLookupDto>
             {
                 new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" },
@@ -55,8 +69,9 @@ namespace Sepes.Infrastructure.Service
                 new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" },
                 new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" }
             };
+            */
 
-            return result;
+            return _mapper.Map<List<VmDiskLookupDto>>(sortedByPrice);
         }
 
         public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
