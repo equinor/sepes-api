@@ -90,6 +90,7 @@ namespace Sepes.Infrastructure.Service
                 createdSandbox.TechnicalContactEmail = user.EmailAddress;               
                 
                 study.Sandboxes.Add(createdSandbox);
+
                 await _db.SaveChangesAsync();
 
                 try
@@ -110,9 +111,19 @@ namespace Sepes.Infrastructure.Service
                 }
                 catch (Exception)
                 {
-                    if(createdSandbox.Id > 0)
+                    //Deleting sandbox entry and all related from DB
+                    if (createdSandbox.Id > 0)
                     {
-                        //Deleting sandbox entry from DB
+                        foreach(var curRes in await _db.CloudResources.Include(r=> r.Operations).Where(r=> r.SandboxId == createdSandbox.Id).ToListAsync())
+                        {
+                            foreach(var curOp in curRes.Operations)
+                            {
+                                _db.CloudResourceOperations.Remove(curOp);
+                            }
+
+                            _db.CloudResources.Remove(curRes);
+                        }
+                        
                         study.Sandboxes.Remove(createdSandbox);
                         await _db.SaveChangesAsync();
                     }                    

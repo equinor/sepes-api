@@ -109,6 +109,9 @@ namespace Sepes.Infrastructure.Service
                                 currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationUpdateService, _logger);
                             }
 
+                            //Todo: Ensure desired roles
+
+
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
                         }
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))

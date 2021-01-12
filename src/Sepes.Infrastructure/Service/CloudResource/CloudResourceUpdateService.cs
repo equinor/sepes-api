@@ -23,13 +23,13 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var resource = await GetOrThrowInternalAsync(resourceId);
-            resource.ResourceGroupId = updated.ResourceId;
+            var resource = await GetOrThrowInternalAsync(resourceId);           
             resource.ResourceGroupName = updated.ResourceName;
             resource.ResourceId = updated.ResourceId;
             resource.ResourceKey = updated.ResourceKey;
             resource.ResourceName = updated.ResourceName;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
+            resource.ParentResourceId = updated.ParentResourceId;
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
@@ -48,6 +48,7 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceName = updated.ResourceName;
             resource.ResourceType = updated.ResourceType;
             resource.LastKnownProvisioningState = updated.ProvisioningState;
+            resource.ParentResourceId = updated.ParentResourceId;
             resource.ConfigString = updated.ConfigString;        
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
@@ -77,12 +78,12 @@ namespace Sepes.Infrastructure.Service
         {
             if (String.IsNullOrWhiteSpace(resourceIdInForeignSystem))
             {
-                throw new ArgumentNullException("azureId", $"Provided empty foreign system resource id for resource {resourceId} ");
+                throw new ArgumentNullException("resourceIdInForeignSystem", $"Provided empty foreign system resource id for resource {resourceId} ");
             }
 
             if (String.IsNullOrWhiteSpace(resourceNameInForeignSystem))
             {
-                throw new ArgumentNullException("azureId", $"Provided empty foreign system resource name for resource {resourceId} ");
+                throw new ArgumentNullException("resourceNameInForeignSystem", $"Provided empty foreign system resource name for resource {resourceId} ");
             }
 
             var resourceFromDb = await GetOrThrowInternalAsync(resourceId);          

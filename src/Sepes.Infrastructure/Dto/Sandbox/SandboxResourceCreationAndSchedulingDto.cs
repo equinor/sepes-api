@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public string ResourceGroupId { get { return ResourceGroup.ResourceId; } }
 
-        public string ResourceGroupName { get { return ResourceGroup.ResourceGroupName; } }
+        public string ResourceGroupName { get; set; }
 
         public string BatchId { get; set; }
 

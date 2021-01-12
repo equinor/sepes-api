@@ -125,6 +125,11 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.Resources)
                 .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
 
+            modelBuilder.Entity<CloudResource>()
+              .HasOne(cr => cr.ParentResource)
+              .WithMany(d => d.ChildResources)
+              .HasForeignKey(sd => sd.ParentResourceId).OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<CloudResourceOperation>()
                 .HasOne(cr => cr.Resource)
                 .WithMany(d => d.Operations)

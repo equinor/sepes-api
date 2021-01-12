@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Service
         {
             var resourceGroup = await CreateInternal(resourceGroupName, region, tags);
             return MapToDto(resourceGroup);
-        }
+        }       
 
         public async Task<AzureResourceGroupDto> EnsureCreated(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
@@ -176,5 +176,7 @@ namespace Sepes.Infrastructure.Service
         {
             throw new System.NotImplementedException();
         }
+
+      
     }
 }

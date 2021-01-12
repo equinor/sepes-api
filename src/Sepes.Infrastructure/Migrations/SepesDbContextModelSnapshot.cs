@@ -47,10 +47,10 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("LastKnownProvisioningState")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Region")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int?>("ParentResourceId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("ResourceGroupId")
+                    b.Property<string>("Region")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResourceGroupName")
@@ -74,9 +74,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("SandboxId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("StudyId")
                         .HasColumnType("int");
 
@@ -93,6 +90,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentResourceId");
 
                     b.HasIndex("SandboxId");
 
@@ -739,6 +738,11 @@ namespace Sepes.Infrastructure.Migrations
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
                 {
+                    b.HasOne("Sepes.Infrastructure.Model.CloudResource", "ParentResource")
+                        .WithMany("ChildResources")
+                        .HasForeignKey("ParentResourceId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
                         .WithMany("Resources")
                         .HasForeignKey("SandboxId")

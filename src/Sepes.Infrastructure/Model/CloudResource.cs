@@ -15,13 +15,10 @@ namespace Sepes.Infrastructure.Model
 
         public string ResourceName { get; set; }
 
-        public string ResourceType { get; set; }
-
-        public string ResourceGroupId { get; set; }
+        public string ResourceType { get; set; }      
 
         public string ResourceGroupName { get; set; }
 
-        public string Status { get; set; }
 
         public string LastKnownProvisioningState { get; set; }
 
@@ -37,8 +34,14 @@ namespace Sepes.Infrastructure.Model
 
         public string DeletedBy { get; set; }
 
+        public int? ParentResourceId { get; set; }
+
         public Sandbox Sandbox { get; set; }
 
         public List<CloudResourceOperation> Operations { get; set; }
+
+        public CloudResource ParentResource { get; set; }
+
+        public List<CloudResource> ChildResources { get; set; }       
     }    
 }

@@ -1,5 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
@@ -17,13 +16,10 @@ namespace Sepes.Infrastructure.Dto
 
         public string ResourceName { get; set; }
 
-        public string ResourceType { get; set; }
-
-        public string ResourceGroupId { get; set; }
+        public string ResourceType { get; set; }      
 
         public string ResourceGroupName { get; set; }
-
-        public string Status { get; set; }
+       
 
         public string ProvisioningState { get; set; }
 
@@ -34,6 +30,8 @@ namespace Sepes.Infrastructure.Dto
         public string ConfigString { get; set; }
 
         public bool SandboxControlled { get; set; }
+
+        public int? ParentResourceId { get; set; }
 
         public Dictionary<string, string> Tags
         {
