@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
             if (resourceFromDb.ResourceName != resourceNameInForeignSystem)
             {
                 resourceFromDb.ResourceName = resourceNameInForeignSystem;
-            }
+            }           
 
             var currentUser = await _userService.GetCurrentUserAsync();
 

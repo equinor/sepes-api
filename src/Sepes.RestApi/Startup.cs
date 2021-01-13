@@ -173,9 +173,7 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
-
-            
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
 
 
             //Azure Services

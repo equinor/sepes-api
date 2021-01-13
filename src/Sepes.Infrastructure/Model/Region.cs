@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
     public class Region : StringKeyBaseModel
     {
+        [MaxLength(32)]
         public string Name { get; set; }
 
         public bool Disabled { get; set; }

@@ -9,9 +9,12 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(128)]
         [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
-        
+
+        [MaxLength(4096)]
+
         public string Description { get; set; }
 
+        [MaxLength(4096)]
         public string ResultsAndLearnings { get; set; }
 
         [MaxLength(64)]
@@ -23,6 +26,7 @@ namespace Sepes.Infrastructure.Model
 
         public bool Restricted { get; set; }
 
+        [MaxLength(512)]
         public string LogoUrl { get; set; }
 
         [MaxLength(64)]

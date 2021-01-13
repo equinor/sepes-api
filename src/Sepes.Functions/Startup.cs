@@ -14,6 +14,8 @@ using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 
 [assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
 
@@ -65,6 +67,17 @@ namespace Sepes.CloudResourceWorker
 
             builder.Services.AddHttpContextAccessor();
 
+            var configuration = builder.GetContext().Configuration;
+
+            builder.Services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultScheme = "Bearer";
+                sharedOptions.DefaultChallengeScheme = "Bearer";
+            })
+               .AddMicrosoftIdentityWebApi(configuration)
+                   .EnableTokenAcquisitionToCallDownstreamApi()
+                   .AddInMemoryTokenCaches();
+
             //Plumbing
             builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
             builder.Services.AddScoped<IUserService, FunctionUserService>();
@@ -83,6 +96,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+            builder.Services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceResourceRoleAssignmentCreateService>();
+            builder.Services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceResourceRoleAssignmentUpdateService>();
 
             //Ext System Facade Services            
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
@@ -108,6 +123,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
             builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();
+            builder.Services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            
 
         }
     }

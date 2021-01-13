@@ -125,6 +125,8 @@ namespace Sepes.Infrastructure.Service
                                 currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationUpdateService, _logger);
                             }
 
+                            currentOperation = await _resourceOperationUpdateService.TouchAsync(currentOperation.Id);
+
                             await EnsureRolesUtil.EnsureRoles(currentOperation,
                                 _azureRoleAssignmentService,
                                 _resourceReadService,

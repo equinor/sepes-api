@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Util.Auth
             userDb.FullName = azureUser.DisplayName;
             userDb.UserName = azureUser.UserPrincipalName;
             userDb.EmailAddress = azureUser.Mail;
+            userDb.CreatedBy = azureUser.UserPrincipalName;
             return userDb;
         }      
 

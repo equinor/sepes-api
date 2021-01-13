@@ -15,8 +15,7 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             foreach (var curParticipant in participants)
             {
-                var translatedRoleId = Translate(curParticipant.RoleName);
-                //var roleDefinitionId = AzureRoleIds.CreateUrl(targetResourceId, translatedRoleId);
+                var translatedRoleId = Translate(curParticipant.RoleName);                
                 await cloudResourceRoleAssignmentCreateService.AddAsync(resourceDbId, curParticipant.User.ObjectId, translatedRoleId);
             }
         }

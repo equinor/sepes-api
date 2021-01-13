@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
 
                     await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     //Deleting sandbox entry and all related from DB
                     if (createdSandbox.Id > 0)

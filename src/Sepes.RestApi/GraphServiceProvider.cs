@@ -1,10 +1,6 @@
 ﻿using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sepes.RestApi
 {

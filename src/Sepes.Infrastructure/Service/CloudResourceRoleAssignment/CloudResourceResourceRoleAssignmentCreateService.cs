@@ -5,7 +5,8 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading.Tasks;
-
+using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -42,8 +43,8 @@ namespace Sepes.Infrastructure.Service
                 CreatedBy = currentUser.UserName,
                 UpdatedBy = currentUser.UserName,
             };
-
-            _db.CloudResourceRoleAssignments.Add(newAssignment);
+            var resourceFromDb = await _db.CloudResources.Include(r => r.RoleAssignments).Where(r => r.Id == resourceDbId).FirstOrDefaultAsync();
+            resourceFromDb.RoleAssignments.Add(newAssignment);
 
             await _db.SaveChangesAsync();
 

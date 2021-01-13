@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Auth;
@@ -16,7 +17,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
     {
 
         public static async Task EnsureRoles(
-            CloudResourceOperationDto operation,           
+            CloudResourceOperationDto operation,
             IAzureRoleAssignmentService roleAssignmentService,
             ICloudResourceReadService resourceReadService,
             ICloudResourceRoleAssignmentUpdateService roleAssignmentUpdateService,
@@ -37,17 +38,19 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                     if (shouldExist)
                     {
+                        var roleDefinitionId  = AzureRoleIds.CreateUrl(operation.Resource.ResourceId, curRole.RoleId);                       
+
                         if (String.IsNullOrWhiteSpace(curRole.ForeignSystemId))
                         {
                             //Probably new role assignment that has not been created before
                             createdNewOne = true;
-                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, curRole.RoleId, curRole.UserOjectId, cancellationToken: cancellation.Token);
+                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, cancellationToken: cancellation.Token);
                         }
                         else if (await roleAssignmentService.RoleAssignmentExists(operation.Resource.ResourceId, curRole.ForeignSystemId) == false)
                             {
                             //role assignment should have existed, but does not                           
                             logger.LogWarning($"Role assignment {curRole.ForeignSystemId} for resource {operation.Resource.ResourceId} should have existed");
-                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, curRole.RoleId, curRole.UserOjectId, curRole.ForeignSystemId, cancellation.Token);
+                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, curRole.ForeignSystemId, cancellation.Token);
                         }
                     }
                     else

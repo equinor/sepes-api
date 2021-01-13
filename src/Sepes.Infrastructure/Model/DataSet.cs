@@ -14,6 +14,7 @@ namespace Sepes.Infrastructure.Model
         [Required(AllowEmptyStrings =false)]
         public string StorageAccountName { get; set; }
 
+        [MaxLength(256)]
         public string StorageAccountId { get; set; }
 
         [MaxLength(64)]
@@ -26,13 +27,21 @@ namespace Sepes.Infrastructure.Model
 
         public int LRAId { get; set; }
         public int DataId { get; set; }
+        [MaxLength(256)]
         public string SourceSystem { get; set; }
+        [MaxLength(256)]
         public string BADataOwner { get; set; }
+        [MaxLength(256)]
         public string Asset { get; set; }
+        [MaxLength(256)]
         public string CountryOfOrigin { get; set; }
+        [MaxLength(256)]
         public string AreaL1 { get; set; }
+        [MaxLength(256)]
         public string AreaL2 { get; set; }
+        [MaxLength(256)]
         public string Tags { get; set; }
+        [MaxLength(1024)]
         public string Description { get; set; }
 
         public bool? Deleted { get; set; }

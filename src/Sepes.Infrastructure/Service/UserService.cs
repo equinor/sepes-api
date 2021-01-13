@@ -57,26 +57,8 @@ namespace Sepes.Infrastructure.Service
         }
 
         async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
-        {
-            var loggedInUserId = _currentUserService.GetUserId();
-
-            var userFromDb = await GetUserFromDb(loggedInUserId, includeParticipantInfo);
-
-            if (userFromDb == null)
-            {
-                var userFromAzure = await _azureUserService.GetUserAsync(loggedInUserId);
-
-                if(userFromAzure == null)
-                {
-                    throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserId}");
-                }
-
-                var newDbUser = UserUtil.CreateDbUserFromAzureUser(loggedInUserId, userFromAzure);
-                _db.Users.Add(newDbUser);
-                await _db.SaveChangesAsync();  
-            }
-
-            return userFromDb;
+        { 
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
         }
 
         async Task<User> GetUserFromDb(string userId, bool includeParticipantInfo = false)
