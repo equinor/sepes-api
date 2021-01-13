@@ -184,6 +184,9 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<VmSize, VmSizeLookupDto>()
                .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
 
+            CreateMap<DiskSize, VmDiskLookupDto>()
+               .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
+
             CreateMap<Region, LookupDto>()
              .ForMember(dest => dest.Key, source => source.MapFrom(x => x.Key))
               .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.Name));

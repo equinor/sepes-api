@@ -9,5 +9,7 @@ namespace Sepes.Infrastructure.Model
         public bool Disabled { get; set; }
 
         public ICollection<RegionVmSize> VmSizeAssociations { get; set; }
+
+        public ICollection<RegionDiskSize> DiskSizeAssociations { get; set; }
     }
 }

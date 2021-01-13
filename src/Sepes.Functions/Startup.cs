@@ -92,7 +92,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-       
+            builder.Services.AddTransient<IVirtualMachineDiskService, VirtualMachineDiskService>();
+
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
@@ -106,6 +107,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
             builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
+            builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();
 
         }
     }

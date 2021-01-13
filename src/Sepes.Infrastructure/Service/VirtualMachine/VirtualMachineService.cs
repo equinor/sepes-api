@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -27,7 +28,7 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly IUserService _userService;        
+        readonly IUserService _userService;
         readonly ISandboxService _sandboxService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
@@ -43,7 +44,7 @@ namespace Sepes.Infrastructure.Service
             IConfiguration config,
             SepesDbContext db,
             IMapper mapper,
-            IUserService userService,            
+            IUserService userService,
             ISandboxService sandboxService,
             IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
@@ -58,7 +59,7 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _config = config;
             _mapper = mapper;
-            _userService = userService;            
+            _userService = userService;
             _sandboxService = sandboxService;
             _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
@@ -83,6 +84,8 @@ namespace Sepes.Infrastructure.Service
             var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
             var region = RegionStringConverter.Convert(sandbox.Region);
+
+            userInput.DataDisks = await TranslateDiskSizes(sandbox.Region, userInput.DataDisks);
 
             var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
 
@@ -111,6 +114,33 @@ namespace Sepes.Infrastructure.Service
             return dtoMappedFromResource;
         }
 
+        async Task<List<string>> TranslateDiskSizes(string region, List<string> dataDisksFromClient)
+        {
+            //Fix disks
+            var disksFromDbForGivenRegion = await _db.RegionDiskSize.Where(rds => rds.RegionKey == region).Select(rds => rds.DiskSize).ToDictionaryAsync(ds => ds.Key, ds => ds);
+
+            if (disksFromDbForGivenRegion.Count == 0)
+            {
+                throw new Exception($"No data disk items found in DB");
+            }
+
+            var result = new List<string>();
+
+            foreach (var curDataDisk in dataDisksFromClient)
+            {
+                if (disksFromDbForGivenRegion.TryGetValue(curDataDisk, out DiskSize diskSize))
+                {
+                    result.Add(Convert.ToString(diskSize.Size));
+                }
+                else
+                {
+                    throw new Exception($"Unknown data disk size specification: {curDataDisk}");
+                }
+            }
+
+            return result;
+        }
+
         public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
         {
             throw new NotImplementedException();
@@ -123,15 +153,15 @@ namespace Sepes.Infrastructure.Service
             var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id);
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
-            
+
             var queueParentItem = new ProvisioningQueueParentDto
             {
                 SandboxId = vmResource.SandboxId,
                 Description = deleteResourceOperation.Description,
                 Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
             };
-          
-            await _workQueue.SendMessageAsync(queueParentItem);            
+
+            await _workQueue.SendMessageAsync(queueParentItem);
         }
 
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
@@ -176,7 +206,7 @@ namespace Sepes.Infrastructure.Service
             var vmExternalLink = new VmExternalLink
             {
                 Id = vmId,
-                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)               
+                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)
             };
 
             return vmExternalLink;
@@ -188,8 +218,8 @@ namespace Sepes.Infrastructure.Service
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
 
             return vmResource;
-        } 
-        
+        }
+
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
