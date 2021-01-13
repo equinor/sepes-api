@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -81,14 +82,18 @@ namespace Sepes.RestApi
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
-            services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
-                 .AddProtectedWebApiCallsProtectedWebApi(_configuration)
-                 .AddInMemoryTokenCaches();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+          .AddMicrosoftIdentityWebApi(_configuration)
+            .EnableTokenAcquisitionToCallDownstreamApi()
+            .AddInMemoryTokenCaches();
+            //services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
+            //     .AddProtectedWebApiCallsProtectedWebApi(_configuration)
+            //     .AddInMemoryTokenCaches();
 
-            // Token acquisition service based on MSAL.NET
-            // and chosen token cache implementation
-            services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
-               .AddInMemoryTokenCaches();            
+            //// Token acquisition service based on MSAL.NET
+            //// and chosen token cache implementation
+            //services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
+            //   .AddInMemoryTokenCaches();            
 
             DoMigration();
 

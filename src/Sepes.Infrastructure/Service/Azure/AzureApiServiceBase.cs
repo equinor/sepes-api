@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Identity.Web;
 
+
 namespace Sepes.Infrastructure.Service.Azure
 {
     public class AzureApiServiceBase
@@ -83,7 +84,7 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             try
             {
-                return await PerformRequest<T>(url, HttpMethod.Get, content: null, needsAuth, cancellationToken);
+                return await PerformRequest<T>(url, HttpMethod.Get, content: null, needsAuth: needsAuth, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
@@ -99,8 +100,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
                 if (needsAuth)
                 {                   
-                    string[] scopes = new string[] { "https://management.azure.com/.default" };
-                    token = await _tokenAcquisition.GetAccessTokenForAppAsync(scopes);
+                    token = await _tokenAcquisition.GetAccessTokenForAppAsync("https://management.azure.com/.default");
                 }
 
                 using (var apiRequestClient = new HttpClient())

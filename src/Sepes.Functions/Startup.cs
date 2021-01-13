@@ -39,13 +39,13 @@ namespace Sepes.CloudResourceWorker
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
-            var aiOptions= new ApplicationInsightsServiceOptions
-             {
-                 // Disables adaptive sampling.
-                 EnableAdaptiveSampling = false,
-                 InstrumentationKey = appiKey,
-                 EnableDebugLogger = true
-             };
+            var aiOptions = new ApplicationInsightsServiceOptions
+            {
+                // Disables adaptive sampling.
+                EnableAdaptiveSampling = false,
+                InstrumentationKey = appiKey,
+                EnableDebugLogger = true
+            };
 
             builder.Services.AddApplicationInsightsTelemetry(aiOptions);
 
@@ -64,9 +64,7 @@ namespace Sepes.CloudResourceWorker
                   )
 
               );
-
-            builder.Services.AddHttpContextAccessor();
-
+            // This is configuration from environment variables, settings.json etc.
             var configuration = builder.GetContext().Configuration;
 
             builder.Services.AddAuthentication(sharedOptions =>
@@ -74,12 +72,17 @@ namespace Sepes.CloudResourceWorker
                 sharedOptions.DefaultScheme = "Bearer";
                 sharedOptions.DefaultChallengeScheme = "Bearer";
             })
-               .AddMicrosoftIdentityWebApi(configuration)
-                   .EnableTokenAcquisitionToCallDownstreamApi()
-                   .AddInMemoryTokenCaches();
+                .AddMicrosoftIdentityWebApi(configuration)
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                    .AddInMemoryTokenCaches();
+
+            builder.Services.AddHttpContextAccessor();
+
+
+
 
             //Plumbing
-            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
+            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
             builder.Services.AddScoped<IUserService, FunctionUserService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
 
@@ -124,7 +127,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();
             builder.Services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-            
+
 
         }
     }
