@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Auth;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,6 +7,10 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureRoleAssignmentService
     {
-        Task<AzureRoleAssignmentResponseDto> AddResourceRoleAssignment(string resourceId, string roleAssignmentId, string roleDefinitionId, string principalId, CancellationToken cancellationToken = default);      
+        Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default);
+
+        Task<AzureRoleAssignmentResponseDto> DeleteRoleAssignment(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default);
+       
+        Task<AzureRoleAssignmentResponseDto> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default);
     }
 }

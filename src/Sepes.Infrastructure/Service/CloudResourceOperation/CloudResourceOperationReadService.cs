@@ -25,9 +25,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<CloudResourceOperationDto> GetByIdAsync(int id)
         {
             return await GetOperationDtoInternal(id);
-        }
-
-      
+        }      
 
         public async Task<bool> OperationIsFinishedAndSucceededAsync(int operationId)
         {

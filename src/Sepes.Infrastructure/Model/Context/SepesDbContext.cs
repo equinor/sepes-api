@@ -29,6 +29,8 @@ namespace Sepes.Infrastructure.Model.Context
 
         public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
 
+        public virtual DbSet<CloudResourceRoleAssignment> CloudResourceRoleAssignments { get; set; }
+
         public virtual DbSet<RegionVmSize> RegionVmSize { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
@@ -58,7 +60,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<StudyParticipant>().HasKey(p => new { p.StudyId, p.UserId, p.RoleName });
             modelBuilder.Entity<CloudResource>().HasKey(r => r.Id);
             modelBuilder.Entity<CloudResourceOperation>().HasKey(o => o.Id);
-
+            modelBuilder.Entity<CloudResourceRoleAssignment>().HasKey(o => o.Id);
             modelBuilder.Entity<Region>().HasKey(r => r.Key);
             modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
             modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
@@ -139,6 +141,11 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(o => o.DependsOnOperation)
                 .WithMany(o => o.DependantOnThisOperation)
              .HasForeignKey(sd => sd.DependsOnOperationId).OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CloudResourceRoleAssignment>()
+             .HasOne(cr => cr.Resource)
+             .WithMany(d => d.RoleAssignments)
+             .HasForeignKey(sd => sd.CloudResourceId).OnDelete(DeleteBehavior.Restrict);
 
             //Cloud Region, Vm Size etc
             modelBuilder.Entity<RegionVmSize>()
@@ -231,6 +238,14 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<CloudResourceOperation>()
+                .Property(sro => sro.Updated)
+                .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<CloudResourceRoleAssignment>()
+             .Property(sro => sro.Created)
+             .HasDefaultValueSql("getutcdate()");
+
+            modelBuilder.Entity<CloudResourceRoleAssignment>()
                 .Property(sro => sro.Updated)
                 .HasDefaultValueSql("getutcdate()");
 

@@ -70,6 +70,8 @@ namespace Sepes.Infrastructure.Service
                 .Include(o => o.Resource)
                  .ThenInclude(r => r.Sandbox)
                          .ThenInclude(sb => sb.Study)
+                .Include(o => o.Resource)
+                    .ThenInclude(r=> r.RoleAssignments)
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entityFromDb == null)

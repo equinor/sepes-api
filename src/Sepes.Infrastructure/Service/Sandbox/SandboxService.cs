@@ -17,16 +17,16 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class SandboxService : SandboxServiceBase, ISandboxService
-    {      
+    {
         readonly IStudyService _studyService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
 
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, IStudyService studyService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
-            :base (config, db, mapper, logger, userService)
-        { 
-            _studyService = studyService;       
+            : base(config, db, mapper, logger, userService)
+        {
+            _studyService = studyService;
             _sandboxResourceCreateService = sandboxCloudResourceService;
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
         }
@@ -85,10 +85,10 @@ namespace Sepes.Infrastructure.Service
 
                 InitiatePhaseHistory(createdSandbox, user);
 
-                createdSandbox.CreatedBy = user.UserName;               
+                createdSandbox.CreatedBy = user.UserName;
                 createdSandbox.TechnicalContactName = user.FullName;
-                createdSandbox.TechnicalContactEmail = user.EmailAddress;               
-                
+                createdSandbox.TechnicalContactEmail = user.EmailAddress;
+
                 study.Sandboxes.Add(createdSandbox);
 
                 await _db.SaveChangesAsync();
@@ -104,8 +104,18 @@ namespace Sepes.Infrastructure.Service
 
                     var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
 
-                    //This objects gets passed around
-                    var creationAndSchedulingDto = new SandboxResourceCreationAndSchedulingDto() { SandboxId = createdSandbox.Id, StudyName = studyDto.Name, SandboxName = sandboxDto.Name, Region = region, Tags = tags, BatchId = Guid.NewGuid().ToString() };
+                    //This object gets passed around
+                    var creationAndSchedulingDto =
+                        new SandboxResourceCreationAndSchedulingDto()
+                        {
+                            StudyId = studyDto.Id,
+                            SandboxId = createdSandbox.Id,                            
+                            StudyName = studyDto.Name,
+                            SandboxName = sandboxDto.Name,
+                            Region = region,
+                            Tags = tags,
+                            BatchId = Guid.NewGuid().ToString()
+                        };
 
                     await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
@@ -114,20 +124,20 @@ namespace Sepes.Infrastructure.Service
                     //Deleting sandbox entry and all related from DB
                     if (createdSandbox.Id > 0)
                     {
-                        foreach(var curRes in await _db.CloudResources.Include(r=> r.Operations).Where(r=> r.SandboxId == createdSandbox.Id).ToListAsync())
+                        foreach (var curRes in await _db.CloudResources.Include(r => r.Operations).Where(r => r.SandboxId == createdSandbox.Id).ToListAsync())
                         {
-                            foreach(var curOp in curRes.Operations)
+                            foreach (var curOp in curRes.Operations)
                             {
                                 _db.CloudResourceOperations.Remove(curOp);
                             }
 
                             _db.CloudResources.Remove(curRes);
                         }
-                        
+
                         study.Sandboxes.Remove(createdSandbox);
                         await _db.SaveChangesAsync();
-                    }                    
-                  
+                    }
+
                     throw;
                 }
 
@@ -137,15 +147,13 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Sandbox creation failed: {ex.Message}", ex);
             }
-        } 
-        
-           
+        }
 
         public async Task DeleteAsync(int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox {0}: Starting", sandboxId);
 
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);         
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
             int studyId = sandboxFromDb.StudyId;
 
@@ -160,9 +168,9 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId);           
+            await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId);
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
-        }     
+        }
     }
 }

@@ -165,14 +165,18 @@ namespace Sepes.RestApi
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
-            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();          
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+            services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceResourceRoleAssignmentCreateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceResourceRoleAssignmentUpdateService>();
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+
             
+
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

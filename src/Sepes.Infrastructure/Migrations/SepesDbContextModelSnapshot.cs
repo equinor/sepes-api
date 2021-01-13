@@ -74,9 +74,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("SandboxId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("StudyId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(max)");
 
@@ -93,9 +90,7 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("ParentResourceId");
 
-                    b.HasIndex("SandboxId");
-
-                    b.HasIndex("StudyId");
+                    b.HasIndex("SandboxId");             
 
                     b.ToTable("CloudResources");
                 });
@@ -178,6 +173,63 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasIndex("DependsOnOperationId");
 
                     b.ToTable("CloudResourceOperations");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceRoleAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CloudResourceId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<bool?>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeletedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("ForeignSystemId")
+                        .HasColumnType("nvarchar(512)")
+                        .HasMaxLength(512);
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(512)")
+                        .HasMaxLength(512);
+
+                    b.Property<DateTime>("Updated")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getutcdate()");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("UserOjectId")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CloudResourceId");
+
+                    b.ToTable("CloudResourceRoleAssignments");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
@@ -747,11 +799,7 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("Resources")
                         .HasForeignKey("SandboxId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
-                        .WithMany("CloudResources")
-                        .HasForeignKey("StudyId");
+                        .IsRequired();                  
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
@@ -766,6 +814,15 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceRoleAssignment", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.CloudResource", "Resource")
+                        .WithMany("RoleAssignments")
+                        .HasForeignKey("CloudResourceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>

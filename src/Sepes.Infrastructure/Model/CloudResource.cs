@@ -40,8 +40,10 @@ namespace Sepes.Infrastructure.Model
 
         public List<CloudResourceOperation> Operations { get; set; }
 
-        public CloudResource ParentResource { get; set; }
+        public List<CloudResourceRoleAssignment> RoleAssignments { get; set; }
 
+        public CloudResource ParentResource { get; set; }
+      
         public List<CloudResource> ChildResources { get; set; }       
     }    
 }

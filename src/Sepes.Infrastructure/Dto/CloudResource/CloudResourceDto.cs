@@ -41,5 +41,7 @@ namespace Sepes.Infrastructure.Dto
         public string Region { get; set; }
 
         public List<CloudResourceOperationDto> Operations { get; set; }
+
+        public List<CloudResourceRoleAssignmentDto> RoleAssignments { get; set; }
     }
 }

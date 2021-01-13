@@ -5,5 +5,8 @@
         public const string CREATE = "create";
         public const string UPDATE = "update";
         public const string DELETE = "delete";
+
+        public const string ADD_ROLE = "addrole";
+        public const string REMOVE_ROLE = "removerole";
     }
 }

@@ -69,9 +69,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);
-        }
-
-      
+        }      
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
         {

@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
@@ -23,6 +24,11 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceUpdateService _resourceUpdateService;
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
+
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
+        readonly ICloudResourceRoleAssignmentUpdateService _cloudResourceRoleAssignmentUpdateService;
+       
+     
         readonly ICloudResourceMonitoringService _monitoringService;
 
         public ResourceProvisioningService(
@@ -34,17 +40,27 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceUpdateService resourceUpdateService,
             ICloudResourceOperationReadService resourceOperationReadService,
             ICloudResourceOperationUpdateService resourceOperationUpdateService,
+            IAzureRoleAssignmentService azureRoleAssignmentService,
+            ICloudResourceRoleAssignmentUpdateService cloudResourceRoleAssignmentUpdateService,
             ICloudResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
             _requestIdService = requestIdService;
+            _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
+
+            //Resource services
             _resourceReadService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceUpdateService = resourceUpdateService ?? throw new ArgumentNullException(nameof(resourceUpdateService));
+          
+            //Resource operation services
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService;
-            _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
+
+            //Role assignment services
+            _azureRoleAssignmentService = azureRoleAssignmentService;
+            _cloudResourceRoleAssignmentUpdateService = cloudResourceRoleAssignmentUpdateService;
+
             _monitoringService = monitoringService;
         }
 
@@ -109,10 +125,16 @@ namespace Sepes.Infrastructure.Service
                                 currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationUpdateService, _logger);
                             }
 
-                            //Todo: Ensure desired roles
+                            await EnsureRolesUtil.EnsureRoles(currentOperation,
+                                _azureRoleAssignmentService,
+                                _resourceReadService,
+                                _cloudResourceRoleAssignmentUpdateService,
+                                _resourceOperationUpdateService,
+                                _logger);                            
 
-
-                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
+                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id,
+                                CloudResourceOperationState.DONE_SUCCESSFUL,
+                                updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
                         }
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))
                         {

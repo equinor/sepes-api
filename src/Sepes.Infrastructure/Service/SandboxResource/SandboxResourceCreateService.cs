@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -7,6 +8,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +18,7 @@ namespace Sepes.Infrastructure.Service
     public class SandboxResourceCreateService : SandboxServiceBase, ISandboxResourceCreateService
     {
         readonly ICloudResourceCreateService _cloudResourceCreateService;
+        readonly ICloudResourceRoleAssignmentCreateService _cloudResourceRoleAssignmentCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxResourceCreateService(IConfiguration config,
@@ -24,12 +27,13 @@ namespace Sepes.Infrastructure.Service
             ILogger<SandboxResourceDeleteService> logger,
             IUserService userService,
             ICloudResourceCreateService cloudResourceCreateService,
+            ICloudResourceRoleAssignmentCreateService cloudResourceRoleAssignmentCreateService,
             IProvisioningQueueService provisioningQueueService)
               : base(config, db, mapper, logger, userService)
         {
 
-
             _cloudResourceCreateService = cloudResourceCreateService;
+            _cloudResourceRoleAssignmentCreateService = cloudResourceRoleAssignmentCreateService;
             _provisioningQueueService = provisioningQueueService;
         }
 
@@ -68,6 +72,19 @@ namespace Sepes.Infrastructure.Service
             dto.ResourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(dto.StudyName, dto.SandboxName);
             var resourceEntry = await CreateResourceGroupEntryAndAddToQueue(dto, queueParentItem, dto.ResourceGroupName);
             dto.ResourceGroup = resourceEntry;
+
+            await AddRelevantRoleAssignments(dto);
+        }
+
+        async Task AddRelevantRoleAssignments(SandboxResourceCreationAndSchedulingDto dto)
+        {
+            //Get list of participants for study
+            //Loop through and create relevant role assignments
+            //Schedule role assignment ids
+
+            var participants = await _db.StudyParticipants.Where(p => p.StudyId == dto.StudyId).ToListAsync();
+
+            await ParticipantRoleToAzureRoleTranslator.TranslateAndAddBasedOnParticipantList(_cloudResourceRoleAssignmentCreateService, dto.ResourceGroup.Id, AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, participants);
         }
 
         async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
