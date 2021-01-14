@@ -61,7 +61,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
             using (var stream = file.OpenReadStream())
             {
-                await blobClient.UploadAsync(stream, blobHttpHeader);
+                await blobClient.UploadAsync(stream, cancellationToken: cancellationToken, httpHeaders: blobHttpHeader);
                 stream.Close();
             }
 

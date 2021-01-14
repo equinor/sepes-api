@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -18,7 +19,7 @@ namespace Sepes.Infrastructure.Service
             _mapper = mapper;
             _graphServiceProvider = graphServiceProvider;
         }
-        public async Task<List<Microsoft.Graph.User>> SearchUsersAsync(string search, int limit)
+        public async Task<List<Microsoft.Graph.User>> SearchUsersAsync(string search, int limit, CancellationToken cancellationToken = default)
         {
             List<Microsoft.Graph.User> listUsers = new List<User>();
 
@@ -39,10 +40,9 @@ namespace Sepes.Infrastructure.Service
                 {
                     break;
                 }
-                var response = await graphRequest.GetAsync();
+                var response = await graphRequest.GetAsync(cancellationToken: cancellationToken);
 
-                 listUsers.AddRange(response.CurrentPage);
-                    
+                 listUsers.AddRange(response.CurrentPage);                    
                 
                 graphRequest = response.NextPageRequest;
             } 

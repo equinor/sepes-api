@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             try
             {
-                var existingAssignment = await GetById(resourceId, roleAssignmentId, cancellationToken);
+                var existingAssignment = await GetById(roleAssignmentId, cancellationToken);
                 return existingAssignment != null;
 
             }
@@ -35,22 +35,13 @@ namespace Sepes.Infrastructure.Service.Azure
             return false;
         }
 
-        async Task<AzureRoleAssignmentResponseDto> GetById(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
+        async Task<AzureRoleAssignmentResponseDto> GetById(string roleAssignmentId, CancellationToken cancellationToken = default)
         {
-            var getRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
+            var getRoleUrl = CreateLinkForExistingRoleAssignment(roleAssignmentId);
             var result = await PerformRequest<AzureRoleAssignmentResponseDto>(getRoleUrl, HttpMethod.Get, needsAuth: true, cancellationToken: cancellationToken);
 
             return result;
-        }
-
-        public async Task<AzureRoleAssignmentResponseDto> DeleteRoleAssignment(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
-        {
-            var getRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
-
-            var result = await PerformRequest<AzureRoleAssignmentResponseDto>(getRoleUrl, HttpMethod.Delete, needsAuth: true, cancellationToken: cancellationToken);
-
-            return result;
-        }
+        }       
 
         public async Task<AzureRoleAssignmentResponseDto> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default)
         {
@@ -69,21 +60,17 @@ namespace Sepes.Infrastructure.Service.Azure
             return result;
         }
 
-        public async Task<AzureRoleAssignmentResponseDto> DeleteResourceRoleAssignment(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
+        public async Task<AzureRoleAssignmentResponseDto> DeleteRoleAssignment(string roleAssignmentId, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
-            //var addRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
+            var getRoleUrl = CreateLinkForExistingRoleAssignment(roleAssignmentId);
+            var result = await PerformRequest<AzureRoleAssignmentResponseDto>(getRoleUrl, HttpMethod.Delete, needsAuth: true, cancellationToken: cancellationToken);
 
-            //var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
-            //var bodyJson = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-
-            //var result = await PerformRequest<AzureRoleAssignmentResponseDto>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
-
-            //return result;
+            return result;
         }
 
-
-
-
+        string CreateLinkForExistingRoleAssignment(string roleAssignmentId)
+        {
+            return $"https://management.azure.com{roleAssignmentId}?api-version=2015-07-01";
+        }
     }
 }

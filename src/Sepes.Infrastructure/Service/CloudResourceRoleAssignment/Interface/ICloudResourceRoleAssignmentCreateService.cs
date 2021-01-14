@@ -5,6 +5,6 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ICloudResourceRoleAssignmentCreateService
     {
-        Task<CloudResourceRoleAssignmentDto> AddAsync(int resourceId, string principalId, string roleId);    
+        Task<CloudResourceRoleAssignmentDto> AddAsync(int resourceId, string principalId, string roleId, bool failOnDuplicate = false);    
     }
 }

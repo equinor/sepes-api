@@ -156,7 +156,10 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();          
+            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceRoleAssignmentCreateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceRoleAssignmentUpdateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentDeleteService, CloudResourceRoleAssignmentDeleteService>();
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -171,8 +174,8 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
-            services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceResourceRoleAssignmentCreateService>();
-            services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceResourceRoleAssignmentUpdateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceRoleAssignmentCreateService>();
+            services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceRoleAssignmentUpdateService>();
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();

@@ -99,8 +99,9 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
-            builder.Services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceResourceRoleAssignmentCreateService>();
-            builder.Services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceResourceRoleAssignmentUpdateService>();
+            builder.Services.AddTransient<ICloudResourceRoleAssignmentCreateService, CloudResourceRoleAssignmentCreateService>();
+            builder.Services.AddTransient<ICloudResourceRoleAssignmentUpdateService, CloudResourceRoleAssignmentUpdateService>();
+            builder.Services.AddTransient<ICloudResourceRoleAssignmentDeleteService, CloudResourceRoleAssignmentDeleteService>();
 
             //Ext System Facade Services            
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();

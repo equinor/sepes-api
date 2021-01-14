@@ -70,21 +70,14 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             dto.ResourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(dto.StudyName, dto.SandboxName);
-            var resourceEntry = await CreateResourceGroupEntryAndAddToQueue(dto, queueParentItem, dto.ResourceGroupName);
-            dto.ResourceGroup = resourceEntry;
-
+            dto.ResourceGroup = await CreateResourceGroupEntryAndAddToQueue(dto, queueParentItem, dto.ResourceGroupName);         
             await AddRelevantRoleAssignments(dto);
         }
 
         async Task AddRelevantRoleAssignments(SandboxResourceCreationAndSchedulingDto dto)
         {
-            //Get list of participants for study
-            //Loop through and create relevant role assignments
-            //Schedule role assignment ids
-
             var participants = await _db.StudyParticipants.Where(p => p.StudyId == dto.StudyId).ToListAsync();
-
-            await ParticipantRoleToAzureRoleTranslator.TranslateAndAddBasedOnParticipantList(_cloudResourceRoleAssignmentCreateService, dto.ResourceGroup.Id, AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, participants);
+            await ParticipantRoleToAzureRoleTranslator.TranslateAndAddBasedOnParticipantList(_cloudResourceRoleAssignmentCreateService, dto.ResourceGroup.Id, participants);
         }
 
         async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)

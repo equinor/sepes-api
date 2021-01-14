@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,7 +120,7 @@ namespace Sepes.Infrastructure.Service
 
                     await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     //Deleting sandbox entry and all related from DB
                     if (createdSandbox.Id > 0)
@@ -161,10 +162,9 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 
-            //Mark sandbox object as deleted
-            sandboxFromDb.Deleted = true;
-            sandboxFromDb.DeletedAt = DateTime.UtcNow;
-            sandboxFromDb.DeletedBy = user.UserName;
+            SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);          
+
+            CloudResourceRoleAssignmentUtils.MarkAllForSandboxAsDeleted(sandboxFromDb, user);
 
             await _db.SaveChangesAsync();
 

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Sepes.Infrastructure.Model.Interface;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class Sandbox : UpdateableBaseModel
+    public class Sandbox : UpdateableBaseModel, ISupportSoftDelete
     { 
         [Required(AllowEmptyStrings =false)]
         [MaxLength(128)]

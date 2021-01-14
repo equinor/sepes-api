@@ -3,7 +3,6 @@ using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Auth;
-using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -15,6 +14,18 @@ namespace Sepes.Infrastructure.Util.Provisioning
 {
     public static class EnsureRolesUtil
     {
+
+        public static bool WillBeHandledAsEnsureRoles(CloudResourceOperationDto operation)
+        {
+            if (operation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
         public static async Task EnsureRoles(
             CloudResourceOperationDto operation,
@@ -38,16 +49,16 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                     if (shouldExist)
                     {
-                        var roleDefinitionId  = AzureRoleIds.CreateUrl(operation.Resource.ResourceId, curRole.RoleId);                       
+                        var roleDefinitionId = AzureRoleIds.CreateUrl(operation.Resource.ResourceId, curRole.RoleId);
 
                         if (String.IsNullOrWhiteSpace(curRole.ForeignSystemId))
                         {
-                            //Probably new role assignment that has not been created before
-                            createdNewOne = true;
+                            //Probably new role assignment that has not been created before                          
                             currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, cancellationToken: cancellation.Token);
+                            createdNewOne = true;
                         }
                         else if (await roleAssignmentService.RoleAssignmentExists(operation.Resource.ResourceId, curRole.ForeignSystemId) == false)
-                            {
+                        {
                             //role assignment should have existed, but does not                           
                             logger.LogWarning($"Role assignment {curRole.ForeignSystemId} for resource {operation.Resource.ResourceId} should have existed");
                             currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, curRole.ForeignSystemId, cancellation.Token);
@@ -61,28 +72,54 @@ namespace Sepes.Infrastructure.Util.Provisioning
                         }
                         else if (await roleAssignmentService.RoleAssignmentExists(operation.Resource.ResourceId, curRole.ForeignSystemId))
                         {
-                            currentRoleAssignmentTask = roleAssignmentService.DeleteRoleAssignment(operation.Resource.ResourceId, curRole.ForeignSystemId); //Delete should not be cancellable
+                            currentRoleAssignmentTask = roleAssignmentService.DeleteRoleAssignment(curRole.ForeignSystemId); //Delete should not be cancellable
                         }
                     }
 
-                    while (!currentRoleAssignmentTask.IsCompleted)
+                    if(currentRoleAssignmentTask != null)
                     {
-                        operation = await operationUpdateService.TouchAsync(operation.Id);
-
-                        if (shouldExist && await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
+                        while (!currentRoleAssignmentTask.IsCompleted)
                         {
-                            logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
-                            cancellation.Cancel();
-                            break;
+                            operation = await operationUpdateService.TouchAsync(operation.Id);
+
+                            if (shouldExist && await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
+                            {
+                                logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
+                                cancellation.Cancel();
+                                break;
+                            }
+
+                            Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                         }
 
-                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                    }
-
-                    if (createdNewOne)
-                    {
-                        await roleAssignmentUpdateService.SetForeignIdAsync(curRole.Id, currentRoleAssignmentTask.Result.id);
-                    }
+                        if (createdNewOne)
+                        {
+                            if (currentRoleAssignmentTask.IsCompletedSuccessfully)
+                            {
+                                if (String.IsNullOrWhiteSpace(currentRoleAssignmentTask.Result.id) == false)
+                                {
+                                    await roleAssignmentUpdateService.SetForeignIdAsync(curRole.Id, currentRoleAssignmentTask.Result.id);
+                                }
+                                else
+                                {
+                                    throw new Exception("Role assignment id was null", currentRoleAssignmentTask.Exception);
+                                }
+                            }
+                            else
+                            {
+                                if(currentRoleAssignmentTask.Exception == null)
+                                {
+                                    throw new Exception("Role assignment task failed");
+                                }
+                                else
+                                {
+                                    throw currentRoleAssignmentTask.Exception;
+                                }
+                               
+                            }                         
+                                                     
+                        }
+                    }  
                 }
             }
             catch (Exception ex)

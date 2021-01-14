@@ -27,6 +27,8 @@ namespace Sepes.Infrastructure.Service.Queries
                     .ThenInclude(sd => sd.Dataset)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
+                .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.RoleAssignments)
                 .Include(sb=> sb.PhaseHistory);
         }
 

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -25,9 +26,9 @@ namespace Sepes.RestApi.Controller
         //Get list of lookup items
         [HttpGet("participants")]
         [AuthorizeForScopes(Scopes = new[] { "User.Read.All" })]
-        public async Task<IActionResult> GetLookupAsync(string search)
+        public async Task<IActionResult> GetLookupAsync(string search, CancellationToken cancellationToken = default)
         {
-            var studyParticipants = await _studyParticipantService.GetLookupAsync(search);
+            var studyParticipants = await _studyParticipantService.GetLookupAsync(search, cancellationToken: cancellationToken);
             return new JsonResult(studyParticipants);
         }
 

@@ -94,65 +94,76 @@ namespace Sepes.Infrastructure.Service.Azure
 
         protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                string token = null;
 
+            string token = null;
+
+            if (needsAuth)
+            {
+                token = await _tokenAcquisition.GetAccessTokenForAppAsync("https://management.azure.com/.default");
+            }
+
+            using (var apiRequestClient = new HttpClient())
+            {
                 if (needsAuth)
-                {                   
-                    token = await _tokenAcquisition.GetAccessTokenForAppAsync("https://management.azure.com/.default");
+                {
+                    apiRequestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 }
 
-                using (var apiRequestClient = new HttpClient())
+                HttpResponseMessage responseMessage = null;
+
+                if (method == HttpMethod.Get)
                 {
-                    if (needsAuth)
-                    {
-                        apiRequestClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                    }
+                    responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+                }
+                else if (method == HttpMethod.Post)
+                {
+                    responseMessage = await apiRequestClient.PostAsync(url, content, cancellationToken);
+                }
+                else if (method == HttpMethod.Put)
+                {
+                    responseMessage = await apiRequestClient.PutAsync(url, content, cancellationToken);
+                }
+                else if (method == HttpMethod.Patch)
+                {
+                    responseMessage = await apiRequestClient.PatchAsync(url, content, cancellationToken);
+                }
+                else if (method == HttpMethod.Delete)
+                {
+                    responseMessage = await apiRequestClient.DeleteAsync(url, cancellationToken);
+                }
 
-                    HttpResponseMessage responseMessage = null;
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var responseString = await responseMessage.Content.ReadAsStringAsync();
+                    var deserializedResponse = JsonConvert.DeserializeObject<T>(await responseMessage.Content.ReadAsStringAsync());
+                    return deserializedResponse;
+                }
+                else
+                {
+                    var errorMessageBuilder = new StringBuilder();
+                    errorMessageBuilder.Append($"{this.GetType()}: Response for {method} against the url {url} failed with status code {responseMessage.StatusCode}");
 
-                    if (method == HttpMethod.Get)
-                    {
-                        responseMessage = await apiRequestClient.GetAsync(url, cancellationToken);
+                    if (String.IsNullOrWhiteSpace(responseMessage.ReasonPhrase) == false) {
+                        errorMessageBuilder.Append($", reason: {responseMessage.ReasonPhrase}");
                     }
-                    else if(method == HttpMethod.Post)
-                    {
-                        responseMessage = await apiRequestClient.PostAsync(url, content, cancellationToken);
-                    }
-                    else if (method == HttpMethod.Put)
-                    {
-                        responseMessage = await apiRequestClient.PutAsync(url, content, cancellationToken);
-                    }
-                    else if (method == HttpMethod.Patch)
-                    {
-                        responseMessage = await apiRequestClient.PatchAsync(url, content, cancellationToken);
-                    }
-                    else if (method == HttpMethod.Delete)
-                    {
-                        responseMessage = await apiRequestClient.DeleteAsync(url, cancellationToken);
-                    }                   
 
                     var responseString = await responseMessage.Content.ReadAsStringAsync();
 
-                    var deserializedResponse = JsonConvert.DeserializeObject<T>(await responseMessage.Content.ReadAsStringAsync());
-
-                    return deserializedResponse;
+                    if (String.IsNullOrWhiteSpace(responseString) == false)
+                    {
+                        errorMessageBuilder.Append($", response content: {responseString}");
+                    }
+                   
+                    throw new Exception(errorMessageBuilder.ToString());
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{this.GetType()}: Response for {method} against the url {url} failed", ex);
             }
         }
     }
 
-
-
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
     class TokenResponse
     {
-       
+
         public string access_token { get; set; }
 
         public string token_type { get; set; }

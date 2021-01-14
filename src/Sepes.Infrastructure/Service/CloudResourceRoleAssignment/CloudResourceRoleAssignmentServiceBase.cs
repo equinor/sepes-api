@@ -9,6 +9,8 @@ using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
 using System.Threading.Tasks;
 using Sepes.Infrastructure;
+using System.Collections.Generic;
+using System;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -46,6 +48,13 @@ namespace Sepes.Infrastructure.Service
 
         }
 
+        protected async Task<List<CloudResourceRoleAssignment>> GetByResourceAndPrincipalAsync(int resourceId, string principalId)
+        {
+            return await GetBasicQueryable()
+                     .Where(ra => ra.CloudResourceId == resourceId && ra.UserOjectId == principalId).ToListAsync();
+
+        }
+
         protected async Task<CloudResourceRoleAssignment> GetOrThrowInternalAsync(int id)
         {
             var entityFromDb = await GetInternalAsync(id);
@@ -66,8 +75,41 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
+        public async Task<CloudResourceRoleAssignmentDto> AddInternalAsync(int resourceDbId, string principalId, string roleId, bool failOnDuplicate = false)
+        {
+            var existing = await GetBySignature(resourceDbId, principalId, roleId);
+
+            if (existing != null)
+            {
+                if (failOnDuplicate)
+                {
+                    throw new Exception($"Role assignment allready exists for resource {resourceDbId}, principal: {principalId}, roleDefinitionId: {roleId}");
+                }
+                else
+                {
+                    return MapEntityToDto(existing);
+                }
+            }
+
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var newAssignment = new CloudResourceRoleAssignment()
+            {
+                CloudResourceId = resourceDbId,
+                UserOjectId = principalId,
+                RoleId = roleId,
+                CreatedBy = currentUser.UserName,
+                UpdatedBy = currentUser.UserName,
+            };
+            var resourceFromDb = await _db.CloudResources.Include(r => r.RoleAssignments).Where(r => r.Id == resourceDbId).FirstOrDefaultAsync();
+            resourceFromDb.RoleAssignments.Add(newAssignment);
+
+            await _db.SaveChangesAsync();
+
+            return MapEntityToDto(newAssignment);
+        }
+
         protected CloudResourceRoleAssignmentDto MapEntityToDto(CloudResourceRoleAssignment entity) => _mapper.Map<CloudResourceRoleAssignmentDto>(entity);
-               
-       
+                    
     }
 }
