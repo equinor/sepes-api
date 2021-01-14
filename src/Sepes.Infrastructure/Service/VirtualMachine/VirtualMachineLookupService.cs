@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Sepes.Infrastructure.Constants;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -118,6 +119,39 @@ namespace Sepes.Infrastructure.Service
             };
 
             return result;
-        }      
+        }
+
+        public Boolean CheckIfUsernameIsValidOrThrow(string userName)
+        {
+            var errorString = "";
+            var listOfInvalidNames = "";
+            if (userName.EndsWith("."))
+            {
+                errorString += "Name can not end with a period(.)";
+            }
+            foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
+            {
+                if (userName.Equals(invalidName))
+                {
+                    errorString += $"The name: '{userName}' is not valid.";
+                    foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
+                    {
+                        listOfInvalidNames += name;
+                        if (name != AzureVmInvalidUsernames.invalidUsernames.Last())
+                        {
+                            listOfInvalidNames += ", ";
+                        }
+                    }
+                    errorString += $" The following names are not allowed: {listOfInvalidNames}";
+                    break;
+                }
+            }
+
+            if (!String.IsNullOrWhiteSpace(errorString))
+            {
+                throw new Exception($"{errorString}.");
+            }
+            return true;
+        }
     }
 }

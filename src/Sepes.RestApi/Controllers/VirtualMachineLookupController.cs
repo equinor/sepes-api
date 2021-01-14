@@ -39,6 +39,14 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
+        [HttpGet("validateUsername/{userName}")]
+        public IActionResult validateUsername(string userName)
+        {
+            _vmLookupService.CheckIfUsernameIsValidOrThrow(userName);
+            return new OkResult();
+
+        }
+
         [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
         public string CalculateName(string studyName, string sandboxName, string userSuffix)
         {
