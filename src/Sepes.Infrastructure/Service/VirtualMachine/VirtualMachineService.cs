@@ -17,6 +17,7 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -73,6 +74,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
+            ValidateVmPasswordOrThrow(userInput.Password);
+ 
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
@@ -220,8 +223,45 @@ namespace Sepes.Infrastructure.Service
             return vmResource;
         }
 
+        public void ValidateVmPasswordOrThrow(string password)
+        {
+            var errorString = "";
+            //Atleast one upper case
+            var upper = new Regex(@"(?=.*[A - Z])");
+            //Atleast one number
+            var number = new Regex(@".*[0-9].*");
+            //Atleast one special character
+            var special = new Regex(@"(?=.*[!@#$%^&*])");
+            //Between 12-123 long
+            var limit = new Regex(@"(?=.{12,123})");
+            if (!upper.IsMatch(password))
+            {
+                errorString += "Missing one uppercase character. ";
+            }
+            if (!number.IsMatch(password))
+            {
+                errorString += "Missing one number. ";
+            }
+            if (!special.IsMatch(password))
+            {
+                errorString += "Missing one special character. ";
+            }
+            if (!limit.IsMatch(password))
+            {
+                errorString += "Outside the limit (12-123). ";
+
+            }
+
+            if (!String.IsNullOrWhiteSpace(errorString))
+            {
+                throw new Exception($"Password is missing following requirements: {errorString}");
+            }
+
+        }
+
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
+
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
             var availableOs = await _vmLookupService.AvailableOperatingSystems(region);
