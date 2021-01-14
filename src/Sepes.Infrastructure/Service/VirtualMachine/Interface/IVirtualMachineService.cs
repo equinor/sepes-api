@@ -19,6 +19,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmExternalLink> GetExternalLink(int vmId);
 
-        string ValidateVmPassword(string password);
+        void ValidateVmPasswordOrThrow(string password);
     }
 }

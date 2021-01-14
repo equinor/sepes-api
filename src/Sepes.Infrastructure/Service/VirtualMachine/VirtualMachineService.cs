@@ -74,11 +74,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-            var anyValidationErrorsInPassword = ValidateVmPassword(userInput.Password);
-            if (!String.IsNullOrWhiteSpace(anyValidationErrorsInPassword))
-            {
-                throw new Exception($"{anyValidationErrorsInPassword}");
-            }
+            ValidateVmPasswordOrThrow(userInput.Password);
+ 
             _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
             var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
@@ -226,7 +223,7 @@ namespace Sepes.Infrastructure.Service
             return vmResource;
         }
 
-        public string ValidateVmPassword(string password)
+        public void ValidateVmPasswordOrThrow(string password)
         {
             var errorString = "";
             //Atleast one upper case
@@ -254,8 +251,12 @@ namespace Sepes.Infrastructure.Service
                 errorString += "Outside the limit (12-123). ";
 
             }
-            return errorString;
-            //return upper.IsMatch(password) && number.IsMatch(password) && special.IsMatch(password) && limit.IsMatch(password);
+
+            if (!String.IsNullOrWhiteSpace(errorString))
+            {
+                throw new Exception($"Password is missing following requirements: {errorString}");
+            }
+
         }
 
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
