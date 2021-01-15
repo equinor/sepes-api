@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {       
         string CalculateName(string studyName, string sandboxName, string userPrefix);
 
-        Boolean CheckIfUsernameIsValidOrThrow(string userName);
+        VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(string userName);
 
         Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default);
 

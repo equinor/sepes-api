@@ -39,11 +39,11 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
-        [HttpGet("validateUsername/{userName}")]
-        public IActionResult validateUsername(string userName)
+        [HttpPost("validateUsername")]
+        public IActionResult validateUsername(VmUsernameDto input)
         {
-            _vmLookupService.CheckIfUsernameIsValidOrThrow(userName);
-            return new OkResult();
+            var usernameValidationResult = _vmLookupService.CheckIfUsernameIsValidOrThrow(input.username);
+            return new JsonResult(usernameValidationResult);
 
         }
 

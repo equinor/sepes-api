@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using Sepes.Infrastructure.Constants;
+using System.Text;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -121,37 +122,46 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public Boolean CheckIfUsernameIsValidOrThrow(string userName)
+        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(string userName)
         {
-            var errorString = "";
-            var listOfInvalidNames = "";
+            StringBuilder errorString = new StringBuilder("");
+            StringBuilder listOfInvalidNames = new StringBuilder("");
+            VmUsernameValidateDto usernameValidation = new VmUsernameValidateDto { errorMessage = "", isValid = true };
+            //var listOfInvalidNames = "";
             if (userName.EndsWith("."))
             {
-                errorString += "Name can not end with a period(.)";
+                usernameValidation.isValid = false;
+                errorString.Append("Name can not end with a period(.)");
+                //errorString += "Name can not end with a period(.)";
             }
             foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
             {
                 if (userName.Equals(invalidName))
                 {
-                    errorString += $"The name: '{userName}' is not valid.";
+                    usernameValidation.isValid = false;
+                    errorString.Append($"The name: '{userName}' is not valid.");
+                    //errorString += $"The name: '{userName}' is not valid.";
                     foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
                     {
-                        listOfInvalidNames += name;
+                        listOfInvalidNames.Append(name);
                         if (name != AzureVmInvalidUsernames.invalidUsernames.Last())
                         {
-                            listOfInvalidNames += ", ";
+                            listOfInvalidNames.Append(", ");
                         }
                     }
-                    errorString += $" The following names are not allowed: {listOfInvalidNames}";
+                    errorString.Append($" The following names are not allowed: {listOfInvalidNames}");
+                    //errorString += $" The following names are not allowed: {listOfInvalidNames}";
                     break;
                 }
             }
-
-            if (!String.IsNullOrWhiteSpace(errorString))
+            usernameValidation.errorMessage = errorString.ToString();
+            /*
+            if (!String.IsNullOrWhiteSpace(errorString.ToString()))
             {
-                throw new Exception($"{errorString}.");
+                throw new Exception($"{errorString.ToString()}.");
             }
-            return true;
+            */
+            return usernameValidation;
         }
     }
 }
