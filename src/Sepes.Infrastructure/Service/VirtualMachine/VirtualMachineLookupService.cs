@@ -127,12 +127,10 @@ namespace Sepes.Infrastructure.Service
             StringBuilder errorString = new StringBuilder("");
             StringBuilder listOfInvalidNames = new StringBuilder("");
             VmUsernameValidateDto usernameValidation = new VmUsernameValidateDto { errorMessage = "", isValid = true };
-            //var listOfInvalidNames = "";
             if (userName.EndsWith("."))
             {
                 usernameValidation.isValid = false;
                 errorString.Append("Name can not end with a period(.)");
-                //errorString += "Name can not end with a period(.)";
             }
             foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
             {
@@ -140,7 +138,6 @@ namespace Sepes.Infrastructure.Service
                 {
                     usernameValidation.isValid = false;
                     errorString.Append($"The name: '{userName}' is not valid.");
-                    //errorString += $"The name: '{userName}' is not valid.";
                     foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
                     {
                         listOfInvalidNames.Append(name);
@@ -150,17 +147,10 @@ namespace Sepes.Infrastructure.Service
                         }
                     }
                     errorString.Append($" The following names are not allowed: {listOfInvalidNames}");
-                    //errorString += $" The following names are not allowed: {listOfInvalidNames}";
                     break;
                 }
             }
             usernameValidation.errorMessage = errorString.ToString();
-            /*
-            if (!String.IsNullOrWhiteSpace(errorString.ToString()))
-            {
-                throw new Exception($"{errorString.ToString()}.");
-            }
-            */
             return usernameValidation;
         }
     }
