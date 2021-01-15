@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 

@@ -149,7 +149,9 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
-            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
+            services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
+            services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
+            services.AddTransient<IStudyParticipantRemoveService, StudyParticipantRemoveService>();
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();

@@ -16,11 +16,18 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyParticipantController : ControllerBase
     {
-        readonly IStudyParticipantService _studyParticipantService;
+        readonly IStudyParticipantLookupService _studyParticipantLookupService;
+        readonly IStudyParticipantCreateService _studyParticipantCreateService;
+        readonly IStudyParticipantRemoveService _studyParticipantRemoveService;
 
-        public StudyParticipantController(IStudyParticipantService studyParticipantService)
+        public StudyParticipantController(
+            IStudyParticipantLookupService studyParticipantLookupService,
+            IStudyParticipantCreateService studyParticipantCreateService,
+            IStudyParticipantRemoveService studyParticipantRemoveService)
         {
-            _studyParticipantService = studyParticipantService;
+            _studyParticipantLookupService = studyParticipantLookupService;
+            _studyParticipantCreateService = studyParticipantCreateService;
+            _studyParticipantRemoveService = studyParticipantRemoveService;
         }
 
         //Get list of lookup items
@@ -28,21 +35,21 @@ namespace Sepes.RestApi.Controller
         [AuthorizeForScopes(Scopes = new[] { "User.Read.All" })]
         public async Task<IActionResult> GetLookupAsync(string search, CancellationToken cancellationToken = default)
         {
-            var studyParticipants = await _studyParticipantService.GetLookupAsync(search, cancellationToken: cancellationToken);
+            var studyParticipants = await _studyParticipantLookupService.GetLookupAsync(search, cancellationToken: cancellationToken);
             return new JsonResult(studyParticipants);
         }
 
         [HttpPut("studies/{studyId}/participants/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            var addedParticipantDto = await _studyParticipantService.AddAsync(studyId, user, role);
+            var addedParticipantDto = await _studyParticipantCreateService.AddAsync(studyId, user, role);
             return new JsonResult(addedParticipantDto);
         }    
 
         [HttpDelete("studies/{studyId}/participants/{userId}/{roleName}")]
         public async Task<IActionResult> RemoveParticipantAsync(int studyId, int userId, string roleName)
         {
-            await _studyParticipantService.RemoveAsync(studyId, userId, roleName);
+            await _studyParticipantRemoveService.RemoveAsync(studyId, userId, roleName);
             return new NoContentResult();
         }
     }

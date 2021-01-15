@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class ThreadSafeUserCreatorUtil
     {
-        static SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+        static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public static async Task<User> EnsureDbUserExistsAsync(SepesDbContext dbContext,
             ICurrentUserService currentUserService, IAzureUserService azureUserService,

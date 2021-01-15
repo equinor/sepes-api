@@ -89,7 +89,6 @@ namespace Sepes.CloudResourceWorker
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
-            builder.Services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
