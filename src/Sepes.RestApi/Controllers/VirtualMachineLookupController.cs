@@ -47,10 +47,10 @@ namespace Sepes.RestApi.Controllers
 
         }
 
-        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
-        public string CalculateName(string studyName, string sandboxName, string userSuffix)
+        [HttpPost("calculateName")]
+        public string CalculateName(VmCalculateNameDto input)
         {
-            return _vmLookupService.CalculateName(studyName, sandboxName, userSuffix);
+            return _vmLookupService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
         }
 
         [HttpGet("{sandboxId}/sizes")]
