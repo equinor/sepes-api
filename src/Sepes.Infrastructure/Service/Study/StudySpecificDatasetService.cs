@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
 
-        public async Task<StudyDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp ,CancellationToken cancellationToken = default)
+        public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp ,CancellationToken cancellationToken = default)
         {            
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
 
@@ -67,14 +67,14 @@ namespace Sepes.Infrastructure.Service
                 throw;
             }           
 
-            var datasetDto = _mapper.Map<StudyDatasetDto>(dataset);
+            var datasetDto = _mapper.Map<DatasetDto>(dataset);
 
             await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }       
 
-        public async Task<StudyDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
+        public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DataSetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
 
@@ -88,7 +88,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            var datasetDto = _mapper.Map<StudyDatasetDto>(datasetFromDb);
+            var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
             await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
