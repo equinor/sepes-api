@@ -38,6 +38,7 @@ namespace Sepes.Infrastructure.Model
 
     public class StringKeyBaseModel : IHasCreatedFields
     {
+        [MaxLength(64)]
         public string Key { get; set; }
 
         public DateTime Created { get; set; }

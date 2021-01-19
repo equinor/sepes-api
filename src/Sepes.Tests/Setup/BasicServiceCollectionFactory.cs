@@ -41,7 +41,7 @@ namespace Sepes.Tests.Setup
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<CloudResourceOperationReadService>();            
             services.AddTransient<IRequestIdService, HasRequestIdMock>();
-            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
+            //services.AddTransient<IStudyParticipantCreateService, StudyParticipantLookupService>();
 
             //Sepes Services
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();

@@ -124,7 +124,6 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<CloudResourceOperation, CloudResourceOperationDto>();
             CreateMap<CloudResourceOperationDto, CloudResourceOperation>();
 
-
             //USERS/PARTICIPANTS
 
             CreateMap<User, UserDto>().ReverseMap();

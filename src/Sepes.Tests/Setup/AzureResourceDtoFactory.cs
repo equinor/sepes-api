@@ -16,13 +16,13 @@ namespace Sepes.Tests.Setup
             return result;
         }
 
-        public static AzureRoleAssignmentResponseDto CreateAzureRoleAssignmentResponseDto()
-        {
-            var result = new AzureRoleAssignmentResponseDto();
-            result.id = "id";
-            result.name = "name";
-            result.type = "type";         
-            return result;
-        }
+        //public static AzureRoleAssignmentResponseDto CreateAzureRoleAssignmentResponseDto()
+        //{
+        //    var result = new AzureRoleAssignmentResponseDto();
+        //    result.id = "id";
+        //    result.name = "name";
+        //    result.type = "type";         
+        //    return result;
+        //}
     }
 }

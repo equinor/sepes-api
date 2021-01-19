@@ -4,6 +4,7 @@ using Moq;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
@@ -11,6 +12,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Constants;
 using Sepes.Tests.Setup;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -84,16 +86,19 @@ namespace Sepes.Tests.Services.DomainServices
             var userServiceMock = GetUserServiceMock(UserConstants.COMMON_CUR_USER_DB_ID, UserConstants.COMMON_CUR_USER_OBJECTID);
             userServiceMock.Setup(service => service.GetUserByIdAsync(UserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
 
-            if (source == ParticipantSource.Db)
-            {
-                var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
-            }
-            else
-            {
-                var studyParticipantService = new StudyParticipantService(db, mapper, userServiceMock.Object, adUserServiceMock.Object);
-                return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
-            }
+            //Queue service mock
+
+            //Operations service mock 
+            var queueServiceMock = new Mock<IProvisioningQueueService>();
+            queueServiceMock.Setup(service => service.SendMessageAsync(It.IsAny<ProvisioningQueueParentDto>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>())).ReturnsAsync(new ProvisioningQueueParentDto());
+
+            var operationCreateServiceMock = new Mock<ICloudResourceOperationCreateService>();
+            //operationCreateServiceMock.Setup(service => service.C
+
+            var operationUpdateServiceMock = new Mock<ICloudResourceOperationUpdateService>();
+
+            var studyParticipantService = new StudyParticipantCreateService(db, mapper, userServiceMock.Object, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
+            return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 
         Mock<IUserService> GetUserServiceMock(int id, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID)

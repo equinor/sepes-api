@@ -82,26 +82,31 @@ namespace Sepes.Infrastructure.Util
             return $"api/resources/{resourceId}/retry";
         }
 
-        public static string CreateResourceCostLink(IConfiguration config, Sandbox resource)
+        public static string CreateResourceCostLink(IConfiguration config, Sandbox sandbox)
         {
-            var ResourceGroupId = "";
-            foreach (var i in resource.Resources)
-            {
-                ResourceGroupId = i.ResourceGroupId;
-            }
-            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
+            var resourceGroupEntry = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);
 
-            if (String.IsNullOrWhiteSpace(ResourceGroupId))
+            if (resourceGroupEntry == null)
+
             {
                 return null;
             }
 
-            if (ResourceGroupId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
+            var resourceGroupId = resourceGroupEntry.ResourceId;
+
+            if (String.IsNullOrWhiteSpace(resourceGroupId))
+            {
+                return null;
+            }
+            
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);           
+
+            if (resourceGroupId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
             {
                 return null;
             }
 
-            return CreateResourceCostLink(domain, ResourceGroupId);
+            return CreateResourceCostLink(domain, resourceGroupId);
         }
 
         public static string CreateResourceCostLink(string domain, string resourceId)

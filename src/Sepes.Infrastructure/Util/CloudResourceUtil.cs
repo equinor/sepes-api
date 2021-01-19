@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,33 @@ namespace Sepes.Infrastructure.Util
             }
 
             return null;
+        }
+
+        public static CloudResource GetSandboxResourceGroupEntry(List<CloudResource> resources)
+        {
+            if (resources == null)
+            {
+                throw new ArgumentNullException("resources");
+            }
+
+            foreach (var curResource in resources)
+            {
+                if (curResource.ResourceType == AzureResourceType.ResourceGroup && curResource.SandboxControlled)
+                {
+                    return curResource;
+                }
+            }
+
+            return null;
+        }
+
+        public static List<CloudResource> GetResourceGroups(Study study)
+        {
+            return study.Sandboxes
+                .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
+                .Select(sb => GetSandboxResourceGroupEntry(sb.Resources))
+                .Where(r => !r.Deleted.HasValue)
+                .ToList();
         }
 
         public static List<CloudResourceDto> GetAllResourcesByType(List<CloudResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)

@@ -12,8 +12,7 @@ namespace Sepes.Infrastructure.Util
             CloudResourceOperation baseStatusOnThisOperation = null;
 
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
-            {
-
+            {               
                 if (curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                 {
                     if (baseStatusOnThisOperation == null)
@@ -27,6 +26,10 @@ namespace Sepes.Infrastructure.Util
                 {
                     baseStatusOnThisOperation = curOperation;
                     break;
+                }
+                else if (curOperation.Status == CloudResourceOperationState.ABORTED)
+                {
+                    continue;
                 }
                 else if (curOperation.OperationType == CloudResourceOperationType.DELETE)
                 {
@@ -44,8 +47,7 @@ namespace Sepes.Infrastructure.Util
 
 
         public static string ResourceStatus(CloudResource resource)
-        {          
-
+        { 
             if (resource.Operations == null || (resource.Operations != null && resource.Operations.Count == 0))
             {
                 return "No operations found";
@@ -75,7 +77,7 @@ namespace Sepes.Infrastructure.Util
                             return CloudResourceStatus.OK;
                         }
                     }
-                }
+                }               
             }
 
             return "n/a";     
@@ -89,7 +91,7 @@ namespace Sepes.Infrastructure.Util
             {
                 resourceBaseStatus = CloudResourceStatus.CREATING;
             }
-            else if (operation.OperationType == CloudResourceOperationType.UPDATE)
+            else if (operation.OperationType == CloudResourceOperationType.UPDATE || operation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
             {
                 resourceBaseStatus = CloudResourceStatus.UPDATING;
             }

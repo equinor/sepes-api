@@ -24,37 +24,35 @@ namespace Sepes.Infrastructure.Service
 
         public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IRequestIdService requestIdService)
          : base(db, config, mapper, logger, userService)
-        {           
-            _requestIdService = requestIdService;    
-
-        }
-
-        public async Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto)
         {
-            _logger.LogInformation($"Creating Resource Group database entry for sandbox: {dto.SandboxId}");
+            _requestIdService = requestIdService;
 
-            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(dto.StudyName, dto.SandboxName);
-            var resourceGroupEntry = await AddInternal(dto.SandboxId, "not created", resourceGroupName, AzureResourceType.ResourceGroup, dto.Region.Name, resourceGroupName, dto.Tags, batchId: dto.BatchId);
-            dto.ResourceGroup = MapEntityToDto(resourceGroupEntry);
-            //var resourceCreateOperation = resourceEntity.Operations.FirstOrDefault();
-            //await _sandboxResourceOperationService.SetInProgressAsync(resourceCreateOperation.Id, _requestIdService.GetRequestId(), CloudResourceOperationState.IN_PROGRESS);
-
-            //dto.ResourceGroup = MapEntityToDto(resourceEntity);
-
-            //var azureResourceGroup = await _resourceGroupService.Create(resourceEntity.ResourceName, dto.Region, dto.Tags);
-            //ApplyPropertiesFromResourceGroup(azureResourceGroup, dto.ResourceGroup);
-
-            //_ = await UpdateResourceGroup(dto.ResourceGroup.Id, dto.ResourceGroup);
-            //_ = await _sandboxResourceOperationService.UpdateStatusAsync(dto.ResourceGroup.Operations.FirstOrDefault().Id, CloudResourceOperationState.DONE_SUCCESSFUL);
         }
 
-        public async Task<CloudResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString)
+        public async Task<CloudResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int operationDependsOn = 0)
+        {
+            _logger.LogInformation($"Creating Resource entry for sandbox: {dto.SandboxId}, resource type: {type}");
+
+            var newResource = await AddInternal(dto.SandboxId, type, dto.Region.Name, dto.ResourceGroupName, resourceName, dto.Tags, dto.ResourceGroup != null ? dto.ResourceGroup.Id : 0, sandboxControlled: sandboxControlled, operationDependsOn: operationDependsOn, configString: configString, batchId: dto.BatchId);
+
+            var mappedToDto = MapEntityToDto(newResource);
+
+            return mappedToDto;
+        }
+
+        public async Task<CloudResourceDto> CreateSandboxResourceGroupEntryAsync(SandboxResourceCreationAndSchedulingDto dto, string resourceGroupName)
+        {
+            var resourceGroupEntry = await AddInternal(dto.SandboxId, AzureResourceType.ResourceGroup, dto.Region.Name, resourceGroupName, resourceGroupName, dto.Tags, batchId: dto.BatchId);
+            return MapEntityToDto(resourceGroupEntry);
+        }
+
+        public async Task<CloudResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int operationDependsOn, string configString)
         {
             try
             {
                 var resourceEntity = await AddInternal(
-                    sandboxId,
-                    resourceGroup.ResourceGroupId, resourceGroup.ResourceGroupName, AzureResourceType.VirtualMachine, region.Name, vmName, tags, false, dependentOn: dependsOn, configString: configString);
+                    sandboxId, AzureResourceType.VirtualMachine, region.Name, resourceGroup.ResourceGroupName, vmName, tags,
+                    resourceGroup.Id, false, operationDependsOn: operationDependsOn, configString: configString);
 
                 return MapEntityToDto(resourceEntity);
             }
@@ -64,47 +62,39 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<CloudResourceDto> Create(SandboxResourceCreationAndSchedulingDto dto, string type, string resourceName, bool sandboxControlled = true, string configString = null, int dependsOn = 0)
-        {
-            var newResource = await AddInternal(dto.SandboxId, dto.ResourceGroupId, dto.ResourceGroupName, type, dto.Region.Name, resourceName, dto.Tags, sandboxControlled: sandboxControlled, dependentOn: dependsOn, configString: configString, batchId: dto.BatchId);
-
-            var mappedToDto = MapEntityToDto(newResource);
-
-            return mappedToDto;
-        }
-
         public async Task ValidateNameThrowIfInvalid(string resourceName)
         {
-            if(await _db.CloudResources.Where(r=> r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
+            if (await _db.CloudResources.Where(r => r.ResourceName == resourceName && !r.Deleted.HasValue).AnyAsync())
             {
                 throw new Exception($"Resource with name {resourceName} allready exists!");
             }
         }
 
-        async Task<CloudResource> AddInternal(int sandboxId, string resourceGroupId, string resourceGroupName, string type, string region, string resourceName, Dictionary<string, string> tags, bool sandboxControlled = true, int dependentOn = 0, string configString = null, string batchId = null)
+        async Task<CloudResource> AddInternal(int sandboxId, string type, string region, string resourceGroupName, string resourceName, Dictionary<string, string> tags, int? parentResourceId = default, bool sandboxControlled = true, int? operationDependsOn = default, string configString = null, string batchId = null)
         {
-           await ValidateNameThrowIfInvalid(resourceName);
-
-            var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
-
-            var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
-
-            var currentUser = await _userService.GetCurrentUserAsync();
-
-            var newResource = new CloudResource()
+            try
             {
-                ResourceGroupId = resourceGroupId,
-                ResourceGroupName = resourceGroupName,
-                ResourceType = type,
-                ResourceKey = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
-                ResourceName = resourceName,
-                ResourceId = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
-                SandboxControlled = sandboxControlled,
-                Region = region,
-                Tags = tagsString,
-                ConfigString = configString,
+                await ValidateNameThrowIfInvalid(resourceName);
 
-                Operations = new List<CloudResourceOperation> {
+                var sandboxFromDb = await GetSandboxOrThrowAsync(sandboxId);
+
+                var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
+
+                var currentUser = await _userService.GetCurrentUserAsync();
+
+                var newResource = new CloudResource()
+                {
+                    ResourceGroupName = resourceGroupName,
+                    ResourceType = type,
+                    ResourceKey = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
+                    ResourceName = resourceName,
+                    ResourceId = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME,
+                    SandboxControlled = sandboxControlled,
+                    Region = region,
+                    Tags = tagsString,
+                    ConfigString = configString,
+                    ParentResourceId = parentResourceId != 0 ? parentResourceId : default(int?),
+                    Operations = new List<CloudResourceOperation> {
                     new CloudResourceOperation()
                     {
                     Description = AzureResourceUtil.CreateDescriptionForResourceOperation(type, CloudResourceOperationType.CREATE, sandboxId),
@@ -112,19 +102,26 @@ namespace Sepes.Infrastructure.Service
                     OperationType = CloudResourceOperationType.CREATE,
                     CreatedBy = currentUser.UserName,
                     CreatedBySessionId = _requestIdService.GetRequestId(),
-                    DependsOnOperationId = dependentOn != 0 ? dependentOn: default(int?),
+                    DependsOnOperationId = operationDependsOn != 0 ? operationDependsOn: default(int?),
                     MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
                     }
                 },
-                CreatedBy = currentUser.UserName,
-                Created = DateTime.UtcNow
-            };
+                    CreatedBy = currentUser.UserName,
+                    Created = DateTime.UtcNow
+                };
 
-            sandboxFromDb.Resources.Add(newResource);
+                sandboxFromDb.Resources.Add(newResource);
 
-            await _db.SaveChangesAsync();
+                await _db.SaveChangesAsync();
 
-            return newResource;
+                return newResource;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
         }
     }
 }

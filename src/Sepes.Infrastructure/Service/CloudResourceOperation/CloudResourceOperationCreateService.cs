@@ -13,14 +13,12 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationCreateService : CloudResourceOperationServiceBase, ICloudResourceOperationCreateService
-    {
-        readonly IUserService _userService;
+    {        
         readonly IRequestIdService _requestIdService;
 
         public CloudResourceOperationCreateService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
-            : base(db, mapper)
-        {
-            _userService = userService;
+            : base(db, mapper, userService)
+        {          
             _requestIdService = requestIdService;
         }
 
@@ -34,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOperationDtoInternal(newOperation.Id);
         }
 
-        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, int dependsOn = 0, string batchId = null)
+        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string operationType = CloudResourceOperationType.UPDATE, int dependsOn = 0, string batchId = null, string desiredState = null)
         {
             var sandboxResourceFromDb = await GetResourceOrThrowAsync(sandboxResourceId);
 
@@ -42,29 +40,53 @@ namespace Sepes.Infrastructure.Service
 
             if (dependsOn == 0)
             {
-                var mustWaitFor = await CheckAnyIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);  
-                
-                if(mustWaitFor != null)
+                var mustWaitFor = await CheckAnyIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);
+
+                if (mustWaitFor != null)
                 {
                     dependsOn = mustWaitFor.Id;
                 }
             }
 
-            var newOperation = new CloudResourceOperation()
-            {
-                Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, CloudResourceOperationType.UPDATE, sandboxResourceId),
-                BatchId = batchId,
-                OperationType = CloudResourceOperationType.UPDATE,
-                Status = CloudResourceOperationState.NEW,
-                CreatedBy = currentUser.UserName,
-                CreatedBySessionId = _requestIdService.GetRequestId(),
-                DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?),
-                MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
-            };
+            var newOperation = await CreateUpdateOperationAsync(
+                AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
+               operationType,
+               dependsOn,
+               batchId,
+               desiredState);
 
             sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
             return await GetOperationDtoInternal(newOperation.Id);
+        }
+
+        async Task<CloudResourceOperation> CreateUpdateOperationAsync(string description, string operationType, int dependsOn = 0, string batchId = null, string desiredState = null)
+        {
+            var updateOperation = await CreateBasicOperationAsync();
+
+            updateOperation.Description = description;
+            updateOperation.OperationType = operationType;
+            updateOperation.BatchId = batchId;
+            updateOperation.DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?);
+            updateOperation.DesiredState = desiredState;
+
+            return updateOperation;
+        }
+
+        async Task<CloudResourceOperation> CreateBasicOperationAsync()
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var newOperation = new CloudResourceOperation()
+            {
+                Status = CloudResourceOperationState.NEW,
+                CreatedBy = currentUser.UserName,
+                CreatedBySessionId = _requestIdService.GetRequestId(),
+                MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
+            };
+
+            return newOperation;
+
         }
 
         async Task<CloudResourceOperation> CheckAnyIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
@@ -84,7 +106,7 @@ namespace Sepes.Infrastructure.Service
                     return null;
                 }
 
-                if (curOperation.OperationType == CloudResourceOperationType.UPDATE)
+                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
                 {
                     if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
                     {
@@ -106,7 +128,7 @@ namespace Sepes.Infrastructure.Service
                 if (curOperation.OperationType == CloudResourceOperationType.CREATE)
                 {
                     if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
-                    {                   
+                    {
                         return curOperation;
                     }
                 }

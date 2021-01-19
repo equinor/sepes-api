@@ -12,9 +12,13 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<CloudResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null);
 
+        Task<CloudResourceOperationDto> AbortAndAllowDependentOperationsToRun(int id, string errorMessage = null);
+
         Task<CloudResourceOperationDto> TouchAsync(int id);
 
-        Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId);          
+        Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId);
+
+        Task<CloudResourceOperationDto> SetDesiredStateAsync(int id, string desiredState);
 
         Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperationsAsync(int resourceId);
         Task<CloudResourceOperationDto> SetQueueInformationAsync(int id, string messageId, string popReceipt, DateTimeOffset nextVisibleOn);

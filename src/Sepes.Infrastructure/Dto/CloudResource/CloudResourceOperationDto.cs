@@ -16,6 +16,8 @@ namespace Sepes.Infrastructure.Dto
 
         public string BatchId { get; set; }
 
+        public string DesiredState { get; set; }
+
         public string CreatedBySessionId { get; set; }
 
         public string CarriedOutBySessionId { get; set; }

@@ -14,6 +14,8 @@ using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 
 [assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
 
@@ -37,13 +39,13 @@ namespace Sepes.CloudResourceWorker
         public override void Configure(IFunctionsHostBuilder builder)
         {
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
-            var aiOptions= new ApplicationInsightsServiceOptions
-             {
-                 // Disables adaptive sampling.
-                 EnableAdaptiveSampling = false,
-                 InstrumentationKey = appiKey,
-                 EnableDebugLogger = true
-             };
+            var aiOptions = new ApplicationInsightsServiceOptions
+            {
+                // Disables adaptive sampling.
+                EnableAdaptiveSampling = false,
+                InstrumentationKey = appiKey,
+                EnableDebugLogger = true
+            };
 
             builder.Services.AddApplicationInsightsTelemetry(aiOptions);
 
@@ -62,18 +64,31 @@ namespace Sepes.CloudResourceWorker
                   )
 
               );
+            // This is configuration from environment variables, settings.json etc.
+            var configuration = builder.GetContext().Configuration;
+
+            builder.Services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultScheme = "Bearer";
+                sharedOptions.DefaultChallengeScheme = "Bearer";
+            })
+                .AddMicrosoftIdentityWebApi(configuration)
+                    .EnableTokenAcquisitionToCallDownstreamApi()
+                    .AddInMemoryTokenCaches();
 
             builder.Services.AddHttpContextAccessor();
 
+
+
+
             //Plumbing
-            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
+            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
             builder.Services.AddScoped<IUserService, FunctionUserService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
-            builder.Services.AddTransient<IStudyParticipantService, StudyParticipantService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
             builder.Services.AddTransient<IStudyService, StudyService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
@@ -82,7 +97,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      
 
             //Ext System Facade Services            
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
@@ -108,6 +123,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
             builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();
+            builder.Services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+
 
         }
     }

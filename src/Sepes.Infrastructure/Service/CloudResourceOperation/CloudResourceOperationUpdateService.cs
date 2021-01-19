@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -12,29 +11,24 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationUpdateService : CloudResourceOperationServiceBase, ICloudResourceOperationUpdateService
-    {       
-        readonly IUserService _userService;
-
+    {
         public CloudResourceOperationUpdateService(SepesDbContext db, IMapper mapper, IUserService userService)
-            :base(db, mapper)
+            :base(db, mapper, userService)
         {        
-            _userService = userService;
+           
         }  
         
         public async Task<CloudResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
 
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
-            operationFromDb.Status = status;
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+            operationFromDb.Status = status;         
 
             if (updatedProvisioningState != null)
             {
                 operationFromDb.Resource.LastKnownProvisioningState = updatedProvisioningState;
                 operationFromDb.Resource.Updated = DateTime.UtcNow;
-                operationFromDb.Resource.UpdatedBy = currentUser.UserName;
+                operationFromDb.Resource.UpdatedBy = operationFromDb.UpdatedBy;
 
                 if (updatedProvisioningState == CloudResourceOperationState.DONE_SUCCESSFUL)
                 {
@@ -54,42 +48,39 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
             operationFromDb.TryCount++;
             operationFromDb.CarriedOutBySessionId = requestId;
-            operationFromDb.Status = CloudResourceOperationState.IN_PROGRESS;
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+            operationFromDb.Status = CloudResourceOperationState.IN_PROGRESS;          
             await _db.SaveChangesAsync();
 
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
+        public async Task<CloudResourceOperationDto> SetDesiredStateAsync(int id, string desiredState)
+        {
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
+            operationFromDb.DesiredState = desiredState;
+            await _db.SaveChangesAsync();
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }    
+
         public async Task<CloudResourceOperationDto> TouchAsync(int id)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);          
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);          
+           
             await _db.SaveChangesAsync();
 
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
         public async Task<CloudResourceOperationDto> SetQueueInformationAsync(int id, string messageId, string popReceipt, DateTimeOffset nextVisibleOn)
-        {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+        {           
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
 
             operationFromDb.QueueMessageId = messageId;
             operationFromDb.QueueMessagePopReceipt = popReceipt;
-            operationFromDb.QueueMessageVisibleAgainAt = nextVisibleOn.UtcDateTime;
-
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+            operationFromDb.QueueMessageVisibleAgainAt = nextVisibleOn.UtcDateTime;        
 
             await _db.SaveChangesAsync();
 
@@ -97,16 +88,12 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<CloudResourceOperationDto> ClearQueueInformationAsync(int id)
-        {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+        {           
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
 
             operationFromDb.QueueMessageId = null;
             operationFromDb.QueueMessagePopReceipt = null;
-            operationFromDb.QueueMessageVisibleAgainAt = null;
-
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+            operationFromDb.QueueMessageVisibleAgainAt = null;        
 
             await _db.SaveChangesAsync();
 
@@ -114,12 +101,8 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<CloudResourceOperationDto> ReInitiateAsync(int id)
-        {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
-
-            operationFromDb.Updated = DateTime.UtcNow;
-            operationFromDb.UpdatedBy = currentUser.UserName;
+        {           
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);         
 
             //Increase max try count, that makes this item ready for re-start
             operationFromDb.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT;
@@ -128,7 +111,24 @@ namespace Sepes.Infrastructure.Service
 
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
-      
+
+        public async Task<CloudResourceOperationDto> AbortAndAllowDependentOperationsToRun(int id, string errorMessage = null)
+        {
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
+            operationFromDb.Status = CloudResourceOperationState.ABORTED;
+
+            foreach(var curDependent in operationFromDb.DependantOnThisOperation)
+            {
+                curDependent.DependsOnOperationId = null;
+                curDependent.Updated = operationFromDb.Updated;
+                curDependent.UpdatedBy = operationFromDb.UpdatedBy;
+            }
+
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }
+
 
         public async Task<List<CloudResourceOperation>> AbortAllUnfinishedCreateOrUpdateOperationsAsync(int resourceId)
         {
@@ -151,6 +151,6 @@ namespace Sepes.Infrastructure.Service
             return unfinishedOps;
         }
 
-      
+       
     }
 }

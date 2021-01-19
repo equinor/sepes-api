@@ -5,14 +5,17 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxResourceCreationAndSchedulingDto
     {
+        public int StudyId { get; set; }
+
         public int SandboxId { get; set; }
+      
         public string StudyName { get; set; }
 
         public string SandboxName { get; set; }
 
         public string ResourceGroupId { get { return ResourceGroup.ResourceId; } }
 
-        public string ResourceGroupName { get { return ResourceGroup.ResourceGroupName; } }
+        public string ResourceGroupName { get; set; }
 
         public string BatchId { get; set; }
 

@@ -13,14 +13,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task ValidateNameThrowIfInvalid(string resourceName);
 
-
         //MORE SPECIFIC RESOURCE OPERATIONS
-
-        Task CreateSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto);
-
+        Task<CloudResourceDto> CreateSandboxResourceGroupEntryAsync(SandboxResourceCreationAndSchedulingDto dto, string resourceGroupName);
         Task<CloudResourceDto> CreateVmEntryAsync(int sandboxId, CloudResource resourceGroup, Microsoft.Azure.Management.ResourceManager.Fluent.Core.Region region, Dictionary<string, string> tags, string vmName, int dependsOn, string configString);
-
-     
 
     }
 }

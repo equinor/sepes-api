@@ -188,8 +188,8 @@ namespace Sepes.Infrastructure.Service
                 var currentUser = await _userService.GetCurrentUserAsync();
 
                 var roleAssignmentId = Guid.NewGuid().ToString();
-                var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";
-                await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
+                var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(dataset.StorageAccountId, AzureRoleIds.READ);
+                await _roleAssignmentService.AddRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
             }
             catch (Exception ex)
             {
