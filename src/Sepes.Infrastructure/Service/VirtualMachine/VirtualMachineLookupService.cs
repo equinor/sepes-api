@@ -12,6 +12,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using Sepes.Infrastructure.Constants;
+using System.Text;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -118,6 +120,38 @@ namespace Sepes.Infrastructure.Service
             };
 
             return result;
-        }      
+        }
+
+        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(string userName)
+        {
+            StringBuilder errorString = new StringBuilder("");
+            StringBuilder listOfInvalidNames = new StringBuilder("");
+            VmUsernameValidateDto usernameValidation = new VmUsernameValidateDto { errorMessage = "", isValid = true };
+            if (userName.EndsWith("."))
+            {
+                usernameValidation.isValid = false;
+                errorString.Append("Name can not end with a period(.)");
+            }
+            foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
+            {
+                if (userName.Equals(invalidName))
+                {
+                    usernameValidation.isValid = false;
+                    errorString.Append($"The name: '{userName}' is not valid.");
+                    foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
+                    {
+                        listOfInvalidNames.Append(name);
+                        if (name != AzureVmInvalidUsernames.invalidUsernames.Last())
+                        {
+                            listOfInvalidNames.Append(", ");
+                        }
+                    }
+                    errorString.Append($" The following names are not allowed: {listOfInvalidNames}");
+                    break;
+                }
+            }
+            usernameValidation.errorMessage = errorString.ToString();
+            return usernameValidation;
+        }
     }
 }

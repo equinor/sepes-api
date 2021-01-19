@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -27,7 +28,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<StudyDatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
+        public async Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
@@ -38,13 +39,13 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
             }
 
-            var datasetDto = _mapper.Map<StudyDatasetDto>(studyDatasetRelation.Dataset);
+            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
             await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }
 
-        public async Task<IEnumerable<StudyDatasetDto>> GetDatasetsForStudyAsync(int studyId)
+        public async Task<IEnumerable<DatasetDto>> GetDatasetsForStudyAsync(int studyId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
@@ -58,13 +59,13 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntityCustomDescr("StudyDatasets", $"studyId {studyId}");
             }
 
-            var datasetDtos = _mapper.Map<IEnumerable<StudyDatasetDto>>(studyFromDb.StudyDatasets);
+            var datasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(studyFromDb.StudyDatasets);
 
 
             return datasetDtos;
         }
 
-        public async Task<StudyDatasetDto> AddPreApprovedDatasetToStudyAsync(int studyId, int datasetId)
+        public async Task<DatasetDto> AddPreApprovedDatasetToStudyAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset);
@@ -85,7 +86,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            return _mapper.Map<StudyDatasetDto>(studyDataset.Dataset);
+            return _mapper.Map<DatasetDto>(studyDataset.Dataset);
         }     
 
         public async Task RemovePreApprovedDatasetFromStudyAsync(int studyId, int datasetId)

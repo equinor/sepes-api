@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<Dataset, DatasetListItemDto>();
 
-            CreateMap<Dataset, StudyDatasetDto>()
+            CreateMap<Dataset, DatasetDto>()
                  .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<DatasetStorageExternalLinkResolver>());
 
             CreateMap<StudyDataset, StudyDatasetDto>()
@@ -65,11 +65,12 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id))
                 .ForMember(dest => dest.StudyId, source => source.MapFrom(x => x.Sandbox.StudyId));
 
+            /*
             CreateMap<Dataset, StudySpecificDatasetDto>()
                 .ForMember(dest => dest.StudyNo,
                     source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
                 .ReverseMap();
-
+*/
             CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
 
             //SANDBOX

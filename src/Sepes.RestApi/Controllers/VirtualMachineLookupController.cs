@@ -38,10 +38,18 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
-        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
-        public string CalculateName(string studyName, string sandboxName, string userSuffix)
+        [HttpPost("validateUsername")]
+        public IActionResult validateUsername(VmUsernameDto input)
         {
-            return _vmLookupService.CalculateName(studyName, sandboxName, userSuffix);
+            var usernameValidationResult = _vmLookupService.CheckIfUsernameIsValidOrThrow(input.username);
+            return new JsonResult(usernameValidationResult);
+
+        }
+
+        [HttpPost("calculateName")]
+        public string CalculateName(VmCalculateNameDto input)
+        {
+            return _vmLookupService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
         }
 
         [HttpGet("{sandboxId}/sizes")]
