@@ -26,7 +26,6 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
 
         readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
-        readonly ICloudResourceRoleAssignmentUpdateService _cloudResourceRoleAssignmentUpdateService;
        
      
         readonly ICloudResourceMonitoringService _monitoringService;
@@ -41,7 +40,6 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceOperationReadService resourceOperationReadService,
             ICloudResourceOperationUpdateService resourceOperationUpdateService,
             IAzureRoleAssignmentService azureRoleAssignmentService,
-            ICloudResourceRoleAssignmentUpdateService cloudResourceRoleAssignmentUpdateService,
             ICloudResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -57,10 +55,8 @@ namespace Sepes.Infrastructure.Service
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService;
 
-            //Role assignment services
+           
             _azureRoleAssignmentService = azureRoleAssignmentService;
-            _cloudResourceRoleAssignmentUpdateService = cloudResourceRoleAssignmentUpdateService;
-
             _monitoringService = monitoringService;
         }
 
@@ -144,7 +140,6 @@ namespace Sepes.Infrastructure.Service
                             await EnsureRolesUtil.EnsureRoles(currentOperation,
                                 _azureRoleAssignmentService,
                                 _resourceReadService,
-                                _cloudResourceRoleAssignmentUpdateService,
                                 _resourceOperationUpdateService,
                                 _logger);
 

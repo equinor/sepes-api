@@ -1,16 +1,10 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
-using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,35 +18,56 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             IUserService userService,
             IProvisioningQueueService provisioningQueueService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
+            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
 
         }
 
         public async Task<StudyParticipantDto> RemoveAsync(int studyId, int userId, string roleName)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, roleName);
+            List<int> updateOperationIds = null;
 
-            if (roleName == StudyRoles.StudyOwner)
+            try
             {
-                throw new ArgumentException($"The Study Owner role cannot be deleted");
+                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, roleName);
+
+                if (roleName == StudyRoles.StudyOwner)
+                {
+                    throw new ArgumentException($"The Study Owner role cannot be deleted");
+                }
+
+                updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+
+                var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
+
+                if (studyParticipantFromDb == null)
+                {
+                    throw NotFoundException.CreateForEntityCustomDescr("StudyParticipant", $"studyId: {studyId}, userId: {userId}, roleName: {roleName}");
+                }
+
+                studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
+
+                await _db.SaveChangesAsync();
+
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperationIds);
+
+                return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
             }
-
-            var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
-
-            if (studyParticipantFromDb == null)
+            catch (Exception ex)
             {
-                throw NotFoundException.CreateForEntityCustomDescr("StudyParticipant", $"studyId: {studyId}, userId: {userId}, roleName: {roleName}");
+                if (updateOperationIds != null)
+                {
+                    foreach (var curOperationId in updateOperationIds)
+                    {
+                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperationId, ex.Message);
+                    }
+                }
+
+                throw new Exception($"Remove participant failed: {ex.Message}", ex);
             }
-
-            studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
-            await _db.SaveChangesAsync();
-
-            await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);
-
-            return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
-        }      
+        }
     }
 }

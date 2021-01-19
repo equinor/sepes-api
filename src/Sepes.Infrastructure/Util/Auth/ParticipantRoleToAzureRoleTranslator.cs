@@ -2,10 +2,8 @@
 using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util.Auth
 {
@@ -27,29 +25,7 @@ namespace Sepes.Infrastructure.Util.Auth
             }
 
             return desiredRolesLookup.Values.ToList();
-        }
-
-        public static async Task TranslateAndAddBasedOnParticipantListForScheduledResourceGroup(ICloudResourceRoleAssignmentCreateService cloudResourceRoleAssignmentCreateService, int resourceDbId, List<StudyParticipant> participants)
-        {
-            foreach (var curParticipant in participants)
-            {
-                if (Translate(curParticipant.RoleName, out string translatedRoleId))
-                {
-                    await cloudResourceRoleAssignmentCreateService.AddAsync(resourceDbId, curParticipant.User.ObjectId, translatedRoleId);
-                }
-            }
-        }
-
-        public static async Task TranslateAndAddBasedOnParticipantList(ICloudResourceRoleAssignmentCreateService cloudResourceRoleAssignmentCreateService, int resourceDbId, List<StudyParticipant> participants)
-        {
-            foreach (var curParticipant in participants)
-            {
-                if (Translate(curParticipant.RoleName, out string translatedRoleId))
-                {
-                    await cloudResourceRoleAssignmentCreateService.AddAsync(resourceDbId, curParticipant.User.ObjectId, translatedRoleId);
-                }
-            }
-        }
+        }          
 
         public static bool Translate(string studyParticipantRole, out string translatedRole)
         {

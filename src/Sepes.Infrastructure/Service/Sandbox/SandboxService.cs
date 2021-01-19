@@ -164,8 +164,6 @@ namespace Sepes.Infrastructure.Service
 
             SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);          
 
-            CloudResourceRoleAssignmentUtils.MarkAllForSandboxAsDeleted(sandboxFromDb, user);
-
             await _db.SaveChangesAsync();
 
             await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId);

@@ -13,14 +13,12 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationCreateService : CloudResourceOperationServiceBase, ICloudResourceOperationCreateService
-    {
-        readonly IUserService _userService;
+    {        
         readonly IRequestIdService _requestIdService;
 
         public CloudResourceOperationCreateService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
-            : base(db, mapper)
-        {
-            _userService = userService;
+            : base(db, mapper, userService)
+        {          
             _requestIdService = requestIdService;
         }
 

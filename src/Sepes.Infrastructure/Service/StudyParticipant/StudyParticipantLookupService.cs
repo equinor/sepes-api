@@ -19,8 +19,9 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IAzureUserService azureUserService,
             IProvisioningQueueService provisioningQueueService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService)
-            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
+            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureUserService = azureUserService;     
         }

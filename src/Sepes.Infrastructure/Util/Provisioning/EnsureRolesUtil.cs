@@ -29,7 +29,6 @@ namespace Sepes.Infrastructure.Util.Provisioning
             CloudResourceOperationDto operation,
             IAzureRoleAssignmentService roleAssignmentService,
             ICloudResourceReadService resourceReadService,
-            ICloudResourceRoleAssignmentUpdateService roleAssignmentUpdateService,
             ICloudResourceOperationUpdateService operationUpdateService,
             ILogger logger)
         {

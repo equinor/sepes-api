@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -22,18 +21,21 @@ namespace Sepes.Infrastructure.Service
         protected readonly IUserService _userService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
         protected readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
+        protected readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
         public StudyParticipantBaseService(SepesDbContext db,
             IMapper mapper,
             IUserService userService,
             IProvisioningQueueService provisioningQueueService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService)
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
         {
             _db = db;
             _mapper = mapper;
             _userService = userService;
             _provisioningQueueService = provisioningQueueService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
+            _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
         }
    
         protected bool RoleAllreadyExistsForUser(Study study, int userId, string roleName)
@@ -68,32 +70,24 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        //protected async Task<List<int>> CreateDraftRoleUpdateOperation(int studyId)
-        //{
-        //    var study = await GetStudyAsync(studyId, true);
+        protected async Task<List<int>> CreateDraftRoleUpdateOperationsAsync(Study study)
+        {
+            return await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationAsync(study, _cloudResourceOperationCreateService);
+        }
 
-        //    var result = new List<int>();
-
-        //    foreach (var resourceGroup in GetResourceGroups(study))
-        //    {
-        //        var updateOp = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES);
-        //        result.Add(updateOp.Id);
-        //    }
-        //}     
-
-        protected async Task ScheduleRoleAssignmentUpdateAsync(int studyId)
+        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(int studyId, List<int> existingUpdateOperationIds)
         {
             var study = await GetStudyAsync(studyId, true);
-          
+
             var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateListOfDesiredRoles(study.StudyParticipants.ToList());
-            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);  
-            
-            foreach(var resourceGroup in GetResourceGroups(study))
-            {                
-                var updateOp = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredRolesSerialized);
+            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
+
+            foreach (var currentOperationId in existingUpdateOperationIds)
+            {
+                var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperationId, desiredRolesSerialized);
                 await ProvisioningQueueUtil.CreateItemAndEnqueue(updateOp, _provisioningQueueService);
-            } 
-        }
+            }
+        }      
 
         async Task<Study> GetStudyAsync(int studyId, bool allIncludes)
         {
@@ -104,15 +98,6 @@ namespace Sepes.Infrastructure.Service
                   .ThenInclude(sp => sp.User));
 
             return await studyQueryable.FirstOrDefaultAsync(s => s.Id == studyId);
-        }
-
-        List<CloudResource> GetResourceGroups(Study study)
-        {
-            return study.Sandboxes
-                .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
-                .Select(sb => CloudResourceUtil.GetSandboxResourceGroupEntry(sb.Resources))
-                .Where(r => !r.Deleted.HasValue)
-                .ToList();
-        }
+        }      
     }
 }

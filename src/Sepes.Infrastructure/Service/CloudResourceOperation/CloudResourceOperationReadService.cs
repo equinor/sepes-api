@@ -6,18 +6,16 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationReadService : CloudResourceOperationServiceBase, ICloudResourceOperationReadService
-    {    
-      
+    {      
 
-        public CloudResourceOperationReadService(SepesDbContext db, IMapper mapper)
-            : base(db, mapper)
+        public CloudResourceOperationReadService(SepesDbContext db, IMapper mapper, IUserService userService)
+            : base(db, mapper, userService)
         {
           
         }

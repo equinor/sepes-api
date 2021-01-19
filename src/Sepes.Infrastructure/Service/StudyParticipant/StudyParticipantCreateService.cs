@@ -16,42 +16,64 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
-    {     
+    {
         readonly IAzureUserService _azureADUsersService;
-        
+
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
             IUserService userService,
             IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService)
-            :base (db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
-        {          
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
+
+            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService,cloudResourceOperationUpdateService)
+        {
             _azureADUsersService = azureADUsersService;
-        }        
+        }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
         {
+            List<int> updateOperationIds = null;
+
             try
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, false, role);
+                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, role);
+
+                updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+
+                StudyParticipantDto participantDto = null;
 
                 if (user.Source == ParticipantSource.Db)
                 {
-                    return await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);
+                    participantDto = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);
                 }
                 else if (user.Source == ParticipantSource.Azure)
                 {
-                    return await AddAzureUserAsync(studyFromDb, user, role);
+                    participantDto = await AddAzureUserAsync(studyFromDb, user, role);
+                }
+                else
+                {
+                    throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
 
-                throw new ArgumentException($"Unknown source for user {user.UserName}");
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperationIds);
+
+                return participantDto;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Add participant failed: {ex.Message}", ex);
+                if(updateOperationIds != null)
+                {
+                    foreach(var curOperationId in updateOperationIds)
+                    {
+                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperationId, ex.Message);
+                    }
+                }
+
+                throw new Exception($"Add participant failed: {ex.Message}", ex);               
             }
         }
 
@@ -76,8 +98,6 @@ namespace Sepes.Infrastructure.Service
                 createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
-
-                await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);             
 
                 return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
             }
@@ -123,8 +143,6 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);
-
                 return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
 
             }
@@ -136,7 +154,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-     
+
         async Task RemoveIfExist(StudyParticipant participant)
         {
             if (participant != null)

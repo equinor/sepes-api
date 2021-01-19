@@ -44,9 +44,7 @@ namespace Sepes.Infrastructure.Model
 
         public Sandbox Sandbox { get; set; }
 
-        public List<CloudResourceOperation> Operations { get; set; }
-
-        public List<CloudResourceRoleAssignment> RoleAssignments { get; set; }
+        public List<CloudResourceOperation> Operations { get; set; }      
 
         public CloudResource ParentResource { get; set; }
       

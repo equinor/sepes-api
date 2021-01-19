@@ -42,6 +42,5 @@ namespace Sepes.Infrastructure.Dto
 
         public List<CloudResourceOperationDto> Operations { get; set; }
 
-        public List<CloudResourceRoleAssignmentDto> RoleAssignments { get; set; }
     }
 }
