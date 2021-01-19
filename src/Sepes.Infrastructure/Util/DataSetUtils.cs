@@ -25,51 +25,6 @@ namespace Sepes.Infrastructure.Util
                 datasetFromDb.DataId = updatedDataset.DataId;
             }
         }
-        /*
-        public static void UpdateDatasetExtendedDetails(Dataset datasetToUpdate, DatasetDto details)
-        {
-            if (details.LRAId != datasetToUpdate.LRAId)
-            {
-                datasetToUpdate.LRAId = details.LRAId;
-            }
-            if (details.DataId != datasetToUpdate.DataId)
-            {
-                datasetToUpdate.DataId = details.DataId;
-            }
-            if (details.SourceSystem != datasetToUpdate.SourceSystem)
-            {
-                datasetToUpdate.SourceSystem = details.SourceSystem;
-            }
-            if (details.BADataOwner != datasetToUpdate.BADataOwner)
-            {
-                datasetToUpdate.BADataOwner = details.BADataOwner;
-            }
-            if (details.Asset != datasetToUpdate.Asset)
-            {
-                datasetToUpdate.Asset = details.Asset;
-            }
-            if (details.CountryOfOrigin != datasetToUpdate.CountryOfOrigin)
-            {
-                datasetToUpdate.CountryOfOrigin = details.CountryOfOrigin;
-            }
-            if (details.AreaL1 != datasetToUpdate.AreaL1)
-            {
-                datasetToUpdate.AreaL1 = details.AreaL1;
-            }
-            if (details.AreaL2 != datasetToUpdate.AreaL2)
-            {
-                datasetToUpdate.AreaL2 = details.AreaL2;
-            }
-            if (details.Tags != datasetToUpdate.Tags)
-            {
-                datasetToUpdate.Tags = details.Tags;
-            }
-            if (details.Description != datasetToUpdate.Description)
-            {
-                datasetToUpdate.Description = details.Description;
-            }
-        }
-        */
 
         public static void PerformUsualTestForPostedDatasets(DatasetCreateUpdateInputBaseDto datasetDto)
         {
