@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOperationDtoInternal(newOperation.Id);
         }
 
-        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string operationType = CloudResourceOperationType.UPDATE, int dependsOn = 0, string batchId = null)
+        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string operationType = CloudResourceOperationType.UPDATE, int dependsOn = 0, string batchId = null, string desiredState = null)
         {
             var sandboxResourceFromDb = await GetResourceOrThrowAsync(sandboxResourceId);
 
@@ -54,14 +54,15 @@ namespace Sepes.Infrastructure.Service
                 AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
                operationType,
                dependsOn,
-               batchId);
+               batchId,
+               desiredState);
 
             sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
             return await GetOperationDtoInternal(newOperation.Id);
         }
 
-        async Task<CloudResourceOperation> CreateUpdateOperationAsync(string description, string operationType, int dependsOn = 0, string batchId = null)
+        async Task<CloudResourceOperation> CreateUpdateOperationAsync(string description, string operationType, int dependsOn = 0, string batchId = null, string desiredState = null)
         {
             var updateOperation = await CreateBasicOperationAsync();
 
@@ -69,7 +70,7 @@ namespace Sepes.Infrastructure.Service
             updateOperation.OperationType = operationType;
             updateOperation.BatchId = batchId;
             updateOperation.DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?);
-
+            updateOperation.DesiredState = desiredState;
 
             return updateOperation;
         }
@@ -107,7 +108,7 @@ namespace Sepes.Infrastructure.Service
                     return null;
                 }
 
-                if (curOperation.OperationType == CloudResourceOperationType.UPDATE)
+                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
                 {
                     if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
                     {

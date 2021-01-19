@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
             return await GetBasicQueryable()
                      .Where(ra => ra.CloudResourceId == resourceId && ra.UserOjectId == principalId).ToListAsync();
 
-        }
+        }     
 
         protected async Task<CloudResourceRoleAssignment> GetOrThrowInternalAsync(int id)
         {

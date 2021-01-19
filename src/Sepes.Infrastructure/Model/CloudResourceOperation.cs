@@ -43,6 +43,9 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string QueueMessagePopReceipt { get; set; }
 
+        [MaxLength(4096)]
+        public string DesiredState { get; set; }
+
         public DateTime? QueueMessageVisibleAgainAt { get; set; }
 
         public CloudResource Resource { get; set; }

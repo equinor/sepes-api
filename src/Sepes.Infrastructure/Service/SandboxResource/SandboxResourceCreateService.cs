@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model.Context;
@@ -18,7 +19,7 @@ namespace Sepes.Infrastructure.Service
     public class SandboxResourceCreateService : SandboxServiceBase, ISandboxResourceCreateService
     {
         readonly ICloudResourceCreateService _cloudResourceCreateService;
-        readonly ICloudResourceRoleAssignmentCreateService _cloudResourceRoleAssignmentCreateService;
+        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;       
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxResourceCreateService(IConfiguration config,
@@ -27,13 +28,13 @@ namespace Sepes.Infrastructure.Service
             ILogger<SandboxResourceDeleteService> logger,
             IUserService userService,
             ICloudResourceCreateService cloudResourceCreateService,
-            ICloudResourceRoleAssignmentCreateService cloudResourceRoleAssignmentCreateService,
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             IProvisioningQueueService provisioningQueueService)
               : base(config, db, mapper, logger, userService)
         {
 
             _cloudResourceCreateService = cloudResourceCreateService;
-            _cloudResourceRoleAssignmentCreateService = cloudResourceRoleAssignmentCreateService;
+            _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
         }
 
@@ -50,6 +51,7 @@ namespace Sepes.Infrastructure.Service
                 };
 
                 await ScheduleCreationOfSandboxResourceGroup(dto, queueParentItem);
+                await ScheduleCreationOfSandboxResourceGroupRoleAssignments(dto, queueParentItem);
                 await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
                 await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
                 await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
@@ -70,14 +72,17 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             dto.ResourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(dto.StudyName, dto.SandboxName);
-            dto.ResourceGroup = await CreateResourceGroupEntryAndAddToQueue(dto, queueParentItem, dto.ResourceGroupName);         
-            await AddRelevantRoleAssignments(dto);
+            dto.ResourceGroup = await CreateResourceGroupEntryAndAddToQueue(dto, queueParentItem, dto.ResourceGroupName);
         }
 
-        async Task AddRelevantRoleAssignments(SandboxResourceCreationAndSchedulingDto dto)
+        async Task ScheduleCreationOfSandboxResourceGroupRoleAssignments(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var participants = await _db.StudyParticipants.Where(p => p.StudyId == dto.StudyId).ToListAsync();
-            await ParticipantRoleToAzureRoleTranslator.TranslateAndAddBasedOnParticipantList(_cloudResourceRoleAssignmentCreateService, dto.ResourceGroup.Id, participants);
+            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateListOfDesiredRoles(participants);
+            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
+            var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;
+            var updateOpId = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(dto.ResourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation, desiredState: desiredRolesSerialized);
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = updateOpId.Id });
         }
 
         async Task ScheduleCreationOfDiagStorageAccount(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)

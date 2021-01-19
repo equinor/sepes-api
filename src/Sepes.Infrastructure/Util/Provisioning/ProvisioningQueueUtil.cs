@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             await queue.IncreaseInvisibilityAsync(queueParentItem, increaseBy);
         }
 
-        public static async Task CreateQueueItem(CloudResourceOperationDto operation, IProvisioningQueueService workQueue)
+        public static async Task CreateItemAndEnqueue(CloudResourceOperationDto operation, IProvisioningQueueService workQueue)
         {
             var queueParentItem = new ProvisioningQueueParentDto();
             queueParentItem.SandboxId = operation.Resource.SandboxId;

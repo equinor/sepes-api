@@ -33,5 +33,10 @@ namespace Sepes.Infrastructure.Util
             var deletedByUser = await userService.GetCurrentUserAsync();
             MarkAsDeleted(itemToDelete, deletedByUser);
         }
+
+        public static bool IsMarkedAsDeleted(ISupportSoftDelete entry)
+        {
+            return entry.Deleted.HasValue && entry.Deleted.Value;
+        }
     }
 }

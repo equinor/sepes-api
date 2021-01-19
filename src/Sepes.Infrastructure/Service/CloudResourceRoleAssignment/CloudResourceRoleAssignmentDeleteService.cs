@@ -31,10 +31,8 @@ namespace Sepes.Infrastructure.Service
                 }
             }
             else
-            {
-                var currentUser = await _userService.GetCurrentUserAsync();
-                await SoftDeleteUtil.MarkAsDeleted(existing, _userService);            
-
+            {               
+                await SoftDeleteUtil.MarkAsDeleted(existing, _userService);
                 await _db.SaveChangesAsync();
             } 
         }     

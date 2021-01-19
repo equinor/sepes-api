@@ -532,7 +532,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
-                await ProvisioningQueueUtil.CreateQueueItem(vmUpdateOperation, _workQueue);
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(vmUpdateOperation, _workQueue);
             }
         }
     }

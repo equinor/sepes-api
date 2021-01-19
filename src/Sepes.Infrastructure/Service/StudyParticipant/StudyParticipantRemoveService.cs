@@ -19,24 +19,17 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantRemoveService : StudyParticipantBaseService, IStudyParticipantRemoveService
-    {       
-        readonly ICloudResourceRoleAssignmentUpdateService _cloudResourceRoleAssignmentUpdateService;
-        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
-        readonly IProvisioningQueueService _workQueue;
-
+    {
         public StudyParticipantRemoveService(SepesDbContext db,
             IMapper mapper,
             IUserService userService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-            ICloudResourceRoleAssignmentUpdateService cloudResourceRoleAssignmentUpdateService,
-            IProvisioningQueueService workQueue
+            IProvisioningQueueService provisioningQueueService,
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService
             )
-            : base (db, mapper, userService)
+            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
         {
-            _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
-            _cloudResourceRoleAssignmentUpdateService = cloudResourceRoleAssignmentUpdateService;
-            _workQueue = workQueue;
-        }       
+
+        }
 
         public async Task<StudyParticipantDto> RemoveAsync(int studyId, int userId, string roleName)
         {
@@ -55,46 +48,11 @@ namespace Sepes.Infrastructure.Service
             }
 
             studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
-            await _db.SaveChangesAsync();                       
+            await _db.SaveChangesAsync();
 
-            await ReviseRoleAssignmentsForUser(studyParticipantFromDb);
+            await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);
 
             return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
-        }       
-
-        async Task ReviseRoleAssignmentsForUser(StudyParticipant studyParticipant)
-        {
-            var roleAssignmentUserShouldHave = new HashSet<string>();
-
-            foreach (var curParticipant in await _db.StudyParticipants.Where(sp => sp.StudyId == studyParticipant.StudyId && sp.UserId == studyParticipant.UserId).ToListAsync())
-            {
-                if(ParticipantRoleToAzureRoleTranslator.Translate(studyParticipant.RoleName, out string translatedRole))
-                {
-                    if (roleAssignmentUserShouldHave.Contains(translatedRole))
-                    {
-                        continue;
-                    }
-                    else
-                    {
-                        roleAssignmentUserShouldHave.Add(translatedRole);
-                    }
-                }               
-            }
-
-            var sandboxes = await _db.Sandboxes.Include(s => s.Resources).ThenInclude(r => r.RoleAssignments).Where(s => s.StudyId == studyParticipant.StudyId).ToListAsync();
-
-            foreach (var curSb in sandboxes)
-            {
-                if (curSb.Deleted.HasValue && curSb.Deleted.Value)
-                {
-                    continue;
-                }
-
-                var resourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(curSb.Resources);
-                await _cloudResourceRoleAssignmentUpdateService.ReviseRoleAssignments(resourceGroup.Id, studyParticipant.User.ObjectId, roleAssignmentUserShouldHave);
-                var updateOp = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES);
-                await ProvisioningQueueUtil.CreateQueueItem(updateOp, _workQueue);
-            }
-        }       
+        }      
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sepes.Infrastructure.Dto.Auth
+namespace Sepes.Infrastructure.Dto.Azure.RoleAssignment
 {
     public class AzureRoleAssignmentRequestDto
     {
@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Dto.Auth
 
     }
 
-    public class AzureRoleAssignmentResponseDto
+    public class AzureRoleAssignment
     {
         public string id { get; set; }
 

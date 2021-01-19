@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
@@ -9,9 +8,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
-using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,24 +18,16 @@ namespace Sepes.Infrastructure.Service
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {     
         readonly IAzureUserService _azureADUsersService;
-        readonly ICloudResourceRoleAssignmentCreateService _cloudResourceRoleAssignmentCreateService;       
-        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
-        readonly IProvisioningQueueService _workQueue;
-
+        
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
             IUserService userService,
             IAzureUserService azureADUsersService,
-            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-            ICloudResourceRoleAssignmentCreateService cloudResourceRoleAssignmentCreateService,
-          
-            IProvisioningQueueService workQueue)
-            :base (db, mapper, userService)
+            IProvisioningQueueService provisioningQueueService,
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService)
+            :base (db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
         {          
             _azureADUsersService = azureADUsersService;
-            _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
-            _cloudResourceRoleAssignmentCreateService = cloudResourceRoleAssignmentCreateService;
-            _workQueue = workQueue;
         }        
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -89,7 +77,7 @@ namespace Sepes.Infrastructure.Service
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
 
-                await AddNewRoleAssignmentToSandboxes(createdStudyParticipant);
+                await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);             
 
                 return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
             }
@@ -135,7 +123,7 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                await AddNewRoleAssignmentToSandboxes(createdStudyParticipant);
+                await ScheduleRoleAssignmentUpdateAsync(studyFromDb.Id);
 
                 return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
 
@@ -146,29 +134,9 @@ namespace Sepes.Infrastructure.Service
 
                 throw;
             }
-        }       
-      
-
-        async Task AddNewRoleAssignmentToSandboxes(StudyParticipant studyParticipant)
-        {
-            if (ParticipantRoleToAzureRoleTranslator.Translate(studyParticipant.RoleName, out string translatedRole))
-            {
-                var sandboxes = await _db.Sandboxes.Include(s => s.Resources).ThenInclude(r => r.RoleAssignments).Where(s => s.StudyId == studyParticipant.StudyId).ToListAsync();
-
-                foreach (var curSb in sandboxes)
-                {
-                    if (curSb.Deleted.HasValue && curSb.Deleted.Value)
-                    {
-                        continue;
-                    }
-
-                    var resourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(curSb.Resources);
-                    await _cloudResourceRoleAssignmentCreateService.AddAsync(resourceGroup.Id, studyParticipant.User.ObjectId, translatedRole);
-                    var updateOp = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES);
-                    await ProvisioningQueueUtil.CreateQueueItem(updateOp, _workQueue);
-                }
-            }
         }
+
+     
         async Task RemoveIfExist(StudyParticipant participant)
         {
             if (participant != null)
@@ -186,5 +154,27 @@ namespace Sepes.Infrastructure.Service
                 }
             }
         }
+
+        //async Task AddNewRoleAssignmentToSandboxes(StudyParticipant studyParticipant)
+        //{
+        //    if (ParticipantRoleToAzureRoleTranslator.Translate(studyParticipant.RoleName, out string translatedRole))
+        //    {
+        //        var sandboxes = await _db.Sandboxes.Include(s => s.Resources).ThenInclude(r => r.RoleAssignments).Where(s => s.StudyId == studyParticipant.StudyId).ToListAsync();
+
+        //        foreach (var curSb in sandboxes)
+        //        {
+        //            if (curSb.Deleted.HasValue && curSb.Deleted.Value)
+        //            {
+        //                continue;
+        //            }
+
+        //            var resourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(curSb.Resources);
+
+        //            //Create list of desired roles
+
+        //            await _cloudResourceRoleAssignmentCreateService.AddAsync(resourceGroup.Id, studyParticipant.User.ObjectId, translatedRole);
+        //        }
+        //    }
+        //}
     }
 }

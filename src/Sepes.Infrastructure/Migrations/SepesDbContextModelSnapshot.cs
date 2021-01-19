@@ -148,6 +148,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);
 
+                    b.Property<string>("DesiredState")
+                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(4096);
+
                     b.Property<string>("LatestError")
                         .HasColumnType("nvarchar(max)")
                         .HasMaxLength(4096);

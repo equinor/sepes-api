@@ -126,14 +126,7 @@ namespace Sepes.Infrastructure.Service
                             }
 
                             currentOperation = await _resourceOperationUpdateService.TouchAsync(currentOperation.Id);
-
-                            await EnsureRolesUtil.EnsureRoles(currentOperation,
-                                _azureRoleAssignmentService,
-                                _resourceReadService,
-                                _cloudResourceRoleAssignmentUpdateService,
-                                _resourceOperationUpdateService,
-                                _logger);
-
+                            
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id,
                                 CloudResourceOperationState.DONE_SUCCESSFUL,
                                 updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);

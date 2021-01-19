@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Auth;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -39,87 +37,43 @@ namespace Sepes.Infrastructure.Util.Provisioning
             {
                 var cancellation = new CancellationTokenSource();
 
-                foreach (var curRole in operation.Resource.RoleAssignments)
+                if (string.IsNullOrWhiteSpace(operation.DesiredState))
                 {
-                    Task<AzureRoleAssignmentResponseDto> currentRoleAssignmentTask = null;
+                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}");
+                }
 
-                    var shouldExist = !(curRole.Deleted.HasValue && curRole.Deleted.Value);
+                var desiredRolesFromOperation = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
 
-                    var createdNewOne = false;
+                var currentRoleAssignmentTask = roleAssignmentService.SetRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, desiredRolesFromOperation, cancellation.Token);
 
-                    if (shouldExist)
+                while (!currentRoleAssignmentTask.IsCompleted)
+                {
+                    operation = await operationUpdateService.TouchAsync(operation.Id);
+
+                    if (await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
                     {
-                        var roleDefinitionId = AzureRoleIds.CreateUrl(operation.Resource.ResourceId, curRole.RoleId);
+                        logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
+                        cancellation.Cancel();
+                        break;
+                    }
 
-                        if (String.IsNullOrWhiteSpace(curRole.ForeignSystemId))
-                        {
-                            //Probably new role assignment that has not been created before                          
-                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, cancellationToken: cancellation.Token);
-                            createdNewOne = true;
-                        }
-                        else if (await roleAssignmentService.RoleAssignmentExists(operation.Resource.ResourceId, curRole.ForeignSystemId) == false)
-                        {
-                            //role assignment should have existed, but does not                           
-                            logger.LogWarning($"Role assignment {curRole.ForeignSystemId} for resource {operation.Resource.ResourceId} should have existed");
-                            currentRoleAssignmentTask = roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curRole.UserOjectId, curRole.ForeignSystemId, cancellation.Token);
-                        }
+                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                }
+
+                if (currentRoleAssignmentTask.IsCompletedSuccessfully)
+                {
+
+                }
+                else
+                {
+                    if (currentRoleAssignmentTask.Exception == null)
+                    {
+                        throw new Exception("Role assignment task failed");
                     }
                     else
                     {
-                        if (String.IsNullOrWhiteSpace(curRole.ForeignSystemId))
-                        {
-                            logger.LogWarning($"Deleted role assignment for resource {operation.Resource.ResourceId} did not have foreign system id. Cannot verify deletion");
-                        }
-                        else if (await roleAssignmentService.RoleAssignmentExists(operation.Resource.ResourceId, curRole.ForeignSystemId))
-                        {
-                            currentRoleAssignmentTask = roleAssignmentService.DeleteRoleAssignment(curRole.ForeignSystemId); //Delete should not be cancellable
-                        }
+                        throw currentRoleAssignmentTask.Exception;
                     }
-
-                    if(currentRoleAssignmentTask != null)
-                    {
-                        while (!currentRoleAssignmentTask.IsCompleted)
-                        {
-                            operation = await operationUpdateService.TouchAsync(operation.Id);
-
-                            if (shouldExist && await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
-                            {
-                                logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
-                                cancellation.Cancel();
-                                break;
-                            }
-
-                            Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                        }
-
-                        if (createdNewOne)
-                        {
-                            if (currentRoleAssignmentTask.IsCompletedSuccessfully)
-                            {
-                                if (String.IsNullOrWhiteSpace(currentRoleAssignmentTask.Result.id) == false)
-                                {
-                                    await roleAssignmentUpdateService.SetForeignIdAsync(curRole.Id, currentRoleAssignmentTask.Result.id);
-                                }
-                                else
-                                {
-                                    throw new Exception("Role assignment id was null", currentRoleAssignmentTask.Exception);
-                                }
-                            }
-                            else
-                            {
-                                if(currentRoleAssignmentTask.Exception == null)
-                                {
-                                    throw new Exception("Role assignment task failed");
-                                }
-                                else
-                                {
-                                    throw currentRoleAssignmentTask.Exception;
-                                }
-                               
-                            }                         
-                                                     
-                        }
-                    }  
                 }
             }
             catch (Exception ex)

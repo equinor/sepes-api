@@ -17,8 +17,10 @@ namespace Sepes.Infrastructure.Service
         public StudyParticipantLookupService(SepesDbContext db,
             IMapper mapper,
             IUserService userService,
-            IAzureUserService azureUserService)
-            : base(db, mapper, userService)
+            IAzureUserService azureUserService,
+            IProvisioningQueueService provisioningQueueService,
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService)
+            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService)
         {
             _azureUserService = azureUserService;     
         }

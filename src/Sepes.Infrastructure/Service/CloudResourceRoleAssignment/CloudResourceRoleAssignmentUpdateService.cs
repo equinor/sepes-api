@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceRoleAssignmentUpdateService : CloudResourceRoleAssignmentServiceBase, ICloudResourceRoleAssignmentUpdateService
