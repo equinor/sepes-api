@@ -21,7 +21,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         [InlineData("admin123.", false)]
         public void GetVirtualMachineUserNameValdiation(string name, Boolean expectedResult)
         {
-            var virtualMachineLookupService = DatasetServiceMockFactory.GetVirtualMachineLookupService(_serviceProvider);
+            var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineLookupService(_serviceProvider);
             var validationOfName = virtualMachineLookupService.CheckIfUsernameIsValidOrThrow(name);
 
             Assert.Equal(validationOfName.isValid, expectedResult);
@@ -31,7 +31,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         [InlineData("study1", "sandbox1", "james", "vm-study1-sandbox1-james")]
         public void GetVirtualMachineVMNameValdiation(string studyName, string sandboxName, string prefix, string expectedResult)
         {
-            var virtualMachineLookupService = DatasetServiceMockFactory.GetVirtualMachineLookupService(_serviceProvider);
+            var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineLookupService(_serviceProvider);
             var calculatedName = virtualMachineLookupService.CalculateName(studyName, sandboxName, prefix);
 
             Assert.Equal(calculatedName, expectedResult);

@@ -51,21 +51,5 @@ namespace Sepes.Tests.Setup
 
             return new StudySpecificDatasetService(db, mapper, logger, userService.Object, dsCloudResourceServiceMock.Object);
         }
-
-        public static IVirtualMachineLookupService GetVirtualMachineLookupService(ServiceProvider serviceProvider)
-        {
-            var db = serviceProvider.GetService<SepesDbContext>();
-            var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<VirtualMachineService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
-
-            var sandboxServiceMock = new Mock<ISandboxService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-
-            var costServiceMock = new Mock<IAzureCostManagementService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-
-            return new VirtualMachineLookupService(logger, db, mapper, sandboxServiceMock.Object, costServiceMock.Object);
-        }
     }
 }
