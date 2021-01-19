@@ -199,63 +199,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("CloudResourceOperations");
                 });
 
-            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceRoleAssignment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int>("CloudResourceId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Created")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<bool?>("Deleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("ForeignSystemId")
-                        .HasColumnType("nvarchar(512)")
-                        .HasMaxLength(512);
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(512)")
-                        .HasMaxLength(512);
-
-                    b.Property<DateTime>("Updated")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("getutcdate()");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.Property<string>("UserOjectId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CloudResourceId");
-
-                    b.ToTable("CloudResourceRoleAssignments");
-                });
-
             modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
                 {
                     b.Property<int>("Id")
@@ -922,15 +865,6 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceRoleAssignment", b =>
-                {
-                    b.HasOne("Sepes.Infrastructure.Model.CloudResource", "Resource")
-                        .WithMany("RoleAssignments")
-                        .HasForeignKey("CloudResourceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>

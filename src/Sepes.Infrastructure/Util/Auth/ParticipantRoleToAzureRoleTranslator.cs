@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,21 +12,28 @@ namespace Sepes.Infrastructure.Util.Auth
     {
         public static List<CloudResourceDesiredRoleAssignmentDto> CreateListOfDesiredRoles(List<StudyParticipant> participants)
         {
-            var desiredRolesLookup = new Dictionary<string, CloudResourceDesiredRoleAssignmentDto>();
+            var desiredRolesLookup = new Dictionary<Tuple<string, string>, CloudResourceDesiredRoleAssignmentDto>();
 
             foreach (var curParticipant in participants)
             {
                 if (Translate(curParticipant.RoleName, out string translatedRoleId))
                 {
-                    if (desiredRolesLookup.ContainsKey(translatedRoleId) == false)
+                    var lookupKey = CreateAssignmentLookupKey(curParticipant.User.ObjectId, translatedRoleId);
+
+                    if (desiredRolesLookup.ContainsKey(lookupKey) == false)
                     {
-                        desiredRolesLookup.Add(translatedRoleId, new CloudResourceDesiredRoleAssignmentDto(curParticipant.User.ObjectId, translatedRoleId));
+                        desiredRolesLookup.Add(lookupKey, new CloudResourceDesiredRoleAssignmentDto(curParticipant.User.ObjectId, translatedRoleId));
                     }
                 }
             }
 
             return desiredRolesLookup.Values.ToList();
-        }          
+        }
+
+        static Tuple<string, string> CreateAssignmentLookupKey(string principalId, string roleId)
+        {
+            return new Tuple<string, string>(principalId, roleId);
+        }
 
         public static bool Translate(string studyParticipantRole, out string translatedRole)
         {

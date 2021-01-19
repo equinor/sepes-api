@@ -25,8 +25,7 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
 
-        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
-       
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;     
      
         readonly ICloudResourceMonitoringService _monitoringService;
 
@@ -54,7 +53,6 @@ namespace Sepes.Infrastructure.Service
             //Resource operation services
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService;
-
            
             _azureRoleAssignmentService = azureRoleAssignmentService;
             _monitoringService = monitoringService;
@@ -70,7 +68,6 @@ namespace Sepes.Infrastructure.Service
                 work = await _workQueue.RecieveMessageAsync();
             }
         }
-
 
         public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {

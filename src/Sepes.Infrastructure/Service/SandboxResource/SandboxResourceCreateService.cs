@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task ScheduleCreationOfSandboxResourceGroupRoleAssignments(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var participants = await _db.StudyParticipants.Where(p => p.StudyId == dto.StudyId).ToListAsync();
+            var participants = await _db.StudyParticipants.Include(sp=> sp.User).Where(p => p.StudyId == dto.StudyId).ToListAsync();
             var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateListOfDesiredRoles(participants);
             var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
             var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;

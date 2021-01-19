@@ -112,7 +112,7 @@ namespace Sepes.Infrastructure.Service.Azure
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {
-                var sameRoleFromExisting = existingRoleAssignments.Where(ra=> ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
+                var sameRoleFromExisting = existingRoleAssignments.Where(ra=> ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
                                
                 if (sameRoleFromExisting != null)
                 {
@@ -135,7 +135,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
                 if (curExistingRoleId != null)
                 {
-                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.RoleId == curExistingRoleId).FirstOrDefault();
+                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.PrincipalId == curExisting.properties.principalId&& ra.RoleId == curExistingRoleId).FirstOrDefault();
                 }
                 
                 if(sameRoleFromDesired != null)
