@@ -40,7 +40,6 @@ namespace Sepes.Infrastructure.Service
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVmService _azureVmService;
 
-
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
             IConfiguration config,
             SepesDbContext db,
