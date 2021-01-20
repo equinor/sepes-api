@@ -186,23 +186,14 @@ namespace Sepes.Infrastructure.Service
             {
 
                 var currentUser = await _userService.GetCurrentUserAsync();
-
-                var roleAssignmentId = Guid.NewGuid().ToString();
+             
                 var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(dataset.StorageAccountId, AzureRoleIds.READ);
-                await _roleAssignmentService.AddRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
+                await _roleAssignmentService.AddRoleAssignment(dataset.StorageAccountId, roleDefinitionId, currentUser.ObjectId, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
                 throw new Exception($"Failed to create Role Assignment for Storage Account", ex);
             }
-        }
-
-        public Task MakeDatasetAvailableToSandbox(Study study, Dataset dataset, Sandbox sandbox, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-            //Get storage account
-            //Get vnet for sandbox
-            //join storage account to vnet
-        }       
+        }             
     }
 }
