@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
@@ -74,47 +75,70 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-            ValidateVmPasswordOrThrow(userInput.Password);
- 
-            _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
+            CloudResourceDto vmResourceEntry = null;
 
-            var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
-
-            var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
-
-            await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
-
-            var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
-
-            var region = RegionStringConverter.Convert(sandbox.Region);
-
-            userInput.DataDisks = await TranslateDiskSizes(sandbox.Region, userInput.DataDisks);
-
-            var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
-
-            //Make this dependent on bastion create operation to be completed, since bastion finishes last
-            var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
-
-            var vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
-
-            //Create vm settings and immeately attach to resource entry
-            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
-            vmResourceEntry.ConfigString = vmSettingsString;
-            await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
-
-            var queueParentItem = new ProvisioningQueueParentDto
+            try
             {
-                SandboxId = sandboxId,
-                Description = $"Create VM for Sandbox: {sandboxId}"
-            };
+                ValidateVmPasswordOrThrow(userInput.Password);
 
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
+                _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            await _workQueue.SendMessageAsync(queueParentItem);
+                var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
-            var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
+                var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-            return dtoMappedFromResource;
+                await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
+
+                var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
+
+                var region = RegionStringConverter.Convert(sandbox.Region);
+
+                userInput.DataDisks = await TranslateDiskSizes(sandbox.Region, userInput.DataDisks);
+
+                var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
+
+                //Make this dependent on bastion create operation to be completed, since bastion finishes last
+                var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
+
+
+                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+
+                //Create vm settings and immeately attach to resource entry
+                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
+                vmResourceEntry.ConfigString = vmSettingsString;
+                await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
+
+                var queueParentItem = new ProvisioningQueueParentDto
+                {
+                    SandboxId = sandboxId,
+                    Description = $"Create VM for Sandbox: {sandboxId}"
+                };
+
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
+
+                await _workQueue.SendMessageAsync(queueParentItem);
+
+                var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
+
+                return dtoMappedFromResource;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    //Delete resource if created
+                    if (vmResourceEntry != null)
+                    {
+                        await _sandboxResourceDeleteService.HardDeletedAsync(vmResourceEntry.Id);
+                    }
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.LogError(rollbackEx, $"Failed to roll back VM creation for sandbox {sandboxId}");
+                }
+
+                throw new Exception($"Failed to create VM: {ex.Message}", ex);
+            }
         }
 
         async Task<List<string>> TranslateDiskSizes(string region, List<string> dataDisksFromClient)
@@ -294,8 +318,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-
-                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+                throw new Exception($"Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
     }
