@@ -128,5 +128,22 @@ namespace Sepes.Infrastructure.Service
 
             return resource;
         }
+
+        public async Task HardDeletedAsync(int resourceId)
+        {
+            var resourceFromDb = await GetInternalAsync(resourceId);
+
+            if(resourceFromDb != null)
+            {
+                foreach(var curOperation in resourceFromDb.Operations)
+                {
+                    _db.CloudResourceOperations.Remove(curOperation);
+                }
+
+                _db.CloudResources.Remove(resourceFromDb);
+
+                await _db.SaveChangesAsync();
+            }
+        }
     }
 }
