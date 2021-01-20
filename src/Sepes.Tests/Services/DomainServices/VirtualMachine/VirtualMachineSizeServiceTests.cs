@@ -17,17 +17,18 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         public VirtualMachineSizeServiceTests()
            : base()
         {
+
         }
-            [Fact]
-            public async void GetCalculateVmPrice_ShouldReturnPrice()
-            {
-                await GetCalculateVmPrice_ShouldReturnPrice_RefreshAndSeedTestDatabase();
-                var virtualMachineSizeService = VirtualMachineMockFactory.GetVirtualMachineSizeService(_serviceProvider);
-                var priceOfVm = await virtualMachineSizeService.CalculateVmPrice(1, new CalculateVmPriceUserInputDto { Size = "Size1", DataDisks=new List<string>(new string[] { "Disk1"}), OperatingSystem="windows" });
+        [Fact]
+        public async void GetCalculateVmPrice_ShouldReturnPrice()
+        {
+            await GetCalculateVmPrice_ShouldReturnPrice_RefreshAndSeedTestDatabase();
+            var virtualMachineSizeService = VirtualMachineMockFactory.GetVirtualMachineSizeService(_serviceProvider);
+            var priceOfVm = await virtualMachineSizeService.CalculateVmPrice(1, new CalculateVmPriceUserInputDto { Size = "Size1", DataDisks=new List<string>(new string[] { "Disk1"}), OperatingSystem="windows" });
 
-                Assert.Equal("15", priceOfVm.ToString());
-            }
-
+            Assert.Equal("15", priceOfVm.ToString());
+        
+        }
     }
 }
 

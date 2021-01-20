@@ -48,7 +48,6 @@ namespace Sepes.Tests.Setup
             sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
 
             var virtualMachineSizeService = new Mock<IVirtualMachineSizeService>();
-            //virtualMachineSizeService.Setup(x => x.(1, It.IsAny<SandboxCreateDto>()));
 
             var vmLookupService = GetVirtualMachineLookupService(serviceProvider);
 
