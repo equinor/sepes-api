@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
-using System.Linq
+using System.Linq;
 
 namespace Sepes.Tests.Services.DomainServices.StudyParticipant
 {
