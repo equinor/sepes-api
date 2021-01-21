@@ -7,6 +7,8 @@ namespace Sepes.Infrastructure.Service.Interface
     {         
         Task<CloudResourceDto> MarkAsDeletedAsync(int resourceId);
 
+        Task HardDeletedAsync(int resourceId);
+
         Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId);
     }
 }

@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
@@ -23,6 +24,9 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceUpdateService _resourceUpdateService;
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
+
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;     
+     
         readonly ICloudResourceMonitoringService _monitoringService;
 
         public ResourceProvisioningService(
@@ -34,17 +38,23 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceUpdateService resourceUpdateService,
             ICloudResourceOperationReadService resourceOperationReadService,
             ICloudResourceOperationUpdateService resourceOperationUpdateService,
+            IAzureRoleAssignmentService azureRoleAssignmentService,
             ICloudResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-
             _requestIdService = requestIdService;
+            _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
+
+            //Resource services
             _resourceReadService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceUpdateService = resourceUpdateService ?? throw new ArgumentNullException(nameof(resourceUpdateService));
+          
+            //Resource operation services
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService;
-            _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
+           
+            _azureRoleAssignmentService = azureRoleAssignmentService;
             _monitoringService = monitoringService;
         }
 
@@ -58,7 +68,6 @@ namespace Sepes.Infrastructure.Service
                 work = await _workQueue.RecieveMessageAsync();
             }
         }
-
 
         public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {
@@ -109,13 +118,29 @@ namespace Sepes.Infrastructure.Service
                                 currentProvisioningResult = await CreateAndUpdateUtil.HandleCreateOrUpdate(currentOperation, currentProvisioningParameters, provisioningService, _resourceReadService, _resourceUpdateService, _resourceOperationUpdateService, _logger);
                             }
 
-                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
+                            currentOperation = await _resourceOperationUpdateService.TouchAsync(currentOperation.Id);
+                            
+                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id,
+                                CloudResourceOperationState.DONE_SUCCESSFUL,
+                                updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
                         }
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))
                         {
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
                             currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
+                        }
+                        else if (EnsureRolesUtil.WillBeHandledAsEnsureRoles(currentOperation))
+                        {
+                            currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
+                          
+                            await EnsureRolesUtil.EnsureRoles(currentOperation,
+                                _azureRoleAssignmentService,
+                                _resourceReadService,
+                                _resourceOperationUpdateService,
+                                _logger);
+
+                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
                         }
                         else
                         {
@@ -128,7 +153,14 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (ex.LogAsWarning)
                         {
-                            _logger.LogWarning(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation aborted"));
+                            if (ex.IncludeExceptionInWarningLog)
+                            {
+                                _logger.LogWarning(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation aborted"));
+                            }
+                            else
+                            {
+                                _logger.LogWarning(ProvisioningLogUtil.Operation(currentOperation, $"Operation aborted: {ex.Message}"));
+                            }                          
                         }
                         else
                         {

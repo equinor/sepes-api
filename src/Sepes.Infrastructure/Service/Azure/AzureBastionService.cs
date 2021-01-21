@@ -33,10 +33,20 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
 
-            var bastionHost = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
-            var result = CreateResult(bastionHost);
+            var bastionHost = await GetResourceInternalAsync(parameters.ResourceGroupName, parameters.Name, false);
 
-            _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
+            if (bastionHost == null)
+            {
+                bastionHost = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
+                _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
+            }
+            else
+            {
+                _logger.LogInformation($"Ensure bastion exist for Sandbox: {parameters.SandboxName}! Bastion allready existed. Bastion Id: {bastionHost.Id}");
+            }
+              
+            var result = CreateResult(bastionHost);
+           
             return result;
         }
 
@@ -119,12 +129,30 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<BastionHost> GetResourceAsync(string resourceGroupName, string bastionHostName)
         {
-            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            return await GetResourceInternalAsync(resourceGroupName, bastionHostName);
+        }
+
+        async Task<BastionHost> GetResourceInternalAsync(string resourceGroupName, string bastionHostName, bool failOnNotFound = true)
+        {
+            try
             {
-                client.SubscriptionId = _subscriptionId;
-                var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
-                return bastion;
+                using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+                {
+                    client.SubscriptionId = _subscriptionId;
+                    var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
+                    return bastion;
+                }
             }
+            catch (Exception)
+            {
+
+                if (failOnNotFound)
+                {
+                    throw;
+                }
+
+                return null;
+            }           
         }
 
 

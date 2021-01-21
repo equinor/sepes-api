@@ -26,8 +26,8 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
-            await _sandboxPhaseService.MoveToNextPhaseAsync(sandboxId, cancellation);
-            return new NoContentResult();
+           var sandbox = await _sandboxPhaseService.MoveToNextPhaseAsync(sandboxId, cancellation);
+            return new JsonResult(sandbox);
         }              
     }
 }

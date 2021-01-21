@@ -13,15 +13,12 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationCreateService : CloudResourceOperationServiceBase, ICloudResourceOperationCreateService
-    {  
-        readonly IUserService _userService;
+    {        
         readonly IRequestIdService _requestIdService;
 
         public CloudResourceOperationCreateService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
-            : base(db, mapper)
-        {
-           
-            _userService = userService;
+            : base(db, mapper, userService)
+        {          
             _requestIdService = requestIdService;
         }
 
@@ -35,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOperationDtoInternal(newOperation.Id);
         }
 
-        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, int dependsOn = 0, string batchId = null)
+        public async Task<CloudResourceOperationDto> CreateUpdateOperationAsync(int sandboxResourceId, string operationType = CloudResourceOperationType.UPDATE, int dependsOn = 0, string batchId = null, string desiredState = null)
         {
             var sandboxResourceFromDb = await GetResourceOrThrowAsync(sandboxResourceId);
 
@@ -43,44 +40,103 @@ namespace Sepes.Infrastructure.Service
 
             if (dependsOn == 0)
             {
-                var previousOperation = sandboxResourceFromDb.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
+                var mustWaitFor = await CheckAnyIfOperationsToWaitFor(sandboxResourceFromDb, currentUser);
 
-                if (previousOperation != null)
+                if (mustWaitFor != null)
                 {
-                    if (previousOperation.OperationType == CloudResourceOperationType.DELETE)
-                    {
-                        throw new Exception($"Error when adding operation to resource {sandboxResourceId}, resource allready marked for deletion");
-                    }
-                    else if (previousOperation.OperationType == CloudResourceOperationType.UPDATE)
-                    {
-                        //If previous operation is waiting for some other op, it's best this also gets in line
-                        if (previousOperation.DependsOnOperationId.HasValue)
-                        {
-                            dependsOn = previousOperation.Id;
-                        }
-                    }
-                    else
-                    {
-                        dependsOn = previousOperation.Id;
-                    }
+                    dependsOn = mustWaitFor.Id;
                 }
             }
 
-            var newOperation = new CloudResourceOperation()
-            {
-                Description = AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, CloudResourceOperationType.UPDATE, sandboxResourceId),
-                BatchId = batchId,
-                OperationType = CloudResourceOperationType.UPDATE,
-                CreatedBy = currentUser.UserName,
-                CreatedBySessionId = _requestIdService.GetRequestId(),
-                DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?),
-                MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
-            };
-
+            var newOperation = await CreateUpdateOperationAsync(
+                AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
+               operationType,
+               dependsOn,
+               batchId,
+               desiredState);
 
             sandboxResourceFromDb.Operations.Add(newOperation);
             await _db.SaveChangesAsync();
             return await GetOperationDtoInternal(newOperation.Id);
+        }
+
+        async Task<CloudResourceOperation> CreateUpdateOperationAsync(string description, string operationType, int dependsOn = 0, string batchId = null, string desiredState = null)
+        {
+            var updateOperation = await CreateBasicOperationAsync();
+
+            updateOperation.Description = description;
+            updateOperation.OperationType = operationType;
+            updateOperation.BatchId = batchId;
+            updateOperation.DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?);
+            updateOperation.DesiredState = desiredState;
+
+            return updateOperation;
+        }
+
+        async Task<CloudResourceOperation> CreateBasicOperationAsync()
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var newOperation = new CloudResourceOperation()
+            {
+                Status = CloudResourceOperationState.NEW,
+                CreatedBy = currentUser.UserName,
+                CreatedBySessionId = _requestIdService.GetRequestId(),
+                MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT
+            };
+
+            return newOperation;
+
+        }
+
+        async Task<CloudResourceOperation> CheckAnyIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
+        {
+
+            bool mostRecentOperation = true;
+
+            foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
+            {
+                if (curOperation.OperationType == CloudResourceOperationType.DELETE)
+                {
+                    throw new Exception($"Error when adding operation to resource {resource.Id}, resource allready marked for deletion");
+                }
+
+                if (mostRecentOperation && curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                {
+                    return null;
+                }
+
+                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
+                {
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    {
+                        //If very old, set to aborted and continue the search
+                        if (curOperation.Updated.AddMinutes(1) < DateTime.UtcNow)
+                        {
+                            curOperation.Status = CloudResourceOperationState.ABORTED;
+                            curOperation.Updated = DateTime.UtcNow;
+                            curOperation.UpdatedBy = currentUser.UserName;
+                            await _db.SaveChangesAsync();
+                        }
+                        else
+                        {
+                            return curOperation;
+                        }
+                    }
+                }
+
+                if (curOperation.OperationType == CloudResourceOperationType.CREATE)
+                {
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    {
+                        return curOperation;
+                    }
+                }
+
+                mostRecentOperation = false;
+            }
+
+            return null;
         }
 
         public async Task<CloudResourceOperation> CreateDeleteOperationAsync(int sandboxResourceId, string description, string batchId = null)
@@ -91,10 +147,11 @@ namespace Sepes.Infrastructure.Service
 
             var deleteOperation = new CloudResourceOperation()
             {
-                CreatedBy = user.UserName,  
+                CreatedBy = user.UserName,
                 BatchId = batchId,
                 CloudResourceId = sandboxResourceId,
                 OperationType = CloudResourceOperationType.DELETE,
+                Status = CloudResourceOperationState.NEW,
                 CreatedBySessionId = _requestIdService.GetRequestId(),
                 MaxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
                 Description = description
@@ -105,6 +162,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return deleteOperation;
-        } 
+        }
     }
 }

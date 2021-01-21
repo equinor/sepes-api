@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -81,14 +82,18 @@ namespace Sepes.RestApi
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
-            services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
-                 .AddProtectedWebApiCallsProtectedWebApi(_configuration)
-                 .AddInMemoryTokenCaches();
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+          .AddMicrosoftIdentityWebApi(_configuration)
+            .EnableTokenAcquisitionToCallDownstreamApi()
+            .AddInMemoryTokenCaches();
+            //services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
+            //     .AddProtectedWebApiCallsProtectedWebApi(_configuration)
+            //     .AddInMemoryTokenCaches();
 
-            // Token acquisition service based on MSAL.NET
-            // and chosen token cache implementation
-            services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
-               .AddInMemoryTokenCaches();            
+            //// Token acquisition service based on MSAL.NET
+            //// and chosen token cache implementation
+            //services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
+            //   .AddInMemoryTokenCaches();            
 
             DoMigration();
 
@@ -144,14 +149,16 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
-            services.AddTransient<IStudyParticipantService, StudyParticipantService>();
+            services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
+            services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
+            services.AddTransient<IStudyParticipantRemoveService, StudyParticipantRemoveService>();
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
             services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();          
+            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();     
             services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -165,14 +172,14 @@ namespace Sepes.RestApi
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
-            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();          
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();    
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
             services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
-            
+
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +16,14 @@ namespace Sepes.Infrastructure.Service
     public class CloudResourceOperationServiceBase
     {
         protected readonly SepesDbContext _db;
-        protected readonly IMapper _mapper;     
+        protected readonly IMapper _mapper;
+        protected readonly IUserService _userService;
 
-        public CloudResourceOperationServiceBase(SepesDbContext db, IMapper mapper)
+        public CloudResourceOperationServiceBase(SepesDbContext db, IMapper mapper, IUserService userService)
         {
             _db = db;
-            _mapper = mapper;     
+            _mapper = mapper;
+            _userService = userService;
         }
 
         public async Task<List<CloudResourceOperation>> GetUnfinishedOperations(int resourceId)
@@ -69,7 +72,7 @@ namespace Sepes.Infrastructure.Service
                 .ThenInclude(o => o.Resource)
                 .Include(o => o.Resource)
                  .ThenInclude(r => r.Sandbox)
-                         .ThenInclude(sb => sb.Study)
+                         .ThenInclude(sb => sb.Study)               
                 .FirstOrDefaultAsync(o => o.Id == id);
 
             if (entityFromDb == null)
@@ -78,6 +81,17 @@ namespace Sepes.Infrastructure.Service
             }
 
             return entityFromDb;
+        }
+
+        protected async Task<CloudResourceOperation> GetExistingOperationReadyForUpdate(int id)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            var operationFromDb = await GetResourceOperationOrThrowAsync(id);
+            operationFromDb.Updated = DateTime.UtcNow;
+            operationFromDb.UpdatedBy = currentUser.UserName;
+
+            return operationFromDb;
         }
 
         IQueryable<CloudResourceOperation> GetPreceedingUnfinishedCreateOrUpdateOperationsQueryable(int resourceId, string batchId = null, DateTime? createdEarlyerThan = null)

@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
@@ -16,6 +18,7 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly IUserService _userService;        
+        readonly IUserService _userService;
         readonly ISandboxService _sandboxService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
@@ -38,12 +41,11 @@ namespace Sepes.Infrastructure.Service
         readonly IProvisioningQueueService _workQueue;
         readonly IAzureVmService _azureVmService;
 
-
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
             IConfiguration config,
             SepesDbContext db,
             IMapper mapper,
-            IUserService userService,            
+            IUserService userService,
             ISandboxService sandboxService,
             IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
@@ -58,7 +60,7 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _config = config;
             _mapper = mapper;
-            _userService = userService;            
+            _userService = userService;
             _sandboxService = sandboxService;
             _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
@@ -72,43 +74,97 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-            _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
+            CloudResourceDto vmResourceEntry = null;
 
-            var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
-
-            var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
-
-            await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
-
-            var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
-
-            var region = RegionStringConverter.Convert(sandbox.Region);
-
-            var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
-
-            //Make this dependent on bastion create operation to be completed, since bastion finishes last
-            var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
-
-            var vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
-
-            //Create vm settings and immeately attach to resource entry
-            var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
-            vmResourceEntry.ConfigString = vmSettingsString;
-            await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
-
-            var queueParentItem = new ProvisioningQueueParentDto
+            try
             {
-                SandboxId = sandboxId,
-                Description = $"Create VM for Sandbox: {sandboxId}"
-            };
+                ValidateVmPasswordOrThrow(userInput.Password);
 
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
+                _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-            await _workQueue.SendMessageAsync(queueParentItem);
+                var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
-            var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
+                var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-            return dtoMappedFromResource;
+                await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
+
+                var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
+
+                var region = RegionStringConverter.Convert(sandbox.Region);
+
+                userInput.DataDisks = await TranslateDiskSizes(sandbox.Region, userInput.DataDisks);
+
+                var resourceGroup = await CloudResourceQueries.GetResourceGroupEntry(_db, sandboxId);
+
+                //Make this dependent on bastion create operation to be completed, since bastion finishes last
+                var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
+
+
+                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+
+                //Create vm settings and immeately attach to resource entry
+                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
+                vmResourceEntry.ConfigString = vmSettingsString;
+                await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
+
+                var queueParentItem = new ProvisioningQueueParentDto
+                {
+                    SandboxId = sandboxId,
+                    Description = $"Create VM for Sandbox: {sandboxId}"
+                };
+
+                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
+
+                await _workQueue.SendMessageAsync(queueParentItem);
+
+                var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
+
+                return dtoMappedFromResource;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    //Delete resource if created
+                    if (vmResourceEntry != null)
+                    {
+                        await _sandboxResourceDeleteService.HardDeletedAsync(vmResourceEntry.Id);
+                    }
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.LogError(rollbackEx, $"Failed to roll back VM creation for sandbox {sandboxId}");
+                }
+
+                throw new Exception($"Failed to create VM: {ex.Message}", ex);
+            }
+        }
+
+        async Task<List<string>> TranslateDiskSizes(string region, List<string> dataDisksFromClient)
+        {
+            //Fix disks
+            var disksFromDbForGivenRegion = await _db.RegionDiskSize.Where(rds => rds.RegionKey == region).Select(rds => rds.DiskSize).ToDictionaryAsync(ds => ds.Key, ds => ds);
+
+            if (disksFromDbForGivenRegion.Count == 0)
+            {
+                throw new Exception($"No data disk items found in DB");
+            }
+
+            var result = new List<string>();
+
+            foreach (var curDataDisk in dataDisksFromClient)
+            {
+                if (disksFromDbForGivenRegion.TryGetValue(curDataDisk, out DiskSize diskSize))
+                {
+                    result.Add(Convert.ToString(diskSize.Size));
+                }
+                else
+                {
+                    throw new Exception($"Unknown data disk size specification: {curDataDisk}");
+                }
+            }
+
+            return result;
         }
 
         public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
@@ -123,15 +179,15 @@ namespace Sepes.Infrastructure.Service
             var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id);
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
-            
+
             var queueParentItem = new ProvisioningQueueParentDto
             {
                 SandboxId = vmResource.SandboxId,
                 Description = deleteResourceOperation.Description,
                 Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
             };
-          
-            await _workQueue.SendMessageAsync(queueParentItem);            
+
+            await _workQueue.SendMessageAsync(queueParentItem);
         }
 
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
@@ -176,7 +232,7 @@ namespace Sepes.Infrastructure.Service
             var vmExternalLink = new VmExternalLink
             {
                 Id = vmId,
-                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)               
+                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)
             };
 
             return vmExternalLink;
@@ -188,10 +244,47 @@ namespace Sepes.Infrastructure.Service
             var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
 
             return vmResource;
-        } 
-        
+        }
+
+        public void ValidateVmPasswordOrThrow(string password)
+        {
+            var errorString = "";
+            //Atleast one upper case
+            var upper = new Regex(@"(?=.*[A - Z])");
+            //Atleast one number
+            var number = new Regex(@".*[0-9].*");
+            //Atleast one special character
+            var special = new Regex(@"(?=.*[!@#$%^&*])");
+            //Between 12-123 long
+            var limit = new Regex(@"(?=.{12,123})");
+            if (!upper.IsMatch(password))
+            {
+                errorString += "Missing one uppercase character. ";
+            }
+            if (!number.IsMatch(password))
+            {
+                errorString += "Missing one number. ";
+            }
+            if (!special.IsMatch(password))
+            {
+                errorString += "Missing one special character. ";
+            }
+            if (!limit.IsMatch(password))
+            {
+                errorString += "Outside the limit (12-123). ";
+
+            }
+
+            if (!String.IsNullOrWhiteSpace(errorString))
+            {
+                throw new Exception($"Password is missing following requirements: {errorString}");
+            }
+
+        }
+
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
         {
+
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
             var availableOs = await _vmLookupService.AvailableOperatingSystems(region);
@@ -224,8 +317,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-
-                throw new Exception($"VM Creation failed. Unable to store VM password in Key Vault. See inner exception for details.", ex);
+                throw new Exception($"Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
     }

@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,12 +73,12 @@ namespace Sepes.Infrastructure.Service
             }
 
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        }            
+        }
 
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
             var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-                       
+
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -92,7 +93,7 @@ namespace Sepes.Infrastructure.Service
                 saveAfterwards = true;
             }
             else
-            { 
+            {
                 var newRules = updatedRuleSet.Where(r => String.IsNullOrWhiteSpace(r.Name)).ToList();
                 var rulesThatShouldExistAllready = updatedRuleSet.Where(r => !String.IsNullOrWhiteSpace(r.Name)).ToList();
 
@@ -147,10 +148,10 @@ namespace Sepes.Infrastructure.Service
             var validationErrors = new List<string>();
 
             var sandbox = await _db.Sandboxes.Include(sb => sb.PhaseHistory).FirstOrDefaultAsync(sb => sb.Id == vm.SandboxId);
-            var curPhase = SandboxPhaseUtil.GetCurrentPhase(sandbox);           
+            var curPhase = SandboxPhaseUtil.GetCurrentPhase(sandbox);
 
             //VALIDATE OUTBOUND RULE, THERE SHOULD BE ONLY ONE
-            
+
             var outboundRules = updatedRuleSet.Where(r => r.Direction == RuleDirection.Outbound).ToList();
 
             if (outboundRules.Count != 1)
@@ -159,8 +160,8 @@ namespace Sepes.Infrastructure.Service
                 ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
             }
 
-            var onlyOutboundRuleFromExisting = existingRules.SingleOrDefault(r=> r.Direction == RuleDirection.Outbound);
-            var onlyOutboundRuleFromClient = outboundRules.SingleOrDefault();          
+            var onlyOutboundRuleFromExisting = existingRules.SingleOrDefault(r => r.Direction == RuleDirection.Outbound);
+            var onlyOutboundRuleFromClient = outboundRules.SingleOrDefault();
 
             if (onlyOutboundRuleFromExisting.Name != onlyOutboundRuleFromClient.Name)
             {
@@ -170,7 +171,7 @@ namespace Sepes.Infrastructure.Service
 
             //If Sandbox is not open, make sure outbound rule has not changed
             if (curPhase > SandboxPhase.Open)
-            {               
+            {
                 if (onlyOutboundRuleFromClient.Direction == RuleDirection.Outbound)
                 {
                     if (onlyOutboundRuleFromClient.ToString() != onlyOutboundRuleFromExisting.ToString())
@@ -181,8 +182,8 @@ namespace Sepes.Infrastructure.Service
                         {
                             validationErrors.Add($"Only admin can updated outgoing rules when Sandbox is in phase {curPhase}");
                             ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
-                        }                    
-                    }                        
+                        }
+                    }
                 }
             }
 
@@ -212,18 +213,18 @@ namespace Sepes.Infrastructure.Service
             }
 
             ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
-        }       
+        }
 
         public async Task<bool> IsInternetVmRuleSetToDeny(int vmId)
         {
             var internetRule = await GetInternetRule(vmId);
 
-            if(internetRule == null)
+            if (internetRule == null)
             {
                 throw new NotFoundException($"Could not find internet rule for VM {vmId}");
             }
 
-            return IsRuleSetToDeny(internetRule);          
+            return IsRuleSetToDeny(internetRule);
         }
 
         public bool IsRuleSetToDeny(VmRuleDto rule)
@@ -522,22 +523,16 @@ namespace Sepes.Infrastructure.Service
 
         async Task CreateUpdateOperationAndAddQueueItem(CloudResource vm, string description)
         {
+            //If un-started update allready exist, no need to create update op?
             if (await _sandboxResourceOperationReadService.HasUnstartedCreateOrUpdateOperation(vm.Id))
             {
                 _logger.LogWarning($"Updating VM {vm.Id}: There is allready an unstarted VM Create or Update operation. Not creating additional");
             }
             else
             {
-                //If un started update allready exist, no need to create update op?
                 var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
-                var queueParentItem = new ProvisioningQueueParentDto();
-                queueParentItem.SandboxId = vm.SandboxId;
-                queueParentItem.Description = $"Update VM state for Sandbox: {vm.SandboxId} ({description})";
-
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmUpdateOperation.Id });
-
-                await _workQueue.SendMessageAsync(queueParentItem);
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(vmUpdateOperation, _workQueue);
             }
         }
     }

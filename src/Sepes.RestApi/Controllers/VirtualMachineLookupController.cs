@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -32,10 +31,25 @@ namespace Sepes.RestApi.Controllers
             return new JsonResult(createdVm);
         }
 
-        [HttpGet("calculateName/{studyName}/{sandboxName}/{userSuffix}")]
-        public string CalculateName(string studyName, string sandboxName, string userSuffix)
+        [HttpPost("{sandboxId}/calculatedVmprice")]
+        public async Task<IActionResult> GetCalculatedVmPrice(int sandboxId, CalculateVmPriceUserInputDto input)
         {
-            return _vmLookupService.CalculateName(studyName, sandboxName, userSuffix);
+            var createdVm = await _vmSizeService.CalculateVmPrice(sandboxId, input);
+            return new JsonResult(createdVm);
+        }
+
+        [HttpPost("validateUsername")]
+        public IActionResult validateUsername(VmUsernameDto input)
+        {
+            var usernameValidationResult = _vmLookupService.CheckIfUsernameIsValidOrThrow(input.username);
+            return new JsonResult(usernameValidationResult);
+
+        }
+
+        [HttpPost("calculateName")]
+        public string CalculateName(VmCalculateNameDto input)
+        {
+            return _vmLookupService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
         }
 
         [HttpGet("{sandboxId}/sizes")]

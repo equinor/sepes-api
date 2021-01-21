@@ -21,9 +21,12 @@ namespace Sepes.Infrastructure.Dto.Dataset
         public string AreaL2 { get; set; }
         public string Tags { get; set; }
         public int? StudyId { get; set; }
+        public string StorageAccountLink { get; set; }
 
         public List<StudyDto> Studies { get; set; }
 
         public List<SandboxDatasetDto> SandboxDatasets { get; set; }
+
+        public DatasetPermissionsDto Permissions { get; set; } = new DatasetPermissionsDto();
     }
 }

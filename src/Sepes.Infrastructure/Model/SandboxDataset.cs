@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
@@ -9,7 +10,7 @@ namespace Sepes.Infrastructure.Model
 
         public int DatasetId { get; set; }
         public virtual Dataset Dataset { get; set; }
-
+        [MaxLength(64)]
         public string AddedBy { get; set; }
 
         public DateTime Added { get; set; }

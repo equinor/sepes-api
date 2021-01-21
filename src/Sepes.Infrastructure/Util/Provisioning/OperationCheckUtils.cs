@@ -14,11 +14,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Status == CloudResourceOperationState.ABORTED)
             {
-                throw new ProvisioningException($"Operation is aborted", proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
+                throw new ProvisioningException($"Operation is aborted", proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
             }
             else if (operation.TryCount >= operation.MaxTryCount)
             {
-                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.FAILED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
+                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.FAILED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
             }
         }
 
@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Resource.Deleted.HasValue && operation.OperationType != CloudResourceOperationType.DELETE)
             {
-                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true);
+                throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
             }
         }
 
@@ -34,9 +34,9 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.Status == CloudResourceOperationState.IN_PROGRESS)
             {
-                if (operation.Updated.AddMinutes(2) >= DateTime.UtcNow) //If changed less than two minutes ago
+                if (operation.Updated.AddMinutes(1) >= DateTime.UtcNow) //If changed less than two minutes ago
                 {
-                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true);
+                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true, includeExceptionInWarningLog: false);
                 }
             }
         }
@@ -51,12 +51,10 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                     bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
 
-                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true);                               
+                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true, includeExceptionInWarningLog: false);                               
 
                 }
             }
         }
-
-
     }
 }

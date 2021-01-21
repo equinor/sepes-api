@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Infrastructure.Dto.Dataset;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -20,6 +21,8 @@ namespace Sepes.Infrastructure.Dto
         public string CountryOfOrigin { get; set; }
         public string AreaL1 { get; set; }
         public string AreaL2 { get; set; }
-        public string Tags { get; set; }       
+        public string Tags { get; set; }
+
+        public DatasetPermissionsDto Permissions { get; set; } = new DatasetPermissionsDto();
     }
 }

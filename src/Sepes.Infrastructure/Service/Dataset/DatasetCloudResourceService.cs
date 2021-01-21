@@ -135,9 +135,9 @@ namespace Sepes.Infrastructure.Service
                     study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
                 }
 
-                var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+                var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
 
-                await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tags, cancellationToken);
+                await _resourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
 
                 var currentUser = await _userService.GetCurrentUserAsync();
 
@@ -156,7 +156,8 @@ namespace Sepes.Infrastructure.Service
                 var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
                 dataset.FirewallRules.Add(await CreateServerRule(currentUser));
 
-                var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tags, onlyAllowAccessFrom: dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken);
+                var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
+                var newStorageAccount = await _storageAccountService.CreateStorageAccount(RegionStringConverter.Convert(dataset.Location), study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, tagsForStorageAccount, onlyAllowAccessFrom: dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken);
 
                 dataset.StorageAccountId = newStorageAccount.Id;
                 dataset.StorageAccountName = newStorageAccount.Name;
@@ -185,23 +186,14 @@ namespace Sepes.Infrastructure.Service
             {
 
                 var currentUser = await _userService.GetCurrentUserAsync();
-
-                var roleAssignmentId = Guid.NewGuid().ToString();
-                var roleDefinitionId = $"{dataset.StorageAccountId}/providers/Microsoft.Authorization/roleDefinitions/{AzureRoleDefinitionId.READ}";
-                await _roleAssignmentService.AddResourceRoleAssignment(dataset.StorageAccountId, roleAssignmentId, roleDefinitionId, currentUser.ObjectId, cancellationToken);
+             
+                var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(dataset.StorageAccountId, AzureRoleIds.READ);
+                await _roleAssignmentService.AddRoleAssignment(dataset.StorageAccountId, roleDefinitionId, currentUser.ObjectId, cancellationToken: cancellationToken);
             }
             catch (Exception ex)
             {
                 throw new Exception($"Failed to create Role Assignment for Storage Account", ex);
             }
-        }
-
-        public Task MakeDatasetAvailableToSandbox(Study study, Dataset dataset, Sandbox sandbox, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-            //Get storage account
-            //Get vnet for sandbox
-            //join storage account to vnet
-        }       
+        }             
     }
 }

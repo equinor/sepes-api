@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Azure.Management.Compute.Fluent;
+using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -30,57 +31,77 @@ namespace Sepes.Infrastructure.Service
         public AzureVmService(IConfiguration config, IMapper mapper, ILogger<AzureVmService> logger, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, logger)
         {
-
             _mapper = mapper;
             _nsgRuleService = nsgRuleService;
         }
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"Creating VM: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
+            _logger.LogInformation($"Ensuring VM exists: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
-
-            var passwordReference = vmSettings.Password;
-            string password = await GetPasswordFromKeyVault(passwordReference);
-
-            string vmSize = vmSettings.Size;
-
-            var createdVm = await CreateAsync(parameters.Region,
-                parameters.ResourceGroupName,
-                parameters.Name,
-                vmSettings.NetworkName, vmSettings.SubnetName,
-                vmSettings.Username, password,
-                vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
-                vmSettings.DiagnosticStorageAccountName, cancellationToken);
-
-            if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
+                       
+            var virtualMachine = await GetAsync(parameters.ResourceGroupName, parameters.Name);
+                       
+            if (virtualMachine == null)
             {
-                foreach (var curDisk in vmSettings.DataDisks)
+                _logger.LogInformation($"VM {parameters.Name} did not exist in resource Group: {parameters.ResourceGroupName}, creating!");
+
+                var passwordReference = vmSettings.Password;
+                string password = await GetPasswordFromKeyVault(passwordReference);
+
+                string vmSize = vmSettings.Size;
+
+                virtualMachine = await CreateAsync(parameters.Region,
+                    parameters.ResourceGroupName,
+                    parameters.Name,
+                    vmSettings.NetworkName, vmSettings.SubnetName,
+                    vmSettings.Username, password,
+                    vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
+                    vmSettings.DiagnosticStorageAccountName, cancellationToken);
+
+                await DeletePasswordFromKeyVault(passwordReference);
+
+                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
                 {
-                    var sizeAsInt = Convert.ToInt32(curDisk);
-
-                    if (sizeAsInt == 0)
+                    foreach (var curDisk in vmSettings.DataDisks)
                     {
-                        throw new Exception($"Illegal data disk size: {curDisk}");
+                        var sizeAsInt = Convert.ToInt32(curDisk);
+
+                        if (sizeAsInt == 0)
+                        {
+                            throw new Exception($"Illegal data disk size: {curDisk}");
+                        }
+
+                        await ApplyVmDataDisks(parameters.ResourceGroupName, parameters.Name, sizeAsInt, parameters.Tags);
                     }
+                }              
 
-                    await ApplyVmDataDisks(parameters.ResourceGroupName, parameters.Name, sizeAsInt);
-                }
+                _logger.LogInformation($"Done creating Virtual Machine for sandbox with Id: {parameters.SandboxId}! Id: {virtualMachine.Id}");
             }
+            else
+            {
+                //Validate data disks
+                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
+                {
+                    if (virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
+                    {
+                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks}, saw {vmSettings.DataDisks.Count} on VM");
+                    }
+                }                   
+            }            
 
-            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(createdVm.PrimaryNetworkInterfaceId, cancellationToken);
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(virtualMachine.PrimaryNetworkInterfaceId, cancellationToken);
 
-            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
+            //Add tags to NIC
+            await primaryNic.UpdateTags().WithTags(parameters.Tags).ApplyTagsAsync();
 
-            var result = CreateCRUDResult(createdVm);
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);          
 
-            await DeletePasswordFromKeyVault(passwordReference);
+            var result = CreateCRUDResult(virtualMachine);
 
-            _logger.LogInformation($"Done creating Network Security Group for sandbox with Id: {parameters.SandboxId}! Id: {createdVm.Id}");
             return result;
         }
-
 
         public async Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
@@ -211,9 +232,9 @@ namespace Sepes.Infrastructure.Service
             if (relevantExistingRulesInNsg.Count() == 0)
             {
                 return startingAt;
-            }          
+            }
 
-            var curPriority = startingAt;          
+            var curPriority = startingAt;
 
             while (curPriority <= highestAllowed)
             {
@@ -221,21 +242,21 @@ namespace Sepes.Infrastructure.Service
 
                 foreach (var curExisting in relevantExistingRulesInNsg)
                 {
-                    if(curExisting.Value == null)
+                    if (curExisting.Value == null)
                     {
                         break;
                     }
-                    if(curPriority > curExisting.Value.Priority)
+                    if (curPriority > curExisting.Value.Priority)
                     {
                         continue;
                     }
-                    else if((curExisting.Value.Priority - curPriority) < 10)
+                    else if ((curExisting.Value.Priority - curPriority) < 10)
                     {
                         collision = true;
                         break;
                     }
 
-                    
+
                 }
 
                 if (collision)
@@ -245,11 +266,11 @@ namespace Sepes.Infrastructure.Service
                 else
                 {
                     return curPriority;
-                } 
+                }
             }
 
 
-            throw new Exception($"Unable to determine next priority for vm {parameters.Name}. Stopped at {highestAllowed}");       
+            throw new Exception($"Unable to determine next priority for vm {parameters.Name}. Stopped at {highestAllowed}");
 
         }
 
@@ -274,15 +295,15 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        async Task<string> DeletePasswordFromKeyVault(string passwordId)
+        async Task DeletePasswordFromKeyVault(string passwordId)
         {
             try
             {
-                return await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId, true);
+                await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId, true);
             }
             catch (Exception ex)
             {
-                throw new Exception($"VM Creation failed. Unable to delete VM password from Key Vault after use. See inner exception for details.", ex);
+                _logger.LogError(ex, $"VM Creation: Unable to delete VM password from Key Vault after use. Contiuning VM creation, but password must be deleted manually");
             }
         }
 
@@ -305,7 +326,6 @@ namespace Sepes.Infrastructure.Service
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
-
                                     .WithoutPrimaryPublicIPAddress();
 
 
@@ -335,9 +355,10 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        private IWithWindowsCreateManagedOrUnmanaged CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        private IWithManagedCreate CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
             IWithWindowsAdminUsernameManagedOrUnmanaged withOS;
+
             switch (distro.ToLower())
             {
                 case "win2019datacenter":
@@ -359,13 +380,15 @@ namespace Sepes.Infrastructure.Service
             }
             var vm = withOS
                 .WithAdminUsername(userName)
-                .WithAdminPassword(password);
+                .WithAdminPassword(password)
+                .WithOSDiskStorageAccountType(StorageAccountTypes.StandardSSDLRS);
             return vm;
         }
 
-        private IWithLinuxCreateManagedOrUnmanaged CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        private IWithManagedCreate CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
         {
             IWithLinuxRootUsernameManagedOrUnmanaged withOS;
+
             switch (distro.ToLower())
             {
                 case "ubuntults":
@@ -390,22 +413,30 @@ namespace Sepes.Infrastructure.Service
             }
             var vm = withOS
                 .WithRootUsername(userName)
-                .WithRootPassword(password);
-
+                .WithRootPassword(password)
+              .WithOSDiskStorageAccountType(StorageAccountTypes.StandardSSDLRS);
             return vm;
         }
 
-
-
-        public async Task ApplyVmDataDisks(string resourceGroupName, string virtualMachineName, int sizeInGB)
+        public async Task ApplyVmDataDisks(string resourceGroupName, string virtualMachineName, int sizeInGB, Dictionary<string, string> tags)
         {
             var vm = await GetAsync(resourceGroupName, virtualMachineName);
 
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
 
-           await vm.Update()
-                 .WithNewDataDisk(sizeInGB).ApplyAsync();
+            var newDataDisk = await _azure.Disks
+                .Define($"hdd-{virtualMachineName}-data-{Guid.NewGuid().ToString().Substring(0, 5)}")
+                .WithRegion(vm.RegionName)
+                .WithExistingResourceGroup(resourceGroupName)
+                .WithData()
+                .WithSizeInGB(sizeInGB)
+                .WithSku(DiskSkuTypes.SStandardSSDLRS)
+                .WithTags(tags)
+                .CreateAsync();
+
+            await vm.Update()
+                  .WithExistingDataDisk(newDataDisk).ApplyAsync();
         }
 
         public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)

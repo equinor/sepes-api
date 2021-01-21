@@ -15,27 +15,37 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(32)]
         public string OperationType { get; set; }
 
+        [MaxLength(32)]
         public string Status { get; set; }
 
         public int TryCount { get; set; }
 
         public int MaxTryCount { get; set; }
 
+        [MaxLength(64)]
         public string BatchId { get; set; }
 
+        [MaxLength(64)]
         public string CreatedBySessionId { get; set; }
 
+        [MaxLength(64)]
         public string CarriedOutBySessionId { get; set; }
 
         [MaxLength(256)]
         public string Description { get; set; }
 
+        [MaxLength(4096)]
         public string LatestError { get; set; }
 
         [MaxLength(64)]
         public string QueueMessageId { get; set; }
+
         [MaxLength(64)]
         public string QueueMessagePopReceipt { get; set; }
+
+        [MaxLength(4096)]
+        public string DesiredState { get; set; }
+
         public DateTime? QueueMessageVisibleAgainAt { get; set; }
 
         public CloudResource Resource { get; set; }
