@@ -44,8 +44,8 @@ namespace Sepes.Infrastructure.Service
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
-                .Where(r => !r.Deleted.HasValue
-                || (r.Deleted.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+                .Where(r => !r.DeletedAt.HasValue
+                || (r.DeletedAt.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
 
                 ).ToList();
 
@@ -59,13 +59,13 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<CloudResource>> GetAllActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
-                                                                                                   .Where(sr => !sr.Deleted.HasValue)
+                                                                                                   .Where(sr => !sr.DeletedAt.HasValue)
                                                                                                    .ToListAsync();
 
        
        
 
-        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.Deleted.HasValue && sr.Deleted.Value.AddMinutes(10) < DateTime.UtcNow)
+        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(10) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
         public async Task<bool> ResourceIsDeleted(int resourceId)
@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
-            if (resource.Deleted.HasValue || !String.IsNullOrWhiteSpace(resource.DeletedBy) )
+            if (resource.DeletedAt.HasValue || !String.IsNullOrWhiteSpace(resource.DeletedBy) )
             {
                 return true;
             } 

@@ -90,7 +90,7 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation($"{deleteDescription}: Creating delete operation");
 
                 deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resource.Id,
-                    AzureResourceUtil.CreateDescriptionForResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId, resource.Id));
+                    AzureResourceUtil.CreateDescriptionForResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId.Value, resource.Id));
 
             }
             else
@@ -124,7 +124,7 @@ namespace Sepes.Infrastructure.Service
         CloudResource MarkAsDeletedInternal(CloudResource resource, string deletedBy)
         {
             resource.DeletedBy = deletedBy;
-            resource.Deleted = DateTime.UtcNow;
+            resource.DeletedAt = DateTime.UtcNow;
 
             return resource;
         }

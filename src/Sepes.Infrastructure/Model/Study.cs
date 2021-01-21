@@ -45,6 +45,6 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<Sandbox> Sandboxes { get; set; }
 
-        public virtual ICollection<CloudResource> CloudResources { get; set; }
+        public virtual ICollection<CloudResource> Resources { get; set; }
     }
 }

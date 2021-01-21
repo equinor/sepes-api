@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<CloudResource>> GetActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
                                                                                                     .Include(sr => sr.Operations)
-                                                                                                   .Where(sr => !sr.Deleted.HasValue)
+                                                                                                   .Where(sr => !sr.DeletedAt.HasValue)
                                                                                                    .ToListAsync();
 
        

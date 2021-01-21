@@ -114,7 +114,7 @@ namespace Sepes.Infrastructure.Service
         {
             var resource = await _cloudResourceService.GetByIdAsync(resourceId);
 
-            var sandboxFromDb = await GetOrThrowAsync(resource.SandboxId, UserOperation.Study_Crud_Sandbox, true);
+            var sandboxFromDb = await GetOrThrowAsync(resource.SandboxId.Value, UserOperation.Study_Crud_Sandbox, true);
 
             if (resource.ResourceType != AzureResourceType.VirtualMachine)
             {
