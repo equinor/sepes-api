@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (System.Exception ex)
             {
-                _logger.LogInformation($"Could not get user list from Azure. Use only list from DB instead");
+                _logger.LogError(ex, $"Could not get user list from Azure. Use only list from DB instead");
             }
             
             var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.StartsWith(searchText) || u.FullName.StartsWith(searchText) || u.ObjectId.Equals(searchText)).ToListAsync(cancellationToken);
