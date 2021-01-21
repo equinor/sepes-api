@@ -182,7 +182,7 @@ namespace Sepes.Infrastructure.Service
 
             var queueParentItem = new ProvisioningQueueParentDto
             {
-                SandboxId = vmResource.SandboxId,
+                SandboxId = vmResource.SandboxId.Value,
                 Description = deleteResourceOperation.Description,
                 Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
             };

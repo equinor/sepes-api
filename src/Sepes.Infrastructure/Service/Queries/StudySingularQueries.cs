@@ -65,7 +65,7 @@ namespace Sepes.Infrastructure.Service.Queries
         static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
         {
             var sandboxId = await db.CloudResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
-            return sandboxId;
+            return sandboxId.Value;
         }      
 
         static async Task<Study> GetStudyBySandboxIdOrThrowAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)

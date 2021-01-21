@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Util
             return study.Sandboxes
                 .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
                 .Select(sb => GetSandboxResourceGroupEntry(sb.Resources))
-                .Where(r => !r.Deleted.HasValue)
+                .Where(r => !r.DeletedAt.HasValue)
                 .ToList();
         }
 

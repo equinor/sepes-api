@@ -39,7 +39,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<DateTime?>("Deleted")
+                    b.Property<bool?>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
@@ -52,6 +55,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<int?>("ParentResourceId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<string>("Region")
                         .HasColumnType("nvarchar(32)")
@@ -80,7 +87,7 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<bool>("SandboxControlled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("SandboxId")
+                    b.Property<int?>("SandboxId")
                         .HasColumnType("int");
 
                     b.Property<int?>("StudyId")
@@ -845,12 +852,12 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
                         .WithMany("Resources")
                         .HasForeignKey("SandboxId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
-                        .WithMany("CloudResources")
-                        .HasForeignKey("StudyId");
+                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
+                        .WithMany("Resources")
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
