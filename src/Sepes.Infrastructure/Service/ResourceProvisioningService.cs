@@ -153,7 +153,14 @@ namespace Sepes.Infrastructure.Service
                     {
                         if (ex.LogAsWarning)
                         {
-                            _logger.LogWarning(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation aborted"));
+                            if (ex.IncludeExceptionInWarningLog)
+                            {
+                                _logger.LogWarning(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation aborted"));
+                            }
+                            else
+                            {
+                                _logger.LogWarning(ProvisioningLogUtil.Operation(currentOperation, $"Operation aborted: {ex.Message}"));
+                            }                          
                         }
                         else
                         {
