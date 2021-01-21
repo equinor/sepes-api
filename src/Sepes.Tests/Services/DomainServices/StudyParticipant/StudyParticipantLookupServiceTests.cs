@@ -31,7 +31,7 @@ namespace Sepes.Tests.Services.DomainServices.StudyParticipant
             await RefreshAndSeedTestDatabase();
             var studyParticipantLookupService = StudyParticipantMockFactory.GetStudyParticipantLookupService(_serviceProvider);
             var usersWithName = await studyParticipantLookupService.GetLookupAsync("John@hotmail.com");
-            Assert.Equal(1, usersWithName.Count());
+            Assert.Single(usersWithName);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Sepes.Tests.Services.DomainServices.StudyParticipant
             await RefreshAndSeedTestDatabase();
             var studyParticipantLookupService = StudyParticipantMockFactory.GetStudyParticipantLookupService(_serviceProvider);
             var usersWithName = await studyParticipantLookupService.GetLookupAsync("No Person Has this name");
-            Assert.Equal(0, usersWithName.Count());
+            Assert.Empty(usersWithName);
         }
     }
 }
