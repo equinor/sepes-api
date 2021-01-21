@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.3](https://github.com/equinor/sepes-api/compare/0.4.2...0.4.3) (2021-01-21)
+
+
+### Features
+
+* **roles:** ensure study roles are set in Azure  ([#484](https://github.com/equinor/sepes-api/issues/484)) ([7c74fcd](https://github.com/equinor/sepes-api/commit/7c74fcde877ca2d91b46a22fe9e06164d5cbe1e1))
+* **sandbox:** new endpoint that returns all available datasets, and if they are added to sandbox ([e8dbfee](https://github.com/equinor/sepes-api/commit/e8dbfeec888a04805443e1266d35d90f686f1266))
+
+
+### Bug Fixes
+
+* **dataset:** added permissions to study specific dataset response (c… ([#471](https://github.com/equinor/sepes-api/issues/471)) ([1fb5b4e](https://github.com/equinor/sepes-api/commit/1fb5b4e42f5fc9faf451f0bc69b254a88687f85d))
+* **dataset:** now passing correct arguments to role assignment service ([#492](https://github.com/equinor/sepes-api/issues/492)) ([e27ab4c](https://github.com/equinor/sepes-api/commit/e27ab4c13d7e6e49d32859a3856cdc407820c974))
+* **logging:** dont log all provisioning exceptions as exceptions to App Insights ([#498](https://github.com/equinor/sepes-api/issues/498)) ([037e4c7](https://github.com/equinor/sepes-api/commit/037e4c7fd530adeaf82c7631efeb36f0139b886f))
+* **sandbox:** add/remove dataset. Improved validation and messages. Now returning HTTP 204 on succes ([d6f534c](https://github.com/equinor/sepes-api/commit/d6f534cbce43ff1794b81605c3e87cf343abf8dc))
+* **sandbox:** Include disk price to the estimated cost of an vm ([#469](https://github.com/equinor/sepes-api/issues/469)) ([cd06148](https://github.com/equinor/sepes-api/commit/cd06148be05760c7a6706c4d9d2dde1252d7aaf3))
+* **vm:** add endpoint for validating a username. Some names and perio… ([#479](https://github.com/equinor/sepes-api/issues/479)) ([6394c24](https://github.com/equinor/sepes-api/commit/6394c24471930f99d8c4ca278f017a24f3f30962)), closes [#478](https://github.com/equinor/sepes-api/issues/478)
+* **vm:** improved selection of price for all SKUs. Avoiding "low priority" and "spot" if possible ([acec3d4](https://github.com/equinor/sepes-api/commit/acec3d4099e7ed73ce2136c0a722da5cc0957df6))
+* **vm:** new endpoint for getting price of an vm without calling azure ([43aa823](https://github.com/equinor/sepes-api/commit/43aa8232ce84385f9b3efeab3d84061dd59e2c87))
+* **vm:** now rolling back, if creation fails in the create response ([#490](https://github.com/equinor/sepes-api/issues/490)) ([91b87f9](https://github.com/equinor/sepes-api/commit/91b87f9bf33d042a1fa5d29673eb2a5f73e447b8))
+* **vm:** provisioning can now resume if last attempt failed ([#491](https://github.com/equinor/sepes-api/issues/491)) ([084e030](https://github.com/equinor/sepes-api/commit/084e0300c02e320478ddde3781f98b48d151b029))
+* **vm:** validate password and throw error if it does not meet requir… ([#476](https://github.com/equinor/sepes-api/issues/476)) ([2b1cd7b](https://github.com/equinor/sepes-api/commit/2b1cd7be5738676b5df138c04832a0bf02495192)), closes [#337](https://github.com/equinor/sepes-api/issues/337)
+* **vm:** vm name validation can now handle special characters. For instance question mark ([#482](https://github.com/equinor/sepes-api/issues/482)) ([050f53a](https://github.com/equinor/sepes-api/commit/050f53af5cc20ac4f812464f4484edefb28da141)), closes [#481](https://github.com/equinor/sepes-api/issues/481)
+* **vm:** vm not getting stuck in updating if previous attempt failed ([#470](https://github.com/equinor/sepes-api/issues/470)) ([b9e5685](https://github.com/equinor/sepes-api/commit/b9e568540e36e94ac8e0326a29bba2d5717cac16))
+* ensured relevant tags are being set for all resources ([309eba4](https://github.com/equinor/sepes-api/commit/309eba4c65d624b5f44156e268bd026242a11c6f))
+
 ### [0.4.2](https://github.com/equinor/sepes-api/compare/0.4.1...0.4.2) (2021-01-05)
 
 
