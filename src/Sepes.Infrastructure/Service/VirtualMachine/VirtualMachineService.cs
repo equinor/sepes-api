@@ -250,7 +250,7 @@ namespace Sepes.Infrastructure.Service
         {
             var errorString = "";
             //Atleast one upper case
-            var upper = new Regex(@"(?=.*[A - Z])");
+            var upper = new Regex(@"(?=.*[A-Z])");
             //Atleast one number
             var number = new Regex(@".*[0-9].*");
             //Atleast one special character

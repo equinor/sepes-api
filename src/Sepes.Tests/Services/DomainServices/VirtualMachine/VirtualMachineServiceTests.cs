@@ -29,7 +29,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         [Fact]
         public async void CheckvalidPassword()
         {
-            var validPassword = "aA!1aaaaaaaa";
+            var validPassword = "!1Qwertyuiop";
             var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineService(_serviceProvider);
             virtualMachineLookupService.ValidateVmPasswordOrThrow(validPassword);
         }
