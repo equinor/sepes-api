@@ -25,5 +25,13 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 
             await Assert.ThrowsAsync<System.Exception>(async () => await validationOfName);
         }
+
+        [Fact]
+        public async void CheckvalidPassword()
+        {
+            var validPassword = "!1Qwertyuiop";
+            var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineService(_serviceProvider);
+            virtualMachineLookupService.ValidateVmPasswordOrThrow(validPassword);
+        }
     }
 }
