@@ -5,7 +5,6 @@ using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -26,16 +25,11 @@ namespace Sepes.Infrastructure.Service
 
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceCreateService _cloudResourceCreateService;
-        readonly ICloudResourceDeleteService _cloudResourceDeleteService;
-
-        readonly IAzureResourceGroupService _azureResourceGroupService;
-        readonly IAzureStorageAccountService _azureStorageAccountService;
-        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
+        readonly ICloudResourceDeleteService _cloudResourceDeleteService;   
 
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
            IUserService userService,
-           ICloudResourceReadService cloudResourceReadService, ICloudResourceCreateService cloudResourceCreateService, ICloudResourceDeleteService cloudResourceDeleteService,
-           IAzureResourceGroupService resourceGroupService, IAzureStorageAccountService storageAccountService, IAzureRoleAssignmentService roleAssignmentService)
+           ICloudResourceReadService cloudResourceReadService, ICloudResourceCreateService cloudResourceCreateService, ICloudResourceDeleteService cloudResourceDeleteService)
         {
             _config = config;
             _db = db;
@@ -44,19 +38,23 @@ namespace Sepes.Infrastructure.Service
 
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceCreateService = cloudResourceCreateService;
-            _cloudResourceDeleteService = cloudResourceDeleteService;
-
-
-            _azureStorageAccountService = storageAccountService;
-            _azureResourceGroupService = resourceGroupService;
-            _azureRoleAssignmentService = roleAssignmentService;
+            _cloudResourceDeleteService = cloudResourceDeleteService;          
         }
 
-        public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
+        //public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
+        //{
+        //    _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
+
+        //    await CreateStorageAccountForStudySpecificDatasets(dataset, clientIp, cancellationToken);
+        //    await AddRoleAssignmentForCurrentUser(dataset, cancellationToken);
+        //}
+
+        public async Task CreateResourcesForStudySpecificDatasetAsync(Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
-            await CreateStorageAccountForStudySpecificDatasets(study, dataset, clientIp, cancellationToken);
+            var resourceGroupDbId = await EnsureResourceGroupForStudySpecificDatasetExistsAsync(dataset.Study);
+            await CreateStorageAccountForStudySpecificDatasets(dataset, resourceGroupDbId, clientIp, cancellationToken);
             await AddRoleAssignmentForCurrentUser(dataset, cancellationToken);
         }
 
@@ -74,7 +72,7 @@ namespace Sepes.Infrastructure.Service
             {
                 if (curDbRule.RuleType == DatasetFirewallRuleType.Api)
                 {
-                    if(curDbRule.Address == serverRule.Address)
+                    if (curDbRule.Address == serverRule.Address)
                     {
                         serverRuleAllreadyExist = true;
                     }
@@ -84,7 +82,7 @@ namespace Sepes.Infrastructure.Service
                         {
                             rulesToRemove.Add(curDbRule);
                         }
-                    }                    
+                    }
                 }
             }
 
@@ -100,7 +98,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync(cancellationToken);
 
-            await _azureStorageAccountService.SetStorageAccountAllowedIPs(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken); 
+            await _azureStorageAccountService.SetStorageAccountAllowedIPs(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, dataset.FirewallRules.Select(fw => fw.Address).ToList(), cancellationToken);
         }
 
         public async Task DeleteResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, CancellationToken cancellationToken = default)
@@ -138,62 +136,66 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        //CloudResource GetResourceGroupForStudySpecificDataset(Study study)
-        //{
-        //    if (study.Resources == null)
-        //    {
-        //        throw new Exception("Missing Include for CloudResource on Study");
-        //    }
+        CloudResource GetResourceGroupForStudySpecificDataset(Study study)
+        {
+            if (study.Resources == null)
+            {
+                throw new Exception("Missing Include for CloudResource on Study");
+            }
 
-        //    foreach (var curResource in study.Resources)
-        //    {
-        //        if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false)
-        //        {
-        //            if (curResource.ResourceType == AzureResourceType.ResourceGroup)
-        //            {
-        //                if(String.IsNullOrWhiteSpace(curResource.Purpose) == false && curResource.Purpose)
-        //            }
-        //        }
-        //    }
-        //}
+            foreach (var curResource in study.Resources)
+            {
+                if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false)
+                {
+                    if (curResource.ResourceType == AzureResourceType.ResourceGroup)
+                    {
+                        if (String.IsNullOrWhiteSpace(curResource.Purpose) == false && curResource.Purpose == CloudResourcePurpose.StudySpecificDataset)
+                        {
+                            return curResource;
+                        }
+                    }
+                }
+            }
 
-        //async Task<string> EnsureResourceGroupForStudySpecificDatasetExists(Study study)
-        //{
+            return null;
+        }
 
+        async Task<int> EnsureResourceGroupForStudySpecificDatasetExistsAsync(Study study)
+        {
+            var datasetResourceGroupEntry = GetResourceGroupForStudySpecificDataset(study);
 
-        //    if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
-        //    {
-        //        study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
-        //    }
+            if (datasetResourceGroupEntry == null)
+            {
+                //Create resource group entry
+                //Set a new name                
+            }
 
-        //    var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+        
 
-        //    await _azureResourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
+            if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
+            {
+                study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
+            }
 
-        //}
+            var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+            return datasetResourceGroupEntry.Id;
 
-        async Task CreateStorageAccountForStudySpecificDatasets(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
+            //await _azureResourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
+        }
+
+        async Task CreateStorageAccountForStudySpecificDatasets(Dataset dataset, int storageAccountId, string clientIp, CancellationToken cancellationToken = default)
         {
             try
             {
                 _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
-                
+             
 
-                //TODO: Get from resource table instead
+            
 
-                    //TODO: Create resource entry
+                //TODO: Create resource entry
 
-
-                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
-                {
-                    study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
-                }
-
-                var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
-
-                await _azureResourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
-
+               
                 var currentUser = await _userService.GetCurrentUserAsync();
 
                 dataset.FirewallRules = new List<DatasetFirewallRule>();
@@ -203,7 +205,7 @@ namespace Sepes.Infrastructure.Service
                 if (clientIp != "::1")
                 {
                     dataset.FirewallRules.Add(CreateRule(currentUser, DatasetFirewallRuleType.Client, clientIp));
-                }               
+                }
 
                 //Add Sepes IP, so that it can uload/download files 
                 var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
@@ -239,7 +241,7 @@ namespace Sepes.Infrastructure.Service
             {
 
                 var currentUser = await _userService.GetCurrentUserAsync();
-             
+
                 var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(dataset.StorageAccountId, AzureRoleIds.READ);
                 await _azureRoleAssignmentService.AddRoleAssignment(dataset.StorageAccountId, roleDefinitionId, currentUser.ObjectId, cancellationToken: cancellationToken);
             }
@@ -247,6 +249,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Failed to create Role Assignment for Storage Account", ex);
             }
-        }             
+        }
     }
 }

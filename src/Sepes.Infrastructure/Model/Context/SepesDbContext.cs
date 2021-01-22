@@ -74,7 +74,12 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(s => s.Sandboxes)
                 .HasForeignKey(s => s.StudyId);
 
-            //STUDY / DATASET RELATION
+            //STUDY SPECIFIC DATASET
+            modelBuilder.Entity<Dataset>()
+              .HasOne(ds => ds.Study)
+              .WithMany(s => s.StudySpecificDatasets)
+              .HasForeignKey(ds => ds.StudyId);
+
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)
                 .WithMany(s => s.StudyDatasets)
@@ -85,7 +90,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.StudyDatasets)
                 .HasForeignKey(sd => sd.DatasetId);
 
-            //STUDY / DATASET RELATION
+            
             modelBuilder.Entity<DatasetFirewallRule>()
                 .HasOne(fw => fw.Dataset)
                 .WithMany(ds => ds.FirewallRules)

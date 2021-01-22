@@ -41,6 +41,8 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
+        public virtual ICollection<Dataset> StudySpecificDatasets { get; set; }
+
         public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
 
         public virtual ICollection<Sandbox> Sandboxes { get; set; }

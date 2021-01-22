@@ -90,7 +90,7 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation($"{deleteDescription}: Creating delete operation");
 
                 deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resource.Id,
-                    AzureResourceUtil.CreateDescriptionForResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId.Value, resource.Id));
+                    AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId.Value, resource.Id));
 
             }
             else

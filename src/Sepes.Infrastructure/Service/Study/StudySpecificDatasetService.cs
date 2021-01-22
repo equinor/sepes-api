@@ -6,8 +6,8 @@ using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -19,17 +19,26 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudySpecificDatasetService : DatasetServiceBase, IStudySpecificDatasetService
     {
+        readonly IStudyModelService _studyModelService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-        public StudySpecificDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudySpecificDatasetService> logger, IUserService userService, IDatasetCloudResourceService datasetCloudResourceService)
+        public StudySpecificDatasetService(
+            SepesDbContext db,
+            IMapper mapper,
+            ILogger<StudySpecificDatasetService> logger,
+            IUserService userService,
+            IStudyModelService studyModelService,
+            IDatasetCloudResourceService datasetCloudResourceService
+            )
             : base(db, mapper, logger, userService)
         {
+            _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
 
-        public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp ,CancellationToken cancellationToken = default)
-        {            
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
+        public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
+        {           
+            var studyFromDb =  await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true, true);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -76,10 +85,10 @@ namespace Sepes.Infrastructure.Service
         public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DataSetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
+          
+            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true, true);
 
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
-
-            var datasetFromDb = await GetStudySpecificDatasetOrThrowAsync(studyId, datasetId, UserOperation.Study_AddRemove_Dataset);
+            var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
 
             DataSetUtils.UpdateDatasetBasicDetails(datasetFromDb, updatedDataset);
 
@@ -95,18 +104,23 @@ namespace Sepes.Infrastructure.Service
         }
 
         async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId, UserOperation operation)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, operation, true);
+        {           
+            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, operation, true, true);
 
-            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
+            return GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
+        }
+
+        Dataset GetStudySpecificDatasetOrThrow(Study study, int datasetId)
+        {            
+            var studyDatasetRelation = study.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
             if (studyDatasetRelation == null)
             {
                 throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
-            }          
+            }
 
             return studyDatasetRelation.Dataset;
-        } 
+        }
 
         public async Task SoftDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
         {

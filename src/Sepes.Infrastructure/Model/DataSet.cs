@@ -61,5 +61,7 @@ namespace Sepes.Infrastructure.Model
         //StudyID is only populated if dataset is StudySpecific.
         //This is accounted for in API calls.
         public int? StudyId { get; set; }
+
+        public Study Study { get; set; }
     }
 }

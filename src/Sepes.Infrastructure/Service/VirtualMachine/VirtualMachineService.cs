@@ -86,7 +86,7 @@ namespace Sepes.Infrastructure.Service
 
                 var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-                await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
+                await _sandboxResourceCreateService.ValidateThatNameDoesNotExistThrowIfInvalid(virtualMachineName);
 
                 var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
@@ -99,8 +99,7 @@ namespace Sepes.Infrastructure.Service
                 //Make this dependent on bastion create operation to be completed, since bastion finishes last
                 var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
-
-                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
 
                 //Create vm settings and immeately attach to resource entry
                 var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);

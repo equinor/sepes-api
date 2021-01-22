@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, role);
+                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, false, role);
 
                 updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
 
