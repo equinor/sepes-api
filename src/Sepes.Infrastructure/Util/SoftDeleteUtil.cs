@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Util
 
         public static bool IsMarkedAsDeleted(ISupportSoftDelete entry)
         {
-            return entry.Deleted.HasValue && entry.Deleted.Value;
+            return entry.Deleted;
         }
     }
 }

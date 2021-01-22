@@ -54,9 +54,9 @@ namespace Sepes.Infrastructure.Query
                 WithBasicIncludesQueryable(db)
                 .Where(r => r.SandboxId == sandboxId
                 && r.ResourceType == resourceType
-                && (!r.DeletedAt.HasValue ||
+                && (r.Deleted == false ||
                 
-                (r.DeletedAt.HasValue && includeDeletedIfOperationNotFinished && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));            
+                (r.Deleted && includeDeletedIfOperationNotFinished && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));            
 
 
             return resourceQuerable;
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Query
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
                 .Where(r => r.Id == resourceId            
-                && (!r.DeletedAt.HasValue || (r.DeletedAt.HasValue && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));
+                && (r.Deleted == false || (r.Deleted && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));
 
             return resourceQuerable;
         }
@@ -100,7 +100,7 @@ namespace Sepes.Infrastructure.Query
                 throw new Exception($"Could not locate Bastion resource entry");
             }
 
-            if (bastionResourceForSandbox.DeletedAt.HasValue || bastionResourceForSandbox.Operations.FirstOrDefault(o => o.OperationType == CloudResourceOperationType.DELETE) != null)
+            if (bastionResourceForSandbox.Deleted || bastionResourceForSandbox.Operations.FirstOrDefault(o => o.OperationType == CloudResourceOperationType.DELETE) != null)
             {
                 throw new Exception($"Bastion resource entry ({bastionResourceForSandbox.Id}) is marked for deletion");
             }

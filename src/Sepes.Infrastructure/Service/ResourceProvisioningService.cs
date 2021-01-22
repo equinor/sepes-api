@@ -249,7 +249,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (CloudResourceUtil.IsDeleted(curDependantOnThisOp.Resource) == false)
+                            if (curDependantOnThisOp.Resource.Deleted == false)
                             {
                                 if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
                                 {

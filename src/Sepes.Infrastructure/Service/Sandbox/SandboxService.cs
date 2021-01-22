@@ -46,7 +46,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && s.Deleted == false).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check uniqueness of name
-            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).AnyAsync())
+            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && sb.Deleted == false).AnyAsync())
             {
                 throw new ArgumentException($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
             }
@@ -110,7 +110,7 @@ namespace Sepes.Infrastructure.Service
                         new SandboxResourceCreationAndSchedulingDto()
                         {
                             StudyId = studyDto.Id,
-                            SandboxId = createdSandbox.Id,                            
+                            SandboxId = createdSandbox.Id,
                             StudyName = studyDto.Name,
                             SandboxName = sandboxDto.Name,
                             Region = region,
@@ -120,7 +120,7 @@ namespace Sepes.Infrastructure.Service
 
                     await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     //Deleting sandbox entry and all related from DB
                     if (createdSandbox.Id > 0)
@@ -162,7 +162,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 
-            SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);          
+            SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);
 
             await _db.SaveChangesAsync();
 

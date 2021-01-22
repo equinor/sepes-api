@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Model
 
         public int StudyId { get; set; }
 
-        public bool? Deleted { get; set; }
+        public bool Deleted { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 

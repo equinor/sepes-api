@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<bool?>("Deleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -250,7 +250,7 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("DataId")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("Deleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -463,7 +463,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<bool?>("Deleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("DeletedAt")

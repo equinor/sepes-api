@@ -138,39 +138,39 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        CloudResource GetResourceGroupForStudySpecificDataset(Study study)
-        {
-            if (study.Resources == null)
-            {
-                throw new Exception("Missing Include for CloudResource on Study");
-            }
+        //CloudResource GetResourceGroupForStudySpecificDataset(Study study)
+        //{
+        //    if (study.Resources == null)
+        //    {
+        //        throw new Exception("Missing Include for CloudResource on Study");
+        //    }
 
-            foreach (var curResource in study.Resources)
-            {
-                if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false)
-                {
-                    if (curResource.ResourceType == AzureResourceType.ResourceGroup)
-                    {
-                        if(String.IsNullOrWhiteSpace(curResource.Purpose) == false && curResource.Purpose)
-                    }
-                }
-            }
-        }
+        //    foreach (var curResource in study.Resources)
+        //    {
+        //        if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false)
+        //        {
+        //            if (curResource.ResourceType == AzureResourceType.ResourceGroup)
+        //            {
+        //                if(String.IsNullOrWhiteSpace(curResource.Purpose) == false && curResource.Purpose)
+        //            }
+        //        }
+        //    }
+        //}
 
-        async Task<string> EnsureResourceGroupForStudySpecificDatasetExists(Study study)
-        {
+        //async Task<string> EnsureResourceGroupForStudySpecificDatasetExists(Study study)
+        //{
 
 
-            if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
-            {
-                study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
-            }
+        //    if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup))
+        //    {
+        //        study.StudySpecificDatasetsResourceGroup = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
+        //    }
 
-            var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+        //    var tagsForResourceGroup = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
 
-            await _azureResourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
+        //    await _azureResourceGroupService.EnsureCreated(study.StudySpecificDatasetsResourceGroup, RegionStringConverter.Convert(dataset.Location), tagsForResourceGroup, cancellationToken);
 
-        }
+        //}
 
         async Task CreateStorageAccountForStudySpecificDatasets(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {

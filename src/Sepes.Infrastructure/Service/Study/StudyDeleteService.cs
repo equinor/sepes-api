@@ -59,7 +59,7 @@ namespace Sepes.Infrastructure.Service
         {
             foreach (var curSandbox in studyFromDb.Sandboxes)
             {
-                if (curSandbox.Deleted.HasValue == false || curSandbox.DeletedAt.HasValue == false)
+                if (curSandbox.Deleted == false)
                 {
                     throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
                 }

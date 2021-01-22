@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;

@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Infrastructure.Constants
 {
-    public class AzureResourceType
+    public class CloudResourcePurpose
     {
         public const string StudySpecificDataset = "StudySpecificDatasetContainer";           
     }

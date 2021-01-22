@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static void ThrowIfResourceIsDeletedAndOperationIsNotADelete(CloudResourceOperationDto operation)
         {
-            if (operation.Resource.Deleted.HasValue && operation.OperationType != CloudResourceOperationType.DELETE)
+            if (operation.Resource.Deleted && operation.OperationType != CloudResourceOperationType.DELETE)
             {
                 throw new ProvisioningException($"Resource is marked for deletion in database", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
             }

@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Util
             return study.Sandboxes
                 .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
                 .Select(sb => GetSandboxResourceGroupEntry(sb.Resources))
-                .Where(r => !r.DeletedAt.HasValue)
+                .Where(r => r.Deleted == false)
                 .ToList();
         }
 
@@ -89,11 +89,6 @@ namespace Sepes.Infrastructure.Util
             }
 
             return result;
-        }
-
-        public static bool IsDeleted(CloudResourceDto resource)
-        {
-            return resource.Deleted.HasValue;
-        }       
+        }               
     }
 }

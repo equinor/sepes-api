@@ -24,8 +24,8 @@ namespace Sepes.Infrastructure.Model.Automapper
           .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));    
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d=> d.Deleted.HasValue == false || (d.Deleted.HasValue && d.Deleted.Value == false)).ToList()))
-                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted.HasValue == false || (sb.Deleted.HasValue && sb.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d=> d.Deleted == false ).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted == false).ToList()))
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification))
                 .ForMember(dest => dest.SandboxName, opt =>
                 {
-                    opt.PreCondition(src => (!src.Sandbox.Deleted.HasValue));
+                    opt.PreCondition(src => (!src.Sandbox.Deleted));
                     opt.MapFrom(src =>
 
                         src.Sandbox.Name

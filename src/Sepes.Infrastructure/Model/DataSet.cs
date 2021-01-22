@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Sepes.Infrastructure.Model.Interface;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class Dataset : UpdateableBaseModel
+    public class Dataset : UpdateableBaseModel, ISupportSoftDelete
     {
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
@@ -44,7 +45,7 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(1024)]
         public string Description { get; set; }
 
-        public bool? Deleted { get; set; }
+        public bool Deleted { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 

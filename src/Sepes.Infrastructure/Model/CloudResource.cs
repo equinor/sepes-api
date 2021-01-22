@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Model
 
         public bool SandboxControlled { get; set; }
 
-        public bool? Deleted { get; set; }
+        public bool Deleted { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 

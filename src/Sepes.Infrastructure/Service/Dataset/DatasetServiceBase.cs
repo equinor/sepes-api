@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Sepes.Infrastructure.Service
                  .Include(ds => ds.StudyDatasets)
                  .ThenInclude(sd => sd.Study)
                  .Include(d=> d.FirewallRules)
-                 .Where(ds => ds.Deleted.HasValue == false || ds.Deleted.HasValue && ds.Deleted.Value == false);
+                 .Where(ds => ds.Deleted == false);
 
             if (excludeStudySpecific)
             {
@@ -68,9 +69,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task SoftDeleteAsync(Dataset dataset)
         {
-            dataset.Deleted = true;
-            dataset.DeletedAt = DateTime.UtcNow;
-            dataset.DeletedBy = (await _userService.GetCurrentUserAsync()).UserName;
+            await SoftDeleteUtil.MarkAsDeleted(dataset, _userService);           
             await _db.SaveChangesAsync();
         }
 
