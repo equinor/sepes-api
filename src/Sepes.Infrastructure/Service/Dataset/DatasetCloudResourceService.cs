@@ -205,7 +205,7 @@ namespace Sepes.Infrastructure.Service
                 if (clientIp != "::1")
                 {
                     dataset.FirewallRules.Add(CreateRule(currentUser, DatasetFirewallRuleType.Client, clientIp));
-                }
+                }               
 
                 //Add Sepes IP, so that it can uload/download files 
                 var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
