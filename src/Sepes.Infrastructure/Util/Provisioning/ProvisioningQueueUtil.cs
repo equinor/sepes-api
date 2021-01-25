@@ -16,13 +16,27 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static async Task CreateItemAndEnqueue(CloudResourceOperationDto operation, IProvisioningQueueService workQueue)
         {
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = operation.Resource.SandboxId;
+            var queueParentItem = new ProvisioningQueueParentDto();           
             queueParentItem.Description = operation.Description;
-
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
 
             await workQueue.SendMessageAsync(queueParentItem);
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperationDto operation)
+        {            
+            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperation operation)
+        {
+            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResource resource)
+        {
+            var createOperation = CloudResourceOperationUtil.GetCreateOperation(resource);
+            CreateChildAndAdd(parent, createOperation);                
         }
     }
 }

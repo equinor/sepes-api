@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+﻿using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Sandbox
@@ -19,19 +19,19 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public string BatchId { get; set; }
 
-        public Region Region { get; set; }
+        public string Region { get; set; }
 
         public Dictionary<string, string> Tags { get; set; }
 
-        public CloudResourceDto ResourceGroup { get; set; }
+        public CloudResource ResourceGroup { get; set; }
 
-        public CloudResourceDto DiagnosticsStorage { get; set; }
+        public CloudResource DiagnosticsStorage { get; set; }
 
-        public CloudResourceDto NetworkSecurityGroup { get; set; }
+        public CloudResource NetworkSecurityGroup { get; set; }
 
-        public CloudResourceDto Network { get; set; }
+        public CloudResource Network { get; set; }
 
-        public CloudResourceDto Bastion { get; set; }
+        public CloudResource Bastion { get; set; }
         public SandboxResourceCreationAndSchedulingDto()
         {
 

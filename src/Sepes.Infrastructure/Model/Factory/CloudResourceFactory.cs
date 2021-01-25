@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Model.Factory
            )
         {
             var resourceType = AzureResourceType.ResourceGroup;
-            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, resourceGroupName, tags);
+            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, tags, resourceGroupName);
 
             newResource.StudyId = studyId;
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetContainer;
@@ -25,13 +25,14 @@ namespace Sepes.Infrastructure.Model.Factory
             return newResource;
         }
 
-        public static CloudResource CreateStudySpecificDatasetStorageAccountEntry(UserDto currentUser, string sessionId,
+        public static CloudResource CreateStudySpecificDatasetStorageAccountEntry(UserDto currentUser, string sessionId, int datasetId,
          string region, int resourceGroupId, string resourceGroupName, string resourceName, Dictionary<string, string> tags
           )
         {
             var resourceType = AzureResourceType.StorageAccount;
-            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, resourceName, tags);
-
+            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, tags, resourceName);
+            
+            newResource.DatasetId = datasetId;
             newResource.ParentResourceId = resourceGroupId;
 
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetStorageAccount;
@@ -48,7 +49,7 @@ namespace Sepes.Infrastructure.Model.Factory
             )
         {
             var resourceType = AzureResourceType.ResourceGroup;
-            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, resourceGroupName, tags);
+            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, tags, resourceGroupName);
 
             newResource.SandboxId = sandboxId;
             newResource.SandboxControlled = true;
@@ -61,13 +62,14 @@ namespace Sepes.Infrastructure.Model.Factory
         }
 
         public static CloudResource CreateSandboxResourceEntry(UserDto currentUser, string sessionId,
-       int sandboxId, string region, string resourceType, int resourceGroupId, string resourceGroupName, string resourceName, Dictionary<string, string> tags,
+       int sandboxId, string region, string resourceType, int resourceGroupId, string resourceName, Dictionary<string, string> tags,
        string configString = null,
        string batchId = null,
-       int dependsOn = 0
+       int dependsOn = 0,
+      string resourceGroupName = null
         )
         {
-            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, resourceName, tags);
+            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceName, tags, resourceGroupName);
 
             newResource.SandboxId = sandboxId;
             newResource.SandboxControlled = true;
@@ -82,8 +84,8 @@ namespace Sepes.Infrastructure.Model.Factory
         }
 
         public static CloudResource CreateBasicResource(UserDto currentUser, string sessionId,
-            string region, string resourceType, string resourceGroupName, string resourceName, Dictionary<string, string> tags //Basic resource properties
-
+            string region, string resourceType, string resourceName, Dictionary<string, string> tags //Basic resource properties
+            , string resourceGroupName = null
             )
         {
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);

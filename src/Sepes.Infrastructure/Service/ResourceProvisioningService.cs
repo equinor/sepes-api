@@ -287,8 +287,7 @@ namespace Sepes.Infrastructure.Service
         async Task AddNewQueueMessageForOperation(CloudResourceOperationDto operation)
         {
             var queueParentItem = new ProvisioningQueueParentDto
-            {
-                SandboxId = operation.Resource.SandboxId,
+            {               
                 Description = operation.Description
             };
 

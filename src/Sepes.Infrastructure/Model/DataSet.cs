@@ -63,5 +63,7 @@ namespace Sepes.Infrastructure.Model
         public int? StudyId { get; set; }
 
         public Study Study { get; set; }
+
+        public List<CloudResource> Resources { get; set; }
     }
 }

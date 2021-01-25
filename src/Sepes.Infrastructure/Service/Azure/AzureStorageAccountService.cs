@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
@@ -15,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -187,18 +189,16 @@ namespace Sepes.Infrastructure.Service
             .WithTags(tags);
 
             return await creator.CreateAsync(cancellation);
-        }
+        }      
 
-        public async Task<AzureStorageAccountDto> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<List<FirewallRule>> SetRules(string resourceGroupName, string resourceName, List<FirewallRule> rules, CancellationToken cancellationToken = default)
         {
-            var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
-            var ipRulesList = onlyAllowAccessFrom?.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
+            var account = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
+            var ipRulesList = rules?.Select(alw => new IPRule(alw.Address, (Action)alw.Action)).ToList();
             var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
-            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
-            return _mapper.Map<AzureStorageAccountDto>(account);
+            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, resourceName, updateParameters, cancellationToken);
+            return rules;
         }
-
-     
 
         public async Task AddStorageAccountToVNet(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForVnet, string vNetName, CancellationToken cancellation)
         {
@@ -343,5 +343,7 @@ namespace Sepes.Infrastructure.Service
             virtualNetworkRule = null;
             return false;
         }
+
+      
     }
 }

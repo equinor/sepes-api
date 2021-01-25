@@ -79,7 +79,7 @@ namespace Sepes.Infrastructure.Service
         {
             var study = await GetStudyAsync(studyId, true);
 
-            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateListOfDesiredRoles(study.StudyParticipants.ToList());
+            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList());
             var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
 
             foreach (var currentOperationId in existingUpdateOperationIds)

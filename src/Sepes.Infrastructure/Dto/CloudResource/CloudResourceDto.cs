@@ -5,7 +5,10 @@ namespace Sepes.Infrastructure.Dto
 {
     public class CloudResourceDto : UpdateableBaseDto
     {
-        public int SandboxId { get; set; }
+        public int? StudyId { get; set; }
+        public int? SandboxId { get; set; }
+
+        public int? DatasetId { get; set; }
 
         public string StudyName { get; set; }
         public string SandboxName { get; set; }

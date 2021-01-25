@@ -10,19 +10,31 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class ParticipantRoleToAzureRoleTranslator
     {
-        public static List<CloudResourceDesiredRoleAssignmentDto> CreateListOfDesiredRoles(List<StudyParticipant> participants)
+        public static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForStudyResourceGroup(List<StudyParticipant> participants)
+        {
+            return CreateDesiredRolesWithTranslator(participants, TranslateForStudyResourceGroup);
+        }
+
+        public static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForSandboxResourceGroup(List<StudyParticipant> participants)
+        {
+            return CreateDesiredRolesWithTranslator(participants, TranslateForSandboxResourceGroup);            
+        }      
+
+        static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesWithTranslator(List<StudyParticipant> participants, Func<string, string> translator)
         {
             var desiredRolesLookup = new Dictionary<Tuple<string, string>, CloudResourceDesiredRoleAssignmentDto>();
 
             foreach (var curParticipant in participants)
             {
-                if (Translate(curParticipant.RoleName, out string translatedRoleId))
+                var translatedRole = translator(curParticipant.RoleName);
+
+                if (String.IsNullOrWhiteSpace(translatedRole) == false)
                 {
-                    var lookupKey = CreateAssignmentLookupKey(curParticipant.User.ObjectId, translatedRoleId);
+                    var lookupKey = CreateAssignmentLookupKey(curParticipant.User.ObjectId, translatedRole);
 
                     if (desiredRolesLookup.ContainsKey(lookupKey) == false)
                     {
-                        desiredRolesLookup.Add(lookupKey, new CloudResourceDesiredRoleAssignmentDto(curParticipant.User.ObjectId, translatedRoleId));
+                        desiredRolesLookup.Add(lookupKey, new CloudResourceDesiredRoleAssignmentDto(curParticipant.User.ObjectId, translatedRole));
                     }
                 }
             }
@@ -35,26 +47,26 @@ namespace Sepes.Infrastructure.Util.Auth
             return new Tuple<string, string>(principalId, roleId);
         }
 
-        public static bool Translate(string studyParticipantRole, out string translatedRole)
+        public static string TranslateForStudyResourceGroup(string studyParticipantRole)
         {
-            switch (studyParticipantRole)
+            return studyParticipantRole switch
             {
-                case StudyRoles.StudyOwner:
-                    translatedRole = AzureRoleIds.CONTRIBUTOR;
-                    return true;
-                case StudyRoles.SponsorRep:
-                    translatedRole = AzureRoleIds.READ;
-                    return true;
-                case StudyRoles.VendorAdmin:
-                    translatedRole = AzureRoleIds.READ;
-                    return true;
-                case StudyRoles.VendorContributor:
-                    translatedRole = AzureRoleIds.READ;
-                    return true;
-            }
+                StudyRoles.StudyOwner => AzureRoleIds.READ,
+                StudyRoles.SponsorRep => AzureRoleIds.READ,
+                _ => null,
+            };
+        }
 
-            translatedRole = null;
-            return false;
+        public static string TranslateForSandboxResourceGroup(string studyParticipantRole)
+        {
+            return studyParticipantRole switch
+            {
+                StudyRoles.StudyOwner => AzureRoleIds.CONTRIBUTOR,
+                StudyRoles.SponsorRep => AzureRoleIds.READ,
+                StudyRoles.VendorAdmin => AzureRoleIds.READ,
+                StudyRoles.VendorContributor => AzureRoleIds.READ,
+                _ => null,
+            };
         }
     }
 }

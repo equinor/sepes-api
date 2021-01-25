@@ -16,7 +16,9 @@ namespace Sepes.Infrastructure.Util.Provisioning
             currentCrudInput.Name = currentOperation.Resource.ResourceName;
             currentCrudInput.StudyName = currentOperation.Resource.StudyName;
             currentCrudInput.DatabaseId = currentOperation.Resource.Id;
+            currentCrudInput.StudyId = currentOperation.Resource.StudyId;
             currentCrudInput.SandboxId = currentOperation.Resource.SandboxId;
+            currentCrudInput.DatasetId = currentOperation.Resource.DatasetId;
             currentCrudInput.SandboxName = currentOperation.Resource.SandboxName;
             currentCrudInput.ResourceGroupName = currentOperation.Resource.ResourceGroupName;
             currentCrudInput.Region = RegionStringConverter.Convert(currentOperation.Resource.Region);         

@@ -139,6 +139,13 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasForeignKey(sd => sd.SandboxId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            //CLOUD RESOURCE / DATASET RELATION
+            modelBuilder.Entity<CloudResource>()
+                .HasOne(cr => cr.Dataset)
+                .WithMany(d => d.Resources)
+                .HasForeignKey(sd => sd.DatasetId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<CloudResource>()
               .HasOne(cr => cr.ParentResource)
               .WithMany(d => d.ChildResources)

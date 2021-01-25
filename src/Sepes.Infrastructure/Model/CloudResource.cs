@@ -9,9 +9,12 @@ namespace Sepes.Infrastructure.Model
     [Table("CloudResources")]
     public class CloudResource : UpdateableBaseModel, ISupportSoftDelete
     {
-        public int? SandboxId { get; set; }
 
         public int? StudyId { get; set; }
+
+        public int? SandboxId { get; set; }
+
+        public int? DatasetId { get; set; }
 
         [MaxLength(256)]
         public string ResourceId { get; set; }
@@ -54,9 +57,11 @@ namespace Sepes.Infrastructure.Model
 
         public int? ParentResourceId { get; set; }
 
+        public Study Study { get; set; }
+
         public Sandbox Sandbox { get; set; }
 
-        public Study Study { get; set; }
+        public Dataset Dataset { get; set; }
 
         public List<CloudResourceOperation> Operations { get; set; }      
 

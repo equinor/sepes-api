@@ -46,11 +46,10 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
             }
 
-            DataSetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
+            DatasetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
 
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
-            dataset.StudyId = studyId;
-            dataset.StorageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
+            dataset.StudyId = studyId;           
 
             var currentUser = await _userService.GetCurrentUserAsync();
             dataset.CreatedBy = currentUser.UserName;          
@@ -64,7 +63,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(studyFromDb, dataset, clientIp, cancellationToken);
+                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(dataset, clientIp, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -84,13 +83,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
-            DataSetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
+            DatasetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
           
             var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true, true);
 
             var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
 
-            DataSetUtils.UpdateDatasetBasicDetails(datasetFromDb, updatedDataset);
+            DatasetUtils.UpdateDatasetBasicDetails(datasetFromDb, updatedDataset);
 
             Validate(datasetFromDb);
 

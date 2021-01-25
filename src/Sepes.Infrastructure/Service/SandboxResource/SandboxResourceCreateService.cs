@@ -4,8 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -45,8 +45,7 @@ namespace Sepes.Infrastructure.Service
             try
             {
                 var queueParentItem = new ProvisioningQueueParentDto
-                {
-                    SandboxId = dto.SandboxId,
+                {                  
                     Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
                 };
 
@@ -78,7 +77,7 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfSandboxResourceGroupRoleAssignments(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var participants = await _db.StudyParticipants.Include(sp=> sp.User).Where(p => p.StudyId == dto.StudyId).ToListAsync();
-            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateListOfDesiredRoles(participants);
+            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(participants);
             var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
             var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;
             var updateOpId = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(dto.ResourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation, desiredState: desiredRolesSerialized);
@@ -125,16 +124,16 @@ namespace Sepes.Infrastructure.Service
             dto.Bastion = resourceEntry;
         }
 
-        async Task<CloudResourceDto> CreateResourceGroupEntryAndAddToQueue(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceGroupName)
+        async Task<CloudResource> CreateResourceGroupEntryAndAddToQueue(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceGroupName)
         {
-            var resourceEntry = await _cloudResourceCreateService.Create(dto, AzureResourceType.ResourceGroup, sandboxControlled: true, resourceName: resourceGroupName);
+            var resourceEntry = await _cloudResourceCreateService.CreateSandboxResourceGroupEntryAsync(dto, resourceGroupName);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id });
             return resourceEntry;
         }
 
-        async Task<CloudResourceDto> CreateResourceEntryAndAddToQueue(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, string configString = null, int dependsOn = 0)
+        async Task<CloudResource> CreateResourceEntryAndAddToQueue(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceType, bool sandboxControlled = true, string resourceName = AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME, string configString = null, int dependsOn = 0)
         {
-            var resourceEntry = await _cloudResourceCreateService.Create(dto, resourceType, sandboxControlled: sandboxControlled, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
+            var resourceEntry = await _cloudResourceCreateService.CreateSandboxResourceEntryAsync(dto, resourceType, resourceName: resourceName, configString: configString, dependsOn: dependsOn);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = resourceEntry.Operations.FirstOrDefault().Id });
             return resourceEntry;
         }
