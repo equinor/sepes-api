@@ -80,6 +80,8 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateVmPasswordOrThrow(userInput.Password);
 
+                GenericNameValidation.ValidateName(userInput.Name);
+
                 _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
                 var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);

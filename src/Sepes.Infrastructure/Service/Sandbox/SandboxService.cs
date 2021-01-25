@@ -58,6 +58,8 @@ namespace Sepes.Infrastructure.Service
 
             Sandbox createdSandbox = null;
 
+            GenericNameValidation.ValidateName(sandboxCreateDto.Name);
+
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
                 throw new ArgumentException("Region not specified.");
