@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Util
 
             if(!onlyLettersAndNumbers.IsMatch(name) || name.Length < minimumLength)
             {
-                throw new ArgumentException("Name should should only contain letters or/and numbers and be minimum 3 characters long");
+                throw new ArgumentException($"Name should should only contain letters or/and numbers and be minimum {minimumLength} characters long");
             }
         }
     }
