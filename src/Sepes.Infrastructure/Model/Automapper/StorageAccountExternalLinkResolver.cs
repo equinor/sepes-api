@@ -11,11 +11,27 @@ namespace Sepes.Infrastructure.Model.Automapper
         public StorageAccountExternalLinkResolver(IConfiguration config)
         {
             this._config = config;
-        }       
+        }
 
         public string Resolve(Dataset source, DatasetDto destination, string destMember, ResolutionContext context)
         {
-            return AzureResourceUtil.CreateResourceLink(_config, source.StorageAccountId);
+            string storageAccountIdToUse = null;
+
+            if (source.StudyId.HasValue && source.StudyId.Value > 0)
+            {
+                var storageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(source);
+
+                if (storageAccountResource != null)
+                {
+                    storageAccountIdToUse = storageAccountResource.ResourceId;
+                }
+            }
+            else
+            {
+                storageAccountIdToUse = source.StorageAccountId;
+            }
+
+            return AzureResourceUtil.CreateResourceLink(_config, storageAccountIdToUse);
         }
-    }   
+    }
 }

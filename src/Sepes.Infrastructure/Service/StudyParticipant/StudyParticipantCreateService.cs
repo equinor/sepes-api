@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            List<int> updateOperationIds = null;
+            List<CloudResourceOperationDto> updateOperations = null;
 
             try
             {
@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
                 var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, false, role);
 
-                updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
 
                 StudyParticipantDto participantDto = null;
 
@@ -59,17 +59,17 @@ namespace Sepes.Infrastructure.Service
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperationIds);
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);
 
                 return participantDto;
             }
             catch (Exception ex)
             {
-                if(updateOperationIds != null)
+                if(updateOperations != null)
                 {
-                    foreach(var curOperationId in updateOperationIds)
+                    foreach(var curOperation in updateOperations)
                     {
-                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperationId, ex.Message);
+                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
                 }
 

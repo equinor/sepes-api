@@ -105,7 +105,15 @@ namespace Sepes.Infrastructure.Util
         {
             if(dataset.StudyId.HasValue && dataset.StudyId.Value > 0)
             {
-               return dataset.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.StorageAccount && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount);
+                if(dataset.Resources == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    return dataset.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.StorageAccount && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount);
+                }
+             
             }
 
             throw new ArgumentException("Only supports Study Specific Dataset");

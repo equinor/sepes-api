@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -70,22 +71,44 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        protected async Task<List<int>> CreateDraftRoleUpdateOperationsAsync(Study study)
+        protected async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync(Study study)
         {
-            return await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationAsync(study, _cloudResourceOperationCreateService);
+            return await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync(study, _cloudResourceOperationCreateService);
         }
 
-        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(int studyId, List<int> existingUpdateOperationIds)
+        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(int studyId, List<CloudResourceOperationDto> existingUpdateOperation)
         {
             var study = await GetStudyAsync(studyId, true);
 
-            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList());
-            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
-
-            foreach (var currentOperationId in existingUpdateOperationIds)
+            var desiredRolesPerPurposeLookup = new Dictionary<string, string>
             {
-                var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperationId, desiredRolesSerialized);
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, updateOp);
+                {
+                    CloudResourcePurpose.SandboxResourceGroup,
+                    CloudResourceConfigStringSerializer.Serialize(ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList()))
+                },
+
+                {
+                    CloudResourcePurpose.StudySpecificDatasetContainer,
+                    CloudResourceConfigStringSerializer.Serialize(ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(study.StudyParticipants.ToList()))
+                }
+            };
+
+            foreach (var currentOperation in existingUpdateOperation)
+            {
+                if (String.IsNullOrWhiteSpace(currentOperation.Resource.Purpose))
+                {
+                    throw new Exception($"Unspecified purpose for resource {currentOperation.Resource.Id}, operation {currentOperation.Id}");
+                }
+
+                if (desiredRolesPerPurposeLookup.TryGetValue(currentOperation.Resource.Purpose, out string desiredRoles))
+                {
+                    var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperation.Id, desiredRoles);
+                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, updateOp);
+                }
+                else
+                {
+                    throw new Exception($"Desired roles not specificed for purpose {currentOperation.Resource.Purpose} for resource {currentOperation.Resource.Id}, operation {currentOperation.Id}");
+                }
             }
         }      
 

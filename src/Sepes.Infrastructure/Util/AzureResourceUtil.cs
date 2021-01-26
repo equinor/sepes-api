@@ -75,17 +75,17 @@ namespace Sepes.Infrastructure.Util
 
         public static string CreateResourceLink(IConfiguration config, string resourceId)
         {
-            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
-
             if (String.IsNullOrWhiteSpace(resourceId))
             {
                 return null;
-            }
+            }           
 
             if (resourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
             {
                 return null;
             }
+
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
 
             return CreateResourceLink(domain, resourceId);
         }

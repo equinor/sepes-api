@@ -19,7 +19,9 @@ namespace Sepes.Infrastructure.Dto
 
         public string ResourceName { get; set; }
 
-        public string ResourceType { get; set; }      
+        public string ResourceType { get; set; }
+
+        public string Purpose { get; set; }
 
         public string ResourceGroupName { get; set; }
        

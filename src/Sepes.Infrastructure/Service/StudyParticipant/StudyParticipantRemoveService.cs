@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
@@ -28,7 +29,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyParticipantDto> RemoveAsync(int studyId, int userId, string roleName)
         {
-            List<int> updateOperationIds = null;
+            List<CloudResourceOperationDto> updateOperations = null;
 
             try
             {
@@ -39,7 +40,7 @@ namespace Sepes.Infrastructure.Service
                     throw new ArgumentException($"The Study Owner role cannot be deleted");
                 }
 
-                updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
 
                 var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
@@ -52,17 +53,17 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperationIds);
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);
 
                 return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
             }
             catch (Exception ex)
             {
-                if (updateOperationIds != null)
+                if (updateOperations != null)
                 {
-                    foreach (var curOperationId in updateOperationIds)
+                    foreach (var curOperation in updateOperations)
                     {
-                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperationId, ex.Message);
+                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
                 }
 
