@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Util;
 

@@ -26,7 +26,7 @@ namespace Sepes.RestApi.Controller
         
         [HttpPost("{studyId}/datasets/studyspecific")]
         [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, CancellationToken cancellation)
+        public async Task<IActionResult> CreateStudySpecificDataSetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, CancellationToken cancellation = default)
         {          
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);        
 
@@ -39,6 +39,14 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             var updatedStudy = await _studySpecificDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
+            return new JsonResult(updatedStudy);
+        }
+
+        [HttpGet("{studyId}/datasets/studyspecific/{datasetId}/resources")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetDatasetResources(int studyId, int datasetId, CancellationToken cancellation = default)
+        {
+            var updatedStudy = await _studySpecificDatasetService.GetDatasetResourcesAsync(studyId, datasetId, cancellation);
             return new JsonResult(updatedStudy);
         }
     }

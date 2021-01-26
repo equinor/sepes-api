@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
@@ -195,6 +196,24 @@ namespace Sepes.Infrastructure.Service
         public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
         {
             await _datasetCloudResourceService.DeleteAllStudyRelatedResourcesAsync(study, cancellationToken);
+        }
+
+        public async Task<List<DatasetResourceLightDto>> GetDatasetResourcesAsync(int studyId, int datasetId, CancellationToken cancellation)
+        {
+            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_Read, false);
+
+            //Filter out deleted resources
+            var resourcesFiltered = dataset.Resources
+                .Where(r => SoftDeleteUtil.IsMarkedAsDeleted(r) == false
+                    || (
+                    SoftDeleteUtil.IsMarkedAsDeleted(r)
+                    && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+
+                ).ToList();
+
+            var resourcesMapped = _mapper.Map<List<DatasetResourceLightDto>>(resourcesFiltered);
+
+            return resourcesMapped;
         }
     }
 }
