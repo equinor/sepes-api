@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
             return datasetDto;
        }     
 
-        public async Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset)
+        public async Task<DatasetDto> CreateDatasetAsync(PreApprovedDatasetCreateUpdateDto newDataset)
         {
             await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
 

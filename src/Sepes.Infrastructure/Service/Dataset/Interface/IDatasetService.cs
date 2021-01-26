@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<IEnumerable<DatasetDto>> GetDatasetsAsync();
         Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId);
 
-        Task<DatasetDto> CreateDatasetAsync(DatasetDto newDataset);
+        Task<DatasetDto> CreateDatasetAsync(PreApprovedDatasetCreateUpdateDto newDataset);
         Task<DatasetDto> UpdateDatasetAsync(int datasetId, DatasetDto newDataset);
 
         Task DeleteDatasetAsync(int datasetId);
