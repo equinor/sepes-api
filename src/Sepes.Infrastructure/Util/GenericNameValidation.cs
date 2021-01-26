@@ -15,8 +15,8 @@ namespace Sepes.Infrastructure.Util
             }
 
             var onlyLettersAndNumbers = new Regex(@"^[a-zA-Z0-9]+$");
-
-            if(!onlyLettersAndNumbers.IsMatch(name) || name.Length < minimumLength)
+            var nameWithoutSpaces = name.Replace(" ", "").Trim();
+            if(!onlyLettersAndNumbers.IsMatch(nameWithoutSpaces) || nameWithoutSpaces.Length < minimumLength)
             {
                 throw new ArgumentException($"Name should should only contain letters or/and numbers and be minimum {minimumLength} characters long");
             }
