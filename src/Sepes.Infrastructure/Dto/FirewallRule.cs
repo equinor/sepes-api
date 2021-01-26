@@ -7,8 +7,8 @@
         public string Address { get; set; }
         public int Port { get; set; }
 
-        public RuleAction Action { get; set; }
+        public FirewallRuleAction Action { get; set; }
     }
 
-    public enum RuleAction { Allow, Deny }    
+    public enum FirewallRuleAction { Allow, Deny }    
 }

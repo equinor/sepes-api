@@ -101,9 +101,7 @@ namespace Sepes.Infrastructure.Service
                     var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
                     var sandboxDto = await GetAsync(createdSandbox.Id, UserOperation.Study_Crud_Sandbox);
 
-                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);
-
-                    var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
+                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);                 
 
                     //This object gets passed around
                     var creationAndSchedulingDto =
@@ -113,7 +111,7 @@ namespace Sepes.Infrastructure.Service
                             SandboxId = createdSandbox.Id,
                             StudyName = studyDto.Name,
                             SandboxName = sandboxDto.Name,
-                            Region = region,
+                            Region = sandboxCreateDto.Region,
                             Tags = tags,
                             BatchId = Guid.NewGuid().ToString()
                         };

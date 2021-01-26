@@ -85,7 +85,7 @@ namespace Sepes.Infrastructure.Service
             foreach (var currentOperationId in existingUpdateOperationIds)
             {
                 var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperationId, desiredRolesSerialized);
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(updateOp, _provisioningQueueService);
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, updateOp);
             }
         }      
 

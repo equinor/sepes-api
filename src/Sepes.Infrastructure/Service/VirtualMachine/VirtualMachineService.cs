@@ -15,6 +15,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-            CloudResourceDto vmResourceEntry = null;
+            CloudResource vmResourceEntry = null;
 
             try
             {
@@ -107,8 +108,7 @@ namespace Sepes.Infrastructure.Service
                 await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
                 var queueParentItem = new ProvisioningQueueParentDto
-                {
-                    SandboxId = sandboxId,
+                {                    
                     Description = $"Create VM for Sandbox: {sandboxId}"
                 };
 
@@ -179,12 +179,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
 
-            var queueParentItem = new ProvisioningQueueParentDto
-            {
-                SandboxId = vmResource.SandboxId.Value,
-                Description = deleteResourceOperation.Description,
-                Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
-            };
+           var queueParentItem = QueueItemFactory.CreateParent(deleteResourceOperation);           
 
             await _workQueue.SendMessageAsync(queueParentItem);
         }
@@ -202,7 +197,6 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
-
             var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
 
             if (vmResource == null)

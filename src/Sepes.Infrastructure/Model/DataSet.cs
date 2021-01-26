@@ -11,8 +11,7 @@ namespace Sepes.Infrastructure.Model
         [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
-        [MaxLength(64)]
-        [Required(AllowEmptyStrings =false)]
+        [MaxLength(64)]        
         public string StorageAccountName { get; set; }
 
         [MaxLength(256)]

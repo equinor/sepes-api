@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Util
 
         public static List<FirewallRule> TranslateAllowedIpsToGenericFirewallRule(List<DatasetFirewallRule> datasetFirewallRules)
         {
-            return datasetFirewallRules.Select(r => new FirewallRule() { Action = RuleAction.Allow, Address = r.Address }).ToList();
+            return datasetFirewallRules.Select(r => new FirewallRule() { Action = FirewallRuleAction.Allow, Address = r.Address }).ToList();
         }
 
         public static string TranslateAllowedIpsToOperationDesiredState(List<DatasetFirewallRule> datasetFirewallRules)
@@ -101,7 +101,7 @@ namespace Sepes.Infrastructure.Util
             return new DatasetFirewallRule() { CreatedBy = user.UserName, Created = DateTime.UtcNow, RuleType = ruleType, Address = ipAddress };
         }
 
-       public static CloudResource GetStudySpecificStorageAccount(Dataset dataset)
+       public static CloudResource GetStudySpecificStorageAccountResourceEntry(Dataset dataset)
         {
             if(dataset.StudyId.HasValue && dataset.StudyId.Value > 0)
             {

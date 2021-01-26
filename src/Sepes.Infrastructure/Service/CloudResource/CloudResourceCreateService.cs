@@ -87,7 +87,7 @@ namespace Sepes.Infrastructure.Service
             var currentUser = await _userService.GetCurrentUserAsync();
             var sessionId = _requestIdService.GetRequestId();          
 
-            var resourceEntry = CloudResourceFactory.CreateSandboxResourceEntry(currentUser, sessionId, dto.SandboxId, dto.Region, resourceType, dto.ResourceGroup.Id, resourceName, dto.Tags, configString, dto.BatchId, dependsOn);
+            var resourceEntry = CloudResourceFactory.CreateSandboxResourceEntry(currentUser, sessionId, dto.SandboxId, dto.Region, resourceType, dto.ResourceGroup.Id, resourceName, dto.Tags, configString, dto.BatchId, dependsOn, dto.ResourceGroupName);
 
             await SaveToDb(resourceEntry);
 

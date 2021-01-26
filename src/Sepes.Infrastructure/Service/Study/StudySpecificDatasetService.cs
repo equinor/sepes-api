@@ -54,12 +54,15 @@ namespace Sepes.Infrastructure.Service
             var currentUser = await _userService.GetCurrentUserAsync();
             dataset.CreatedBy = currentUser.UserName;          
 
-            await _db.Datasets.AddAsync(dataset);
+            _db.Datasets.Add(dataset);
+            await _db.SaveChangesAsync();
 
             // Create new linking table entry
-            var studyDataset = new StudyDataset { Study = studyFromDb, Dataset = dataset };
+            var studyDataset = new StudyDataset { StudyId = studyFromDb.Id, DatasetId = dataset.Id };
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
+
+            dataset = await GetDatasetOrThrowNoAccessCheckAsync(dataset.Id);
 
             try
             {

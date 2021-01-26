@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Util
 
         public static string StudySpecificDatasetResourceGroup(string studyName)
         {
-            return AzureResourceNameConstructor("rg-study-datasets-", studyName, null, maxLength: 64, addUniqueEnding: true);
+            return AzureResourceNameConstructor("rg-study-", studyName, null, "-datasets", maxLength: 64, addUniqueEnding: true);
         }
 
         public static string VNet(string studyName, string sandboxName) => AzureResourceNameConstructor("vnet-", studyName, sandboxName);
@@ -102,10 +102,12 @@ namespace Sepes.Infrastructure.Util
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
 
-        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName = null, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
+        public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName = null, string suffix = null, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
+            var prefixLength = prefix.Length;
+            var suffixLength = String.IsNullOrWhiteSpace(suffix) ? 0 : suffix.Length;
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
-            var availableSpaceForStudyAndSanboxName = maxLength - prefix.Length - shortUniquePart.Length - (avoidDash ? 0 : 1);
+            var availableSpaceForStudyAndSanboxName = maxLength - prefixLength - suffixLength - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
             var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
             var alphanumericSandboxName = sandboxName != null ? MakeStringAlphanumericAndRemoveWhitespace(sandboxName) : null;
@@ -145,11 +147,11 @@ namespace Sepes.Infrastructure.Util
 
             if (String.IsNullOrWhiteSpace(alphanumericSandboxName))
             {
-                return $"{prefix}{alphanumericStudyName}{shortUniquePart}";
+                return $"{prefix}{alphanumericStudyName}{suffix}{shortUniquePart}";
             }
             else
             {
-                return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{shortUniquePart}";
+                return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}";
             }
 
          

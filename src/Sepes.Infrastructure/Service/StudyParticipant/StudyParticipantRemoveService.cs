@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, roleName);
+                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, newRole: roleName);
 
                 if (roleName == StudyRoles.StudyOwner)
                 {

@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Model.Factory
           )
         {
             var resourceType = AzureResourceType.StorageAccount;
-            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceGroupName, tags, resourceName);
+            var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceName, tags, resourceGroupName);
             
             newResource.DatasetId = datasetId;
             newResource.ParentResourceId = resourceGroupId;
@@ -61,8 +61,7 @@ namespace Sepes.Infrastructure.Model.Factory
             return newResource;
         }
 
-        public static CloudResource CreateSandboxResourceEntry(UserDto currentUser, string sessionId,
-       int sandboxId, string region, string resourceType, int resourceGroupId, string resourceName, Dictionary<string, string> tags,
+        public static CloudResource CreateSandboxResourceEntry(UserDto currentUser, string sessionId, int sandboxId, string region, string resourceType, int resourceGroupId, string resourceName, Dictionary<string, string> tags,
        string configString = null,
        string batchId = null,
        int dependsOn = 0,
@@ -83,9 +82,7 @@ namespace Sepes.Infrastructure.Model.Factory
             return newResource;
         }
 
-        public static CloudResource CreateBasicResource(UserDto currentUser, string sessionId,
-            string region, string resourceType, string resourceName, Dictionary<string, string> tags //Basic resource properties
-            , string resourceGroupName = null
+        public static CloudResource CreateBasicResource(UserDto currentUser, string sessionId, string region, string resourceType, string resourceName, Dictionary<string, string> tags, string resourceGroupName = null
             )
         {
             var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
@@ -119,7 +116,7 @@ namespace Sepes.Infrastructure.Model.Factory
             var operation = resource.Operations.SingleOrDefault();
             operation.Description = description;
             operation.BatchId = batchId;
-            operation.DependsOnOperationId = operationDependsOn > 0 ? operationDependsOn : default;
+            operation.DependsOnOperationId = operationDependsOn > 0 ? operationDependsOn : default(int?);
         }
     }
 }

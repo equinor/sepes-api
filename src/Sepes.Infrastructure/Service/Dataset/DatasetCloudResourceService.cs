@@ -30,9 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceCreateService _cloudResourceCreateService;
         readonly ICloudResourceDeleteService _cloudResourceDeleteService;
 
-        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
-
-        //Queue service
+        readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;        
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
@@ -84,7 +82,7 @@ namespace Sepes.Infrastructure.Service
             return datasetResourceGroupEntry;
         }
 
-        CloudResource GetResourceGroupForStudySpecificDataset(Study study)
+        CloudResource GetResourceGroupForStudySpecificDataset(Study study, bool includeDeleted = false)
         {
             if (study.Resources == null)
             {
@@ -93,7 +91,7 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curResource in study.Resources)
             {
-                if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false)
+                if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false || includeDeleted)
                 {
                     if (curResource.ResourceType == AzureResourceType.ResourceGroup)
                     {
@@ -143,7 +141,7 @@ namespace Sepes.Infrastructure.Service
                 var stateForFirewallOperation = DatasetUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
 
                 var createStorageAccountOperation = CloudResourceOperationUtil.GetCreateOperation(resourceEntry);
-                var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_FIREWALL_RULES, dependsOn: createStorageAccountOperation.Id, desiredState: stateForFirewallOperation);
+                var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_FIREWALL_RULES, dependsOn: createStorageAccountOperation.Id, desiredState: stateForFirewallOperation);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, firewallUpdateOperation);          
             }
@@ -195,11 +193,11 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync(cancellationToken);
 
             var stateForFirewallOperation = DatasetUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
-            var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccount(dataset);
+            var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
             var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
                 CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);
 
-            await ProvisioningQueueUtil.CreateItemAndEnqueue(firewallUpdateOperation, _provisioningQueueService);         
+            await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, firewallUpdateOperation);         
         }           
 
         public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
@@ -208,12 +206,21 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                //Get resource group
-                //Add delete operation for resource group
+                var resourceGroupEntry = GetResourceGroupForStudySpecificDataset(study, true);
 
-                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup) == false)
+                var currentUser = await _userService.GetCurrentUserAsync();
+
+                SoftDeleteUtil.MarkAsDeleted(resourceGroupEntry, currentUser);
+
+                foreach (var curResource in resourceGroupEntry.ChildResources)
                 {
-                    await _azureResourceGroupService.Delete(study.StudySpecificDatasetsResourceGroup, cancellationToken);
+                    SoftDeleteUtil.MarkAsDeleted(curResource, currentUser);
+                }              
+
+                if (resourceGroupEntry != null)
+                {
+                    var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resourceGroupEntry.Id, $"Delete study related resurces for Study {study.Id}");
+                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
                 }
             }
             catch (Exception ex)
@@ -224,16 +231,18 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DeleteResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"DeleteResourcesForStudySpecificDatasetAsync - Dataset Id: {dataset.Id}");
-
-            //Get resource entry
-            //Add delete operation for resource group
+            _logger.LogInformation($"DeleteResourcesForStudySpecificDatasetAsync - Dataset Id: {dataset.Id}. Resources will be marked ");          
 
             try
             {
-                if (String.IsNullOrWhiteSpace(study.StudySpecificDatasetsResourceGroup) == false && String.IsNullOrWhiteSpace(dataset.StorageAccountName) == false)
+                var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+
+                if (datasetResourceEntry != null)
                 {
-                    await _azureStorageAccountService.DeleteStorageAccount(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName, cancellationToken);
+                    await SoftDeleteUtil.MarkAsDeleted(datasetResourceEntry, _userService);
+
+                    var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(datasetResourceEntry.Id, $"Delete dataset related resurces for dataset {dataset.Id}");
+                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
                 }
 
             }

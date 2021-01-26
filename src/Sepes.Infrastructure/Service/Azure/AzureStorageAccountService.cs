@@ -34,9 +34,9 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var storageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
-            if (diagnosticStorageAccount == null)
+            if (storageAccount == null)
             {
                 _logger.LogInformation($"Storage account not found, creating");
 
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 // Create storage account
-                diagnosticStorageAccount = await _azure.StorageAccounts.Define(parameters.Name)
+                storageAccount = await _azure.StorageAccounts.Define(parameters.Name)
                     .WithRegion(parameters.Region)
                     .WithExistingResourceGroup(parameters.ResourceGroupName)
                     .WithAccessFromAllNetworks()
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation($"Done creating storage account");
             }
 
-            var result = CreateResult(diagnosticStorageAccount);
+            var result = CreateResult(storageAccount);
 
             return result;
         }

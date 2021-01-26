@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,9 +34,7 @@ namespace Sepes.Infrastructure.Service
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = sandboxFromDb.Id;
-            queueParentItem.Description = $"Create basic resources for Sandbox (re-scheduled): {sandboxFromDb.Id}";
+            var queueParentItem = QueueItemFactory.CreateParent($"Create basic resources for Sandbox (re-scheduled): {sandboxFromDb.Id}");
 
             //Check state of sandbox resource creation: Resource group shold be success, rest should be not started or failed
 
@@ -133,14 +132,12 @@ namespace Sepes.Infrastructure.Service
 
                 relevantOperation.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count  
 
-                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Re-queing item. Previous status was {relevantOperation.Status}", resourceId));
-
-                var queueParentItem = new ProvisioningQueueParentDto();
-                queueParentItem.SandboxId = sandboxFromDb.Id;
-                queueParentItem.Description = $"{relevantOperation} (re-scheduled)";
+                _logger.LogInformation(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Re-queing item. Previous status was {relevantOperation.Status}", resourceId));                              
 
                 await _db.SaveChangesAsync();
-                queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = relevantOperation.Id });
+
+                var queueParentItem = QueueItemFactory.CreateParent(relevantOperation.Id, $"{relevantOperation.Description} (re-scheduled)");
+              
                 await _provisioningQueueService.SendMessageAsync(queueParentItem);
             }
             else
