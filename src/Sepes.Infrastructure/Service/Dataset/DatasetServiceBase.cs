@@ -33,6 +33,7 @@ namespace Sepes.Infrastructure.Service
                  .ThenInclude(s=> s.Resources)
                  .Include(d=> d.FirewallRules)
                  .Include(d=> d.Resources)
+                 .ThenInclude(r=> r.Operations)
                  .Where(ds => ds.Deleted == false);
 
             if (excludeStudySpecific)

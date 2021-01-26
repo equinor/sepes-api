@@ -1,15 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class DatasetStorageExternalLinkResolver : IValueResolver<Dataset, DatasetDto, string>
+    public class StorageAccountExternalLinkResolver : IValueResolver<Dataset, DatasetDto, string>
     {
         public readonly IConfiguration _config;
-        public DatasetStorageExternalLinkResolver(IConfiguration config)
+        public StorageAccountExternalLinkResolver(IConfiguration config)
         {
             this._config = config;
         }       

@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Dataset;
+﻿using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Model;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,5 +21,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task HardDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default);
         Task SoftDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
         Task HardDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
+        Task<List<DatasetResourceLightDto>> GetDatasetResourcesAsync(int studyId, int datasetId, CancellationToken cancellation);
     }
 }
