@@ -5,33 +5,26 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Xunit;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Dto.Study;
 
 namespace Sepes.RestApi.IntegrationTests
 {
     [Collection("Integration tests collection")]
-    public class PlanTests : IAsyncLifetime
+    public class FirstTest : IAsyncLifetime
     {
-        private const string _endpoint = "/validateUsername";
+        private const string _endpoint = "api/studies";
         private readonly RestHelper _restHelper;
 
-        public PlanTests(TestHostFixture testHostFixture)
+        public FirstTest(TestHostFixture testHostFixture)
         {
             _restHelper = new RestHelper(testHostFixture.Client);
         }
 
         [Fact]
-        public async Task GetAllPlans()
+        public async Task TestOne()
         {
-            //Arrange
-            await SliceFixture.InsertAsync(new VmUsernameDto { username = "First name" });
-            await SliceFixture.InsertAsync(new VmUsernameDto { username = "Second name" });
-
-            //Act
-            var result = await _restHelper.Get<ReadOnlyCollection<VmUsernameValidateDto>>(_endpoint);
-
-            //Assert
-            Assert.Equal(2, result.Count);
-            Assert.Contains(result, x => x.isValid.Equals(true));
+            Assert.Equal(1,1);
         }
 
         public Task InitializeAsync() => SliceFixture.ResetCheckpoint();

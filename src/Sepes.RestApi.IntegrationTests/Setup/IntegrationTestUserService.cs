@@ -19,7 +19,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
         public string GetUserId()
         {
-            throw new NotImplementedException();
+            return TestConstants.TestUserGuid;
         }
 
         public string GetUsername()
