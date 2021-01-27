@@ -47,7 +47,7 @@ namespace Sepes.Tests.Setup
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
-            dsCloudResourceServiceMock.Setup(x => x.CreateResourcesForStudySpecificDatasetAsync(It.IsAny<Study>(), It.IsAny<Dataset>(), "192.168.1.1", default(CancellationToken))).Returns(default(Task));
+            dsCloudResourceServiceMock.Setup(x => x.CreateResourcesForStudySpecificDatasetAsync(It.IsAny<Dataset>(), "192.168.1.1", default(CancellationToken))).Returns(default(Task));
 
             return new StudySpecificDatasetService(db, mapper, logger, userService.Object, dsCloudResourceServiceMock.Object);
         }
