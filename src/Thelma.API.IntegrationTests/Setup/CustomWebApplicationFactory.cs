@@ -50,7 +50,7 @@ namespace Sepes.API.IntegrationTests.Setup
                         configuration.GetConnectionString(connectionStringSetting),
                         options =>
                         {
-                            options.MigrationsAssembly("Thelma.API");
+                            options.MigrationsAssembly("Sepes.Infrastructure");
                             options.EnableRetryOnFailure(10, TimeSpan.FromSeconds(10), null);
                         }
                     ));

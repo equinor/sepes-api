@@ -11,7 +11,7 @@ namespace Sepes.API.IntegrationTests
     [Collection("Integration tests collection")]
     public class PlanTests : IAsyncLifetime
     {
-        private const string _endpoint = "/plans";
+        private const string _endpoint = "/validateUsername";
         private readonly RestHelper _restHelper;
 
         public PlanTests(TestHostFixture testHostFixture)

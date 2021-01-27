@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Thelma.API.IntegrationTests": {
+    "Sepes.API.IntegrationTests": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
