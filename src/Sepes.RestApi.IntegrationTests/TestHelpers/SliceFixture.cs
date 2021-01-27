@@ -5,11 +5,11 @@ using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
-using Sepes.API.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.RestApi;
 
-namespace Sepes.API.IntegrationTests.TestHelpers
+namespace Sepes.RestApi.IntegrationTests.TestHelpers
 {
     //From https://github.com/jbogard/ContosoUniversityDotNetCore/blob/master/ContosoUniversity.IntegrationTests/SliceFixture.cs
     public class SliceFixture

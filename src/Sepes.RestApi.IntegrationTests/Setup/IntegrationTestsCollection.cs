@@ -1,6 +1,6 @@
 ﻿using Xunit;
 
-namespace Sepes.API.IntegrationTests.Setup
+namespace Sepes.RestApi.IntegrationTests.Setup
 {
     [CollectionDefinition("Integration tests collection")]
     public class IntegrationTestsCollection : ICollectionFixture<TestHostFixture>

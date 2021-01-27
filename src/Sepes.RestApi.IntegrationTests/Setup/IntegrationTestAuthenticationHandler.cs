@@ -8,7 +8,7 @@ using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
-namespace Sepes.API.IntegrationTests.Setup
+namespace Sepes.RestApi.IntegrationTests.Setup
 {
     public class IntegrationTestAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {

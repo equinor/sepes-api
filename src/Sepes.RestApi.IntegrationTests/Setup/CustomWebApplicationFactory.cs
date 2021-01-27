@@ -10,7 +10,7 @@ using Sepes.Infrastructure.Model.Context;
 using System;
 using System.Linq;
 
-namespace Sepes.API.IntegrationTests.Setup
+namespace Sepes.RestApi.IntegrationTests.Setup
 {
     public class CustomWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup> where TStartup : class
     {

@@ -6,7 +6,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace Sepes.API.IntegrationTests.TestHelpers
+namespace Sepes.RestApi.IntegrationTests.TestHelpers
 {
     public class RestHelper
     {

@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Xunit;
 
-namespace Sepes.API.IntegrationTests.Setup
+namespace Sepes.RestApi.IntegrationTests.Setup
 {
     /// <summary>
     /// One instance of this will be created per test collection.

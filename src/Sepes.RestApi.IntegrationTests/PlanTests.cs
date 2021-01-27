@@ -1,12 +1,12 @@
-﻿using Sepes.API.IntegrationTests.Setup;
-using Sepes.API.IntegrationTests.TestHelpers;
+﻿using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.API.IntegrationTests
+namespace Sepes.RestApi.IntegrationTests
 {
     [Collection("Integration tests collection")]
     public class PlanTests : IAsyncLifetime

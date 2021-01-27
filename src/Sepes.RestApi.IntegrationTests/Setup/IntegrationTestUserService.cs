@@ -1,8 +1,8 @@
 ﻿using Sepes.Infrastructure.Interface;
 using System;
-using Sepes.API.IntegrationTests.TestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers;
 
-namespace Sepes.API.IntegrationTests.Setup
+namespace Sepes.RestApi.IntegrationTests.Setup
 {
     public class IntegrationTestUserService : ICurrentUserService
     {
