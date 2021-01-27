@@ -8,9 +8,9 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
 {
     public interface IAzureStorageAccountService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning, IHasNetworkRules
     {
-        Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default);
+        Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default);
 
-        Task<AzureStorageAccountDto> CreateStorageAccount(Region region, string resourceGroupName, string storageAccountName, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default);
+        Task<AzureStorageAccountDto> Create(Region region, string resourceGroupName, string storageAccountName, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default);
 
 
         Task AddStorageAccountToVNet(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForVnet, string vNetName, CancellationToken cancellation);

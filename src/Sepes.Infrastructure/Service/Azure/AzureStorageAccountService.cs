@@ -5,6 +5,7 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
@@ -76,25 +77,19 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        ResourceProvisioningResult CreateResult(IStorageAccount storageAccount)
+        ResourceProvisioningResult CreateResult(IStorageAccount storageAccount = null)
         {
-            var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
-            result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
-            return result;
-        }
-
-        public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
-
-            if (resource != null)
+            if(storageAccount != null)
             {
-                //Ensure resource is is managed by this instance
-                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
-
-                await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
+                var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
+                result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
+                return result;
             }
-        }
+            else
+            {
+                return ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
+            }
+        }       
 
         public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
@@ -140,14 +135,34 @@ namespace Sepes.Infrastructure.Service
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await Delete(parameters.ResourceGroupName, parameters.Name);
+                return CreateResult();
+            }
+            catch (Exception)
+            {
+                throw;
+            }            
+        }
+
+        public async Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
+
+            if (resource != null)
+            {
+                //Ensure resource is is managed by this instance
+                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+                await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
+            }
         }
 
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
@@ -155,7 +170,7 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<AzureStorageAccountDto> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<AzureStorageAccountDto> Create(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
             var storageAccount = await CreateStorageAccountInternal(region, resourceGroupName, name, tags, onlyAllowAccessFrom, cancellationToken);
 
