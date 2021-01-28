@@ -171,6 +171,7 @@ namespace Sepes.Infrastructure.Service
                     }
                     catch (ProvisioningException ex) //Inner loop, ordinary exception is not catched
                     {
+
                         if (ex.LogAsWarning)
                         {
                             if (ex.IncludeExceptionInWarningLog)
@@ -187,10 +188,12 @@ namespace Sepes.Infrastructure.Service
                             _logger.LogError(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation failed"));
                         }
 
+                        currentOperation = await _resourceOperationUpdateService.SetErrorMessageAsync(currentOperation.Id, ex);
+
                         if (String.IsNullOrWhiteSpace(ex.NewOperationStatus) == false)
                         {
                             currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
-                        }
+                        }                       
 
                         if (ex.ProceedWithOtherOperations == false)
                         {

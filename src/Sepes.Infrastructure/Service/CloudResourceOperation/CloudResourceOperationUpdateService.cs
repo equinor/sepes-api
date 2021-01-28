@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -16,8 +17,19 @@ namespace Sepes.Infrastructure.Service
             :base(db, mapper, userService)
         {        
            
-        }  
-        
+        }
+
+        public async Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId)
+        {
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
+            operationFromDb.TryCount++;
+            operationFromDb.CarriedOutBySessionId = requestId;
+            operationFromDb.Status = CloudResourceOperationState.IN_PROGRESS;
+            await _db.SaveChangesAsync();
+
+            return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
+        }
+
         public async Task<CloudResourceOperationDto> UpdateStatusAsync(int id, string status, string updatedProvisioningState = null, string errorMessage = null)
         {
             var operationFromDb = await GetExistingOperationReadyForUpdate(id);
@@ -46,12 +58,27 @@ namespace Sepes.Infrastructure.Service
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);
         }
 
-        public async Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId)
+        public async Task<CloudResourceOperationDto> SetErrorMessageAsync(int id, Exception exception)
         {
-            var operationFromDb = await GetExistingOperationReadyForUpdate(id);
-            operationFromDb.TryCount++;
-            operationFromDb.CarriedOutBySessionId = requestId;
-            operationFromDb.Status = CloudResourceOperationState.IN_PROGRESS;          
+            var messageBuilder = new StringBuilder(exception.Message);
+
+            Exception curException = exception;
+
+            while (curException.InnerException != null)
+            {
+                messageBuilder.AppendLine(curException.InnerException.Message);
+                curException = curException.InnerException;
+            } 
+            
+            return await SetErrorMessageAsync(id, messageBuilder.ToString());
+        }
+
+        public async Task<CloudResourceOperationDto> SetErrorMessageAsync(int id, string errorMessage)
+        {
+            var operationFromDb = await GetExistingOperationReadyForUpdate(id);           
+
+            operationFromDb.LatestError = errorMessage;
+
             await _db.SaveChangesAsync();
 
             return _mapper.Map<CloudResourceOperationDto>(operationFromDb);

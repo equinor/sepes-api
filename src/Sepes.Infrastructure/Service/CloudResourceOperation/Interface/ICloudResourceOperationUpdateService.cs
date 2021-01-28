@@ -14,6 +14,10 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<CloudResourceOperationDto> AbortAndAllowDependentOperationsToRun(int id, string errorMessage = null);
 
+        Task<CloudResourceOperationDto> SetErrorMessageAsync(int id, Exception exception);
+
+        Task<CloudResourceOperationDto> SetErrorMessageAsync(int id, string errorMessage);
+
         Task<CloudResourceOperationDto> TouchAsync(int id);
 
         Task<CloudResourceOperationDto> SetInProgressAsync(int id, string requestId);

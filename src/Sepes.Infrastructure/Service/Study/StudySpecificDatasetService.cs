@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {           
-            var studyFromDb =  await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true, true);
+            var studyFromDb =  await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
@@ -89,7 +89,7 @@ namespace Sepes.Infrastructure.Service
         {
             DatasetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
           
-            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true, true);
+            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true);
 
             var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
 
