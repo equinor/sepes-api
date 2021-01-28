@@ -3,13 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -59,19 +58,13 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
 
-                var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(sandboxResourceGroup.Id, AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType,
+                var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(sandboxResourceGroup.Id, AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(sandboxResourceGroup.ResourceType,
                      CloudResourceOperationType.DELETE,
-                     sandboxResourceGroup.SandboxId) + ". (Delete of Sandbox resource group and all resources within)");
+                     sandboxResourceGroup.SandboxId.Value) + ". (Delete of Sandbox resource group and all resources within)");
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", sandboxFromDb.StudyId, sandboxId);
 
-                //Create queue item
-                var queueParentItem = new ProvisioningQueueParentDto
-                {
-                    SandboxId = sandboxId,
-                    Description = deleteOperation.Description,
-                    Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteOperation.Id } }
-                };
+                var queueParentItem = QueueItemFactory.CreateParent(deleteOperation);              
                
                 await _provisioningQueueService.SendMessageAsync(queueParentItem, visibilityTimeout: TimeSpan.FromSeconds(10));
             }

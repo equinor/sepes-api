@@ -5,8 +5,7 @@ using System.Collections.Generic;
 namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class ProvisioningQueueParentDto
-    {
-        public int SandboxId { get; set; }
+    {     
 
         public string Description { get; set; }
 

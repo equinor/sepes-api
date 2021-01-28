@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sepes.Infrastructure.Model.Interface;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -6,18 +7,30 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Sepes.Infrastructure.Model
 {
     [Table("CloudResources")]
-    public class CloudResource : UpdateableBaseModel
+    public class CloudResource : UpdateableBaseModel, ISupportSoftDelete
     {
-        public int SandboxId { get; set; }
+
+        public int? StudyId { get; set; }
+
+        public int? SandboxId { get; set; }
+
+        public int? DatasetId { get; set; }
 
         [MaxLength(256)]
         public string ResourceId { get; set; }
+
         [MaxLength(256)]
         public string ResourceKey { get; set; }
+
         [MaxLength(256)]
         public string ResourceName { get; set; }
+
         [MaxLength(64)]
         public string ResourceType { get; set; }
+
+        [MaxLength(64)]
+        public string Purpose { get; set; }
+
         [MaxLength(64)]
         public string ResourceGroupName { get; set; }
 
@@ -35,14 +48,20 @@ namespace Sepes.Infrastructure.Model
 
         public bool SandboxControlled { get; set; }
 
-        public DateTime? Deleted { get; set; }
+        public bool Deleted { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
 
         [MaxLength(64)]
         public string DeletedBy { get; set; }
 
         public int? ParentResourceId { get; set; }
 
+        public Study Study { get; set; }
+
         public Sandbox Sandbox { get; set; }
+
+        public Dataset Dataset { get; set; }
 
         public List<CloudResourceOperation> Operations { get; set; }      
 

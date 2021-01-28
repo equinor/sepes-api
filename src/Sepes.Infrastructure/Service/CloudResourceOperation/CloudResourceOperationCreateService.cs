@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var newOperation = await CreateUpdateOperationAsync(
-                AzureResourceUtil.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
+                AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
                operationType,
                dependsOn,
                batchId,

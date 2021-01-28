@@ -19,6 +19,8 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
@@ -140,6 +142,9 @@ namespace Sepes.RestApi
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+
+            //Data model services v2
+            services.AddTransient<IStudyModelService, StudyModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyService, StudyService>();

@@ -23,14 +23,33 @@ namespace Sepes.Infrastructure.Util
             }
         }
 
-        public static string CreateDescriptionForResourceOperation(string resourceType, string operationType, int sandboxId, int resourceId = 0)
+        public static string CreateDescriptionForResourceOperation(string resourceType, string operationType, int resourceId = 0)
         {
             var description = $"{operationType} {resourceType}";
 
             if (resourceId > 0)
             {
                 description += $" with id {resourceId}";
-            }
+            }           
+
+            return description;
+        }
+
+        public static string CreateDescriptionForStudyResourceOperation(string resourceType, string operationType, int studyId = 0, int resourceId = 0)
+        {
+            var description = CreateDescriptionForResourceOperation(resourceType, operationType, resourceId);
+
+            if(studyId > 0)
+            {
+                description += $" for study {studyId}";
+            }           
+
+            return description;
+        }
+
+        public static string CreateDescriptionForSandboxResourceOperation(string resourceType, string operationType, int sandboxId, int resourceId = 0)
+        {
+            var description = CreateDescriptionForResourceOperation(resourceType, operationType, resourceId); 
 
             description += $" for sandbox {sandboxId}";
 
@@ -56,17 +75,17 @@ namespace Sepes.Infrastructure.Util
 
         public static string CreateResourceLink(IConfiguration config, string resourceId)
         {
-            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
-
             if (String.IsNullOrWhiteSpace(resourceId))
             {
                 return null;
-            }
+            }           
 
             if (resourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
             {
                 return null;
             }
+
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);
 
             return CreateResourceLink(domain, resourceId);
         }

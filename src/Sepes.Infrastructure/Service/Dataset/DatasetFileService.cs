@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Dto.Storage;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -36,7 +37,9 @@ namespace Sepes.Infrastructure.Service
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
                     await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
-                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+                
+                    _storageService.SetResourceGroupAndAccountName(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
                 else
                 {
@@ -68,7 +71,8 @@ namespace Sepes.Infrastructure.Service
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
                     await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
-                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+                    _storageService.SetResourceGroupAndAccountName(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
                 else
                 {
@@ -93,15 +97,17 @@ namespace Sepes.Infrastructure.Service
 
                 if (IsStudySpecific(dataset))
                 {
-                    if (String.IsNullOrWhiteSpace(dataset.StorageAccountName))
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+
+                    if (datasetResourceEntry == null)
                     {
-                        throw new Exception($"Storage account name is null Dataset {dataset.Id}");
+                        throw new Exception($"Resource entry for Dataset {dataset.Id} not found");
                     }
 
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_Read, false);
                     await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
-                    _storageService.SetResourceGroupAndAccountName(study.StudySpecificDatasetsResourceGroup, dataset.StorageAccountName);
+                    _storageService.SetResourceGroupAndAccountName(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
                 else
                 {

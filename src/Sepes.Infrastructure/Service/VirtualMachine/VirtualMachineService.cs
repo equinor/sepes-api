@@ -15,6 +15,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
         {
-            CloudResourceDto vmResourceEntry = null;
+            CloudResource vmResourceEntry = null;
 
             try
             {
@@ -88,7 +89,7 @@ namespace Sepes.Infrastructure.Service
 
                 var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-                await _sandboxResourceCreateService.ValidateNameThrowIfInvalid(virtualMachineName);
+                await _sandboxResourceCreateService.ValidateThatNameDoesNotExistThrowIfInvalid(virtualMachineName);
 
                 var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
@@ -101,8 +102,7 @@ namespace Sepes.Infrastructure.Service
                 //Make this dependent on bastion create operation to be completed, since bastion finishes last
                 var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
-
-                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region, tags, virtualMachineName, dependsOn, null);
+                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
 
                 //Create vm settings and immeately attach to resource entry
                 var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
@@ -110,8 +110,7 @@ namespace Sepes.Infrastructure.Service
                 await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
                 var queueParentItem = new ProvisioningQueueParentDto
-                {
-                    SandboxId = sandboxId,
+                {                    
                     Description = $"Create VM for Sandbox: {sandboxId}"
                 };
 
@@ -182,12 +181,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
 
-            var queueParentItem = new ProvisioningQueueParentDto
-            {
-                SandboxId = vmResource.SandboxId,
-                Description = deleteResourceOperation.Description,
-                Children = new List<ProvisioningQueueChildDto>() { new ProvisioningQueueChildDto() { ResourceOperationId = deleteResourceOperation.Id } }
-            };
+           var queueParentItem = QueueItemFactory.CreateParent(deleteResourceOperation);           
 
             await _workQueue.SendMessageAsync(queueParentItem);
         }
@@ -205,7 +199,6 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
-
             var vmResource = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
 
             if (vmResource == null)

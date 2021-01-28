@@ -43,6 +43,24 @@ namespace Sepes.Infrastructure.Util
             return null;
         }
 
+        public static CloudResource GetResourceByTypeAndPurpose(List<CloudResource> resources, string resourceType, string purpose)
+        {
+            if (resources == null)
+            {
+                throw new ArgumentNullException("resources");
+            }
+
+            foreach (var curResource in resources)
+            {
+                if (curResource.ResourceType == resourceType && curResource.Purpose == purpose)
+                {
+                    return curResource;
+                }
+            }
+
+            return null;
+        }
+
         public static CloudResource GetSandboxResourceGroupEntry(List<CloudResource> resources)
         {
             if (resources == null)
@@ -61,12 +79,19 @@ namespace Sepes.Infrastructure.Util
             return null;
         }
 
-        public static List<CloudResource> GetResourceGroups(Study study)
+        public static List<CloudResource> GetSandboxResourceGroupsForStudy(Study study)
         {
             return study.Sandboxes
                 .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
                 .Select(sb => GetSandboxResourceGroupEntry(sb.Resources))
-                .Where(r => !r.Deleted.HasValue)
+                .Where(r => r.Deleted == false)
+                .ToList();
+        }
+
+        public static List<CloudResource> GetDatasetResourceGroupsForStudy(Study study)
+        {
+            return study.Resources
+                .Where(r => !SoftDeleteUtil.IsMarkedAsDeleted(r) && r.ResourceType == AzureResourceType.ResourceGroup && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
                 .ToList();
         }
 
@@ -89,11 +114,6 @@ namespace Sepes.Infrastructure.Util
             }
 
             return result;
-        }
-
-        public static bool IsDeleted(CloudResourceDto resource)
-        {
-            return resource.Deleted.HasValue;
-        }       
+        }               
     }
 }

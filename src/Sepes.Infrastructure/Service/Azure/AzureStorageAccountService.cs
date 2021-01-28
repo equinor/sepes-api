@@ -5,6 +5,8 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
@@ -15,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -32,9 +35,9 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var diagnosticStorageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var storageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
-            if (diagnosticStorageAccount == null)
+            if (storageAccount == null)
             {
                 _logger.LogInformation($"Storage account not found, creating");
 
@@ -47,7 +50,7 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 // Create storage account
-                diagnosticStorageAccount = await _azure.StorageAccounts.Define(parameters.Name)
+                storageAccount = await _azure.StorageAccounts.Define(parameters.Name)
                     .WithRegion(parameters.Region)
                     .WithExistingResourceGroup(parameters.ResourceGroupName)
                     .WithAccessFromAllNetworks()
@@ -60,7 +63,7 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation($"Done creating storage account");
             }
 
-            var result = CreateResult(diagnosticStorageAccount);
+            var result = CreateResult(storageAccount);
 
             return result;
         }
@@ -74,25 +77,19 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        ResourceProvisioningResult CreateResult(IStorageAccount storageAccount)
+        ResourceProvisioningResult CreateResult(IStorageAccount storageAccount = null)
         {
-            var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
-            result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
-            return result;
-        }
-
-        public async Task DeleteStorageAccount(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
-
-            if (resource != null)
+            if(storageAccount != null)
             {
-                //Ensure resource is is managed by this instance
-                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
-
-                await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
+                var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
+                result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
+                return result;
             }
-        }
+            else
+            {
+                return ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
+            }
+        }       
 
         public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
         {
@@ -138,14 +135,34 @@ namespace Sepes.Infrastructure.Service
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
 
-
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await Delete(parameters.ResourceGroupName, parameters.Name);
+                return CreateResult();
+            }
+            catch (Exception)
+            {
+                throw;
+            }            
+        }
+
+        public async Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
+
+            if (resource != null)
+            {
+                //Ensure resource is is managed by this instance
+                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+
+                await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
+            }
         }
 
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
@@ -153,7 +170,7 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        public async Task<AzureStorageAccountDto> CreateStorageAccount(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<AzureStorageAccountDto> Create(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
             var storageAccount = await CreateStorageAccountInternal(region, resourceGroupName, name, tags, onlyAllowAccessFrom, cancellationToken);
 
@@ -187,18 +204,16 @@ namespace Sepes.Infrastructure.Service
             .WithTags(tags);
 
             return await creator.CreateAsync(cancellation);
-        }
+        }      
 
-        public async Task<AzureStorageAccountDto> SetStorageAccountAllowedIPs(string resourceGroupName, string storageAccountName, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
+        public async Task<List<FirewallRule>> SetRules(string resourceGroupName, string resourceName, List<FirewallRule> rules, CancellationToken cancellationToken = default)
         {
-            var account = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
-            var ipRulesList = onlyAllowAccessFrom?.Select(alw => new IPRule(alw, Microsoft.Azure.Management.Storage.Fluent.Models.Action.Allow)).ToList();
+            var account = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
+            var ipRulesList = rules?.Select(alw => new IPRule(alw.Address, (Action)alw.Action)).ToList();
             var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = new NetworkRuleSet() { IpRules = ipRulesList, DefaultAction = DefaultAction.Deny } };
-            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, storageAccountName, updateParameters, cancellationToken);
-            return _mapper.Map<AzureStorageAccountDto>(account);
+            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, resourceName, updateParameters, cancellationToken);
+            return rules;
         }
-
-     
 
         public async Task AddStorageAccountToVNet(string resourceGroupForStorageAccount, string storageAccountName, string resourceGroupForVnet, string vNetName, CancellationToken cancellation)
         {
@@ -343,5 +358,7 @@ namespace Sepes.Infrastructure.Service
             virtualNetworkRule = null;
             return false;
         }
+
+      
     }
 }

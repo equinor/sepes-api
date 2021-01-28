@@ -27,10 +27,7 @@ namespace Sepes.Infrastructure.Model
         public bool Restricted { get; set; }
 
         [MaxLength(512)]
-        public string LogoUrl { get; set; }
-
-        [MaxLength(64)]
-        public string StudySpecificDatasetsResourceGroup { get; set; }
+        public string LogoUrl { get; set; }      
 
         public bool? Closed { get; set; }
 
@@ -41,10 +38,12 @@ namespace Sepes.Infrastructure.Model
 
         public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
+        public virtual ICollection<Dataset> StudySpecificDatasets { get; set; }
+
         public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
 
         public virtual ICollection<Sandbox> Sandboxes { get; set; }
 
-        public virtual ICollection<CloudResource> CloudResources { get; set; }
+        public virtual ICollection<CloudResource> Resources { get; set; }
     }
 }

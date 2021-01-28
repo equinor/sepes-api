@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Sepes.Infrastructure.Model.Interface;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
-    public class Dataset : UpdateableBaseModel
+    public class Dataset : UpdateableBaseModel, ISupportSoftDelete
     {
         [MaxLength(64)]
         [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
-        [MaxLength(64)]
-        [Required(AllowEmptyStrings =false)]
+        [MaxLength(64)]        
         public string StorageAccountName { get; set; }
 
         [MaxLength(256)]
@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(1024)]
         public string Description { get; set; }
 
-        public bool? Deleted { get; set; }
+        public bool Deleted { get; set; }
 
         public DateTime? DeletedAt { get; set; }
 
@@ -60,5 +60,9 @@ namespace Sepes.Infrastructure.Model
         //StudyID is only populated if dataset is StudySpecific.
         //This is accounted for in API calls.
         public int? StudyId { get; set; }
+
+        public Study Study { get; set; }
+
+        public List<CloudResource> Resources { get; set; }
     }
 }

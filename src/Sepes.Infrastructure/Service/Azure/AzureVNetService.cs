@@ -35,14 +35,7 @@ namespace Sepes.Infrastructure.Service
             if (vNetDto == null)
             {
                 vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
-            }
-            else
-            {
-                throw new NotImplementedException("Update Network not implemented");
-            }
-
-
-            var crudResult = CreateResult(vNetDto);
+            }           
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
@@ -56,6 +49,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
+            var crudResult = CreateResult(vNetDto);
             return crudResult;
         }
 

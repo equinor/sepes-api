@@ -74,7 +74,12 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(s => s.Sandboxes)
                 .HasForeignKey(s => s.StudyId);
 
-            //STUDY / DATASET RELATION
+            //STUDY SPECIFIC DATASET
+            modelBuilder.Entity<Dataset>()
+              .HasOne(ds => ds.Study)
+              .WithMany(s => s.StudySpecificDatasets)
+              .HasForeignKey(ds => ds.StudyId);
+
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)
                 .WithMany(s => s.StudyDatasets)
@@ -85,7 +90,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.StudyDatasets)
                 .HasForeignKey(sd => sd.DatasetId);
 
-            //STUDY / DATASET RELATION
+            
             modelBuilder.Entity<DatasetFirewallRule>()
                 .HasOne(fw => fw.Dataset)
                 .WithMany(ds => ds.FirewallRules)
@@ -120,49 +125,70 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(ds => ds.PhaseHistory)
                 .HasForeignKey(fw => fw.SandboxId);
 
+            // STUDY / CLOUD RESOURCE RELATION
+            modelBuilder.Entity<CloudResource>()
+                .HasOne(cr => cr.Study)
+                .WithMany(d => d.Resources)
+                .HasForeignKey(sd => sd.StudyId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //CLOUD RESOURCE / SANDBOX RELATION
             modelBuilder.Entity<CloudResource>()
                 .HasOne(cr => cr.Sandbox)
                 .WithMany(d => d.Resources)
-                .HasForeignKey(sd => sd.SandboxId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.SandboxId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //CLOUD RESOURCE / DATASET RELATION
+            modelBuilder.Entity<CloudResource>()
+                .HasOne(cr => cr.Dataset)
+                .WithMany(d => d.Resources)
+                .HasForeignKey(sd => sd.DatasetId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CloudResource>()
               .HasOne(cr => cr.ParentResource)
               .WithMany(d => d.ChildResources)
-              .HasForeignKey(sd => sd.ParentResourceId).OnDelete(DeleteBehavior.Restrict);
+              .HasForeignKey(sd => sd.ParentResourceId)
+              .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CloudResourceOperation>()
                 .HasOne(cr => cr.Resource)
                 .WithMany(d => d.Operations)
-                .HasForeignKey(sd => sd.CloudResourceId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.CloudResourceId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<CloudResourceOperation>()
                 .HasOne(o => o.DependsOnOperation)
                 .WithMany(o => o.DependantOnThisOperation)
-             .HasForeignKey(sd => sd.DependsOnOperationId).OnDelete(DeleteBehavior.Restrict);       
+             .HasForeignKey(sd => sd.DependsOnOperationId)
+             .OnDelete(DeleteBehavior.Restrict);       
 
             //Cloud Region, Vm Size etc
             modelBuilder.Entity<RegionVmSize>()
                 .HasOne(sd => sd.Region)
                 .WithMany(s => s.VmSizeAssociations)
-                .HasForeignKey(sd => sd.RegionKey).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.RegionKey)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<RegionVmSize>()
                 .HasOne(sd => sd.VmSize)
                 .WithMany(d => d.RegionAssociations)
-                .HasForeignKey(sd => sd.VmSizeKey).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.VmSizeKey)
+                .OnDelete(DeleteBehavior.Restrict);
 
             //Cloud Region, Vm Disk Size
             modelBuilder.Entity<RegionDiskSize>()
                 .HasOne(sd => sd.Region)
                 .WithMany(s => s.DiskSizeAssociations)
-                .HasForeignKey(sd => sd.RegionKey).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.RegionKey)
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<RegionDiskSize>()
                 .HasOne(sd => sd.DiskSize)
                 .WithMany(d => d.RegionAssociations)
-                .HasForeignKey(sd => sd.VmDiskKey).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(sd => sd.VmDiskKey)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         void AddDefaultValues(ModelBuilder modelBuilder)

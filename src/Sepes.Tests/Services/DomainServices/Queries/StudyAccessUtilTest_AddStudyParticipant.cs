@@ -28,7 +28,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
 
             foreach(var curRole in rolesToAdd)
             {
-                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, curRole));
+                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole));
             }        
         }
 
@@ -45,7 +45,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
 
             foreach (var curRole in rolesToAdd)
             {
-                var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, curRole);
+                var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole);
 
                 PerformUsualStudyTests(study);
                 UserMustBeAmongStudyParticipants(study);
@@ -62,7 +62,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
             var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRoleForUser, UserConstants.COMMON_CUR_USER_DB_ID);
             foreach (var curRole in rolesToAdd)
             {
-                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, curRole));
+                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole));
             }
         }
 
@@ -79,7 +79,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
 
             foreach (var curRole in rolesToAdd)
             {
-                var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, curRole);
+                var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole);
 
                 PerformUsualStudyTests(study);
                 UserMustBeAmongStudyParticipants(study);
@@ -99,7 +99,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
 
             foreach (var curRole in rolesToAdd)
             {
-                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, curRole));
+                await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole));
             }
         }
     }

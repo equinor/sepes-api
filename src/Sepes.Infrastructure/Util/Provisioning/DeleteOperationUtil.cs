@@ -28,28 +28,20 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             try
             {
-                if (operation.Resource.ResourceType == AzureResourceType.ResourceGroup
-                    || operation.Resource.ResourceType == AzureResourceType.VirtualMachine
-                    )
+                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Deleting {operation.Resource.ResourceType}"));
+
+                var deleteTask = provisioningService.Delete(currentCrudInput);
+
+                while (!deleteTask.IsCompleted)
                 {
-                    logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Deleting {operation.Resource.ResourceType}"));
+                    operation = await operationUpdateService.TouchAsync(operation.Id);
 
-                    var deleteTask = provisioningService.Delete(currentCrudInput);
-
-                    while (!deleteTask.IsCompleted)
-                    {
-                        operation = await operationUpdateService.TouchAsync(operation.Id);
-
-                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                    }
-
-                    logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Delete Operation finished"));
-
-                    return deleteTask.Result;
+                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                 }
 
+                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Delete Operation finished"));
 
-                throw new Exception($"Resource type {operation.Resource.ResourceType} does not support delete");
+                return deleteTask.Result;
             }
             catch (Exception ex)
             {

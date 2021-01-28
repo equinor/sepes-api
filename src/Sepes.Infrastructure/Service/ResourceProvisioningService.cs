@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -25,8 +26,8 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
 
-        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;     
-     
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
+
         readonly ICloudResourceMonitoringService _monitoringService;
 
         public ResourceProvisioningService(
@@ -49,11 +50,11 @@ namespace Sepes.Infrastructure.Service
             //Resource services
             _resourceReadService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
             _resourceUpdateService = resourceUpdateService ?? throw new ArgumentNullException(nameof(resourceUpdateService));
-          
+
             //Resource operation services
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService;
-           
+
             _azureRoleAssignmentService = azureRoleAssignmentService;
             _monitoringService = monitoringService;
         }
@@ -119,7 +120,7 @@ namespace Sepes.Infrastructure.Service
                             }
 
                             currentOperation = await _resourceOperationUpdateService.TouchAsync(currentOperation.Id);
-                            
+
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id,
                                 CloudResourceOperationState.DONE_SUCCESSFUL,
                                 updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
@@ -133,7 +134,7 @@ namespace Sepes.Infrastructure.Service
                         else if (EnsureRolesUtil.WillBeHandledAsEnsureRoles(currentOperation))
                         {
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
-                          
+
                             await EnsureRolesUtil.EnsureRoles(currentOperation,
                                 _azureRoleAssignmentService,
                                 _resourceReadService,
@@ -141,6 +142,25 @@ namespace Sepes.Infrastructure.Service
                                 _logger);
 
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
+                        }
+                        else if (EnsureFirewallRulesUtil.CanHandle(currentOperation))
+                        {
+                            currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
+
+                            if (provisioningService is IHasNetworkRules)
+                            {
+                                await EnsureFirewallRulesUtil.Handle(currentOperation,
+                                    provisioningService as IHasNetworkRules,
+                                    _resourceReadService,
+                                    _resourceOperationUpdateService,
+                                    _logger);
+
+                                await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
+                            }
+                            else
+                            {
+                                throw new ProvisioningException($"Service {provisioningService.GetType().Name} does not support firewall operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
+                            }
                         }
                         else
                         {
@@ -160,12 +180,12 @@ namespace Sepes.Infrastructure.Service
                             else
                             {
                                 _logger.LogWarning(ProvisioningLogUtil.Operation(currentOperation, $"Operation aborted: {ex.Message}"));
-                            }                          
+                            }
                         }
                         else
                         {
                             _logger.LogError(ex, ProvisioningLogUtil.Operation(currentOperation, "Operation failed"));
-                        }                      
+                        }
 
                         if (String.IsNullOrWhiteSpace(ex.NewOperationStatus) == false)
                         {
@@ -213,7 +233,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (ex.StoreQueueInfoOnOperation)
                 {
-                    if(queueParentItem.NextVisibleOn.HasValue == false)
+                    if (queueParentItem.NextVisibleOn.HasValue == false)
                     {
                         _logger.LogError($"Could not store queue info on operation from message {queueParentItem.MessageId}, no next visible time exist");
                     }
@@ -221,7 +241,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         currentOperation = await _resourceOperationUpdateService.SetQueueInformationAsync(currentOperation.Id, queueParentItem.MessageId, queueParentItem.PopReceipt, queueParentItem.NextVisibleOn.Value);
                     }
-                    
+
                 }
             }
             catch (Exception ex) //Outer loop catch 2
@@ -238,7 +258,7 @@ namespace Sepes.Infrastructure.Service
             try
             {
                 int movedUpCount = 0;
-              
+
                 CloudResourceOperationDto currentOperation = null;
 
                 foreach (var queueChildItem in queueParentItem.Children)
@@ -249,7 +269,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (CloudResourceUtil.IsDeleted(curDependantOnThisOp.Resource) == false)
+                            if (curDependantOnThisOp.Resource.Deleted == false)
                             {
                                 if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
                                 {
@@ -280,7 +300,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Failed when moving up dependent operations for message: {queueParentItem.MessageId}");               
+                _logger.LogError(ex, $"Failed when moving up dependent operations for message: {queueParentItem.MessageId}");
             }
         }
 
@@ -288,7 +308,6 @@ namespace Sepes.Infrastructure.Service
         {
             var queueParentItem = new ProvisioningQueueParentDto
             {
-                SandboxId = operation.Resource.SandboxId,
                 Description = operation.Description
             };
 

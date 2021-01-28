@@ -11,9 +11,12 @@ namespace Sepes.Infrastructure.Util
     {
         public static void MarkAsDeleted(ISupportSoftDelete itemToDelete, string deletedBy)
         {
-            itemToDelete.Deleted = true;
-            itemToDelete.DeletedBy = deletedBy;
-            itemToDelete.DeletedAt = DateTime.UtcNow;
+            if(IsMarkedAsDeleted(itemToDelete) == false)
+            {
+                itemToDelete.Deleted = true;
+                itemToDelete.DeletedBy = deletedBy;
+                itemToDelete.DeletedAt = DateTime.UtcNow;
+            }           
         }
 
         public static void MarkAsDeleted(ISupportSoftDelete itemToDelete, User deletedByUser)
@@ -36,7 +39,7 @@ namespace Sepes.Infrastructure.Util
 
         public static bool IsMarkedAsDeleted(ISupportSoftDelete entry)
         {
-            return entry.Deleted.HasValue && entry.Deleted.Value;
+            return entry.Deleted;
         }
     }
 }

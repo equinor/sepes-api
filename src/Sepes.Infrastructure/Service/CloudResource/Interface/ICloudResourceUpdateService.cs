@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Model;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
@@ -7,7 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         //GENERAL METHODS        
 
-        Task<CloudResourceDto> Update(int resourceId, CloudResourceDto updated);   
+        Task<CloudResource> Update(int resourceId, CloudResource updated);   
 
 
         //MORE SPECIFIC RESOURCE OPERATIONS     

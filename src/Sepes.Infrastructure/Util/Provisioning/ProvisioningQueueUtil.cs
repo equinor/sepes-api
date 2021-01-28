@@ -14,15 +14,39 @@ namespace Sepes.Infrastructure.Util.Provisioning
             await queue.IncreaseInvisibilityAsync(queueParentItem, increaseBy);
         }
 
-        public static async Task CreateItemAndEnqueue(CloudResourceOperationDto operation, IProvisioningQueueService workQueue)
+        public static async Task CreateItemAndEnqueue(IProvisioningQueueService workQueue, int operationId, string operationDescription)
         {
             var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.SandboxId = operation.Resource.SandboxId;
-            queueParentItem.Description = operation.Description;
-
-            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+            queueParentItem.Description = operationDescription;
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operationId });
 
             await workQueue.SendMessageAsync(queueParentItem);
+        }
+
+        public static async Task CreateItemAndEnqueue(IProvisioningQueueService workQueue, CloudResourceOperation operation)
+        {
+            await CreateItemAndEnqueue(workQueue, operation.Id, operation.Description);
+        }
+
+        public static async Task CreateItemAndEnqueue(IProvisioningQueueService workQueue, CloudResourceOperationDto operation)
+        {
+            await CreateItemAndEnqueue(workQueue, operation.Id, operation.Description);
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperationDto operation)
+        {            
+            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperation operation)
+        {
+            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+        }
+
+        public static void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResource resource)
+        {
+            var createOperation = CloudResourceOperationUtil.GetCreateOperation(resource);
+            CreateChildAndAdd(parent, createOperation);                
         }
     }
 }
