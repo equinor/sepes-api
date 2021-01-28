@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.ApplicationInsights;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,12 +19,14 @@ namespace Sepes.Infrastructure.Service
     {
         public StudyParticipantRemoveService(SepesDbContext db,
             IMapper mapper,
+            ILogger<StudyParticipantRemoveService> logger,
+            TelemetryClient telemetry,
             IUserService userService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
 
         }
@@ -33,14 +37,16 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, newRole: roleName);
+                var telemetrySession = new TelemetrySession(SepesEventId.StudyParticipantRemove);
+              
+                var studyFromDb = await GetStudyForParticipantOperation(telemetrySession, studyId);            
 
                 if (roleName == StudyRoles.StudyOwner)
                 {
                     throw new ArgumentException($"The Study Owner role cannot be deleted");
                 }
 
-                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+                updateOperations = await CreateDraftRoleUpdateOperationsAsync(telemetrySession, studyFromDb);
 
                 var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
@@ -53,7 +59,9 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(telemetrySession, studyId, updateOperations);
+
+                telemetrySession.StopSessionAndLog(_telemetry);
 
                 return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
             }

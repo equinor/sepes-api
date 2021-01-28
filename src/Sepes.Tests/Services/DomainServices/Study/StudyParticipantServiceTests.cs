@@ -1,5 +1,7 @@
 using AutoMapper;
+using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
@@ -78,6 +80,8 @@ namespace Sepes.Tests.Services.DomainServices
             //GET REQUIRED SERVICES
             var db = _serviceProvider.GetService<SepesDbContext>();
             var mapper = _serviceProvider.GetService<IMapper>();
+            var logger = _serviceProvider.GetService<ILogger<StudyParticipantCreateService>>();
+            var telemetry = _serviceProvider.GetService<TelemetryClient>();
 
             var adUserServiceMock = new Mock<IAzureUserService>();
             adUserServiceMock.Setup(service => service.GetUserAsync(It.IsAny<string>())).ReturnsAsync(new AzureUserDto() { DisplayName = userFullName, Mail = userEmail });
@@ -86,7 +90,7 @@ namespace Sepes.Tests.Services.DomainServices
             var userServiceMock = GetUserServiceMock(UserConstants.COMMON_CUR_USER_DB_ID, UserConstants.COMMON_CUR_USER_OBJECTID);
             userServiceMock.Setup(service => service.GetUserByIdAsync(UserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
 
-            //Queue service mock
+          
 
             //Operations service mock 
             var queueServiceMock = new Mock<IProvisioningQueueService>();
@@ -97,7 +101,7 @@ namespace Sepes.Tests.Services.DomainServices
 
             var operationUpdateServiceMock = new Mock<ICloudResourceOperationUpdateService>();
 
-            var studyParticipantService = new StudyParticipantCreateService(db, mapper, userServiceMock.Object, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
+            var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, telemetry, userServiceMock.Object, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 

@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -11,19 +13,21 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
-    {      
-        readonly IAzureUserService _azureUserService;        
+    {
+        readonly IAzureUserService _azureUserService;
 
         public StudyParticipantLookupService(SepesDbContext db,
             IMapper mapper,
+            ILogger<StudyParticipantLookupService> logger,
+            TelemetryClient telemetry,
             IUserService userService,
             IAzureUserService azureUserService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
-            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureUserService = azureUserService;     
+            _azureUserService = azureUserService;
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
@@ -65,6 +69,6 @@ namespace Sepes.Infrastructure.Service
             }
 
             return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);
-        }       
+        }
     }
 }

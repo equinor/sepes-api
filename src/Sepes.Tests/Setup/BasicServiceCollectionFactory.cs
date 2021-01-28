@@ -37,6 +37,7 @@ namespace Sepes.Tests.Setup
                 services.AddApplicationInsightsTelemetryWorkerService(config[ConfigConstants.APPI_KEY]);
             }
             services.AddLogging();
+            
             //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<CloudResourceOperationReadService>();            

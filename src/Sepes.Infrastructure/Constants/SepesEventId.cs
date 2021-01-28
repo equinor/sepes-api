@@ -8,6 +8,10 @@
 
         public const string SandboxDelete = "Sandbox-Delete";
 
-        public const string VMDelete = "VM-Delete";
+        public const string VMDelete = "VM-Delete";    
+
+        public const string StudyParticipantAdd = "StudyParticipant-Add";
+
+        public const string StudyParticipantRemove = "StudyParticipant-Remove";        
     }
 }

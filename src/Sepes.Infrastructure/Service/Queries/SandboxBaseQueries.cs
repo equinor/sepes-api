@@ -25,6 +25,7 @@ namespace Sepes.Infrastructure.Service.Queries
             return ActiveSandboxesMinimalIncludesQueryable(db)
                   .Include(sb => sb.SandboxDatasets)
                     .ThenInclude(sd => sd.Dataset)
+                    .ThenInclude(ds => ds.Resources)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)              
                 .Include(sb=> sb.PhaseHistory);
