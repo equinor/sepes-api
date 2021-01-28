@@ -13,8 +13,7 @@ namespace Sepes.Tests.Util
             var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup("Very Secret Software Inc");
             Assert.InRange(resourceGroupName.Length, 6, 64);
 
-            Assert.Contains("rg-study-datasets-", resourceGroupName);
-            Assert.Contains("-verysecretsoftwareinc-", resourceGroupName);
+            Assert.Contains("rg-study-verysecretsoftwareinc-datasets-", resourceGroupName);           
         }
 
         [Fact]
