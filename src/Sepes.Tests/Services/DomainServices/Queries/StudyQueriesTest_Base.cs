@@ -102,7 +102,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
                 Id = studyId,
                 Name = $"TestStudy with Id {studyId}, Restricted: {restricted}",
                 Restricted = restricted,
-                StudyParticipants = new List<StudyParticipant>()
+                StudyParticipants = new List<Sepes.Infrastructure.Model.StudyParticipant>()
             };
 
             db.Studies.Add(study);
@@ -116,7 +116,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         {
             foreach (var curRole in studySpecificRoles)
             {
-                study.StudyParticipants.Add(new StudyParticipant() { StudyId = study.Id, UserId = userId, RoleName = curRole });
+                study.StudyParticipants.Add(new Sepes.Infrastructure.Model.StudyParticipant() { StudyId = study.Id, UserId = userId, RoleName = curRole });
             }
         }
 

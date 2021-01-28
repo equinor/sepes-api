@@ -81,6 +81,8 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateVmPasswordOrThrow(userInput.Password);
 
+                GenericNameValidation.ValidateName(userInput.Name);
+
                 _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
                 var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
@@ -243,7 +245,7 @@ namespace Sepes.Infrastructure.Service
         {
             var errorString = "";
             //Atleast one upper case
-            var upper = new Regex(@"(?=.*[A - Z])");
+            var upper = new Regex(@"(?=.*[A-Z])");
             //Atleast one number
             var number = new Regex(@".*[0-9].*");
             //Atleast one special character
