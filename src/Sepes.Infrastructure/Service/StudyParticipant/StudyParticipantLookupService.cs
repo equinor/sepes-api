@@ -14,13 +14,11 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
     {
-        readonly IAzureUserService _azureUserService;
-        protected readonly ILogger _logger;
+        readonly IAzureUserService _azureUserService;   
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
-            IMapper mapper,
-            ILogger<StudyParticipantLookupService> logger,
+            IMapper mapper,          
             TelemetryClient telemetry,
             IUserService userService,
             IAzureUserService azureUserService,
@@ -28,8 +26,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
             : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
-        {
-            _logger = logger;
+        {          
             _azureUserService = azureUserService;     
         }
 

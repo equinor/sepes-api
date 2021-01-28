@@ -5,9 +5,6 @@ using Moq;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sepes.Tests.Setup
 {
@@ -28,7 +25,7 @@ namespace Sepes.Tests.Setup
 
             var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();
 
-            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, provisioningQueueService.Object,
+            return new StudyParticipantLookupService(db, logger, mapper, null, userService.Object, azureUserService.Object, provisioningQueueService.Object,
                 cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
         }
     }
