@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.0" />
     <PackageReference Include="Azure.Core" Version="1.8.1" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.3.2" />
     <PackageReference Include="coverlet.msbuild" Version="2.8.0">
