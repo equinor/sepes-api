@@ -2,16 +2,16 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Setup
 {
     public static class UserFactory
     {
-        public static string OBJECT_ID = UserConstants.COMMON_CUR_USER_OBJECTID;
-        public static string USERNAME = UserConstants.COMMON_CUR_USER_UPN;
-        public static string FULLNAME = UserConstants.COMMON_CUR_USER_FULL_NAME;
-        public static string EMAIL = UserConstants.COMMON_CUR_USER_EMAIL;
+        public static string OBJECT_ID = TestUserConstants.COMMON_CUR_USER_OBJECTID;
+        public static string USERNAME = TestUserConstants.COMMON_CUR_USER_UPN;
+        public static string FULLNAME = TestUserConstants.COMMON_CUR_USER_FULL_NAME;
+        public static string EMAIL = TestUserConstants.COMMON_CUR_USER_EMAIL;
 
         public static UserDto GetBasicAuthenticatedUser(bool employee, int userId)
         {
@@ -27,7 +27,7 @@ namespace Sepes.Tests.Setup
         //    return testUser;
         //}
 
-        public static UserDto GetAdmin(int userId, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID) {
+        public static UserDto GetAdmin(int userId, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID) {
 
             var testUser = new UserDto(objectId, USERNAME, FULLNAME, EMAIL, admin: true);
             SetBasicUserProperties(testUser, true, userId);
@@ -79,7 +79,7 @@ namespace Sepes.Tests.Setup
             return SetupUserServiceMock(GetBasicAuthenticatedUser(employee, userId));
         }
 
-        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID)
+        public static Mock<IUserService> GetUserServiceMockForAdmin(int userId, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID)
         {
             return  SetupUserServiceMock(GetAdmin(userId, objectId));     
         }

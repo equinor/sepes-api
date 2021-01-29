@@ -11,7 +11,7 @@ using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
 using System;
 using System.Threading;
@@ -73,7 +73,7 @@ namespace Sepes.Tests.Services.DomainServices
             var userEmail = userName + "@somedomain.com";
             var userFullName = "Newly Added User";
 
-            var participantToAdd = new ParticipantLookupDto() { DatabaseId = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
+            var participantToAdd = new ParticipantLookupDto() { DatabaseId = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
 
             await RefreshAndPopulateTestDb();
 
@@ -87,8 +87,8 @@ namespace Sepes.Tests.Services.DomainServices
             adUserServiceMock.Setup(service => service.GetUserAsync(It.IsAny<string>())).ReturnsAsync(new AzureUserDto() { DisplayName = userFullName, Mail = userEmail });
 
             //Used to get current user
-            var userServiceMock = GetUserServiceMock(UserConstants.COMMON_CUR_USER_DB_ID, UserConstants.COMMON_CUR_USER_OBJECTID);
-            userServiceMock.Setup(service => service.GetUserByIdAsync(UserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = UserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
+            var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);
+            userServiceMock.Setup(service => service.GetUserByIdAsync(TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
 
           
 
@@ -105,7 +105,7 @@ namespace Sepes.Tests.Services.DomainServices
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 
-        Mock<IUserService> GetUserServiceMock(int id, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID)
+        Mock<IUserService> GetUserServiceMock(int id, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID)
         {
             return UserFactory.GetUserServiceMockForAdmin(id, objectId);
         }       
@@ -115,11 +115,11 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabase();
             var db = _serviceProvider.GetService<SepesDbContext>();
 
-            StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", UserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", TestUserConstants.COMMON_CUR_USER_DB_ID);
 
-            StudyPopulator.Add(db, "Test Study 2", "Vendor for TS2", "WBS for TS2", UserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 2", "Vendor for TS2", "WBS for TS2", TestUserConstants.COMMON_CUR_USER_DB_ID);
 
-            StudyPopulator.Add(db, "Test Study 3", "Vendor for TS3", "WBS for TS3", UserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 3", "Vendor for TS3", "WBS for TS3", TestUserConstants.COMMON_CUR_USER_DB_ID);
 
             db.SaveChanges();
         }

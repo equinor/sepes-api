@@ -1,5 +1,4 @@
 ﻿using Sepes.Infrastructure.Model.Context;
-using Sepes.RestApi;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Xunit;

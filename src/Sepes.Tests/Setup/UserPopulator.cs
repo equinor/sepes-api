@@ -1,13 +1,13 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 using System;
 
 namespace Sepes.Tests.Setup
 {
     public static class UserPopulator
     {
-        public static User Add(SepesDbContext db, string objectId = UserConstants.COMMON_CUR_USER_OBJECTID, string userName = UserConstants.COMMON_CUR_USER_UPN, string email = UserConstants.COMMON_CUR_USER_EMAIL, string fullName = UserConstants.COMMON_CUR_USER_FULL_NAME)
+        public static User Add(SepesDbContext db, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, string userName = TestUserConstants.COMMON_CUR_USER_UPN, string email = TestUserConstants.COMMON_CUR_USER_EMAIL, string fullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME)
         {
             var newUser = new User()
             {

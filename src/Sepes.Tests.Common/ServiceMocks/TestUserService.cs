@@ -1,14 +1,13 @@
 ﻿using Sepes.Infrastructure.Interface;
-using System;
-using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.Tests.Common.Constants;
 
-namespace Sepes.RestApi.IntegrationTests.Setup
+namespace Sepes.Tests.Common.ServiceMocks
 {
     public class IntegrationTestUserService : ICurrentUserService
     {
         public string GetUserId()
         {
-            return TestConstants.TestUserGuid;
+            return TestUserConstants.COMMON_CUR_USER_OBJECTID;
         }      
     }
 }
