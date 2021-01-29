@@ -22,7 +22,7 @@ namespace Sepes.Tests.Services
            await  RefreshAndSeedTestDatabase(5);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
-            IEnumerable<DatasetListItemDto> result = await datasetService.GetDatasetsLookupAsync();
+            IEnumerable<DatasetLookupItemDto> result = await datasetService.GetDatasetsLookupAsync();
             Assert.NotNull(result);
         }
 

@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.StorageAccountName, source => source.MapFrom<DatasetStorageAccountNameResolver>())
                  .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<StorageAccountExternalLinkResolver>());
             
-            CreateMap<Dataset, DatasetListItemDto>();          
+            CreateMap<Dataset, DatasetLookupItemDto>();          
 
             CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
