@@ -17,6 +17,7 @@ namespace Sepes.Infrastructure.Service.Queries
             return ActiveSandboxesBaseQueryable(db)
                 .Include(s => s.Study)
                 .ThenInclude(s=> s.StudyParticipants)
+                .ThenInclude(s => s.User)
                 .Include(sb=> sb.PhaseHistory);
         }
 
