@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
         {
             _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
-        }
+        } 
 
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {           
@@ -48,6 +48,8 @@ namespace Sepes.Infrastructure.Service
             }
 
             DatasetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
+
+            ThrowIfDatasetNameTaken(studyFromDb, newDatasetInput.Name);
 
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudyId = studyId;           
@@ -123,6 +125,17 @@ namespace Sepes.Infrastructure.Service
             }
 
             return studyDatasetRelation.Dataset;
+        }
+
+        void ThrowIfDatasetNameTaken(Study study, string datasetName)
+        {
+            foreach (var curStudyDataset in study.StudyDatasets)
+            {
+                if (curStudyDataset.Dataset.StudyId.HasValue && curStudyDataset.Dataset.StudyId == study.Id && curStudyDataset.Dataset.Name == datasetName)
+                {
+                    throw new Exception($"Dataset with name {datasetName} allready exists");
+                }
+            }
         }
 
         public async Task SoftDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)

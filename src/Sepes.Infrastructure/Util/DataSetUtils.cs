@@ -44,11 +44,7 @@ namespace Sepes.Infrastructure.Util
             if (String.IsNullOrWhiteSpace(datasetDto.Location))
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
-            }
-            //if (String.IsNullOrWhiteSpace(datasetDto.StorageAccountName))
-            //{
-            //    throw new ArgumentException($"Field Dataset.StorageAccountName is required. Current value: {datasetDto.StorageAccountName}");
-            //}
+            }           
         }
 
         public static List<FirewallRule> TranslateAllowedIpsToGenericFirewallRule(List<DatasetFirewallRule> datasetFirewallRules)

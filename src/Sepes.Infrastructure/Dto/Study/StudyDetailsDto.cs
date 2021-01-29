@@ -22,9 +22,9 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public StudyPermissionsDto Permissions { get; set; } = new StudyPermissionsDto();
 
-        public ICollection<DatasetDto> Datasets { get; set; }
+        public List<DatasetListItemDto> Datasets { get; set; }
 
-        public ICollection<SandboxListItemDto> Sandboxes { get; set; }
+        public List<SandboxListItemDto> Sandboxes { get; set; }
 
         public List<StudyParticipantDto> Participants { get; set; }
         

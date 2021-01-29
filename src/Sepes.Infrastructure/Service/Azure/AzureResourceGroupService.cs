@@ -29,12 +29,22 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
+            var resourceGroup = await GetResourceAsync(parameters.ResourceGroupName, false);
+
+            if(resourceGroup == null)
+            {
+                _logger.LogInformation($"Resource group not found, creating");
+                resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
+            }
+            else
+            {
+                _logger.LogInformation($"Resource group allready exists");
+            }
 
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
 
-            _logger.LogInformation($"Done creating Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
+            _logger.LogInformation($"Done ensuring Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
             return crudResult;   
         }
 
@@ -81,8 +91,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
             await Delete(parameters.ResourceGroupName);
-
-            //var provisioningState = await GetProvisioningState(parameters.ResourceGrupName, parameters.Name);
+            
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
             return crudResult;
         }
@@ -95,10 +104,25 @@ namespace Sepes.Infrastructure.Service
             return mapped;
         }
 
-        public async Task<IResourceGroup> GetResourceAsync(string resourceGroupName)
+        public async Task<IResourceGroup> GetResourceAsync(string resourceGroupName, bool failOnError = true)
         {
-            var resource = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
-            return resource;
+            try
+            {
+                var resource = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
+                return resource;
+            }
+            catch (Exception)
+            {
+                if (failOnError)
+                {
+                    throw;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+          
         }
 
         async Task<bool> Exists(string resourceGroupName, CancellationToken cancellation)
@@ -106,7 +130,6 @@ namespace Sepes.Infrastructure.Service
            return await _azure.ResourceGroups.ContainAsync(resourceGroupName, cancellation);
         }
 
-        //public async Task<bool> Exists(string resourceGroupName) => await Exists(resourceGroupName, resourceGroupName);
 
         public async Task<string> GetProvisioningState(string resourceGroupName)
         {
@@ -175,8 +198,6 @@ namespace Sepes.Infrastructure.Service
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
-        }
-
-      
+        }      
     }
 }

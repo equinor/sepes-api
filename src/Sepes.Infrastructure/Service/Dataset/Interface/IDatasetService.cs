@@ -6,7 +6,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IDatasetService
     {        
-        Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync();
+        Task<IEnumerable<DatasetLookupItemDto>> GetDatasetsLookupAsync();
         Task<IEnumerable<DatasetDto>> GetDatasetsAsync();
         Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId);
 

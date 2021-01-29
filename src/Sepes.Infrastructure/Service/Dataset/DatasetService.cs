@@ -22,14 +22,14 @@ namespace Sepes.Infrastructure.Service
           
         }
 
-        public async Task<IEnumerable<DatasetListItemDto>> GetDatasetsLookupAsync()
+        public async Task<IEnumerable<DatasetLookupItemDto>> GetDatasetsLookupAsync()
         {
             await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
 
             var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyId == null)
+                .Where(ds => ds.StudyId == null && ds.Deleted == false)
                 .ToListAsync();
-            var dataasetsDtos = _mapper.Map<IEnumerable<DatasetListItemDto>>(datasetsFromDb);
+            var dataasetsDtos = _mapper.Map<IEnumerable<DatasetLookupItemDto>>(datasetsFromDb);
 
             return dataasetsDtos;
         }

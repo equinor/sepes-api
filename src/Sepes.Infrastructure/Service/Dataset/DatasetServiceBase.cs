@@ -31,6 +31,7 @@ namespace Sepes.Infrastructure.Service
                  .Include(ds => ds.StudyDatasets)
                  .ThenInclude(sd => sd.Study)
                  .ThenInclude(s=> s.Resources)
+                 .ThenInclude(r=> r.Operations)
                  .Include(d=> d.FirewallRules)
                  .Include(d=> d.Resources)
                  .ThenInclude(r=> r.Operations)

@@ -73,11 +73,11 @@ namespace Sepes.Infrastructure.Service
             {
                 var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(dataset.Study.Name);
                 var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, dataset.Study);
-                datasetResourceGroupEntry = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(dataset.Study.Id, resourceGroupName, dataset.Location, tags);
-                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, datasetResourceGroupEntry);
-
-                await ScheduleResourceGroupRoleAssignments(dataset, datasetResourceGroupEntry, queueParent);
+                datasetResourceGroupEntry = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(dataset.Study.Id, resourceGroupName, dataset.Location, tags);              
             }
+
+            ProvisioningQueueUtil.CreateChildAndAdd(queueParent, datasetResourceGroupEntry);
+            await ScheduleResourceGroupRoleAssignments(dataset, datasetResourceGroupEntry, queueParent);
 
             return datasetResourceGroupEntry;
         }
@@ -244,7 +244,6 @@ namespace Sepes.Infrastructure.Service
                     var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(datasetResourceEntry.Id, $"Delete dataset related resurces for dataset {dataset.Id}");
                     await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
                 }
-
             }
             catch (Exception ex)
             {
