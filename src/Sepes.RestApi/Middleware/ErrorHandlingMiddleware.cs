@@ -4,7 +4,6 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using System;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -57,16 +56,7 @@ namespace Sepes.RestApi.Middelware
                    requestId, ex, HttpStatusCode.BadRequest);
 
                 await HandleExceptionAsync(context, result.Content, result.StatusCode);
-            }
-            catch (ValidationException ex)
-            {
-                LogHelper.LogError(log, ex, path, method);
-
-                var result = JsonExceptionResultFactory.CreateExceptionMessageResult(
-                   requestId, ex, HttpStatusCode.BadRequest);
-
-                await HandleExceptionAsync(context, result.Content, result.StatusCode);
-            }
+            }          
             catch (Exception ex)
             {
                 LogHelper.LogError(log, ex, path, method);

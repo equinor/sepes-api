@@ -1,8 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto.Study;
 using Sepes.Tests.Setup;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
