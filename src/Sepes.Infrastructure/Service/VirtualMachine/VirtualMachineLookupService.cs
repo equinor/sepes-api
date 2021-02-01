@@ -122,26 +122,31 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(string userName)
+        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(VmUsernameDto input)
         {
             StringBuilder errorString = new StringBuilder("");
             StringBuilder listOfInvalidNames = new StringBuilder("");
             VmUsernameValidateDto usernameValidation = new VmUsernameValidateDto { errorMessage = "", isValid = true };
-            if (userName.EndsWith("."))
+            if (input.Username.EndsWith("."))
             {
                 usernameValidation.isValid = false;
                 errorString.Append("Name can not end with a period(.)");
             }
-            foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
+            var invalidUsernames = AzureVmInvalidUsernames.invalidUsernamesWindows;
+            if (input.OperativeSystemType == AzureVmConstants.LINUX)
             {
-                if (userName.Equals(invalidName))
+                invalidUsernames = AzureVmInvalidUsernames.invalidUsernamesLinux;
+            }
+            foreach (string invalidName in invalidUsernames)
+            {
+                if (input.Username.Equals(invalidName))
                 {
                     usernameValidation.isValid = false;
-                    errorString.Append($"The name: '{userName}' is not valid.");
-                    foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
+                    errorString.Append($"The name: '{input.Username}' is not valid.");
+                    foreach (string name in invalidUsernames)
                     {
                         listOfInvalidNames.Append(name);
-                        if (name != AzureVmInvalidUsernames.invalidUsernames.Last())
+                        if (name != invalidUsernames.Last())
                         {
                             listOfInvalidNames.Append(", ");
                         }
