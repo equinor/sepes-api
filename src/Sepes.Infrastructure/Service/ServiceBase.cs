@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
                     errorBuilder.AppendLine(error.ErrorMessage);
                 }
 
-                throw new ArgumentException(errorBuilder.ToString());
+                throw new ValidationException(errorBuilder.ToString());
             }
 
             return true;          

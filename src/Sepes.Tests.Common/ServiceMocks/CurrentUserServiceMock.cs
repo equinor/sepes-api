@@ -3,7 +3,7 @@ using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Common.ServiceMocks
 {
-    public class IntegrationTestUserService : ICurrentUserService
+    public class CurrentUserServiceMock : ICurrentUserService
     {
         public string GetUserId()
         {

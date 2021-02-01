@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Sepes.RestApi.IntegrationTests.Dto;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -15,34 +13,34 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         public RestHelper(HttpClient client)
         {
             _client = client;
-        }
+        }       
 
-        public async Task<T> Post<T, K>(string requestUri, K request)
+        public async Task<ApiResponseWrapper<T>> Post<T, K>(string requestUri, K request)
         {
             var response = await _client.PostAsJsonAsync(requestUri, request);
-            T deserializedObject = await GetResponseObject<T>(response);
-            return deserializedObject;
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
         }
 
-        public async Task<T> Get<T>(string requestUri)
+        public async Task<ApiResponseWrapper<T>> Get<T>(string requestUri)
         {
             var response = await _client.GetAsync(requestUri);
-            T deserializedObject = await GetResponseObject<T>(response);
-            return deserializedObject;
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
         }
 
-        public async Task<T> Delete<T>(string requestUri)
+        public async Task<ApiResponseWrapper<T>> Delete<T>(string requestUri)
         {
             var response = await _client.DeleteAsync(requestUri);
-            T deserializedObject = await GetResponseObject<T>(response);
-            return deserializedObject;
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
         }
 
-        public async Task<T> Put<T, K>(string requestUri, K request)
+        public async Task<ApiResponseWrapper<T>> Put<T, K>(string requestUri, K request)
         {
             var response = await _client.PutAsJsonAsync(requestUri, request);
-            T deserializedObject = await GetResponseObject<T>(response);
-            return deserializedObject;
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
         }
 
         private async Task<T> GetResponseObject<T>(HttpResponseMessage response)
@@ -50,6 +48,14 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             var content = await response.Content.ReadAsStringAsync();
             var deserializedObject = JsonConvert.DeserializeObject<T>(content);
             return deserializedObject;
+        }
+
+        async Task<ApiResponseWrapper<T>> CreateResponseWrapper<T>(HttpResponseMessage message)
+        {
+            var responseWrapper = new ApiResponseWrapper<T>();
+            responseWrapper.StatusCode = message.StatusCode;
+            responseWrapper.Response = await GetResponseObject<T>(message);
+            return responseWrapper;
         }
     }
 }

@@ -10,13 +10,18 @@ namespace Sepes.RestApi.IntegrationTests.Setup
     /// </summary>
     public class TestHostFixture : ICollectionFixture<CustomWebApplicationFactory<Startup>>
     {
-        public readonly HttpClient Client;
-        public readonly SepesDbContext DbContext;
-        public readonly CustomWebApplicationFactory<Startup> factory;
+        public HttpClient Client;
+        public SepesDbContext DbContext;
+        public CustomWebApplicationFactory<Startup> factory;
 
         public TestHostFixture()
         {
-            factory = new CustomWebApplicationFactory<Startup>();
+            SetUserType(true);
+        }
+
+        public void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        {
+            factory = new CustomWebApplicationFactory<Startup>(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
             Client = factory.CreateClient();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("IntegrationTest");
         }
