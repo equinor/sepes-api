@@ -4,27 +4,19 @@ using Sepes.RestApi.IntegrationTests.TestHelpers;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.RestApi.IntegrationTests
+namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
-    public class StudyControllerTests : IAsyncLifetime
+    public class StudyControllerTests : ControllerTestBase
     {
-        private const string _endpoint = "api/studies";
-
-        private readonly TestHostFixture _testHostFixture;
-        private RestHelper _restHelper;
+        const string _endpoint = "api/studies";      
+       
 
         public StudyControllerTests(TestHostFixture testHostFixture)
+            :base(testHostFixture)
         {
-            _testHostFixture = testHostFixture;
-            _restHelper = new RestHelper(testHostFixture.Client);
-        }
-
-        void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
-        {
-            _testHostFixture.SetUserType(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
-            _restHelper = new RestHelper(_testHostFixture.Client);
-        }
+         
+        }      
 
         [Theory]
         [InlineData(true, false)]
@@ -52,6 +44,27 @@ namespace Sepes.RestApi.IntegrationTests
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
             Assert.Equal(System.Net.HttpStatusCode.Forbidden, responseWrapper.StatusCode);
             Assert.Contains("does not have permission to perform operation", responseWrapper.Response.Message);
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
+        {
+            SetUserType(isEmployee:true, isAdmin: isAdmin, isSponsor: isSponsor);
+
+            var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode= "wbs" };
+            var responseWrapper = await _restHelper.Post<StudyDto, StudyCreateDto>(_endpoint, studyCreateDto);
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
+            Assert.NotNull(responseWrapper.Response);
+
+            var studyDto = responseWrapper.Response;           
+
+            Assert.NotEqual<int>(0, studyDto.Id);
+            Assert.Equal(studyCreateDto.Name,  studyDto.Name);
+            Assert.Equal(studyCreateDto.Vendor, studyDto.Vendor);
+            Assert.Equal(studyCreateDto.WbsCode, studyDto.WbsCode);
         }
 
         public Task InitializeAsync() => SliceFixture.ResetCheckpoint();

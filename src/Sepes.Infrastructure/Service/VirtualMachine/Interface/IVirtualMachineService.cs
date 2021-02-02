@@ -7,9 +7,9 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IVirtualMachineService
     {
-        Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto newSandbox);
+        Task<VmDto> CreateAsync(int sandboxId, VirtualMachineCreateDto newSandbox);
 
-        Task<VmDto> UpdateAsync(int sandboxId, CreateVmUserInputDto newSandbox);
+        Task<VmDto> UpdateAsync(int sandboxId, VirtualMachineCreateDto newSandbox);
 
         Task DeleteAsync(int id);
 

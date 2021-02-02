@@ -2,9 +2,8 @@
 
 namespace Sepes.Infrastructure.Dto.VirtualMachine
 {
-    public class CreateVmUserInputDto
-    {    
-
+    public class VirtualMachineCreateDto
+    {
         public string Name { get; set; }
 
         public string Size { get; set; }

@@ -8,4 +8,9 @@
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ModelFactory\Sandbox\" />
+    <Folder Include="ModelFactory\Study\" />
+  </ItemGroup>
+
 </Project>
