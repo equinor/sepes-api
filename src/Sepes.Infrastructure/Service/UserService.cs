@@ -7,8 +7,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -56,42 +54,23 @@ namespace Sepes.Infrastructure.Service
             return _cachedUser;
         }
 
-        async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
-        { 
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
-        }
-
-        async Task<User> GetUserFromDb(string userId, bool includeParticipantInfo = false)
-        {
-            var queryable = GetUserQueryable(includeParticipantInfo);
-            var userFromDb = await queryable.SingleOrDefaultAsync(u => u.ObjectId == userId);
-            return userFromDb;
-        }
-
-        UserDto MapToDtoAndPersistRelevantProperties(User user)
-        {
-            var userDto = _mapper.Map<UserDto>(user);  
-            UserUtil.ApplyExtendedProps(_config, _principalService, userDto);
-            return userDto;
-        }      
-
-        IQueryable<User> GetUserQueryable(bool includeParticipantInfo = false)
-        {
-            if (includeParticipantInfo)
-            {
-                return _db.Users.Include(u => u.StudyParticipants).ThenInclude(sp=> sp.Study);
-            }
-            else
-            {
-                return _db.Users;
-            }
-        }
-
         public async Task<UserDto> GetUserByIdAsync(int userId)
         {
             var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
             var userDto = _mapper.Map<UserDto>(userFromDb);
             return userDto;
         }
+
+        async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
+        { 
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
+        }     
+
+        UserDto MapToDtoAndPersistRelevantProperties(User user)
+        {
+            var userDto = _mapper.Map<UserDto>(user);  
+            UserUtil.ApplyExtendedProps(_config, _principalService, userDto);
+            return userDto;
+        }     
     }
 }

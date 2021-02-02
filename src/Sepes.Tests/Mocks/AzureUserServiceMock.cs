@@ -1,6 +1,6 @@
 ﻿using Moq;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Mocks
 {
@@ -10,11 +10,11 @@ namespace Sepes.Tests.Mocks
         {
             var currentUserServiceMock = new Mock<IAzureUserService>();
 
-            currentUserServiceMock.Setup(us => us.GetUserAsync(UserConstants.COMMON_CUR_USER_OBJECTID))
+            currentUserServiceMock.Setup(us => us.GetUserAsync(TestUserConstants.COMMON_CUR_USER_OBJECTID))
                 .ReturnsAsync(new Infrastructure.Dto.Azure.AzureUserDto() {
-                    DisplayName = UserConstants.COMMON_CUR_USER_FULL_NAME,
-                    Mail = UserConstants.COMMON_CUR_USER_EMAIL,
-                    UserPrincipalName = UserConstants.COMMON_CUR_USER_UPN 
+                    DisplayName = TestUserConstants.COMMON_CUR_USER_FULL_NAME,
+                    Mail = TestUserConstants.COMMON_CUR_USER_EMAIL,
+                    UserPrincipalName = TestUserConstants.COMMON_CUR_USER_UPN 
                 });
 
             return currentUserServiceMock;

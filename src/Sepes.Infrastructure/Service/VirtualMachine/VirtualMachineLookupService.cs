@@ -53,25 +53,12 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
         {
-            var vmDisks = await _db.DiskSizes.Include(x => x).ToListAsync();
+            var vmDisks = await _db.DiskSizes.ToListAsync();
             var sortedByPrice = vmDisks.OrderBy(x => x.Size);
-            /*
-            var result = new List<VmDiskLookupDto>
-            {
-                new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" },
-                new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" },
-                new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" },
-                new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" },
-                new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" },
-                new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" },
-                new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" },
-                new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" }
-            };
-            */
+           
 
             return _mapper.Map<List<VmDiskLookupDto>>(sortedByPrice);
         }

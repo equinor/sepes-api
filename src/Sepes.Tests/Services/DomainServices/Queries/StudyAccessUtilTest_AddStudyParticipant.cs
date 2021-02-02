@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
 using Xunit;
 
@@ -22,9 +22,9 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         [InlineData(true, true, StudyRoles.StudyViewer, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         public async void AddingStudyParticipantWithoutRelevantRoles_ShouldThrow(bool restrictedStudy, bool employees, params string[] rolesToAdd)
         {
-            var db = GetContextWithSimpleTestData(UserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy);
+            var db = GetContextWithSimpleTestData(TestUserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy);
             
-            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(employees, UserConstants.COMMON_CUR_USER_DB_ID);
+            var userServiceMock = UserFactory.GetUserServiceMockForBasicUser(employees, TestUserConstants.COMMON_CUR_USER_DB_ID);
 
             foreach(var curRole in rolesToAdd)
             {
@@ -39,9 +39,9 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         [InlineData(true, AppRoles.Sponsor, StudyRoles.StudyViewer, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         public async void AddingStudyParticipant_HavingRelevantAppRole_AndAsStudyOwner_ShouldSucceeed(bool restrictedStudy, string appRoleForUser, params string[] rolesToAdd)
         {
-            var db = GetContextWithSimpleTestData(UserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.StudyOwner);
+            var db = GetContextWithSimpleTestData(TestUserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.StudyOwner);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRoleForUser, UserConstants.COMMON_CUR_USER_DB_ID);
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRoleForUser, TestUserConstants.COMMON_CUR_USER_DB_ID);
 
             foreach (var curRole in rolesToAdd)
             {
@@ -57,9 +57,9 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         [InlineData(true, AppRoles.DatasetAdmin, StudyRoles.StudyViewer, StudyRoles.SponsorRep, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         public async void AddingStudyParticipant_MissingRelevantAppRole_AsStudyOwner_ShouldThrow(bool restrictedStudy, string appRoleForUser, params string[] rolesToAdd)
         {
-            var db = GetContextWithSimpleTestData(UserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.StudyOwner);
+            var db = GetContextWithSimpleTestData(TestUserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.StudyOwner);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRoleForUser, UserConstants.COMMON_CUR_USER_DB_ID);
+            var userServiceMock = UserFactory.GetUserServiceMockForAppRole(appRoleForUser, TestUserConstants.COMMON_CUR_USER_DB_ID);
             foreach (var curRole in rolesToAdd)
             {
                 await Assert.ThrowsAsync<ForbiddenException>(() => StudySingularQueries.GetStudyByIdCheckAccessOrThrow(db, userServiceMock.Object, COMMON_STUDY_ID, UserOperation.Study_AddRemove_Participant, true, newRole: curRole));
@@ -73,9 +73,9 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         [InlineData(true, true, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         public async void VendorAdmin_AddingVendorRoles_ShouldSucceed(bool employee, bool restrictedStudy, params string[] rolesToAdd)
         {
-            var db = GetContextWithSimpleTestData(UserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.VendorAdmin);
+            var db = GetContextWithSimpleTestData(TestUserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.VendorAdmin);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForUserWithStudyRole(employee, UserConstants.COMMON_CUR_USER_DB_ID);
+            var userServiceMock = UserFactory.GetUserServiceMockForUserWithStudyRole(employee, TestUserConstants.COMMON_CUR_USER_DB_ID);
 
             foreach (var curRole in rolesToAdd)
             {
@@ -93,9 +93,9 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         [InlineData(true, true, StudyRoles.StudyViewer, StudyRoles.SponsorRep)]
         public async void VendorAdmin_AddingNonVendorRoles_ShouldThrow(bool employee, bool restrictedStudy, params string[] rolesToAdd)
         {
-            var db = GetContextWithSimpleTestData(UserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.VendorAdmin);
+            var db = GetContextWithSimpleTestData(TestUserConstants.COMMON_CUR_USER_DB_ID, COMMON_STUDY_ID, restrictedStudy, StudyRoles.VendorAdmin);
 
-            var userServiceMock = UserFactory.GetUserServiceMockForUserWithStudyRole(employee, UserConstants.COMMON_CUR_USER_DB_ID);
+            var userServiceMock = UserFactory.GetUserServiceMockForUserWithStudyRole(employee, TestUserConstants.COMMON_CUR_USER_DB_ID);
 
             foreach (var curRole in rolesToAdd)
             {

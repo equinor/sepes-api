@@ -1,6 +1,6 @@
 ﻿using Moq;
 using Sepes.Infrastructure.Interface;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Mocks
 {
@@ -10,7 +10,7 @@ namespace Sepes.Tests.Mocks
         {
             var currentUserServiceMock = new Mock<ICurrentUserService>();
 
-            currentUserServiceMock.Setup(us => us.GetUserId()).Returns(UserConstants.COMMON_CUR_USER_OBJECTID);
+            currentUserServiceMock.Setup(us => us.GetUserId()).Returns(TestUserConstants.COMMON_CUR_USER_OBJECTID);
 
             return currentUserServiceMock;
         }

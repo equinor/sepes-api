@@ -1,7 +1,5 @@
 ﻿using Sepes.Infrastructure.Util;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util
@@ -24,7 +22,7 @@ namespace Sepes.Tests.Util
         [InlineData("       ")]
         public void GenericNameValidationTest_ShouldThrow(string name)
         {
-            Assert.Throws<System.ArgumentException>(() => GenericNameValidation.ValidateName(name));
+            Assert.Throws<ArgumentException>(() => GenericNameValidation.ValidateName(name));
         }
     }
 }

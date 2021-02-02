@@ -53,11 +53,10 @@ namespace Sepes.RestApi.Middelware
                 LogHelper.LogError(log, ex, path, method);
 
                 var result = JsonExceptionResultFactory.CreateExceptionMessageResult(
-                   requestId, ex, HttpStatusCode.InternalServerError);
+                   requestId, ex, HttpStatusCode.BadRequest);
 
                 await HandleExceptionAsync(context, result.Content, result.StatusCode);
-            }
-           
+            }          
             catch (Exception ex)
             {
                 LogHelper.LogError(log, ex, path, method);
@@ -89,7 +88,7 @@ namespace Sepes.RestApi.Middelware
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            var content = JsonConvert.SerializeObject(new
+            var content = JsonConvert.SerializeObject(new Infrastructure.Dto.ErrorResponse
             {
                 Message = message,
                 RequestId = requestId
