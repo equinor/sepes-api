@@ -46,5 +46,12 @@ namespace Sepes.RestApi.Controller
             await _sandboxResourceRetryService.ReScheduleSandboxResourceCreation(sandboxId);
             return new NoContentResult();
         }
+
+        [HttpGet("sandboxes/{sandboxId}/costanalysis")]
+        public async Task<IActionResult> GetSandboxCostanalysis(int sandboxId)
+        {
+            var sandboxes = await _sandboxResourceService.GetSandboxCostanlysis(sandboxId);
+            return new JsonResult(sandboxes);
+        }
     }
 }

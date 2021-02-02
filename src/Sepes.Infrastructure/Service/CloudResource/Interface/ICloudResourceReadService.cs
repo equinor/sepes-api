@@ -24,5 +24,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<List<SandboxResourceLightDto>> GetSandboxResourcesLight(int sandboxId);
 
+        Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default);
+
     }
 }
