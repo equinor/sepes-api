@@ -1,4 +1,6 @@
-﻿using Sepes.Tests.Setup;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Tests.Setup;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,13 +18,15 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 
 
         [Theory]
-        [InlineData("admin", false)]
-        [InlineData("admin123", true)]
-        [InlineData("admin123.", false)]
-        public void GetVirtualMachineUserNameValdiation(string name, Boolean expectedResult)
+        [InlineData("admin", AzureVmConstants.WINDOWS, false)]
+        [InlineData("admin123", AzureVmConstants.WINDOWS, true)]
+        [InlineData("admin123.", AzureVmConstants.WINDOWS, false)]
+        [InlineData("user5", AzureVmConstants.WINDOWS, true)]
+        [InlineData("user5", AzureVmConstants.LINUX, false)]
+        public void GetVirtualMachineUserNameValdiation(string name, string operatingSystem, Boolean expectedResult)
         {
             var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineLookupService(_serviceProvider);
-            var validationOfName = virtualMachineLookupService.CheckIfUsernameIsValidOrThrow(name);
+            var validationOfName = virtualMachineLookupService.CheckIfUsernameIsValidOrThrow(new VmUsernameDto { OperativeSystemType = operatingSystem, Username=name});
 
             Assert.Equal(validationOfName.isValid, expectedResult);
         }
