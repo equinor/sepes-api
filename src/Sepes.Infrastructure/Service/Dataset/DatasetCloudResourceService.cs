@@ -218,6 +218,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         SoftDeleteUtil.MarkAsDeleted(curResource, currentUser);
                     }
+
                     var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resourceGroupEntry.Id, $"Delete study related resurces for Study {study.Id}");
                     await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
                 }
