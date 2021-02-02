@@ -123,9 +123,7 @@ namespace Sepes.Infrastructure.Service
 
         CloudResource MarkAsDeletedInternal(CloudResource resource, string deletedBy)
         {
-            resource.DeletedBy = deletedBy;
-            resource.DeletedAt = DateTime.UtcNow;
-
+            SoftDeleteUtil.MarkAsDeleted(resource, deletedBy);
             return resource;
         }
 
