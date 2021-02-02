@@ -9,7 +9,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
-        }
+        }      
 
         public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
@@ -59,6 +58,8 @@ namespace Sepes.Infrastructure.Service
             Sandbox createdSandbox = null;
 
             GenericNameValidation.ValidateName(sandboxCreateDto.Name);
+
+            await ThrowIfSandboxNameAllreadyTaken(sandboxCreateDto.Name);
 
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
@@ -103,7 +104,7 @@ namespace Sepes.Infrastructure.Service
                     var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
                     var sandboxDto = await GetAsync(createdSandbox.Id, UserOperation.Study_Crud_Sandbox);
 
-                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);                 
+                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);
 
                     //This object gets passed around
                     var creationAndSchedulingDto =
@@ -147,6 +148,14 @@ namespace Sepes.Infrastructure.Service
             catch (Exception ex)
             {
                 throw new Exception($"Sandbox creation failed: {ex.Message}", ex);
+            }
+        }
+
+        async Task ThrowIfSandboxNameAllreadyTaken(string sandboxName)
+        {
+            if (await SandboxWithNameAllreadyExists(sandboxName))
+            {
+                throw new ArgumentException($"Sandbox with name {sandboxName} allready exists");
             }
         }
 
