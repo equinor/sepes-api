@@ -66,7 +66,14 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            await ThrowIfOperationNotAllowed(operation);
+            if(datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId.Value > 0)
+            {
+                await ThrowIfOperationNotAllowed(operation, datasetFromDb.Study);
+            }
+            else
+            {
+                await ThrowIfOperationNotAllowed(operation);
+            }           
 
             return datasetFromDb;
         }
@@ -87,6 +94,14 @@ namespace Sepes.Infrastructure.Service
         protected async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
             if (StudyAccessUtil.HasAccessToOperation(await _userService.GetCurrentUserWithStudyParticipantsAsync(), operation) == false)
+            {
+                throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation}");
+            }
+        }
+
+        protected async Task ThrowIfOperationNotAllowed(UserOperation operation, Study study)
+        {
+            if (await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation) == false)
             {
                 throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation}");
             }
