@@ -17,12 +17,12 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyController : ControllerBase
     {
-        readonly IStudyService _studyService;
+        readonly IStudyReadService _studyService;
         readonly IStudyCreateUpdateService _studyCreateUpdateService;
         readonly IStudyDeleteService _studyDeleteService;
         readonly IStudyLogoService _studyLogoService;
 
-        public StudyController(IStudyService studyService, IStudyCreateUpdateService studyCreateUpdateService, IStudyDeleteService studyDeleteService,IStudyLogoService studyLogoService)
+        public StudyController(IStudyReadService studyService, IStudyCreateUpdateService studyCreateUpdateService, IStudyDeleteService studyDeleteService,IStudyLogoService studyLogoService)
         {
             _studyService = studyService;
             _studyCreateUpdateService = studyCreateUpdateService;          
@@ -31,9 +31,9 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetStudiesAsync([FromQuery] bool? excludeHidden)
+        public async Task<IActionResult> GetStudiesAsync()
         {
-            var studies = await _studyService.GetStudyListAsync(excludeHidden);
+            var studies = await _studyService.GetStudyListAsync();
             return new JsonResult(studies);
         }
 

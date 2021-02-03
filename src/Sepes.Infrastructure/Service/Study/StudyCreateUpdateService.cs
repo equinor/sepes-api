@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
@@ -17,8 +18,8 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyCreateUpdateService : StudyServiceBase, IStudyCreateUpdateService
     {  
-        public StudyCreateUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateUpdateService> logger, IUserService userService, IStudyLogoService studyLogoService)
-            : base(db, mapper, logger, userService, studyLogoService)
+        public StudyCreateUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
+            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
       
          

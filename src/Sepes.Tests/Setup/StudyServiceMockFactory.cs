@@ -10,16 +10,16 @@ namespace Sepes.Tests.Setup
 {
     public static class StudyServiceMockFactory
     {
-        public static IStudyService Create(ServiceProvider serviceProvider)
+        public static IStudyReadService Create(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<StudyService>>();
+            var logger = serviceProvider.GetService<ILogger<StudyReadService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var logoServiceMock = new Mock<IStudyLogoService>();
 
-            return new StudyService(db, mapper, logger, userService.Object, logoServiceMock.Object);
+            return new StudyReadService(db, mapper, logger, userService.Object, logoServiceMock.Object);
         }
 
         public static IStudyCreateUpdateService CreateUpdateService(ServiceProvider serviceProvider)

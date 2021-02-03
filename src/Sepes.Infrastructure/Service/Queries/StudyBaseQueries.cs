@@ -9,34 +9,33 @@ namespace Sepes.Infrastructure.Service.Queries
     {
         public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
-            return db.Studies.Where(s => s.Closed.HasValue == false || (s.Closed.HasValue && s.Closed.Value == false));
+            return db.Studies.Where(s => s.Closed == false);
+        }      
+      
+        public static IQueryable<Study> ActiveStudiesWithParticipantsQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesBaseQueryable(db)
+                .Include(s => s.StudyParticipants);
         }
 
-        public static IQueryable<Study> UnHiddenStudiesQueryable(SepesDbContext db)
+        public static IQueryable<Study> AllStudiesWithParticipantsQueryable(SepesDbContext db)
         {
-            return ActiveStudiesBaseQueryable(db).Where(s => !s.Restricted);
-        }
-
-        public static IQueryable<StudyParticipant> GetStudyParticipantsForUser(SepesDbContext db, int userId)
-        {
-            return db.StudyParticipants.Include(s => s.Study).Where(sp => sp.UserId == userId && (sp.Study.Closed.HasValue == false || (sp.Study.Closed.HasValue && sp.Study.Closed.Value == false) && sp.Study.Restricted));
+            return db.Studies
+                .Include(s => s.StudyParticipants);
         }
 
         public static IQueryable<Study> ActiveStudiesMinimalIncludesQueryable(SepesDbContext db)
         {
-            return ActiveStudiesBaseQueryable(db)
-                .Include(s => s.StudyParticipants)
+            return ActiveStudiesWithParticipantsQueryable(db)            
              .Include(s => s.Sandboxes);
-
-
-        }
+        }       
 
         public static IQueryable<Study> ActiveStudiesWithIncludesQueryable(SepesDbContext db)
         {
             return ActiveStudiesBaseQueryable(db)
-                .Include(s=> s.Resources)
+                .Include(s => s.Resources)
                   .ThenInclude(s => s.ChildResources)
-                  
+
                  .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
                     .ThenInclude(sd => sd.SandboxDatasets)
@@ -46,17 +45,6 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.Sandboxes)
                     .ThenInclude(sb => sb.Resources)
                          .ThenInclude(cr => cr.Operations);
-        }
-
-       
-       public static IQueryable<Study> ActiveStudiesLookupQueryable(SepesDbContext db)
-        {
-            return ActiveStudiesBaseQueryable(db)
-            .Include(s => s.StudyDatasets)
-                .ThenInclude(sd => sd.Dataset)
-            .Include(s => s.Sandboxes)
-            .Include(s => s.StudyParticipants)
-                .ThenInclude(sp => sp.User);
         }
     }
 }

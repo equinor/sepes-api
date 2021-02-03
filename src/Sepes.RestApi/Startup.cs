@@ -139,7 +139,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyModelService, StudyModelService>();
 
             //Domain Model Services
-            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IStudyReadService, StudyReadService>();
             services.AddTransient<IStudyCreateUpdateService, StudyCreateUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();

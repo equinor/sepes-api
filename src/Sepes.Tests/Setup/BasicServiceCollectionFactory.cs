@@ -47,7 +47,7 @@ namespace Sepes.Tests.Setup
             //Sepes Services
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IStudyReadService, StudyReadService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();

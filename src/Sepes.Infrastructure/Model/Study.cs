@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(512)]
         public string LogoUrl { get; set; }      
 
-        public bool? Closed { get; set; }
+        public bool Closed { get; set; }
 
         public DateTime? ClosedAt{ get; set; }
 
