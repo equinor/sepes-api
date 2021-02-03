@@ -29,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Sepes.RestApi
 {
@@ -89,15 +90,7 @@ namespace Sepes.RestApi
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
-            //services.AddProtectedWebApi(_configuration, subscribeToJwtBearerMiddlewareDiagnosticsEvents: true)
-            //     .AddProtectedWebApiCallsProtectedWebApi(_configuration)
-            //     .AddInMemoryTokenCaches();
-
-            //// Token acquisition service based on MSAL.NET
-            //// and chosen token cache implementation
-            //services.AddWebAppCallsProtectedWebApi(_configuration, new string[] { "User.Read.All" })
-            //   .AddInMemoryTokenCaches();            
-
+        
             DoMigration();
 
             services.AddHttpClient();
@@ -117,11 +110,9 @@ namespace Sepes.RestApi
         }
 
         void AddApplicationInsights(IServiceCollection services)
-        {
-            // The following line enables Application Insights telemetry collection.
-            // If this is left empty then no logs are made. Unknown if still affects performance.
-            Trace.WriteLine("Configuring Application Insights");        
-
+        {          
+            Trace.WriteLine("Configuring Application Insights");
+        
             var aiOptions = new ApplicationInsightsServiceOptions
                 {
                     // Disables adaptive sampling.
@@ -242,12 +233,7 @@ namespace Sepes.RestApi
                     {
                         Implicit = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                            //Scopes = new Dictionary<string, string>
-                            //{
-                            //    { "https://graph.microsoft.com/User.Read", "MS Graph: Read for user" },
-                            //    { "https://graph.microsoft.com/User.Read.All", "MS Graph: Read all users" }
-                            //}
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),                          
                         }
                     }
                 });
