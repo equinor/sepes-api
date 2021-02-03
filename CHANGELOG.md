@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.4](https://github.com/equinor/sepes-api/compare/0.4.3...0.4.4) (2021-02-03)
+
+
+### Bug Fixes
+
+* **dataset:** ensuring rg exist on every dataset create ([d6cd6d9](https://github.com/equinor/sepes-api/commit/d6cd6d9258c5890656b8b74912c00fb2f05f3c08))
+* **dataset:** now checking study specific access when reading dataset ([#533](https://github.com/equinor/sepes-api/issues/533)) ([06f40fc](https://github.com/equinor/sepes-api/commit/06f40fcea5fe8aa11e27f269e57159420f988d67)), closes [#532](https://github.com/equinor/sepes-api/issues/532)
+* **dataset:** set azure role assignments for storage account and resource group ([#513](https://github.com/equinor/sepes-api/issues/513)) ([0949136](https://github.com/equinor/sepes-api/commit/09491361e13b9646355cefda0b4d3bab163cedc0))
+* **participants:** issue where sepes was dependent on Azure to return… ([#502](https://github.com/equinor/sepes-api/issues/502)) ([f34f980](https://github.com/equinor/sepes-api/commit/f34f980bcd635de0832ab4f2b0ef42dfda7e7448)), closes [#499](https://github.com/equinor/sepes-api/issues/499)
+* **rbac:** now allowing b2c user access ([#531](https://github.com/equinor/sepes-api/issues/531)) ([ac61458](https://github.com/equinor/sepes-api/commit/ac61458549a557960b9e7f83c08391adb8b6efb5))
+* **sandbox:** new endpoint for getting cost analysis ([1f8d837](https://github.com/equinor/sepes-api/commit/1f8d8374dd41b3f4b76c4592ede730a760c2d74a))
+* **study:** delete sometimes failed when no resource group created ([#525](https://github.com/equinor/sepes-api/issues/525)) ([558c483](https://github.com/equinor/sepes-api/commit/558c483028108426613a45686cbd064a8e8dd5e9))
+* **study:** now returning lighter response for study details endpoint ([15c4f02](https://github.com/equinor/sepes-api/commit/15c4f026938f0f563e7b70164d51abd283dc5593))
+* **vm:** issue with password validation: Updated test ([fc0577f](https://github.com/equinor/sepes-api/commit/fc0577f31478599862dc02b6ef4916e0cd63767f)), closes [#504](https://github.com/equinor/sepes-api/issues/504) [#503](https://github.com/equinor/sepes-api/issues/503)
+* **vm:** potential fix for failed creation in other users sandbox ([ade6540](https://github.com/equinor/sepes-api/commit/ade6540d82081530a53d4772ff15b476e2fb625a))
+* **vm:** username validation now takes what os is picked into consideration ([2ff065d](https://github.com/equinor/sepes-api/commit/2ff065d6f6caa49dc4ac5c5c14dd60d0af5a3c46)), closes [#521](https://github.com/equinor/sepes-api/issues/521)
+* **worker:** add error to resource ([#516](https://github.com/equinor/sepes-api/issues/516)) ([80f98da](https://github.com/equinor/sepes-api/commit/80f98da82da898c2f4b541d169a955143530ea9c))
+* issue where space was not allowed in study, sandbox and vm name ([f77ccb8](https://github.com/equinor/sepes-api/commit/f77ccb85e37d041b53ca01aed880dfab5981f3e7))
+* Require names of studies, vms and sandboxes to have 3 or more ch… ([#509](https://github.com/equinor/sepes-api/issues/509)) ([bd169eb](https://github.com/equinor/sepes-api/commit/bd169eb95e37aba0f428ddc9c7c2c6857d6dc498)), closes [#495](https://github.com/equinor/sepes-api/issues/495)
+
 ### [0.4.3](https://github.com/equinor/sepes-api/compare/0.4.2...0.4.3) (2021-01-21)
 
 
