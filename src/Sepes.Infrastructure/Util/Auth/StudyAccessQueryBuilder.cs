@@ -16,7 +16,42 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var ors = new List<string>();         
 
-            var relevantPermissions = AllowedUserOperations.ForOperationQueryable(operation);      
+            var relevantPermissions = AllowedUserOperations.ForOperationQueryable(operation); 
+
+            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantPermissions);
+
+            if (allowedForAppRolesQueryable.Any())
+            {
+                foreach (var curPermission in allowedForAppRolesQueryable)
+                {
+                    if (
+                        (currentUser.Admin && curPermission.AllowedForRoles.Contains(AppRoles.Admin))
+                        || (currentUser.Sponsor && curPermission.AllowedForRoles.Contains(AppRoles.Sponsor))
+                        || (currentUser.DatasetAdmin && curPermission.AllowedForRoles.Contains(AppRoles.DatasetAdmin))
+                        )
+                    {
+                        var currentOr = ALWAYS_TRUE;
+
+                        //Permission will be granted without restrictions (typically admin)
+                        if(!curPermission.AppliesOnlyToNonHiddenStudies && !curPermission.AppliesOnlyIfUserIsStudyOwner)
+                        {
+                            return null;
+                        }
+
+                        if (curPermission.AppliesOnlyToNonHiddenStudies)
+                        {
+                            currentOr += NON_HIDDEN_CRITERIA;
+                        }
+
+                        if (curPermission.AppliesOnlyIfUserIsStudyOwner)
+                        {
+                            currentOr += UserHasRole(currentUser, StudyRoles.StudyOwner);
+                        }
+
+                        ors.Add(currentOr);
+                    }
+                }              
+            }
 
             if (currentUser.Employee)
             {
@@ -33,35 +68,6 @@ namespace Sepes.Infrastructure.Util.Auth
 
                     ors.Add(currentOr);
                 }
-            }
-
-            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantPermissions);
-
-            if (allowedForAppRolesQueryable.Any())
-            {
-                foreach (var curPermission in allowedForAppRolesQueryable)
-                {
-                    if (
-                        (currentUser.Admin && curPermission.AllowedForRoles.Contains(AppRoles.Admin))
-                        || (currentUser.Sponsor && curPermission.AllowedForRoles.Contains(AppRoles.Sponsor))
-                        || (currentUser.DatasetAdmin && curPermission.AllowedForRoles.Contains(AppRoles.DatasetAdmin))
-                        )
-                    {
-                        var currentOr = ALWAYS_TRUE;
-
-                        if (curPermission.AppliesOnlyToNonHiddenStudies)
-                        {
-                            currentOr += NON_HIDDEN_CRITERIA;
-                        }
-
-                        if (curPermission.AppliesOnlyIfUserIsStudyOwner)
-                        {
-                            currentOr += UserHasRole(currentUser, StudyRoles.StudyOwner);
-                        }
-
-                        ors.Add(currentOr);
-                    }
-                }              
             }
 
             var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(relevantPermissions);
