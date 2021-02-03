@@ -16,11 +16,11 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var ors = new List<string>();         
 
-            var onlyRelevantPermissions = AllowedUserOperations.ForOperationQueryable(operation);      
+            var relevantPermissions = AllowedUserOperations.ForOperationQueryable(operation);      
 
             if (currentUser.Employee)
             {
-                var operationsAllowedForEmployeesOnly = AllowedUserOperations.ForAllNonExternalUserLevel(onlyRelevantPermissions);
+                var operationsAllowedForEmployeesOnly = AllowedUserOperations.ForAllNonExternalUserLevel(relevantPermissions);
 
                 foreach (var curPermission in operationsAllowedForEmployeesOnly)
                 {
@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Util.Auth
                 }
             }
 
-            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(onlyRelevantPermissions);
+            var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantPermissions);
 
             if (allowedForAppRolesQueryable.Any())
             {
@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Util.Auth
                 }              
             }
 
-            var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(onlyRelevantPermissions);
+            var allowedForStudyRolesQueryable = AllowedUserOperations.ForStudySpecificRolesLevel(relevantPermissions);
 
             if (allowedForStudyRolesQueryable.Any())
             {

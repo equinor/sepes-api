@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             IEnumerable<StudyListItemDto> studies;
 
-            var user = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+            var user = await _userService.GetCurrentUserAsync();
 
             var studiesQuery = "SELECT DISTINCT [Id], [Name], [Description], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s";
                 studiesQuery += " INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId";
