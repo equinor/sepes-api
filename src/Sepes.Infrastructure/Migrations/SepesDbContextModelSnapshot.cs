@@ -640,6 +640,9 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Closed", "Restricted")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Name", "Description", "Vendor", "LogoUrl" });
+
                     b.ToTable("Studies");
                 });
 
