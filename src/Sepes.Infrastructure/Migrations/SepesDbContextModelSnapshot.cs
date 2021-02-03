@@ -39,7 +39,13 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<DateTime?>("Deleted")
+                    b.Property<int?>("DatasetId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
@@ -52,6 +58,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<int?>("ParentResourceId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Purpose")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
 
                     b.Property<string>("Region")
                         .HasColumnType("nvarchar(32)")
@@ -80,7 +90,7 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<bool>("SandboxControlled")
                         .HasColumnType("bit");
 
-                    b.Property<int>("SandboxId")
+                    b.Property<int?>("SandboxId")
                         .HasColumnType("int");
 
                     b.Property<int?>("StudyId")
@@ -100,6 +110,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DatasetId");
 
                     b.HasIndex("ParentResourceId");
 
@@ -243,7 +255,7 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int>("DataId")
                         .HasColumnType("int");
 
-                    b.Property<bool?>("Deleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -279,7 +291,6 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(256);
 
                     b.Property<string>("StorageAccountName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
@@ -300,6 +311,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("StudyId");
 
                     b.ToTable("Datasets");
                 });
@@ -456,7 +469,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<bool?>("Deleted")
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("DeletedAt")
@@ -606,10 +619,6 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<string>("ResultsAndLearnings")
                         .HasColumnType("nvarchar(max)")
                         .HasMaxLength(4096);
-
-                    b.Property<string>("StudySpecificDatasetsResourceGroup")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -837,6 +846,11 @@ namespace Sepes.Infrastructure.Migrations
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
                 {
+                    b.HasOne("Sepes.Infrastructure.Model.Dataset", "Dataset")
+                        .WithMany("Resources")
+                        .HasForeignKey("DatasetId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Sepes.Infrastructure.Model.CloudResource", "ParentResource")
                         .WithMany("ChildResources")
                         .HasForeignKey("ParentResourceId")
@@ -845,12 +859,12 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasOne("Sepes.Infrastructure.Model.Sandbox", "Sandbox")
                         .WithMany("Resources")
                         .HasForeignKey("SandboxId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Sepes.Infrastructure.Model.Study", null)
-                        .WithMany("CloudResources")
-                        .HasForeignKey("StudyId");
+                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
+                        .WithMany("Resources")
+                        .HasForeignKey("StudyId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
@@ -865,6 +879,13 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
+                        .WithMany("StudySpecificDatasets")
+                        .HasForeignKey("StudyId");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>

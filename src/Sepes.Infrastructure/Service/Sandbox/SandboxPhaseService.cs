@@ -215,7 +215,8 @@ namespace Sepes.Infrastructure.Service
             {
                 if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                 {
-                    await _azureStorageAccountService.AddStorageAccountToVNet(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                    await _azureStorageAccountService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                 }
                 else
                 {
@@ -290,15 +291,14 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Could not locate VNet entry for Sandbox {sandbox.Id}");
             }
 
-
-
             foreach (var curDatasetRelation in sandbox.SandboxDatasets)
             {
                 try
                 {
                     if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                     {
-                        await _azureStorageAccountService.RemoveStorageAccountFromVNet(sandbox.Study.StudySpecificDatasetsResourceGroup, curDatasetRelation.Dataset.StorageAccountName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                        var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                        await _azureStorageAccountService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                     }
                     else
                     {

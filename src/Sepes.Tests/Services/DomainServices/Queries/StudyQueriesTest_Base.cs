@@ -2,7 +2,7 @@
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Tests.Constants;
+using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,7 +102,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
                 Id = studyId,
                 Name = $"TestStudy with Id {studyId}, Restricted: {restricted}",
                 Restricted = restricted,
-                StudyParticipants = new List<StudyParticipant>()
+                StudyParticipants = new List<Sepes.Infrastructure.Model.StudyParticipant>()
             };
 
             db.Studies.Add(study);
@@ -116,7 +116,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
         {
             foreach (var curRole in studySpecificRoles)
             {
-                study.StudyParticipants.Add(new StudyParticipant() { StudyId = study.Id, UserId = userId, RoleName = curRole });
+                study.StudyParticipants.Add(new Sepes.Infrastructure.Model.StudyParticipant() { StudyId = study.Id, UserId = userId, RoleName = curRole });
             }
         }
 
@@ -135,7 +135,7 @@ namespace Sepes.Tests.Services.DomainServices.Queries
             var studyParticipant = study.StudyParticipants.FirstOrDefault();
             Assert.NotNull(studyParticipant);
             Assert.NotNull(studyParticipant.User);
-            Assert.Equal(UserConstants.COMMON_CUR_USER_DB_ID, studyParticipant.User.Id);
+            Assert.Equal(TestUserConstants.COMMON_CUR_USER_DB_ID, studyParticipant.User.Id);
         }
     }
 }

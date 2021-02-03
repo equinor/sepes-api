@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
+using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
@@ -8,6 +10,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,55 +24,66 @@ namespace Sepes.Infrastructure.Service
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
+            ILogger<StudyParticipantCreateService> logger,
+            TelemetryClient telemetry,
             IUserService userService,
             IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 
-            : base(db, mapper, userService, provisioningQueueService, cloudResourceOperationCreateService,cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService,cloudResourceOperationUpdateService)
         {
             _azureADUsersService = azureADUsersService;
+            
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            List<int> updateOperationIds = null;
+            List<CloudResourceOperationDto> updateOperations = null;
 
             try
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-                var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, role);
+                var telemetrySession = new TelemetrySession(SepesEventId.StudyParticipantAdd);
 
-                updateOperationIds = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+                var studyFromDb = await GetStudyForParticipantOperation(telemetrySession, studyId, role);
+                
+                updateOperations = await CreateDraftRoleUpdateOperationsAsync(telemetrySession, studyFromDb);           
 
                 StudyParticipantDto participantDto = null;
 
                 if (user.Source == ParticipantSource.Db)
                 {
+                    telemetrySession.StartPartialOperation(SUBOPERATION_ADDPARTICIPANTFROMDB);
                     participantDto = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);
+                    telemetrySession.StopPartialOperation(SUBOPERATION_ADDPARTICIPANTFROMDB);
                 }
                 else if (user.Source == ParticipantSource.Azure)
                 {
+                    telemetrySession.StartPartialOperation(SUBOPERATION_ADDPARTICIPANTFROMAZURE);
                     participantDto = await AddAzureUserAsync(studyFromDb, user, role);
+                    telemetrySession.StopPartialOperation(SUBOPERATION_ADDPARTICIPANTFROMAZURE);
                 }
                 else
                 {
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
+                
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(telemetrySession, studyId, updateOperations);               
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperationIds);
+                telemetrySession.StopSessionAndLog(_telemetry);
 
                 return participantDto;
             }
             catch (Exception ex)
             {
-                if(updateOperationIds != null)
+                if(updateOperations != null)
                 {
-                    foreach(var curOperationId in updateOperationIds)
+                    foreach(var curOperation in updateOperations)
                     {
-                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperationId, ex.Message);
+                        await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
                 }
 

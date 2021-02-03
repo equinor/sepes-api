@@ -24,6 +24,11 @@ namespace Sepes.Infrastructure.Util
             return DeserializeInternal<List<CloudResourceDesiredRoleAssignmentDto>>(settingAsString);
         }
 
+        public static List<FirewallRule> DesiredFirewallRules(string settingAsString)
+        {
+            return DeserializeInternal<List<FirewallRule>>(settingAsString);
+        }
+
         public static string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj);

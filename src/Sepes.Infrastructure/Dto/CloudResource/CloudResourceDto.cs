@@ -5,7 +5,10 @@ namespace Sepes.Infrastructure.Dto
 {
     public class CloudResourceDto : UpdateableBaseDto
     {
-        public int SandboxId { get; set; }
+        public int? StudyId { get; set; }
+        public int? SandboxId { get; set; }
+
+        public int? DatasetId { get; set; }
 
         public string StudyName { get; set; }
         public string SandboxName { get; set; }
@@ -16,14 +19,18 @@ namespace Sepes.Infrastructure.Dto
 
         public string ResourceName { get; set; }
 
-        public string ResourceType { get; set; }      
+        public string ResourceType { get; set; }
+
+        public string Purpose { get; set; }
 
         public string ResourceGroupName { get; set; }
        
 
         public string ProvisioningState { get; set; }
 
-        public DateTime? Deleted { get; set; }
+        public bool Deleted { get; set; }
+
+        public DateTime? DeletedAt { get; set; }
 
         public string DeletedBy { get; set; }
 

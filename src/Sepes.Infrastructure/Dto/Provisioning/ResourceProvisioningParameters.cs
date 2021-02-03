@@ -5,69 +5,70 @@ namespace Sepes.Infrastructure.Dto.Provisioning
 {
     public class ResourceProvisioningParameters
     {
-        
-            public int DatabaseId { get; set; }
-            public string ResourceGroupName { get; set; }
-            public string Name { get; set; }
+        public int DatabaseId { get; set; }
+        public string ResourceGroupName { get; set; }
+        public string Name { get; set; }
 
-            public string StudyName { get; set; }
+        public string StudyName { get; set; }
+        public int? StudyId { get; set; }
+        public int? SandboxId { get; set; }
+        public int? DatasetId { get; set; }
 
-            public int SandboxId { get; set; }
-            public string SandboxName { get; set; }
-            public Region Region { get; set; }
+        public string SandboxName { get; set; }
+        public Region Region { get; set; }
 
-            public Dictionary<string, string> Tags;
+        public Dictionary<string, string> Tags;
 
-            public string NetworkSecurityGroupName { get; set; }
+        public string NetworkSecurityGroupName { get; set; }
 
-            public string ConfigurationString { get; set; }
+        public string ConfigurationString { get; set; }
 
 
-            Dictionary<string, string> _sharedVariables = new Dictionary<string, string>();
+        Dictionary<string, string> _sharedVariables = new Dictionary<string, string>();
 
-            public bool TryGetSharedVariable(string key, out string value)
+        public bool TryGetSharedVariable(string key, out string value)
+        {
+            if (_sharedVariables.TryGetValue(key, out value))
             {
-                if (_sharedVariables.TryGetValue(key, out value))
-                {
-                    return true;
-                }
-
-                value = null;
-                return false;
+                return true;
             }
 
-            void ClearProperties()
-            {
-                ResourceGroupName = null;
-                Name = null;
-                SandboxId = 0;
-                SandboxName = null;
-                Region = null;
-                ConfigurationString = null;
+            value = null;
+            return false;
+        }
 
-                if (Tags != null)
+        void ClearProperties()
+        {
+            ResourceGroupName = null;
+            Name = null;
+            SandboxId = 0;
+            SandboxName = null;
+            Region = null;
+            ConfigurationString = null;
+
+            if (Tags != null)
+            {
+                Tags.Clear();
+            }
+        }
+
+        public void ResetButKeepSharedVariables(Dictionary<string, string> appendTheseVariables = null)
+        {
+            ClearProperties();
+
+            if (appendTheseVariables != null && appendTheseVariables.Count > 0)
+            {
+                foreach (var curAppend in appendTheseVariables)
                 {
-                    Tags.Clear();
+                    _sharedVariables[curAppend.Key] = curAppend.Value;
                 }
             }
+        }
 
-            public void ResetButKeepSharedVariables(Dictionary<string, string> appendTheseVariables = null)
-            {
-                ClearProperties();
-
-                if (appendTheseVariables != null && appendTheseVariables.Count > 0)
-                {
-                    foreach (var curAppend in appendTheseVariables)
-                    {
-                        _sharedVariables[curAppend.Key] = curAppend.Value;
-                    }
-                }
-            }
-
-            public void ResetAndClearSharedVariables()
-            {
-                ClearProperties();
-                _sharedVariables.Clear();
-            }        
+        public void ResetAndClearSharedVariables()
+        {
+            ClearProperties();
+            _sharedVariables.Clear();
+        }
     }
 }

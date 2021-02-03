@@ -46,7 +46,7 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost("")]
-        public async Task<IActionResult> CreateDataset(DatasetDto newDataset)
+        public async Task<IActionResult> CreateDataset(PreApprovedDatasetCreateUpdateDto newDataset)
         {
             var dataset = await _datasetService.CreateDatasetAsync(newDataset);
             return new JsonResult(dataset);

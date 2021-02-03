@@ -53,25 +53,12 @@ namespace Sepes.Infrastructure.Service
             return vmPrice;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
         {
-            var vmDisks = await _db.DiskSizes.Include(x => x).ToListAsync();
+            var vmDisks = await _db.DiskSizes.ToListAsync();
             var sortedByPrice = vmDisks.OrderBy(x => x.Size);
-            /*
-            var result = new List<VmDiskLookupDto>
-            {
-                new VmDiskLookupDto() { Key = "64", DisplayValue = "64 GB" },
-                new VmDiskLookupDto() { Key = "128", DisplayValue = "128 GB" },
-                new VmDiskLookupDto() { Key = "256", DisplayValue = "256 GB" },
-                new VmDiskLookupDto() { Key = "512", DisplayValue = "512 GB" },
-                new VmDiskLookupDto() { Key = "1024", DisplayValue = "1024 GB" },
-                new VmDiskLookupDto() { Key = "2048", DisplayValue = "2048 GB" },
-                new VmDiskLookupDto() { Key = "4096", DisplayValue = "4096 GB" },
-                new VmDiskLookupDto() { Key = "8192", DisplayValue = "8192 GB" }
-            };
-            */
+           
 
             return _mapper.Map<List<VmDiskLookupDto>>(sortedByPrice);
         }
@@ -122,26 +109,31 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(string userName)
+        public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(VmUsernameDto input)
         {
             StringBuilder errorString = new StringBuilder("");
             StringBuilder listOfInvalidNames = new StringBuilder("");
             VmUsernameValidateDto usernameValidation = new VmUsernameValidateDto { errorMessage = "", isValid = true };
-            if (userName.EndsWith("."))
+            if (input.Username.EndsWith("."))
             {
                 usernameValidation.isValid = false;
                 errorString.Append("Name can not end with a period(.)");
             }
-            foreach (string invalidName in AzureVmInvalidUsernames.invalidUsernames)
+            var invalidUsernames = AzureVmInvalidUsernames.invalidUsernamesWindows;
+            if (input.OperativeSystemType == AzureVmConstants.LINUX)
             {
-                if (userName.Equals(invalidName))
+                invalidUsernames = AzureVmInvalidUsernames.invalidUsernamesLinux;
+            }
+            foreach (string invalidName in invalidUsernames)
+            {
+                if (input.Username.Equals(invalidName))
                 {
                     usernameValidation.isValid = false;
-                    errorString.Append($"The name: '{userName}' is not valid.");
-                    foreach (string name in AzureVmInvalidUsernames.invalidUsernames)
+                    errorString.Append($"The name: '{input.Username}' is not valid.");
+                    foreach (string name in invalidUsernames)
                     {
                         listOfInvalidNames.Append(name);
-                        if (name != AzureVmInvalidUsernames.invalidUsernames.Last())
+                        if (name != invalidUsernames.Last())
                         {
                             listOfInvalidNames.Append(", ");
                         }

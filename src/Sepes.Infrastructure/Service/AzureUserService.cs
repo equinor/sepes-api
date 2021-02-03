@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<AzureUserDto> GetUserAsync(string id)
         {
             // Initialize the GraphServiceClient. 
-            GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read.All" });
+            GraphServiceClient graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { "User.Read" });
 
             var response = await graphClient.Users.Request().Filter($"Id eq '{id}'").GetAsync();
 

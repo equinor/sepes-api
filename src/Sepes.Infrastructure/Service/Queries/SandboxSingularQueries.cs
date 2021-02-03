@@ -20,6 +20,11 @@ namespace Sepes.Infrastructure.Service.Queries
             return await SandboxBaseQueries.AllSandboxesBaseQueryable(db).SingleOrDefaultAsync(sb=> sb.Id == sandboxId);
         }
 
+        public static async Task<bool> SandboxWithNameAllreadyExists(SepesDbContext db, string name)
+        {
+            return await SandboxBaseQueries.ActiveSandboxesBaseQueryable(db).Where(sb => sb.Name == name).AnyAsync();
+        }
+
         public static async Task<Sandbox> GetSandboxByIdThrowIfNotFoundAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
         {
             var sandboxQueryable =
@@ -61,7 +66,13 @@ namespace Sepes.Infrastructure.Service.Queries
         static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
         {
             var sandboxId = await db.CloudResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
-            return sandboxId;
+
+            if (sandboxId.HasValue)
+            {
+                return sandboxId.Value;
+            }
+
+            return default(int);        
         }         
     }
 }

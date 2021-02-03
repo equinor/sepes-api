@@ -9,7 +9,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,17 +45,21 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && (!s.Deleted.HasValue || s.Deleted.Value == false)).ToListAsync();
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && s.Deleted == false).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
-        }
+        }      
 
         public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
             _logger.LogInformation(SepesEventId.SandboxCreate, "Sandbox {0}: Starting", studyId);
 
             Sandbox createdSandbox = null;
+
+            GenericNameValidation.ValidateName(sandboxCreateDto.Name);
+
+            await ThrowIfSandboxNameAllreadyTaken(sandboxCreateDto.Name);
 
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
@@ -73,7 +76,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check uniqueness of name
-            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted.HasValue).AnyAsync())
+            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && sb.Deleted == false).AnyAsync())
             {
                 throw new ArgumentException($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
             }
@@ -103,17 +106,15 @@ namespace Sepes.Infrastructure.Service
 
                     var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);
 
-                    var region = RegionStringConverter.Convert(sandboxCreateDto.Region);
-
                     //This object gets passed around
                     var creationAndSchedulingDto =
                         new SandboxResourceCreationAndSchedulingDto()
                         {
                             StudyId = studyDto.Id,
-                            SandboxId = createdSandbox.Id,                            
+                            SandboxId = createdSandbox.Id,
                             StudyName = studyDto.Name,
                             SandboxName = sandboxDto.Name,
-                            Region = region,
+                            Region = sandboxCreateDto.Region,
                             Tags = tags,
                             BatchId = Guid.NewGuid().ToString()
                         };
@@ -150,6 +151,14 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
+        async Task ThrowIfSandboxNameAllreadyTaken(string sandboxName)
+        {
+            if (await SandboxWithNameAllreadyExists(sandboxName))
+            {
+                throw new ArgumentException($"Sandbox with name {sandboxName} allready exists");
+            }
+        }
+
         public async Task DeleteAsync(int sandboxId)
         {
             _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox {0}: Starting", sandboxId);
@@ -162,7 +171,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 
-            SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);          
+            SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);
 
             await _db.SaveChangesAsync();
 

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System;
@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
             return retVal;
         }
 
-        public async Task<CloudResourceDto> Update(int resourceId, CloudResourceDto updated)
+        public async Task<CloudResource> Update(int resourceId, CloudResource updated)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
@@ -47,15 +47,14 @@ namespace Sepes.Infrastructure.Service
             resource.ResourceKey = updated.ResourceKey;
             resource.ResourceName = updated.ResourceName;
             resource.ResourceType = updated.ResourceType;
-            resource.LastKnownProvisioningState = updated.ProvisioningState;
+            resource.LastKnownProvisioningState = updated.LastKnownProvisioningState;
             resource.ParentResourceId = updated.ParentResourceId;
             resource.ConfigString = updated.ConfigString;        
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
-
-            var retVal = await GetDtoByIdAsync(resourceId);
-            return retVal;
+            
+            return resource;
         }   
         
         public async Task UpdateProvisioningState(int resourceId, string newProvisioningState)
@@ -71,7 +70,6 @@ namespace Sepes.Infrastructure.Service
                 resource.UpdatedBy = currentUser.UserName;
                 await _db.SaveChangesAsync();
             }
-
         }
 
         public async Task<CloudResourceDto> UpdateResourceIdAndName(int resourceId, string resourceIdInForeignSystem, string resourceNameInForeignSystem)

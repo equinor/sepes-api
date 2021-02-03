@@ -18,14 +18,13 @@ namespace Sepes.Infrastructure.Model.Automapper
     {
         public AutoMappingConfigs()
         {
-
             //STUDY
             CreateMap<Study, StudyDto>()
-          .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));    
+                .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d=> d.Deleted.HasValue == false || (d.Deleted.HasValue && d.Deleted.Value == false)).ToList()))
-                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted.HasValue == false || (sb.Deleted.HasValue && sb.Deleted.Value == false)).ToList()))
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d => d.Deleted == false).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted == false).ToList()))
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
@@ -34,20 +33,23 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<StudyCreateDto, Study>();
 
             //DATASET
-            CreateMap<Dataset, DatasetDto>()
-                .ForMember(dest => dest.Studies,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()))
-                .ReverseMap();
 
-            CreateMap<Dataset, DatasetListItemDto>();
+            CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
 
             CreateMap<Dataset, DatasetDto>()
-                 .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<DatasetStorageExternalLinkResolver>());
+                .ForMember(dest => dest.Studies,source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()))
+                .ForMember(dest => dest.StorageAccountName, source => source.MapFrom<DatasetStorageAccountNameResolver>())
+                .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<StorageAccountExternalLinkResolver>());
+            
+            CreateMap<Dataset, DatasetLookupItemDto>();
+
+            CreateMap<Dataset, DatasetListItemDto>()
+                     .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.SandboxDatasets.Select(sd => sd.Sandbox).ToList()));
 
             CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
                         .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Dataset.Name))
-                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))                
+                .ForMember(dest => dest.DataId, source => source.MapFrom(x => x.Dataset.DataId))
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification));
 
             CreateMap<SandboxDataset, SandboxDatasetDto>()
@@ -56,7 +58,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Classification, source => source.MapFrom(x => x.Dataset.Classification))
                 .ForMember(dest => dest.SandboxName, opt =>
                 {
-                    opt.PreCondition(src => (!src.Sandbox.Deleted.HasValue));
+                    opt.PreCondition(src => (!src.Sandbox.Deleted));
                     opt.MapFrom(src =>
 
                         src.Sandbox.Name
@@ -65,19 +67,19 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.SandboxId, source => source.MapFrom(x => x.Sandbox.Id))
                 .ForMember(dest => dest.StudyId, source => source.MapFrom(x => x.Sandbox.StudyId));
 
-            /*
-            CreateMap<Dataset, StudySpecificDatasetDto>()
-                .ForMember(dest => dest.StudyNo,
-                    source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study.Id)))
-                .ReverseMap();
-*/
-            CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
+            CreateMap<CloudResource, DatasetResourceLightDto>()
+                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
+                  .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
+                   .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
+                     .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<StorageAccountResourceExternalLinkResolver>())
+                     .ForMember(dest => dest.RetryLink, source => source.MapFrom<DatasetResourceRetryLinkResolver>());
+                      
 
             //SANDBOX
             CreateMap<Sandbox, SandboxDto>()
                  .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
                   .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
-           
+
 
             CreateMap<Sandbox, SandboxListItemDto>();
 
@@ -86,18 +88,7 @@ namespace Sepes.Infrastructure.Model.Automapper
          .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
          .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>())
-           .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
-
-            /*
-            CreateMap<Sandbox, DatasetSandboxDto>()
-                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
-                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));
-
-            CreateMap<DatasetSandbox, DatasetSandboxDto>()
-                 .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Id))
-                     .ForMember(dest => dest.Name, source => source.MapFrom(x => x.Name));*/
-
-            CreateMap<SandboxDto, Sandbox>();
+           .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());         
 
             CreateMap<SandboxCreateDto, Sandbox>();
 
@@ -108,7 +99,7 @@ namespace Sepes.Infrastructure.Model.Automapper
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
                 .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
                 .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>());
-            
+
 
             //CLOUD RESOURCE
 
@@ -132,7 +123,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                     .ForMember(dest => dest.Source, source => source.MapFrom(s => ParticipantSource.Db))
                     .ForMember(dest => dest.DatabaseId, source => source.MapFrom(s => s.Id));
 
-            CreateMap<Microsoft.Graph.User, AzureUserDto>();           
+            CreateMap<Microsoft.Graph.User, AzureUserDto>();
 
             CreateMap<Microsoft.Graph.User, ParticipantLookupDto>()
                     .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))
@@ -171,7 +162,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                    .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
 
 
-            CreateMap<VmRuleDto, NsgRuleDto>()                
+            CreateMap<VmRuleDto, NsgRuleDto>()
                       .ForMember(dest => dest.Protocol, source => source.MapFrom(x => x.Protocol))
                   .ForMember(dest => dest.Description, source => source.MapFrom(x => x.Description));
 

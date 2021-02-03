@@ -1,6 +1,6 @@
-﻿namespace Sepes.Tests.Constants
+﻿namespace Sepes.Tests.Common.Constants
 {
-    public static class UserConstants
+    public static class TestUserConstants
     {
         //CURRENT USER CONSTANTS
         public const int COMMON_CUR_USER_DB_ID = 1;

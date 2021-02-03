@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDs in studyDetailsDto.Datasets)
             {
-                curDs.SandboxDatasets = curDs.SandboxDatasets.Where(sd => sd.StudyId == studyId).ToList();
+                curDs.Sandboxes = curDs.Sandboxes.Where(sd => sd.StudyId == studyId).ToList();
             }
 
             return studyDetailsDto;

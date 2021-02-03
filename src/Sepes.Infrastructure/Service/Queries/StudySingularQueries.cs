@@ -15,11 +15,19 @@ namespace Sepes.Infrastructure.Service.Queries
 
         #region Public Methods
 
-        public static async Task<Study> GetStudyByIdThrowIfNotFoundAsync(SepesDbContext db, int studyId, bool withIncludes = false)
+        static async Task<Study> GetStudyById(SepesDbContext db, int studyId, bool withIncludes = false, bool disableTracking = false)
         {
             var studyFromDb = await
                 (withIncludes ? StudyBaseQueries.ActiveStudiesWithIncludesQueryable(db) : StudyBaseQueries.ActiveStudiesMinimalIncludesQueryable(db))
-                .FirstOrDefaultAsync(s => s.Id == studyId);
+                .If(disableTracking, x=> x.AsNoTracking())
+                .FirstOrDefaultAsync(s => s.Id == studyId);           
+
+            return studyFromDb;
+        }
+
+        public static async Task<Study> GetStudyByIdThrowIfNotFoundAsync(SepesDbContext db, int studyId, bool withIncludes = false, bool disableTracking = false)
+        {
+            var studyFromDb = await GetStudyById(db, studyId, withIncludes, disableTracking);
 
             if (studyFromDb == null)
             {
@@ -29,11 +37,17 @@ namespace Sepes.Infrastructure.Service.Queries
             return studyFromDb;
         }
 
-        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false, string newRole = null)
+        public static async Task<Study> GetStudyByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int studyId, UserOperation operation, bool withIncludes = false, bool disableTracking = false, string newRole = null)
         {
-            var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes);
+            var studyFromDb = await GetStudyByIdThrowIfNotFoundAsync(db, studyId, withIncludes, disableTracking);
             return StudyAccessUtil.HasAccessToOperationForStudyOrThrow(await userService.GetCurrentUserWithStudyParticipantsAsync(), studyFromDb, operation, newRole);
-        }      
+        }
+
+        public static async Task<Study> GetStudyByIdNoAccessCheck(SepesDbContext db, int studyId, bool withIncludes = false, bool disableTracking = false)
+        {
+            var studyFromDb = await GetStudyById(db, studyId, withIncludes, disableTracking);
+            return studyFromDb;
+        }
 
         public static async Task<Study> GetStudyBySandboxIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId, UserOperation operation, bool withIncludes = false, string newRole = null)
         {
@@ -65,7 +79,7 @@ namespace Sepes.Infrastructure.Service.Queries
         static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
         {
             var sandboxId = await db.CloudResources.Where(sr => sr.Id == resourceId).Select(sr => sr.SandboxId).SingleOrDefaultAsync();
-            return sandboxId;
+            return sandboxId.Value;
         }      
 
         static async Task<Study> GetStudyBySandboxIdOrThrowAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
