@@ -64,6 +64,7 @@ jobs:
       - name: Azure login
         shell: pwsh
         run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
           $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
           $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
           $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
