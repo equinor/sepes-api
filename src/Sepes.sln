@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Functions", "Sepes.Fu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.RestApi.IntegrationTests", "Sepes.RestApi.IntegrationTests\Sepes.RestApi.IntegrationTests.csproj", "{7F6CF324-467A-4DFC-A046-72A85D64EBE6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.Tests.Common", "Sepes.Tests.Common\Sepes.Tests.Common.csproj", "{1EC116FF-95E6-4ADD-ADF6-1284DF75E02D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Tests.Common", "Sepes.Tests.Common\Sepes.Tests.Common.csproj", "{1EC116FF-95E6-4ADD-ADF6-1284DF75E02D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
