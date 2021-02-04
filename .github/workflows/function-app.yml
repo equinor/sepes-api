@@ -15,7 +15,7 @@ on:
 env:
   ciTag: ${{ secrets.ACR_URL }}/function-app/ci
   prodTag: ${{ secrets.ACR_URL }}/function-app/prod
-  acr: ${{ secrets.ACR_URL }}/${{ env.environment }}
+  acr: '${{ secrets.ACR_URL }}/${{ env.environment }}'
 
 jobs:
   dockerbuild:
