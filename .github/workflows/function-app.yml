@@ -36,3 +36,25 @@ jobs:
         run: |
           docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:$GITHUB_RUN_ID -t ${{ env.ciTag }}:latest
           docker push ${{ env.ciTag }}
+
+  prod:
+    if: github.ref == 'refs/heads/functionrun
+    runs-on: ubuntu-latest
+    env:
+        environment: prod
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.environment }}:latest
+          docker push ${{ env.environment }}
