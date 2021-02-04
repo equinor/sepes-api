@@ -68,9 +68,18 @@ jobs:
         path: ${{github.workspace}}/${{env.file_name}}
 
     # generate coverage report
-    - name: Build Coverage Report   
+    - name: Build Coverage Report
+      working-directory: src 
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:${{github.workspace}}/Sepes.Tests/**/coverage.cobertura.xml;${{github.workspace}}/Sepes.Tests/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlInline_AzurePipelines;Cobertura
+        reportgenerator -reports:/Sepes.Tests/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlInline_AzurePipelines;Cobertura
+
+    # upload code coverage report as build artifact
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Code Coverage Report'
+        path: ${{github.workspace}}/CodeCoverage/Cobertura.xml
       
    
