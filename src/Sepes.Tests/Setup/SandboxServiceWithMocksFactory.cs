@@ -26,7 +26,7 @@ namespace Sepes.Tests.Setup
 
             var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);       
 
-            var studyServiceMock = StudyServiceMockFactory.Create(serviceProvider);
+            var studyServiceMock = StudyServiceMockFactory.CreateReadService(serviceProvider);
 
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();

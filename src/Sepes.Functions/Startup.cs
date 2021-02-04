@@ -90,7 +90,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ILookupService, LookupService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
-            builder.Services.AddTransient<IStudyService, StudyService>();
+            builder.Services.AddTransient<IStudyReadService, StudyReadService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();

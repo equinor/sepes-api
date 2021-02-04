@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Auth;
+﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Auth;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -100,7 +101,7 @@ namespace Sepes.Infrastructure.Constants.Auth
         public static IEnumerable<OperationPermission> ForAppRolesLevel(IEnumerable<OperationPermission> source)
         {
             return ForLevel(source, PermissionLevel.AppRoles);
-        }
+        }       
 
         public static IEnumerable<OperationPermission> ForStudySpecificRolesLevel(IEnumerable<OperationPermission> source)
         {

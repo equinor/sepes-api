@@ -23,7 +23,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             await ClearTestDatabase();
-            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
+            var studyService = StudyServiceMockFactory.CreateReadService(_serviceProvider);
 
             await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }
@@ -58,7 +58,7 @@ namespace Sepes.Tests.Services.DomainServices
            
             await studyDeleteService.CloseStudyAsync(createdStudy.Id);
          
-            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
+            var studyService = StudyServiceMockFactory.CreateReadService(_serviceProvider);
             _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
         }  

@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.2")
+                .HasAnnotation("ProductVersion", "3.1.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -581,7 +581,7 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<bool?>("Closed")
+                    b.Property<bool>("Closed")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("ClosedAt")
@@ -639,6 +639,9 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Closed", "Restricted")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Name", "Description", "Vendor", "LogoUrl" });
 
                     b.ToTable("Studies");
                 });

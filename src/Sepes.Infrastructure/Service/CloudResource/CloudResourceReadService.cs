@@ -20,10 +20,12 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceReadService : CloudResourceServiceBase, ICloudResourceReadService
-    { 
+    {
+        public readonly IConfiguration _config;
         public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService)
          : base(db, config, mapper, logger, userService)
-        { 
+        {
+            _config = config;
         } 
         
         public async Task<CloudResource> GetByIdAsync(int id)
@@ -86,6 +88,12 @@ namespace Sepes.Infrastructure.Service
             var resources = await queryable.ToListAsync(cancellation);
 
             return _mapper.Map<List<CloudResourceDto>>(resources);
+        }
+
+        public async Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default)
+        {
+            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
+            return AzureResourceUtil.CreateResourceCostLink(_config, sandboxFromDb);
         }
     }
 }
