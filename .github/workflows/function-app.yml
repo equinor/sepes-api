@@ -38,7 +38,7 @@ jobs:
           docker push ${{ env.ciTag }}
 
   prod:
-    if: github.ref == 'refs/heads/functionrun
+    if: github.ref == 'refs/heads/functionrun'
     runs-on: ubuntu-latest
     env:
         environment: prod
