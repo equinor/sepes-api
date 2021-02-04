@@ -66,5 +66,11 @@ jobs:
       with:
         name: 'Test Run'
         path: ${{github.workspace}}/${{env.file_name}}
+
+    # generate coverage report
+    - name: Build Coverage Report   
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:${{github.workspace}}/Sepes.Tests/**/coverage.cobertura.xml;${{github.workspace}}/Sepes.Tests/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlInline_AzurePipelines;Cobertura
       
    
