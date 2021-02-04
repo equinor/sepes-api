@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -14,13 +15,15 @@ namespace Sepes.Infrastructure.Service
     public class StudyServiceBase : ServiceBase<Study>
     {
         protected readonly ILogger _logger;
+        protected readonly IStudyModelService _studyModelService;
         protected readonly IStudyLogoService _studyLogoService;
 
-        public StudyServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, IStudyLogoService studyLogoService)
+        public StudyServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
             : base(db, mapper, userService)
         {
             _logger = logger;
             _studyLogoService = studyLogoService;
+            _studyModelService = studyModelService;
         }      
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)

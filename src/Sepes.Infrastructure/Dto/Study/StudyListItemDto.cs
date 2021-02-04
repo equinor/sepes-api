@@ -1,5 +1,4 @@
 ﻿using Sepes.Infrastructure.Interface;
-using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Study
 {
