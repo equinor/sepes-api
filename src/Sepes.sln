@@ -16,9 +16,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sepes.Tests.Common", "Sepes.Tests.Common\Sepes.Tests.Common.csproj", "{1EC116FF-95E6-4ADD-ADF6-1284DF75E02D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E2FBF193-43A3-431D-ABD3-9E8B4FCE1AEA}"
-	ProjectSection(SolutionItems) = preProject
-		test.runsettings = test.runsettings
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
