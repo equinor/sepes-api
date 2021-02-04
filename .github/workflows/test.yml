@@ -71,7 +71,7 @@ jobs:
     - name: Build Coverage Report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:${{github.workspace}}/CodeCoverageRaw/UnitTest/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HTML;HTMLSummary;Cobertura
+        reportgenerator -reports:${{github.workspace}}/CodeCoverageRaw/UnitTest/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HTML
 
     # upload code coverage report as build artifact
     - name: Upload a Build Artifact
