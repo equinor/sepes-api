@@ -15,7 +15,7 @@ on:
 env:
   ciTag: ${{ secrets.ACR_URL }}/function-app/ci
   prodTag: ${{ secrets.ACR_URL }}/function-app/prod
-  acr: "${{ secrets.ACR_URL }}/${{ env.environment }}"
+  acr: ${{ secrets.ACR_URL }}/
 
 jobs:
   dockerbuild:
@@ -58,5 +58,5 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}:$GITHUB_RUN_ID -t ${{ env.acr }}:latest
-          docker push ${{ env.acr }}
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
+          docker push ${{ env.acr }}${{ env.environment }}
