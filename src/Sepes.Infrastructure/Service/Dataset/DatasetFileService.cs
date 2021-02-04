@@ -123,5 +123,28 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
             }
         }
+
+        public async Task<UriBuilder> GetSasToken(int datasetId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+
+                if (IsStudySpecific(dataset))
+                {
+                    //Verify access to study
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    await _datasetCloudResourceService.EnsureExistFirewallExceptionForApplication(study, dataset, cancellationToken);
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+                    _storageService.SetResourceGroupAndAccountName(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                }
+                return await _storageService.CreateUriBuilderWithSasToken("files");
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
+            }
+        }
     }
 }

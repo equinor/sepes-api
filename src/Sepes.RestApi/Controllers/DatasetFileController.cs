@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace Sepes.RestApi.Controller
     public class DatasetFileController : ControllerBase
     {
         readonly IDatasetFileService _datasetFileService;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
 
         public DatasetFileController(IDatasetFileService datasetFileService)
         {
@@ -48,6 +50,15 @@ namespace Sepes.RestApi.Controller
         {
             await _datasetFileService.DeleteFile(datasetId, fileName, cancellationToken);
             return new NoContentResult();
+        }
+        
+
+        [HttpGet("saskey")]
+        public async Task<IActionResult> GetSasToken(int datasetId, CancellationToken cancellationToken = default)
+        {
+            var sasToken = await _datasetFileService.GetSasToken(datasetId);
+            var token = await _azureBlobStorageService.;
+            return new JsonResult(sasToken);
         }
     }
 }

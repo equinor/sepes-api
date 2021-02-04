@@ -124,6 +124,7 @@ namespace Sepes.Infrastructure.Service.Azure
             var blobClient = blobContainerClient.GetBlobClient(blobName);
             var result = await blobClient.DeleteAsync();
 
+
             return result.Status;
         }
 
@@ -283,6 +284,14 @@ namespace Sepes.Infrastructure.Service.Azure
             }
 
             return null;
+        }
+
+        public async Task<Uri> GetSasKey(string containerName = "files", CancellationToken cancellationToken = default)
+        {
+            var blobServiceClient = await GetBlobServiceClient();
+            var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
+
+            return blobContainerClient.Uri;
         }
 
         //public async Task<List<FileStreamResult>> DownloadFileFromBlobContainer(string connectionString, string containerName, List<BlobFileName> blobfiles)

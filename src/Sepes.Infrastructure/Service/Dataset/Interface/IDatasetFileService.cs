@@ -14,5 +14,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default);
 
         Task<List<BlobStorageItemDto>> GetFileList(int datasetId, CancellationToken cancellationToken = default);
+
+        Task<UriBuilder> GetSasToken(int datasetId, CancellationToken cancellationToken = default);
     }
 }

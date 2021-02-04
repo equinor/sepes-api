@@ -20,6 +20,8 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<UriBuilder> CreateUriBuilderWithSasToken(string containerName);
         Task<List<BlobStorageItemDto>> GetFileList(string containerName, CancellationToken cancellationToken = default);
 
+        Task<Uri> GetSasKey(string containerName = "files", CancellationToken cancellationToken = default);
+
         // Task<FileStreamResult> DownloadFile(string containerName,string blobName, string fileName);
 
 
