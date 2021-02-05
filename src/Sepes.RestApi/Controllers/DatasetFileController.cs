@@ -41,23 +41,22 @@ namespace Sepes.RestApi.Controller
         [HttpGet("files")]
         public async Task<IActionResult> GetFileList(int datasetId, CancellationToken cancellationToken = default)
         {
-            var files = await _datasetFileService.GetFileList(datasetId, cancellationToken);
+            var files = await _datasetFileService.GetFileListAsync(datasetId, cancellationToken);
             return new JsonResult(files);
         }
 
         [HttpDelete("files/fileName")]
         public async Task<IActionResult> DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
         {
-            await _datasetFileService.DeleteFile(datasetId, fileName, cancellationToken);
+            await _datasetFileService.DeleteFileAsync(datasetId, fileName, cancellationToken);
             return new NoContentResult();
         }
         
 
         [HttpGet("saskey")]
-        public async Task<IActionResult> GetSasToken(int datasetId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetFileUploadSasToken(int datasetId, CancellationToken cancellationToken = default)
         {
-            var sasToken = await _datasetFileService.GetSasToken(datasetId);
-            var token = await _azureBlobStorageService.;
+            var sasToken = await _datasetFileService.GetFileUploadUriBuilderWithSasTokenAsync(datasetId);         
             return new JsonResult(sasToken);
         }
     }

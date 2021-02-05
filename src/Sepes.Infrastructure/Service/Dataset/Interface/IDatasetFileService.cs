@@ -11,10 +11,10 @@ namespace Sepes.Infrastructure.Service.Interface
     { 
         Task<List<BlobStorageItemDto>> AddFiles(int datasetId, List<IFormFile> files, CancellationToken cancellationToken = default);
 
-        Task DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default);
+        Task DeleteFileAsync(int datasetId, string fileName, CancellationToken cancellationToken = default);
 
-        Task<List<BlobStorageItemDto>> GetFileList(int datasetId, CancellationToken cancellationToken = default);
+        Task<List<BlobStorageItemDto>> GetFileListAsync(int datasetId, CancellationToken cancellationToken = default);
 
-        Task<UriBuilder> GetSasToken(int datasetId, CancellationToken cancellationToken = default);
+        Task<string> GetFileUploadUriBuilderWithSasTokenAsync(int datasetId, CancellationToken cancellationToken = default);
     }
 }
