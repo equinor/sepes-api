@@ -4,3 +4,9 @@ node_modules
 docker-compose.yml
 appsettings.Development.json
 local.settings.json
+
+# Codecoverage with Coverlet and ReportGenerator
+CodeCoverage/
+
+# Tools folder with binary files
+tools/

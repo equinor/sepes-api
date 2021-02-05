@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Sepes.Infrastructure
+namespace Sepes.Infrastructure.Extensions
 {
     public static class LinqConditional
     {
