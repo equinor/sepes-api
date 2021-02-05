@@ -2,7 +2,7 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using System;
 using System.Threading.Tasks;
 

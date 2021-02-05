@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;

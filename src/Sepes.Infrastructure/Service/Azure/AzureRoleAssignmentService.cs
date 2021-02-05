@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure.RoleAssignment;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;

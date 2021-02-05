@@ -5,7 +5,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;

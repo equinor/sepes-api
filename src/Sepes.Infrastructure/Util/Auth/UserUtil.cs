@@ -4,7 +4,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using System.Security.Principal;
 
 namespace Sepes.Infrastructure.Util.Auth

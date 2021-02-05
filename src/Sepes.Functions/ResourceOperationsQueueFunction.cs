@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 

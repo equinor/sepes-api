@@ -53,12 +53,12 @@ namespace Sepes.Infrastructure.Service
                 storageAccount = await _azure.StorageAccounts.Define(parameters.Name)
                     .WithRegion(parameters.Region)
                     .WithExistingResourceGroup(parameters.ResourceGroupName)
-                    .WithAccessFromAllNetworks()
+                    .WithAccessFromAllNetworks()               
                     .WithGeneralPurposeAccountKindV2()
                     .WithOnlyHttpsTraffic()
                     .WithSku(StorageAccountSkuType.Standard_LRS)
-                    .WithTags(parameters.Tags)
-                    .CreateAsync(cancellationToken);
+                    .WithTags(parameters.Tags)                   
+                    .CreateAsync(cancellationToken);           
 
                 _logger.LogInformation($"Done creating storage account");
             }

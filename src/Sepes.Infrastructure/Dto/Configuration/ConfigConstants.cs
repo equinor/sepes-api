@@ -1,8 +1,9 @@
-﻿namespace Sepes.Infrastructure.Model.Config
+﻿namespace Sepes.Infrastructure.Dto.Configuration
 {
     public static class ConfigConstants
     {
         public const string ENV_VARIABLE_PREFIX = "SEPES_";
+        public const string ALLOW_CORS_DOMAINS = "AllowCorsDomains";        
 
         public const string AZ_DOMAIN = "AzureAd:Domain";
         public const string AZ_INSTANCE = "AzureAd:Instance";

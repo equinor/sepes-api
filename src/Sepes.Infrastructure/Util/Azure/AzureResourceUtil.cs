@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using System;
 using System.Text;
 
