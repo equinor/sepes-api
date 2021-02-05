@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
             _azureVmService = azureVmService;
         }
 
-        public async Task<VmDto> CreateAsync(int sandboxId, CreateVmUserInputDto userInput)
+        public async Task<VmDto> CreateAsync(int sandboxId, VirtualMachineCreateDto userInput)
         {
             CloudResource vmResourceEntry = null;
 
@@ -168,7 +168,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        public Task<VmDto> UpdateAsync(int sandboxDto, CreateVmUserInputDto newSandbox)
+        public Task<VmDto> UpdateAsync(int sandboxDto, VirtualMachineCreateDto newSandbox)
         {
             throw new NotImplementedException();
         }
@@ -277,7 +277,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, CreateVmUserInputDto userInput)
+        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, VirtualMachineCreateDto userInput)
         {
 
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
