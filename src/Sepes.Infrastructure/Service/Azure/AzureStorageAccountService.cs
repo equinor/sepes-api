@@ -308,10 +308,10 @@ namespace Sepes.Infrastructure.Service
                 corsRulesProperties.Add(new Microsoft.Azure.Management.Storage.Fluent.Models.CorsRule()
                 {
                     AllowedOrigins = new List<string> { curRuleInput.Address },
-                    AllowedHeaders = new List<string>(),
-                    AllowedMethods = new List<AllowedMethods> { AllowedMethods.GET, AllowedMethods.POST, AllowedMethods.PUT, AllowedMethods.MERGE, AllowedMethods.DELETE  },
+                    AllowedHeaders = new List<string>() { "*" },
+                    AllowedMethods = new List<AllowedMethods> { AllowedMethods.GET, AllowedMethods.POST, AllowedMethods.PUT, AllowedMethods.MERGE, AllowedMethods.DELETE  },                
+                    MaxAgeInSeconds = 0,
                     ExposedHeaders = new List<string>(),
-                    MaxAgeInSeconds = 0
                 });
             }
 
