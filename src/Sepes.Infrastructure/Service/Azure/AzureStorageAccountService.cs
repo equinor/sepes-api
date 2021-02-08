@@ -33,7 +33,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"Ensuring Diagnostic Storage Account exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
+            _logger.LogInformation($"Ensuring Storage Account {parameters.Name} exists in Resource Group: {parameters.ResourceGroupName}");
 
             var storageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
 
@@ -52,12 +52,12 @@ namespace Sepes.Infrastructure.Service
                 // Create storage account
                 storageAccount = await _azure.StorageAccounts.Define(parameters.Name)
                     .WithRegion(parameters.Region)
-                    .WithExistingResourceGroup(parameters.ResourceGroupName)
-                    .WithAccessFromAllNetworks()               
+                    .WithExistingResourceGroup(parameters.ResourceGroupName)                   
+                    .WithAccessFromAllNetworks()                     
                     .WithGeneralPurposeAccountKindV2()
-                    .WithOnlyHttpsTraffic()
+                    .WithOnlyHttpsTraffic()                    
                     .WithSku(StorageAccountSkuType.Standard_LRS)
-                    .WithTags(parameters.Tags)                   
+                    .WithTags(parameters.Tags)                     
                     .CreateAsync(cancellationToken);           
 
                 _logger.LogInformation($"Done creating storage account");
@@ -165,10 +165,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
+      
 
         public async Task<AzureStorageAccountDto> Create(Region region, string resourceGroupName, string name, Dictionary<string, string> tags, List<string> onlyAllowAccessFrom = null, CancellationToken cancellationToken = default)
         {
@@ -206,7 +203,7 @@ namespace Sepes.Infrastructure.Service
             return await creator.CreateAsync(cancellation);
         }      
 
-        public async Task<List<FirewallRule>> SetRules(string resourceGroupName, string resourceName, List<FirewallRule> rules, CancellationToken cancellationToken = default)
+        public async Task<List<FirewallRule>> SetNetworkRules(string resourceGroupName, string resourceName, List<FirewallRule> rules, CancellationToken cancellationToken = default)
         {
             var account = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
             var ipRulesList = rules?.Select(alw => new IPRule(alw.Address, (Action)alw.Action)).ToList();
@@ -300,6 +297,32 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Could not add Storage Account {storageAccountName} to VNet {vNetName}", ex);
             }
+        }
+
+        public async Task SetCorsRules(string resourceGroupName, string resourceName, List<Dto.CorsRule> rules, CancellationToken cancellationToken = default)
+        {
+            var corsRulesProperties = new List<Microsoft.Azure.Management.Storage.Fluent.Models.CorsRule>();
+
+            foreach (var curRuleInput in rules)
+            {
+                corsRulesProperties.Add(new Microsoft.Azure.Management.Storage.Fluent.Models.CorsRule()
+                {
+                    AllowedOrigins = new List<string> { curRuleInput.Address },
+                    AllowedHeaders = new List<string>(),
+                    AllowedMethods = new List<AllowedMethods> { AllowedMethods.GET, AllowedMethods.POST, AllowedMethods.PUT, AllowedMethods.MERGE, AllowedMethods.DELETE  },
+                    ExposedHeaders = new List<string>(),
+                    MaxAgeInSeconds = 0
+                });
+            }
+
+            var blobServiceProperties = new BlobServicePropertiesInner(cors: new CorsRules(corsRulesProperties));
+            var result = await _azure.StorageAccounts.Manager.BlobServices.Inner.SetServicePropertiesAsync(resourceGroupName, resourceName, blobServiceProperties, cancellationToken);                     
+        
+        }
+
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         NetworkRuleSet GetRuleSetReadyForUpdate(IStorageAccount storageAccount)

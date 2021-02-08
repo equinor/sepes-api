@@ -39,18 +39,18 @@ namespace Sepes.Tests.Setup
             return new StudyReadService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object);
         }
 
-        public static IStudyCreateUpdateService CreateUpdateService(ServiceProvider serviceProvider)
+        public static IStudyUpdateService CreateUpdateService(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<StudyCreateUpdateService>>();
+            var logger = serviceProvider.GetService<ILogger<StudyUpdateService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var studyModelService = CreateStudyModelService(serviceProvider);
 
             var logoServiceMock = new Mock<IStudyLogoService>();
 
-            return new StudyCreateUpdateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object);
+            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object);
         }
 
         public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)

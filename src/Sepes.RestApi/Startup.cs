@@ -141,7 +141,8 @@ namespace Sepes.RestApi
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
-            services.AddTransient<IStudyCreateUpdateService, StudyCreateUpdateService>();
+            services.AddTransient<IStudyCreateService, StudyCreateService>();
+            services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();

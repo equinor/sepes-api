@@ -1,5 +1,7 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using System;
@@ -64,7 +66,10 @@ namespace Sepes.Infrastructure.Util
             return CloudResourceConfigStringSerializer.Serialize(translated);
         }
 
-        public static async Task SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp)
+
+     
+
+            public static async Task SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp)
         {
             //add state
             dataset.FirewallRules = new List<DatasetFirewallRule>();
@@ -97,7 +102,25 @@ namespace Sepes.Infrastructure.Util
             return new DatasetFirewallRule() { CreatedBy = user.UserName, Created = DateTime.UtcNow, RuleType = ruleType, Address = ipAddress };
         }
 
-       public static CloudResource GetStudySpecificStorageAccountResourceEntry(Dataset dataset)
+        public static string CreateDatasetCorsRules(IConfiguration config)
+        {
+            var corsRulesList = new List<CorsRule>();
+
+            var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(config, ConfigConstants.ALLOW_CORS_DOMAINS);
+
+            foreach(var curCorsDomain in corsDomainsFromConfig)
+            {
+                if (!String.IsNullOrWhiteSpace(curCorsDomain))
+                {
+                    corsRulesList.Add(new CorsRule() { Address = curCorsDomain });
+                }
+            }
+
+            return CloudResourceConfigStringSerializer.Serialize(corsRulesList);
+        }
+
+
+        public static CloudResource GetStudySpecificStorageAccountResourceEntry(Dataset dataset)
         {
             if(dataset.StudyId.HasValue && dataset.StudyId.Value > 0)
             {

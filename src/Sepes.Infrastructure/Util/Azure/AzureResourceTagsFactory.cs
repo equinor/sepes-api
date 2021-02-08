@@ -57,12 +57,15 @@ namespace Sepes.Infrastructure.Util
 
         public static void DecorateWithCostAllocationTags(Dictionary<string, string> tags, IConfiguration config, Study study)
         {
-            //Enables cost tracking of Azure resources. This should only be enabled in PROD with real WBS codes, because fake wbs codes used in DEV is causing pain for teams that track the costs.
-            var costAllocationTypeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_TYPE_TAG_NAME);
-            tags.Add(costAllocationTypeTagName, "WBS");
+            if (!String.IsNullOrWhiteSpace(study.WbsCode))
+            {
+                //Enables cost tracking of Azure resources. This should only be enabled in PROD with real WBS codes, because fake wbs codes used in DEV is causing pain for teams that track the costs.
+                var costAllocationTypeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_TYPE_TAG_NAME);
+                tags.Add(costAllocationTypeTagName, "WBS");
 
-            var costAllocationCodeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_CODE_TAG_NAME);
-            tags.Add(costAllocationCodeTagName, study.WbsCode);
+                var costAllocationCodeTagName = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.COST_ALLOCATION_CODE_TAG_NAME);
+                tags.Add(costAllocationCodeTagName, study.WbsCode);
+            }          
         }
 
         public static void DecorateWithStudyOwnerTags(Dictionary<string, string> tags, Study study)

@@ -10,6 +10,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Model.Factory;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,10 +51,24 @@ namespace Sepes.Infrastructure.Service
             var currentUser = await _userService.GetCurrentUserAsync();
             var sessionId = _requestIdService.GetRequestId();
 
+            var resourceGroupEntry = await GetInternalAsync(resourceGroupEntryId);
+
+            if(resourceGroupEntry == null)
+            {
+                throw new Exception("Could not find Resource Group entry");
+            }
+
+            var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroupEntry);
+
+            if (resourceGroupCreateOperation == null)
+            {
+                throw new Exception("Could not find Resource Group create operation entry");
+            }
+
             var resourceEntry = 
                 CloudResourceFactory.CreateStudySpecificDatasetStorageAccountEntry(
                     currentUser, sessionId, datasetId, region,
-                    resourceGroupEntryId, resourceGroupName, resourceName, tags);
+                    resourceGroupEntryId, resourceGroupName, resourceName, tags, resourceGroupCreateOperation.Id);
 
             await SaveToDb(resourceEntry);
 
