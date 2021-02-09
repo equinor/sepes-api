@@ -10,12 +10,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util.Provisioning
 {
-    public static class EnsureFirewallRulesUtil
+    public static class EnsureCorsRulesUtil
     {
 
         public static bool CanHandle(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES)
+            if (operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
             {
                 return true;
             }
@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static async Task Handle(
             CloudResourceOperationDto operation,
-            IHasNetworkRules networkRuleService,
+            IHasCorsRules corsRuleService,
             ICloudResourceReadService resourceReadService,
             ICloudResourceOperationUpdateService operationUpdateService,
             ILogger logger)
@@ -41,9 +41,9 @@ namespace Sepes.Infrastructure.Util.Provisioning
                     throw new NullReferenceException($"Desired state empty on operation {operation.Id}");
                 }
 
-                var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredFirewallRules(operation.DesiredState);
+                var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredCorsRules(operation.DesiredState);
 
-                var setRulesTask = networkRuleService.SetNetworkRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
+                var setRulesTask = corsRuleService.SetCorsRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
 
                 while (!setRulesTask.IsCompleted)
                 {
@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                     if (await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
                     {
-                        logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, firewall rule assignment will be aborted"));
+                        logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, cors rule assignment will be aborted"));
                         cancellation.Cancel();
                         break;
                     }
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
                 {
                     if (setRulesTask.Exception == null)
                     {
-                        throw new Exception("Firewall rule assignment task failed");
+                        throw new Exception("cors rule assignment task failed");
                     }
                     else
                     {
@@ -79,11 +79,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
             {
                 if (ex.InnerException != null && ex.InnerException.Message.Contains("A task was canceled"))
                 {
-                    throw new ProvisioningException($"Resource provisioning (Ensure firewall assignments) aborted.", logAsWarning: true, innerException: ex.InnerException);
+                    throw new ProvisioningException($"Resource provisioning (Ensure cors rules) aborted.", logAsWarning: true, innerException: ex.InnerException);
                 }
                 else
                 {
-                    throw new ProvisioningException($"Resource provisioning (Ensure firewall assignments) failed.", CloudResourceOperationState.FAILED, postponeQueueItemFor: 10, innerException: ex);
+                    throw new ProvisioningException($"Resource provisioning (Ensure cors rules) failed.", CloudResourceOperationState.FAILED, postponeQueueItemFor: 10, innerException: ex);
                 }
             }
         }

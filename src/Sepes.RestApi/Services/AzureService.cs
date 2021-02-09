@@ -4,7 +4,7 @@
 //using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 //using Microsoft.Extensions.Configuration;
 //using Sepes.Infrastructure.Dto;
-//using Sepes.Infrastructure.Model.Config;
+//using Sepes.Infrastructure.Dto.Configuration;
 //using System;
 //using System.Collections.Generic;
 //using System.Diagnostics.CodeAnalysis;

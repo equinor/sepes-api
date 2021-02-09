@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
@@ -26,18 +27,16 @@ namespace Sepes.Infrastructure.Service
 
         readonly IUserService _userService;
 
-        readonly ICloudResourceReadService _cloudResourceReadService;
-        readonly ICloudResourceCreateService _cloudResourceCreateService;
-        readonly ICloudResourceDeleteService _cloudResourceDeleteService;
+        readonly IStudyModelService _studyModelService;
 
+        readonly ICloudResourceCreateService _cloudResourceCreateService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
            IUserService userService,
-           ICloudResourceReadService cloudResourceReadService,
+           IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
-           ICloudResourceDeleteService cloudResourceDeleteService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
         {
@@ -45,12 +44,34 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _logger = logger;
             _userService = userService;
-
-            _cloudResourceReadService = cloudResourceReadService;
-            _cloudResourceCreateService = cloudResourceCreateService;
-            _cloudResourceDeleteService = cloudResourceDeleteService;
+            _studyModelService = studyModelService;
+            _cloudResourceCreateService = cloudResourceCreateService;        
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
+        }
+
+        public async Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
+        {
+            var studyForCreation = await _studyModelService.GetByIdWithoutPermissionCheckAsync(study.Id, true, false);
+            var resourceGroupForDatasets = GetResourceGroupForStudySpecificDataset(studyForCreation);
+
+            var parentQueueItem = QueueItemFactory.CreateParent("Create resource group for Study specific datasets");
+
+            if (resourceGroupForDatasets == null)
+            {
+                var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(studyForCreation.Name);
+                var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, studyForCreation);
+                resourceGroupForDatasets = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(studyForCreation.Id, resourceGroupName, "norwayeast", tags);
+                ProvisioningQueueUtil.CreateChildAndAdd(parentQueueItem, resourceGroupForDatasets);
+            }
+            else
+            {
+                throw new Exception("Resource group allready exists");
+            }
+
+            await ScheduleResourceGroupRoleAssignments(studyForCreation, resourceGroupForDatasets, parentQueueItem);
+
+            await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
         }
 
         public async Task CreateResourcesForStudySpecificDatasetAsync(Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
@@ -58,29 +79,11 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
             var parentQueueItem = QueueItemFactory.CreateParent("Create resources for Study Specific Dataset");
-
-            var resourceGroupDb = await EnsureResourceGroupForStudySpecificDatasetExistsAsync(dataset, parentQueueItem, cancellationToken);
+            var resourceGroupDb = GetResourceGroupForStudySpecificDataset(dataset.Study);     
             await OrderCreationOfStudySpecificDatasetStorageAccount(dataset, resourceGroupDb, clientIp, parentQueueItem, cancellationToken);
 
             await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
-        }
-
-        async Task<CloudResource> EnsureResourceGroupForStudySpecificDatasetExistsAsync(Dataset dataset, ProvisioningQueueParentDto queueParent, CancellationToken cancellationToken)
-        {
-            var datasetResourceGroupEntry = GetResourceGroupForStudySpecificDataset(dataset.Study);
-
-            if (datasetResourceGroupEntry == null)
-            {
-                var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(dataset.Study.Name);
-                var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, dataset.Study);
-                datasetResourceGroupEntry = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(dataset.Study.Id, resourceGroupName, dataset.Location, tags);
-            }
-
-            ProvisioningQueueUtil.CreateChildAndAdd(queueParent, datasetResourceGroupEntry);
-            await ScheduleResourceGroupRoleAssignments(dataset, datasetResourceGroupEntry, queueParent);
-
-            return datasetResourceGroupEntry;
-        }
+        }      
 
         CloudResource GetResourceGroupForStudySpecificDataset(Study study, bool includeDeleted = false)
         {
@@ -106,9 +109,9 @@ namespace Sepes.Infrastructure.Service
             return null;
         }
 
-        async Task ScheduleResourceGroupRoleAssignments(Dataset dataset, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)
+        async Task ScheduleResourceGroupRoleAssignments(Study study, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)
         {
-            var participants = await _db.StudyParticipants.Include(sp => sp.User).Where(p => p.StudyId == dataset.StudyId.Value).ToListAsync();
+            var participants = await _db.StudyParticipants.Include(sp => sp.User).Where(p => p.StudyId == study.Id).ToListAsync();
             var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(participants);
             var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
 
@@ -129,12 +132,12 @@ namespace Sepes.Infrastructure.Service
 
                 var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, dataset.Study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
-
+                               
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp);
+                await DatasetUtils.SetDatasetFirewallRules(_config, currentUser, dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
@@ -144,6 +147,11 @@ namespace Sepes.Infrastructure.Service
                 var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_FIREWALL_RULES, dependsOn: createStorageAccountOperation.Id, desiredState: stateForFirewallOperation);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, firewallUpdateOperation);
+
+                var stateForCorsRules = DatasetUtils.CreateDatasetCorsRules(_config);
+                var corsUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_CORS_RULES, dependsOn: firewallUpdateOperation.Id, desiredState: stateForCorsRules);
+
+                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, corsUpdateOperation);
             }
             catch (Exception ex)
             {
@@ -155,7 +163,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverRule = await DatasetUtils.CreateServerRuleAsync(currentUser);
+            var serverRule = await DatasetUtils.CreateServerRuleAsync(_config, currentUser);
 
             bool serverRuleAllreadyExist = false;
 
@@ -249,6 +257,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Failed to delete resources for study specific dataset", ex);
             }
-        }
+        }       
     }
 }

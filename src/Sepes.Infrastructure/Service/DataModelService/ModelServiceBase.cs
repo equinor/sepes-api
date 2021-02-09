@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
@@ -35,7 +34,7 @@ namespace Sepes.Infrastructure.Service
            return ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.DB_READ_WRITE_CONNECTION_STRING);
         }
 
-        public async Task<int> Add(TModel entity)
+        public async Task<TModel> AddAsync(TModel entity)
         {
             Validate(entity);
 
@@ -43,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             dbSet.Add(entity);
             await _db.SaveChangesAsync();
-            return entity.Id;
+            return entity;
         }
 
         public async Task Remove(TModel entity)
@@ -57,7 +56,7 @@ namespace Sepes.Infrastructure.Service
         public bool Validate(TModel entity)
         {
             var validationErrors = new List<ValidationResult>();
-            var context = new System.ComponentModel.DataAnnotations.ValidationContext(entity, null, null);
+            var context = new ValidationContext(entity, null, null);
             var isValid = Validator.TryValidateObject(entity, context, validationErrors);
 
             if (!isValid)

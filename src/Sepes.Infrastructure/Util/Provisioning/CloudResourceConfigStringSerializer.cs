@@ -29,6 +29,11 @@ namespace Sepes.Infrastructure.Util
             return DeserializeInternal<List<FirewallRule>>(settingAsString);
         }
 
+        public static List<CorsRule> DesiredCorsRules(string settingAsString)
+        {
+            return DeserializeInternal<List<CorsRule>>(settingAsString);
+        }
+
         public static string Serialize(object obj)
         {
             return JsonConvert.SerializeObject(obj);

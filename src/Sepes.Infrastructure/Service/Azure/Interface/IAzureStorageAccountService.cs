@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    public interface IAzureStorageAccountService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning, IHasNetworkRules
+    public interface IAzureStorageAccountService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning, IHasNetworkRules, IHasCorsRules
     {
         Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default);
 

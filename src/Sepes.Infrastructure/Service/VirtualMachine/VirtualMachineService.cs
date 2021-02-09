@@ -8,7 +8,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Azure.Interface;
