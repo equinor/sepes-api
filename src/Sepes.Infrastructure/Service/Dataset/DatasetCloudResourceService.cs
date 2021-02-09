@@ -137,7 +137,7 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp);
+                await DatasetUtils.SetDatasetFirewallRules(_config, currentUser, dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverRule = await DatasetUtils.CreateServerRuleAsync(currentUser);
+            var serverRule = await DatasetUtils.CreateServerRuleAsync(_config, currentUser);
 
             bool serverRuleAllreadyExist = false;
 

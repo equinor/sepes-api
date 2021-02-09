@@ -12,9 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
@@ -22,13 +22,13 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Sepes.Infrastructure.Util;
 
 namespace Sepes.RestApi
 {

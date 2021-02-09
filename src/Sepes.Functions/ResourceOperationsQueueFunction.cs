@@ -2,8 +2,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 

@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Configuration
+﻿namespace Sepes.Infrastructure.Constants
 {
     public static class ConfigConstants
     {
@@ -42,5 +42,7 @@
         public const string DISABLE_MONITORING = "DisableMonitoring";
 
         public const string EMPLOYEE_ROLE = "EmployeeRole";
+
+        public const string SERVER_PUBLIC_IP_URLS = "GetServerPublicIpServiceUrls";
     }
 }

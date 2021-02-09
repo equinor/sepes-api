@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using System;
@@ -69,7 +68,7 @@ namespace Sepes.Infrastructure.Util
 
      
 
-            public static async Task SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp)
+            public static async Task SetDatasetFirewallRules(IConfiguration config, UserDto user, Dataset dataset, string clientIp)
         {
             //add state
             dataset.FirewallRules = new List<DatasetFirewallRule>();
@@ -83,7 +82,7 @@ namespace Sepes.Infrastructure.Util
 
             //Add application IP, so that it can upload/download files 
 
-            dataset.FirewallRules.Add(await CreateServerRuleAsync(user));
+            dataset.FirewallRules.Add(await CreateServerRuleAsync(config, user));
         }
 
         static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
@@ -91,9 +90,9 @@ namespace Sepes.Infrastructure.Util
             return CreateRule(user, DatasetFirewallRuleType.Client, clientIp);
         }
 
-        public async static Task<DatasetFirewallRule> CreateServerRuleAsync(UserDto user)
+        public async static Task<DatasetFirewallRule> CreateServerRuleAsync(IConfiguration config, UserDto user)
         {
-            var serverPublicIp = await IpAddressUtil.GetServerPublicIp();
+            var serverPublicIp = await IpAddressUtil.GetServerPublicIp(config);
             return CreateRule(user, DatasetFirewallRuleType.Api, serverPublicIp);
         }
 

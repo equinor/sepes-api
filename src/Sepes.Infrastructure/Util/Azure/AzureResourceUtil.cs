@@ -1,8 +1,8 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Dto.Configuration;
 using System;
 using System.Text;
 

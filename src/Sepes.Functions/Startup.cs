@@ -16,6 +16,7 @@ using Sepes.Infrastructure.Service.Interface;
 using System;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Sepes.Infrastructure.Constants;
 
 [assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
 
