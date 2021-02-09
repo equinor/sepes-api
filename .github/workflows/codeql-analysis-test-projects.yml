@@ -18,6 +18,8 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    env:
+      config: 'Debug'
 
     strategy:
       fail-fast: false
