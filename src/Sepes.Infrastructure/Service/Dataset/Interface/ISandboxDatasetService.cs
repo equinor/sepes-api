@@ -8,9 +8,9 @@ namespace Sepes.Infrastructure.Service.Interface
     {       
         Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId);
 
-        Task<IEnumerable<AvailableDatasetDto>> AllAvailable(int sandboxId);
+        Task<AvailableDatasetResponseDto> AllAvailable(int sandboxId);
 
-        Task Add(int sandboxId, int datasetId);
-        Task Remove(int sandboxId, int datasetId);
+        Task<AvailableDatasetResponseDto> Add(int sandboxId, int datasetId);
+        Task<AvailableDatasetResponseDto> Remove(int sandboxId, int datasetId);
     }
 }

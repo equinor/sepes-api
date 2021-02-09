@@ -55,10 +55,13 @@ namespace Sepes.Infrastructure.Service
                     AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
                 });
 
-            var result = new AvailableDatasetResponseDto(availableDatasets);            
+            var result = new AvailableDatasetResponseDto(availableDatasets);
+            DatasetClassificationUtils.SetRestrictionProperties(result);
+
+            return result;
         }
 
-        public async Task Add(int sandboxId, int datasetId)
+        public async Task<AvailableDatasetResponseDto> Add(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -88,9 +91,11 @@ namespace Sepes.Infrastructure.Service
             var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
             await _db.SandboxDatasets.AddAsync(sandboxDataset);
             await _db.SaveChangesAsync();
+
+            return await AllAvailable(sandboxId);
         }
 
-        public async Task Remove(int sandboxId, int datasetId)
+        public async Task<AvailableDatasetResponseDto> Remove(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -108,6 +113,8 @@ namespace Sepes.Infrastructure.Service
                 _db.SandboxDatasets.Remove(sandboxDatasetRelation);
                 await _db.SaveChangesAsync();
             }
+
+            return await AllAvailable(sandboxId);
         }
 
         async Task ValidateAddOrRemoveDataset(int sandboxId)

@@ -4,14 +4,14 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class AvailableDatasetResponseDto
     {
+        public string Classification { get; set; }
+        public string RestrictionDisplayText { get; set; }
+        public IEnumerable<AvailableDatasetDto> AvailableDatasets { get; set; }
+
         public AvailableDatasetResponseDto(IEnumerable<AvailableDatasetDto> availableDatasets)
         {
             AvailableDatasets = availableDatasets;
         }
-
-        public string Classification { get; set; }
-        public string RestrictionDisplayText { get; set; }
-        public IEnumerable<AvailableDatasetDto> AvailableDatasets { get; set; } 
     }
 
     public class AvailableDatasetDto

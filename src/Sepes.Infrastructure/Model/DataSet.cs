@@ -64,5 +64,5 @@ namespace Sepes.Infrastructure.Model
         public Study Study { get; set; }
 
         public List<CloudResource> Resources { get; set; }
-    }
+    }   
 }
