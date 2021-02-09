@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
          
         } 
 
-        public async Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
+        public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyDto updatedStudy)
         {
             GenericNameValidation.ValidateName(updatedStudy.Name);
 

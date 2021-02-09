@@ -21,7 +21,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             : base(configuration, db, logger, userService)
         {           
            
-        }
+        }      
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync()
         {
@@ -62,5 +62,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             return await StudySingularQueries.GetStudyByIdNoAccessCheck(_db, studyId, withIncludes, disableTracking);
         }
+
+       
     }
 }

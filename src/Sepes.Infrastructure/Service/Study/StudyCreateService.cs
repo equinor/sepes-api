@@ -14,15 +14,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class StudyCreateService : StudyServiceBase, IStudyCreateService
     {
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-
-        public StudyCreateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger,
+        public StudyCreateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
             IStudyLogoService studyLogoService,
@@ -33,27 +31,28 @@ namespace Sepes.Infrastructure.Service
         }      
 
         public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, CancellationToken cancellation = default)
-        {
-            GenericNameValidation.ValidateName(newStudyDto.Name);
+        {           
             StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
+            GenericNameValidation.ValidateName(newStudyDto.Name);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
             var currentUser = await _userService.GetCurrentUserAsync();
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
 
-            var newStudyId = await Add(studyDb);
+            studyDb = await _studyModelService.AddAsync(studyDb);
                      
             await _datasetCloudResourceService.CreateResourceGroupForStudySpecificDatasetsAsync(studyDb, cancellation);
 
-            return await GetStudyDetailsDtoByIdAsync(newStudyId, UserOperation.Study_Create);
-        } 
-        
+            return await GetStudyDetailsDtoByIdAsync(studyDb.Id, UserOperation.Study_Create);
+        }        
 
         void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
         {
-            study.StudyParticipants = new List<StudyParticipant>();
-            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
+            study.StudyParticipants = new List<StudyParticipant>
+            {
+                new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName }
+            };
         }
     }
 }

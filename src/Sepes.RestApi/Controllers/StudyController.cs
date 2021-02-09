@@ -73,7 +73,7 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
         {
-            var updatedStudy = await _studyUpdateService.UpdateStudyMetadataAsync(studyId, study);
+            var updatedStudy = await _studyUpdateService.UpdateMetadataAsync(studyId, study);
             return new JsonResult(updatedStudy);
         }
 
