@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using System.IO;
 

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.AspNetCore.Authentication
+﻿namespace Sepes.Infrastructure.Dto.Configuration
 {
     public class AzureAdOptions
     {

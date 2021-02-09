@@ -8,5 +8,6 @@
 
         public const string ENSURE_ROLES = "ensuredesiredroles";
         public const string ENSURE_FIREWALL_RULES = "ensurefirewallrules";
+        public const string ENSURE_CORS_RULES = "ensurecorsrules";
     }
 }
