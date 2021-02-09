@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Service
             return datasetDtos;
         }
 
-        public async Task<IEnumerable<AvailableDatasetDto>> AllAvailable(int sandboxId)
+        public async Task<AvailableDatasetResponseDto> AllAvailable(int sandboxId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read, true);
 
@@ -53,9 +53,9 @@ namespace Sepes.Infrastructure.Service
                     Name = sd.Dataset.Name,
                     Classification = sd.Dataset.Classification,
                     AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
-                });        
+                });
 
-            return availableDatasets;
+            var result = new AvailableDatasetResponseDto(availableDatasets);            
         }
 
         public async Task Add(int sandboxId, int datasetId)
