@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,6 +17,7 @@ namespace Sepes.RestApi.Controller
     public class DatasetFileController : ControllerBase
     {
         readonly IDatasetFileService _datasetFileService;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
 
         public DatasetFileController(IDatasetFileService datasetFileService)
         {
@@ -39,15 +41,23 @@ namespace Sepes.RestApi.Controller
         [HttpGet("files")]
         public async Task<IActionResult> GetFileList(int datasetId, CancellationToken cancellationToken = default)
         {
-            var files = await _datasetFileService.GetFileList(datasetId, cancellationToken);
+            var files = await _datasetFileService.GetFileListAsync(datasetId, cancellationToken);
             return new JsonResult(files);
         }
 
         [HttpDelete("files/fileName")]
         public async Task<IActionResult> DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
         {
-            await _datasetFileService.DeleteFile(datasetId, fileName, cancellationToken);
+            await _datasetFileService.DeleteFileAsync(datasetId, fileName, cancellationToken);
             return new NoContentResult();
+        }
+        
+
+        [HttpGet("saskey")]
+        public async Task<IActionResult> GetFileUploadSasToken(int datasetId, CancellationToken cancellationToken = default)
+        {
+            var sasToken = await _datasetFileService.GetFileUploadUriBuilderWithSasTokenAsync(datasetId);         
+            return new JsonResult(sasToken);
         }
     }
 }

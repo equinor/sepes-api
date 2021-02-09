@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Model.Factory
         }
 
         public static CloudResource CreateStudySpecificDatasetStorageAccountEntry(UserDto currentUser, string sessionId, int datasetId,
-         string region, int resourceGroupId, string resourceGroupName, string resourceName, Dictionary<string, string> tags
+         string region, int resourceGroupId, string resourceGroupName, string resourceName, Dictionary<string, string> tags, int dependsOnId
           )
         {
             var resourceType = AzureResourceType.StorageAccount;
@@ -37,8 +37,8 @@ namespace Sepes.Infrastructure.Model.Factory
 
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetStorageAccount;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE);
-            SetOperationProperties(newResource, createOperationDescription);
+            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE);           
+            SetOperationProperties(newResource, createOperationDescription, operationDependsOn: dependsOnId);
 
             return newResource;
         }

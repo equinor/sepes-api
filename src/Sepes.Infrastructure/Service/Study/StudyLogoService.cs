@@ -5,7 +5,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -25,24 +25,30 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
         readonly IUserService _userService;
-        readonly IAzureBlobStorageService _blobService;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly IAzureStorageAccountTokenService _azureStorageAccountTokenService;
 
-        public StudyLogoService(ILogger<StudyLogoService> logger, SepesDbContext db, IMapper mapper, IUserService userService, IAzureBlobStorageService blobService)
+        public StudyLogoService(ILogger<StudyLogoService> logger, SepesDbContext db, IMapper mapper,
+            IUserService userService,
+            IAzureBlobStorageService blobService,
+            IAzureStorageAccountTokenService azureStorageAccountTokenService)
         {
             _logger = logger;
             _db = db;
             _mapper = mapper;
             _userService = userService;
-            _blobService = blobService;
+            _azureBlobStorageService = blobService;
+            _azureStorageAccountTokenService = azureStorageAccountTokenService;
 
-            _blobService.SetConfigugrationKeyForConnectionString(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
+            _azureBlobStorageService.SetConnectionParameters(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
+            _azureStorageAccountTokenService.SetConnectionParameters(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
         }
 
         public async Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo)
         {
             try
             {
-                var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
+                var uriBuilder = await _azureStorageAccountTokenService.CreateFileDownloadUriBuilder(_containerName);
 
                 if (uriBuilder == null)
                 {
@@ -63,7 +69,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var uriBuilder = await _blobService.CreateUriBuilderWithSasToken(_containerName);
+                var uriBuilder = await _azureStorageAccountTokenService.CreateFileDownloadUriBuilder(_containerName);
 
                 if (uriBuilder == null)
                 {
@@ -107,7 +113,7 @@ namespace Sepes.Infrastructure.Service
 
             string uniqueFileName = Guid.NewGuid().ToString("N") + studyLogo.FileName;
 
-            await _blobService.UploadFileToBlobContainer(_containerName, uniqueFileName, studyLogo);
+            await _azureBlobStorageService.UploadFileToBlobContainer(_containerName, uniqueFileName, studyLogo);
 
             string oldFileName = studyFromDb.LogoUrl;
 
@@ -117,48 +123,17 @@ namespace Sepes.Infrastructure.Service
 
             if (!String.IsNullOrWhiteSpace(oldFileName))
             {
-                _ = await _blobService.DeleteFileFromBlobContainer(_containerName, oldFileName);
+                _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, oldFileName);
             }
 
             return _mapper.Map<StudyDetailsDto>(studyFromDb);
-        }
-
-        //public async Task<byte[]> GetImageFromBlobAsync(string logoUrl)
-        //{
-        //    BlobContainerClient blobContainerClient;
-
-        //    if (CreateBlobContainerClient(out blobContainerClient))
-        //    {
-        //        var blockBlobClient = blobContainerClient.GetBlockBlobClient(logoUrl);
-        //        var memStream = new MemoryStream();
-        //        await blockBlobClient.DownloadToAsync(memStream);
-        //        return memStream.ToArray();
-        //    }
-
-        //    throw new Exception("File upload failed. Unable to crate connection to file storage");
-        //}
-
-        //public async Task<LogoResponseDto> GetLogoAsync(int studyId)
-        //{
-        //    try
-        //    {
-        //        var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read, false);
-        //        var response = new LogoResponseDto() { LogoUrl = studyFromDb.LogoUrl, LogoBytes = await _blobService.Do(studyFromDb.LogoUrl) };
-
-        //        return response;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, $"Unable to get logo for Study {studyId}");
-        //        return null;
-        //    }
-        //}
+        }       
 
         public async Task DeleteAsync(Study study)
         {
             if (!String.IsNullOrWhiteSpace(study.LogoUrl))
             {
-                _ = await _blobService.DeleteFileFromBlobContainer(_containerName, study.LogoUrl);
+                _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, study.LogoUrl);
             }
         }
 

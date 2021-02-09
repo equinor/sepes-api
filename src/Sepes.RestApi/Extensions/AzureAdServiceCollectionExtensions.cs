@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Sepes.Infrastructure.Dto.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
