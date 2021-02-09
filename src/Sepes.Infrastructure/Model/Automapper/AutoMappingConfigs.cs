@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Util;
 using System.Linq;
 
@@ -81,9 +82,9 @@ namespace Sepes.Infrastructure.Model.Automapper
                   .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
 
 
-            CreateMap<Sandbox, SandboxListItemDto>();
+            CreateMap<Sandbox, SandboxListItem>();
 
-            CreateMap<Sandbox, SandboxDetailsDto>()
+            CreateMap<Sandbox, SandboxDetails>()
          .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
          .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
@@ -92,7 +93,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxCreateDto, Sandbox>();
 
-            CreateMap<CloudResource, SandboxResourceLightDto>()
+            CreateMap<CloudResource, SandboxResourceLight>()
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))

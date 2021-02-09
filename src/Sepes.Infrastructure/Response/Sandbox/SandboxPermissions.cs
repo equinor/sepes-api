@@ -1,6 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto.Sandbox
+﻿namespace Sepes.Infrastructure.Response.Sandbox
 {
-    public class SandboxPermissionsDto
+    public class SandboxPermissions
     {
         public bool Update { get; set; }
 

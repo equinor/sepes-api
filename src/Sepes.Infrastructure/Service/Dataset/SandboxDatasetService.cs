@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -41,13 +42,13 @@ namespace Sepes.Infrastructure.Service
             return datasetDtos;
         }
 
-        public async Task<AvailableDatasetResponseDto> AllAvailable(int sandboxId)
+        public async Task<AvailableDatasets> AllAvailable(int sandboxId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read, true);
 
             var availableDatasets = studyFromDb
                 .StudyDatasets
-                .Select(sd => new AvailableDatasetDto()
+                .Select(sd => new AvailableDatasetItem()
                 {
                     DatasetId = sd.DatasetId,
                     Name = sd.Dataset.Name,
@@ -55,13 +56,13 @@ namespace Sepes.Infrastructure.Service
                     AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
                 });
 
-            var result = new AvailableDatasetResponseDto(availableDatasets);
+            var result = new AvailableDatasets(availableDatasets);
             DatasetClassificationUtils.SetRestrictionProperties(result);
 
             return result;
         }
 
-        public async Task<AvailableDatasetResponseDto> Add(int sandboxId, int datasetId)
+        public async Task<AvailableDatasets> Add(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -95,7 +96,7 @@ namespace Sepes.Infrastructure.Service
             return await AllAvailable(sandboxId);
         }
 
-        public async Task<AvailableDatasetResponseDto> Remove(int sandboxId, int datasetId)
+        public async Task<AvailableDatasets> Remove(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 

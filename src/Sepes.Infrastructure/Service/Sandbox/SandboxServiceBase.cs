@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -34,12 +35,14 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        protected async Task<SandboxDetailsDto> GetSandboxDetailsInternalAsync(int sandboxId)
+        protected async Task<SandboxDetails> GetSandboxDetailsInternalAsync(int sandboxId)
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
-            var sandboxDto = _mapper.Map<SandboxDetailsDto>(sandboxFromDb);
+            var sandboxDto = _mapper.Map<SandboxDetails>(sandboxFromDb);
 
             await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDto.Permissions, sandboxDto.CurrentPhase);
+
+            DatasetClassificationUtils.SetRestrictionProperties(sandboxDto);           
 
             return sandboxDto;
         }

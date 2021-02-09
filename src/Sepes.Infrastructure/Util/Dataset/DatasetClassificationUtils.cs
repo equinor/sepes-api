@@ -1,6 +1,8 @@
 ﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Dto.Interfaces;
+using Sepes.Infrastructure.Response.Sandbox;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Util
@@ -11,7 +13,6 @@ namespace Sepes.Infrastructure.Util
         {
             return Enum.Parse<DatasetClassification>(classification);           
         }
-
         public static string GetRestrictionText(DatasetClassification classification)
         {
             return classification switch
@@ -22,29 +23,36 @@ namespace Sepes.Infrastructure.Util
                 _ => throw new Exception($"Could not resolve restriction text for classification code: {classification}"),
             };
         }
-
-        public static void SetRestrictionProperties(AvailableDatasetResponseDto dto)
+       public static DatasetClassification GetLowestClassification(List<IHasDataClassification> items)
         {
-            if(dto.AvailableDatasets.Count() > 0)
+            var lowestClassification = DatasetClassification.Open;
+
+            foreach (var cur in items)
             {
-                var lowestClassification = DatasetClassification.Open;
+                var classificationCode = GetClassificationCode(cur.Classification);
 
-                foreach (var cur in dto.AvailableDatasets)
+                if (classificationCode > lowestClassification)
                 {
-                    if (cur.AddedToSandbox)
-                    {
-                        var classificationCode = GetClassificationCode(cur.Classification);
-
-                        if(classificationCode > lowestClassification)
-                        {
-                            lowestClassification = classificationCode;
-                        }
-                    }
+                    lowestClassification = classificationCode;
                 }
+            }
 
-                dto.Classification = lowestClassification.ToString();
-                dto.RestrictionDisplayText = GetRestrictionText(lowestClassification);
-            }           
+            return lowestClassification;
+        }
+
+        public static void SetRestrictionProperties(AvailableDatasets dto)
+        {
+            var addedDatasets = dto.Datasets.Where(ds => ds.AddedToSandbox).ToList<IHasDataClassification>();
+            var lowestClassification = GetLowestClassification(addedDatasets);
+            dto.Classification = lowestClassification.ToString();
+            dto.RestrictionDisplayText = GetRestrictionText(lowestClassification);
+        }
+
+        public static void SetRestrictionProperties(SandboxDetails sandboxDetails)
+        {
+            var addedDatasets = sandboxDetails.Datasets.ToList<IHasDataClassification>();
+            var lowestClassification = GetLowestClassification(addedDatasets);          
+            sandboxDetails.RestrictionDisplayText = GetRestrictionText(lowestClassification);
         }
     }
 

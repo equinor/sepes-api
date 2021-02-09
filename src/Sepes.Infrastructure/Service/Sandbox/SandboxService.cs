@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -36,7 +37,7 @@ namespace Sepes.Infrastructure.Service
             return await GetDtoAsync(sandboxId, userOperation);
         }
 
-        public async Task<SandboxDetailsDto> GetSandboxDetailsAsync(int sandboxId)
+        public async Task<SandboxDetails> GetSandboxDetailsAsync(int sandboxId)
         {
             return await GetSandboxDetailsInternalAsync(sandboxId);
         }
@@ -51,7 +52,7 @@ namespace Sepes.Infrastructure.Service
             return sandboxDTOs;
         }      
 
-        public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
+        public async Task<SandboxDetails> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
             _logger.LogInformation(SepesEventId.SandboxCreate, "Sandbox {0}: Starting", studyId);
 

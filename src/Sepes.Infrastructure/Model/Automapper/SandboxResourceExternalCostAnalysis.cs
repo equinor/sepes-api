@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class SandboxResourceExternalCostAnalysis : IValueResolver<Sandbox, SandboxDetailsDto, string>
+    public class SandboxResourceExternalCostAnalysis : IValueResolver<Sandbox, SandboxDetails, string>
     {
         public readonly IConfiguration _config;
         public SandboxResourceExternalCostAnalysis(IConfiguration config)
@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             this._config = config;
         }
 
-        public string Resolve(Sandbox source, SandboxDetailsDto destination, string destMember, ResolutionContext context)
+        public string Resolve(Sandbox source, SandboxDetails destination, string destMember, ResolutionContext context)
         {
             return AzureResourceUtil.CreateResourceCostLink(_config, source);
         }
