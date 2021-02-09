@@ -2,7 +2,6 @@
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
 using System.Threading.Tasks;
@@ -11,26 +10,17 @@ using Xunit;
 namespace Sepes.RestApi.IntegrationTests
 {
     [Collection("Integration tests collection")]
-    public class StudyAndSandboxTest : IAsyncLifetime
+    public class StudyAndSandboxTest : ControllerTestBase
     {
         private const string _studiesEndpoint = "api/studies";
         private const string _sandboxEndpoint = "api/studies/{0}/sandboxes";
-        private const string _vmEndpoint = "api/virtualmachines/{0}";
-
-        private readonly TestHostFixture _testHostFixture;
-        private RestHelper _restHelper;
+        private const string _vmEndpoint = "api/virtualmachines/{0}";      
 
         public StudyAndSandboxTest(TestHostFixture testHostFixture)
-        {
-            _testHostFixture = testHostFixture;
-            _restHelper = new RestHelper(testHostFixture.Client);
-        }
-
-        void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
-        {
-            _testHostFixture.SetUserType(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
-            _restHelper = new RestHelper(_testHostFixture.Client);
-        }
+            :base (testHostFixture)
+        {            
+          
+        }       
 
         [Theory]
         [InlineData(true, false)]
@@ -38,6 +28,8 @@ namespace Sepes.RestApi.IntegrationTests
         [InlineData(true, true)]
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
+            await WithBasicSeeds();
+
             SetUserType(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
             var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode = "wbs" };
@@ -73,13 +65,9 @@ namespace Sepes.RestApi.IntegrationTests
 
             var vmDto = vmResponseWrapper.Response;
             Assert.NotEqual<int>(0, vmDto.Id);
-            Assert.Equal(vmCreateDto.Name, vmDto.Name);
+            Assert.Contains(vmCreateDto.Name, vmDto.Name);
             Assert.Equal(vmCreateDto.OperatingSystem, vmDto.OperatingSystem);
             Assert.Equal(sandboxDto.Region, vmDto.Region);//Same region as sandbox
-        }
-
-        public Task InitializeAsync() => SliceFixture.ResetCheckpoint();
-
-        public Task DisposeAsync() => Task.CompletedTask;
+        } 
     }
 }

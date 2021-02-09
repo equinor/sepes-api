@@ -165,31 +165,5 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
                 return db.SaveChangesAsync();
             });
         }
-
-        //public static Task<T> FindAsync<T>(int id)
-        //    where T : class, IEntity
-        //{
-        //    return ExecuteDbContextAsync(db => db.Set<T>().FindAsync(id));
-        //}
-
-        public static Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
-            });
-        }
-
-        public static Task SendAsync(IRequest request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
-            });
-        }
     }
 }
