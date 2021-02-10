@@ -56,11 +56,21 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
+                var remoteIpAddress = context.Connection.RemoteIpAddress;
+                var localIpAddress = context.Connection.LocalIpAddress;
+
                 return new Dictionary<string, string>()
                 {
                     { "Server public ip from 3rd party", await IpAddressUtil.GetServerPublicIp(_config) },
-                    { "context.Connection.RemoteIpAddress", context.Connection.RemoteIpAddress.ToString() },
-                    { "context.Connection.LocalIpAddress", context.Connection.LocalIpAddress.ToString() }
+                    { "context.Connection.RemoteIpAddress", remoteIpAddress.ToString() },
+                    { "context.Connection.RemoteIpAddress MapToIPv4", remoteIpAddress.MapToIPv4().ToString() },
+                    { "context.Connection.RemoteIpAddress MapToIPv6", remoteIpAddress.MapToIPv6().ToString() },
+                    { "context.Connection.RemoteIpAddress AddressFamily", remoteIpAddress.AddressFamily.ToString() },
+
+                    { "context.Connection.LocalIpAddress", localIpAddress.ToString() },
+                    { "context.Connection.LocalIpAddress MapToIPv4", localIpAddress.MapToIPv4().ToString() },
+                    { "context.Connection.LocalIpAddress MapToIPv6", localIpAddress.MapToIPv6().ToString() },
+                    { "context.Connection.LocalIpAddress AddressFamily", localIpAddress.AddressFamily.ToString() },
 
                 };
             }
