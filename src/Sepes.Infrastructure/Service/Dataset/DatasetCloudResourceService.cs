@@ -137,7 +137,7 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetFirewallUtils.SetDatasetFirewallRules(_config, currentUser, dataset, clientIp);
+                await DatasetFirewallUtils.SetDatasetFirewallRules(_config, _logger, currentUser, dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
