@@ -65,10 +65,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             Assert.Equal(studyCreateDto.Name,  studyDto.Name);
             Assert.Equal(studyCreateDto.Vendor, studyDto.Vendor);
             Assert.Equal(studyCreateDto.WbsCode, studyDto.WbsCode);
-        }
-
-        public Task InitializeAsync() => SliceFixture.ResetCheckpoint();
-
-        public Task DisposeAsync() => Task.CompletedTask;
+        }       
     }
 }
