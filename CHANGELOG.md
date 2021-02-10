@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.6](https://github.com/equinor/sepes-api/compare/0.4.5...0.4.6) (2021-02-10)
+
+
+### Bug Fixes
+
+* add endpoint for getting sas key ([#541](https://github.com/equinor/sepes-api/issues/541)) ([10b9103](https://github.com/equinor/sepes-api/commit/10b9103f890809dda82ee36bb35676e1609d67c7))
+* **studies:** external users not  seeing all studies in list anymore ([#537](https://github.com/equinor/sepes-api/issues/537)) ([3bd15bd](https://github.com/equinor/sepes-api/commit/3bd15bd09f60173aecaf9f2b0b41ca63992f207e))
+
 ### [0.4.5](https://github.com/equinor/sepes-api/compare/0.4.4...0.4.5) (2021-02-03)
 
 ### [0.4.4](https://github.com/equinor/sepes-api/compare/0.4.3...0.4.4) (2021-02-03)
