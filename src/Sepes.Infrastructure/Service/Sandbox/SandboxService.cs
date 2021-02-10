@@ -58,9 +58,7 @@ namespace Sepes.Infrastructure.Service
 
             Sandbox createdSandbox = null;
 
-            GenericNameValidation.ValidateName(sandboxCreateDto.Name);
-
-            await ThrowIfSandboxNameAllreadyTaken(sandboxCreateDto.Name);
+            GenericNameValidation.ValidateName(sandboxCreateDto.Name);          
 
             if (String.IsNullOrWhiteSpace(sandboxCreateDto.Region))
             {
@@ -150,15 +148,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Sandbox creation failed: {ex.Message}", ex);
             }
-        }
-
-        async Task ThrowIfSandboxNameAllreadyTaken(string sandboxName)
-        {
-            if (await SandboxWithNameAllreadyExists(sandboxName))
-            {
-                throw new ArgumentException($"Sandbox with name {sandboxName} allready exists");
-            }
-        }
+        }     
 
         public async Task DeleteAsync(int sandboxId)
         {
