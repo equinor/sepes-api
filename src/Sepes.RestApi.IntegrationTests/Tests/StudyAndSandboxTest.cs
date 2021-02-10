@@ -1,6 +1,7 @@
 ﻿using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
@@ -54,7 +55,7 @@ namespace Sepes.RestApi.IntegrationTests
 
             //CREATE SANDBOX
             var sandboxCreateDto = new SandboxCreateDto() { Name = "sandboxName", Region = "norwayeast" };
-            var sandboxResponseWrapper = await _restHelper.Post<SandboxDetailsDto, SandboxCreateDto>(String.Format(_sandboxEndpoint, studyDto.Id), sandboxCreateDto);
+            var sandboxResponseWrapper = await _restHelper.Post<SandboxDetails, SandboxCreateDto>(String.Format(_sandboxEndpoint, studyDto.Id), sandboxCreateDto);
             Assert.Equal(System.Net.HttpStatusCode.OK, sandboxResponseWrapper.StatusCode);
             Assert.NotNull(sandboxResponseWrapper.Response);
 

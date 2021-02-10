@@ -41,15 +41,15 @@ namespace Sepes.RestApi.Controller
         [HttpPut("{sandboxId}/datasets/{datasetId}")]
         public async Task<IActionResult> AddDataSetAsync(int sandboxId, int datasetId)
         {
-            await _service.Add(sandboxId, datasetId);
-            return new NoContentResult();
+            var datasets = await _service.Add(sandboxId, datasetId);
+            return new JsonResult(datasets);
         }
 
         [HttpDelete("{sandboxId}/datasets/{datasetId}")]
         public async Task<IActionResult> RemoveDataSetAsync(int sandboxId, int datasetId)
         {
-            await _service.Remove(sandboxId, datasetId);
-            return new NoContentResult();
+            var datasets = await _service.Remove(sandboxId, datasetId);
+            return new JsonResult(datasets);
         } 
     }
 }

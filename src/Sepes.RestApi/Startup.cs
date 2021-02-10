@@ -135,6 +135,7 @@ namespace Sepes.RestApi
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+            services.AddScoped<IHealthService, HealthService>();
 
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
@@ -343,8 +344,8 @@ namespace Sepes.RestApi
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_SECRET]);
+                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
+                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
                 c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
                 c.OAuthAppName("Sepes Development");
                 c.OAuthScopeSeparator(" ");

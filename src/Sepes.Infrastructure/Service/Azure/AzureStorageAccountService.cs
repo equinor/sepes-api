@@ -226,7 +226,7 @@ namespace Sepes.Infrastructure.Service
 
                 var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
 
-                var networkRuleSet = GetRuleSetReadyForUpdate(storageAccount);              
+                var networkRuleSet = await GetRuleSetReadyForUpdate(storageAccount);              
 
                 //See if the relevant rule is allready added for this network
 
@@ -255,7 +255,7 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"Could not add Storage Account {storageAccountName} to VNet {vNetName}", ex);
+                throw new Exception($"Could not add Storage Account {storageAccountName} to VNet {vNetName}: {ex.Message}", ex);
             }
         }
 
@@ -273,7 +273,7 @@ namespace Sepes.Infrastructure.Service
 
                 var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
 
-                var networkRuleSet = GetRuleSetReadyForUpdate(storageAccount);
+                var networkRuleSet = await GetRuleSetReadyForUpdate(storageAccount);
 
                 //See if the relevant rule is allready added for this network
 
@@ -325,18 +325,43 @@ namespace Sepes.Infrastructure.Service
             throw new NotImplementedException();
         }
 
-        NetworkRuleSet GetRuleSetReadyForUpdate(IStorageAccount storageAccount)
+        async Task<NetworkRuleSet> GetRuleSetReadyForUpdate(IStorageAccount storageAccount)
         {
             var networkRuleSet = storageAccount.Inner.NetworkRuleSet;
 
             if (networkRuleSet == null)
             {
                 networkRuleSet = new NetworkRuleSet();
-            }
+            }           
 
             if (networkRuleSet.VirtualNetworkRules == null)
             {
                 networkRuleSet.VirtualNetworkRules = new List<VirtualNetworkRule>();
+            }
+            else
+            {
+                var existingNetworkRules = networkRuleSet.VirtualNetworkRules.ToList();
+
+                foreach (var curExistingNetworkRule in existingNetworkRules)
+                {
+                    try
+                    {
+                        var existingVNet = await _azure.Networks.GetByIdAsync(curExistingNetworkRule.VirtualNetworkResourceId);
+
+                        if(existingVNet != null)
+                        {
+                            continue;
+                        }
+                       
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, $"Building updateable rule set. VNet {curExistingNetworkRule.VirtualNetworkResourceId} was probably deleted. Exception: {ex.Message}");
+                                              
+                    }
+
+                    networkRuleSet.VirtualNetworkRules.Remove(curExistingNetworkRule);
+                }
             }
 
             return networkRuleSet;

@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Dataset
@@ -7,6 +8,6 @@ namespace Sepes.Infrastructure.Dto.Dataset
     {
         public int? StudyId { get; set; }
 
-        public List<SandboxListItemDto> Sandboxes { get; set; }
+        public List<SandboxListItem> Sandboxes { get; set; }
     }
 }

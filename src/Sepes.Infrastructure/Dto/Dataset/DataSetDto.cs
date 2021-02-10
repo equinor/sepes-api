@@ -1,10 +1,11 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Infrastructure.Dto.Interfaces;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Dataset
 {
-    public class DatasetDto : UpdateableBaseDto
+    public class DatasetDto : UpdateableBaseDto, IHasDataClassification
     {
         public string Name { get; set; }
         public string Description { get; set; }

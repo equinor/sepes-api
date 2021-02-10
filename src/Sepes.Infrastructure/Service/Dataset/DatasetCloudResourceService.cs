@@ -137,18 +137,18 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetUtils.SetDatasetFirewallRules(_config, currentUser, dataset, clientIp);
+                await DatasetFirewallUtils.SetDatasetFirewallRules(_config, _logger, currentUser, dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
-                var stateForFirewallOperation = DatasetUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
+                var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
 
                 var createStorageAccountOperation = CloudResourceOperationUtil.GetCreateOperation(resourceEntry);
                 var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_FIREWALL_RULES, dependsOn: createStorageAccountOperation.Id, desiredState: stateForFirewallOperation);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, firewallUpdateOperation);
 
-                var stateForCorsRules = DatasetUtils.CreateDatasetCorsRules(_config);
+                var stateForCorsRules = DatasetCorsUtils.CreateDatasetCorsRules(_config);
                 var corsUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_CORS_RULES, dependsOn: firewallUpdateOperation.Id, desiredState: stateForCorsRules);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, corsUpdateOperation);
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverRule = await DatasetUtils.CreateServerRuleAsync(_config, currentUser);
+            var serverRule = await DatasetFirewallUtils.CreateServerRuleAsync(_config, currentUser);
 
             bool serverRuleAllreadyExist = false;
 
@@ -200,7 +200,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync(cancellationToken);
 
-            var stateForFirewallOperation = DatasetUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
+            var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
             var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
             var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
                 CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);

@@ -1,14 +1,11 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using System.Threading;
+﻿using Sepes.Infrastructure.Response.Sandbox;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceRetryService
-    {       
-        Task<SandboxResourceLightDto> RetryLastOperation(int resourceId);
-        Task ReScheduleSandboxResourceCreation(int sandboxId);     
-       
-     
+    {
+        Task<SandboxResourceLight> RetryLastOperation(int resourceId);
+        Task ReScheduleSandboxResourceCreation(int sandboxId);
     }   
 }
