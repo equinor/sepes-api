@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             }
             else if (operation.TryCount >= operation.MaxTryCount)
             {
-                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.FAILED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
+                throw new ProvisioningException($"Max retry count exceeded: {operation.TryCount}", newOperationStatus: CloudResourceOperationState.ABORTED, proceedWithOtherOperations: false, deleteFromQueue: true, logAsWarning: true, includeExceptionInWarningLog: false);
             }
         }
 

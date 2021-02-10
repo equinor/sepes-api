@@ -1,32 +1,40 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class ModelServiceBase<TModel> where TModel : BaseModel
     {
+        protected readonly IConfiguration _configuration;
         protected readonly SepesDbContext _db;       
         protected readonly ILogger _logger;
         protected readonly IUserService _userService;
 
-        public ModelServiceBase(SepesDbContext db, ILogger logger, IUserService userService)
+        public ModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
         {
+            _configuration = configuration;
             _db = db;        
             _logger = logger;
             _userService = userService;
         }
 
-        public async Task<int> Add(TModel entity)
+        protected string GetDbConnectionString()
+        {
+           return ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.DB_READ_WRITE_CONNECTION_STRING);
+        }
+
+        public async Task<TModel> AddAsync(TModel entity)
         {
             Validate(entity);
 
@@ -34,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             dbSet.Add(entity);
             await _db.SaveChangesAsync();
-            return entity.Id;
+            return entity;
         }
 
         public async Task Remove(TModel entity)
@@ -48,7 +56,7 @@ namespace Sepes.Infrastructure.Service
         public bool Validate(TModel entity)
         {
             var validationErrors = new List<ValidationResult>();
-            var context = new System.ComponentModel.DataAnnotations.ValidationContext(entity, null, null);
+            var context = new ValidationContext(entity, null, null);
             var isValid = Validator.TryValidateObject(entity, context, validationErrors);
 
             if (!isValid)

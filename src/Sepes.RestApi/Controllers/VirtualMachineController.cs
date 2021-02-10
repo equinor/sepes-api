@@ -23,7 +23,7 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpPost("{sandboxId}")]
-        public async Task<IActionResult> CreateAsync(int sandboxId, CreateVmUserInputDto newVm)
+        public async Task<IActionResult> CreateAsync(int sandboxId, VirtualMachineCreateDto newVm)
         {
             var createdVm = await _vmService.CreateAsync(sandboxId, newVm);
             return new JsonResult(createdVm);

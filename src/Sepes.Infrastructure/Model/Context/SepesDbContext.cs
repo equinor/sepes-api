@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 //Use the command below to create a new migration. 
 //Replace <migration name> with a good migration name and run this in Package Manager Console
@@ -43,6 +44,21 @@ namespace Sepes.Infrastructure.Model.Context
             AddPrimaryKeys(modelBuilder);
             AddDefaultValues(modelBuilder);
             AddRelationships(modelBuilder);
+            AddIndexing(modelBuilder);
+        }
+
+        private void AddIndexing(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Study>()
+                .HasIndex(s => new { s.Closed, s.Restricted} )
+                .IncludeProperties(s => new
+                {
+                    s.Id,
+                    s.Name,
+                    s.Description,
+                    s.Vendor,
+                    s.LogoUrl
+                });
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
@@ -90,7 +106,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(d => d.StudyDatasets)
                 .HasForeignKey(sd => sd.DatasetId);
 
-            
+
             modelBuilder.Entity<DatasetFirewallRule>()
                 .HasOne(fw => fw.Dataset)
                 .WithMany(ds => ds.FirewallRules)
@@ -162,7 +178,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(o => o.DependsOnOperation)
                 .WithMany(o => o.DependantOnThisOperation)
              .HasForeignKey(sd => sd.DependsOnOperationId)
-             .OnDelete(DeleteBehavior.Restrict);       
+             .OnDelete(DeleteBehavior.Restrict);
 
             //Cloud Region, Vm Size etc
             modelBuilder.Entity<RegionVmSize>()
@@ -271,7 +287,7 @@ namespace Sepes.Infrastructure.Model.Context
 
             modelBuilder.Entity<CloudResourceOperation>()
                 .Property(sro => sro.Updated)
-                .HasDefaultValueSql("getutcdate()");        
+                .HasDefaultValueSql("getutcdate()");
 
             modelBuilder.Entity<SandboxDataset>()
               .Property(sro => sro.Added)

@@ -5,15 +5,14 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IStudyService
+    public interface IStudyReadService
     {        
-        Task<IEnumerable<StudyListItemDto>> GetStudyListAsync(bool? excludeHidden = null);
+        Task<IEnumerable<StudyListItemDto>> GetStudyListAsync();
+
         Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation);
 
         Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperation userOperation);        
 
-        Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId);   
-
-   
+        Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId);    
     }
 }

@@ -1,16 +1,15 @@
 ﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Model.Config;
+using Sepes.Infrastructure.Constants;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Identity.Web;
-
 
 namespace Sepes.Infrastructure.Service.Azure
 {

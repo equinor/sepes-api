@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                 var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredFirewallRules(operation.DesiredState);
 
-                var setRulesTask = networkRuleService.SetRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
+                var setRulesTask = networkRuleService.SetNetworkRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
 
                 while (!setRulesTask.IsCompleted)
                 {

@@ -11,11 +11,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.OpenApi.Models;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
@@ -23,13 +22,13 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Sepes.RestApi
 {
@@ -52,16 +51,20 @@ namespace Sepes.RestApi
             _configuration = configuration;
         }
 
+     
+
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var logMsg = "ConfigureServices starting";
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
+            Log("ConfigureServices starting");           
 
             AddApplicationInsights(services);          
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
+
+            Log("Startup - Cors domains: *");     
 
             services.AddCors(options =>
             {
@@ -103,10 +106,8 @@ namespace Sepes.RestApi
             SetFileUploadLimits(services);
 
             AddSwagger(services);
-
-            var logMsgDone = "Configuring services done";
-            Trace.WriteLine(logMsgDone);
-            _logger.LogWarning(logMsgDone);
+         
+            Log("Configuring services done");
         }
 
         void AddApplicationInsights(IServiceCollection services)
@@ -139,8 +140,9 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyModelService, StudyModelService>();
 
             //Domain Model Services
-            services.AddTransient<IStudyService, StudyService>();
-            services.AddTransient<IStudyCreateUpdateService, StudyCreateUpdateService>();
+            services.AddTransient<IStudyReadService, StudyReadService>();
+            services.AddTransient<IStudyCreateService, StudyCreateService>();
+            services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
@@ -186,6 +188,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureVmService, AzureVmService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+            services.AddTransient<IAzureStorageAccountTokenService, AzureStorageAccountTokenService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
@@ -268,16 +271,13 @@ namespace Sepes.RestApi
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {
-                logMessage = "Migrations are disabled and will be skipped!";
+                Log("Migrations are disabled and will be skipped!");
 
             }
             else
             {
-                logMessage = "Performing database migrations";
-            }
-
-            Trace.WriteLine(logMessage);
-            _logger.LogWarning(logMessage);
+                Log("Performing database migrations");
+            }          
 
             string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
 
@@ -294,21 +294,14 @@ namespace Sepes.RestApi
                 ctx.Database.SetCommandTimeout(300);
                 ctx.Database.Migrate();
             }
-
-            var logMsgDone = "Do migration done";
-
-            Trace.WriteLine(logMsgDone);
-            _logger.LogWarning(logMsgDone);
+           
+            Log("Do migration done");          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var logMsg = "Configure";
-
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
-
+            Log("Configure");
 
             if (env.EnvironmentName == "Development")
             {
@@ -336,15 +329,11 @@ namespace Sepes.RestApi
             // UseHttpsRedirection doesn't work well with docker.        
             if (!String.IsNullOrWhiteSpace(httpOnlyRaw) && httpOnlyRaw.ToLower() == "true")
             {
-                var logMsgHttps = "Using HTTP only";
-                Trace.WriteLine(logMsgHttps);
-                _logger.LogWarning(logMsgHttps);
+                Log("Using HTTP only");
             }
             else
             {
-                var logMsgHttps = "Also using HTTPS. Activating https redirection";
-                Trace.WriteLine(logMsgHttps);
-                _logger.LogWarning(logMsgHttps);
+                Log("Also using HTTPS. Activating https redirection");
                 app.UseHttpsRedirection();
             }
 
@@ -367,11 +356,13 @@ namespace Sepes.RestApi
             {
                 endpoints.MapControllers();
             });
-
-            var logMsgDone = "Configure done";
-
-            Trace.WriteLine(logMsgDone);
-            _logger.LogWarning(logMsgDone);
+            
+            Log("Configure done");          
+        }
+        void Log(string message)
+        {
+            Trace.WriteLine(message);
+            _logger.LogWarning(message);
         }
     }
 }

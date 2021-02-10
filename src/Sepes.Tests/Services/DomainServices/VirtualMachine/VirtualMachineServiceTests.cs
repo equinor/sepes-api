@@ -21,7 +21,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         {
             var invalidPassword = "123";
             var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineService(_serviceProvider);
-            var validationOfName = virtualMachineLookupService.CreateAsync(1, new CreateVmUserInputDto { Password= invalidPassword });
+            var validationOfName = virtualMachineLookupService.CreateAsync(1, new VirtualMachineCreateDto { Password= invalidPassword });
 
             await Assert.ThrowsAsync<System.Exception>(async () => await validationOfName);
         }

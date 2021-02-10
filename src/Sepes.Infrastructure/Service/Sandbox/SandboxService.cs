@@ -18,12 +18,12 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxService : SandboxServiceBase, ISandboxService
     {
-        readonly IStudyService _studyService;
+        readonly IStudyReadService _studyService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
 
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, IStudyService studyService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            IUserService userService, IStudyReadService studyService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             : base(config, db, mapper, logger, userService)
         {
             _studyService = studyService;

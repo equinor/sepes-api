@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -16,8 +17,8 @@ namespace Sepes.Infrastructure.Service
     {
        readonly IStudySpecificDatasetService _studySpecificDatasetService;
 
-        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyLogoService studyLogoService, IStudySpecificDatasetService studySpecificDatasetService)
-            : base(db, mapper, logger, userService, studyLogoService)
+        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService, IStudySpecificDatasetService studySpecificDatasetService)
+            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
             _studySpecificDatasetService = studySpecificDatasetService;
         }       

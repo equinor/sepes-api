@@ -5,9 +5,9 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,30 +15,16 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class StudyCreateUpdateService : StudyServiceBase, IStudyCreateUpdateService
+    public class StudyUpdateService : StudyServiceBase, IStudyUpdateService
     {  
-        public StudyCreateUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateUpdateService> logger, IUserService userService, IStudyLogoService studyLogoService)
-            : base(db, mapper, logger, userService, studyLogoService)
+        public StudyUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
+            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
       
          
-        }      
+        } 
 
-        public async Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudyDto)
-        {
-            GenericNameValidation.ValidateName(newStudyDto.Name);
-            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
-
-            var studyDb = _mapper.Map<Study>(newStudyDto);
-
-            var currentUser = await _userService.GetCurrentUserAsync();
-            MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
-
-            var newStudyId = await Add(studyDb);
-            return await GetStudyDetailsDtoByIdAsync(newStudyId, UserOperation.Study_Create);
-        }
-
-        public async Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto updatedStudy)
+        public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyDto updatedStudy)
         {
             GenericNameValidation.ValidateName(updatedStudy.Name);
 

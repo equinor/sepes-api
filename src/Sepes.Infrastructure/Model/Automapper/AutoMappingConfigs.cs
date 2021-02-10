@@ -148,7 +148,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<IStorageAccount, AzureStorageAccountDto>()
                 .ForMember(dest => dest.ProvisioningState, source => source.MapFrom(x => x.ProvisioningState));
 
-            CreateMap<CreateVmUserInputDto, VmSettingsDto>();
+            CreateMap<VirtualMachineCreateDto, VmSettingsDto>();
 
             CreateMap<CloudResourceDto, VmDto>()
                 .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))

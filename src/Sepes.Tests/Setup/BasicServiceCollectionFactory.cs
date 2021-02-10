@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
-using Sepes.Infrastructure.Model.Config;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
@@ -47,7 +47,7 @@ namespace Sepes.Tests.Setup
             //Sepes Services
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyService, StudyService>();
+            services.AddTransient<IStudyReadService, StudyReadService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();

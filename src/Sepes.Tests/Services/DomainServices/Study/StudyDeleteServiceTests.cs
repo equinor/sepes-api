@@ -23,7 +23,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             await ClearTestDatabase();
-            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
+            var studyService = StudyServiceMockFactory.ReadService(_serviceProvider);
 
             await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }
@@ -53,13 +53,13 @@ namespace Sepes.Tests.Services.DomainServices
                 Vendor = "Equinor"
             };
 
-            var studyCreateUpdateService = StudyServiceMockFactory.CreateUpdateService(_serviceProvider);
-            var createdStudy = await studyCreateUpdateService.CreateStudyAsync(initialStudy);
+            var studyCreateService = StudyServiceMockFactory.CreateService(_serviceProvider);
+            var createdStudy = await studyCreateService.CreateAsync(initialStudy);
            
             await studyDeleteService.CloseStudyAsync(createdStudy.Id);
          
-            var studyService = StudyServiceMockFactory.Create(_serviceProvider);
-            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
+            var studyReadService = StudyServiceMockFactory.ReadService(_serviceProvider);
+            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyReadService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
         }  
     }

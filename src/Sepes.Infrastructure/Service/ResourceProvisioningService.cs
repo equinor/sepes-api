@@ -162,6 +162,25 @@ namespace Sepes.Infrastructure.Service
                                 throw new ProvisioningException($"Service {provisioningService.GetType().Name} does not support firewall operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
                             }
                         }
+                        else if (EnsureCorsRulesUtil.CanHandle(currentOperation))
+                        {
+                            currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
+
+                            if (provisioningService is IHasCorsRules)
+                            {
+                                await EnsureCorsRulesUtil.Handle(currentOperation,
+                                    provisioningService as IHasCorsRules,
+                                    _resourceReadService,
+                                    _resourceOperationUpdateService,
+                                    _logger);
+
+                                await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
+                            }
+                            else
+                            {
+                                throw new ProvisioningException($"Service {provisioningService.GetType().Name} does not support CORS operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
+                            }
+                        }
                         else
                         {
                             throw new ProvisioningException("Unknown operation type", CloudResourceOperationState.ABORTED);

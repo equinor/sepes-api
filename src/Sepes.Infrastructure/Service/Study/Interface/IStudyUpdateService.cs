@@ -3,11 +3,9 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IStudyCreateUpdateService
+    public interface IStudyUpdateService
     { 
-        Task<StudyDetailsDto> CreateStudyAsync(StudyCreateDto newStudy);
-
-        Task<StudyDetailsDto> UpdateStudyMetadataAsync(int studyId, StudyDto newStudy);
+        Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyDto newStudy);
         Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings);
     }
 }
