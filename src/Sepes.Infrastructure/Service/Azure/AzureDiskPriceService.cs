@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
                         AzureDiskPriceForRegion relevantRegionItem = null;
 
-                        if (diskPriceByRegion.TryGetValue(regionName, out relevantRegionItem) == false)
+                        if (!diskPriceByRegion.TryGetValue(regionName, out relevantRegionItem))
                         {
                             relevantRegionItem = diskPriceByRegion[regionName] = new AzureDiskPriceForRegion();
                         }

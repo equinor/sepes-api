@@ -138,7 +138,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ValidateThatNameDoesNotExistThrowIfInvalid(string resourceName)
         {
-            if (await _db.CloudResources.Where(r => r.ResourceName == resourceName && r.Deleted == false).AnyAsync())
+            if (await _db.CloudResources.Where(r => r.ResourceName == resourceName && !r.Deleted).AnyAsync())
             {
                 throw new Exception($"Resource with name {resourceName} allready exists!");
             }

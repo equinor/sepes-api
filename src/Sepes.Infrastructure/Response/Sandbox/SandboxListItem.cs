@@ -1,6 +1,6 @@
-﻿namespace Sepes.Infrastructure.Dto.Sandbox
+﻿namespace Sepes.Infrastructure.Response.Sandbox
 {
-    public class SandboxListItemDto
+    public class SandboxListItem
     {
         public int Id { get; set; }
         public int StudyId { get; set; }

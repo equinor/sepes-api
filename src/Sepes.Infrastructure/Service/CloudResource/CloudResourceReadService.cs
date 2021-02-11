@@ -5,10 +5,10 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -39,20 +39,20 @@ namespace Sepes.Infrastructure.Service
             return await GetOrThrowInternalAsync(id);
         }
 
-        public async Task<List<SandboxResourceLightDto>> GetSandboxResourcesLight(int sandboxId)
+        public async Task<List<SandboxResourceLight>> GetSandboxResourcesLight(int sandboxId)
         {
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
-                .Where(r => SoftDeleteUtil.IsMarkedAsDeleted(r) == false
+                .Where(r => !SoftDeleteUtil.IsMarkedAsDeleted(r)
                     || (
                     SoftDeleteUtil.IsMarkedAsDeleted(r)
-                    && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+                    && !r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any())
 
                 ).ToList();
 
-            var resourcesMapped = _mapper.Map<List<SandboxResourceLightDto>>(resourcesFiltered);
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);
 
             return resourcesMapped;
         }      

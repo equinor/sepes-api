@@ -1,10 +1,12 @@
-﻿using Sepes.Infrastructure.Interface;
+﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Infrastructure.Response.Sandbox
 {
-    public class SandboxDetailsDto : UpdateableBaseDto, IHasCurrentPhase
+    public class SandboxDetails : UpdateableBaseDto, IHasCurrentPhase
     {
         public string Name { get; set; }
 
@@ -23,10 +25,12 @@ namespace Sepes.Infrastructure.Dto.Sandbox
 
         public bool Deleted { get; set; }
 
-        public List<SandboxResourceLightDto> Resources { get; set; }
+        public List<SandboxResourceLight> Resources { get; set; }
+
+        public string RestrictionDisplayText { get; set; }
 
         public List<SandboxDatasetDto> Datasets { get; set; }
 
-        public SandboxPermissionsDto Permissions { get; set; } = new SandboxPermissionsDto();
+        public SandboxPermissions Permissions { get; set; } = new SandboxPermissions();
     }
 }

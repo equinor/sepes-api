@@ -1,8 +1,8 @@
 ﻿using Sepes.Infrastructure.Dto.Interfaces;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Infrastructure.Response.Sandbox
 {
-    public class SandboxResourceLightDto : IHasLinkToExtSystem
+    public class SandboxResourceLight : IHasLinkToExtSystem
     {  
         public string Name { get; set; }
 

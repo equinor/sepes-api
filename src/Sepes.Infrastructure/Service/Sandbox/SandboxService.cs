@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -36,7 +37,7 @@ namespace Sepes.Infrastructure.Service
             return await GetDtoAsync(sandboxId, userOperation);
         }
 
-        public async Task<SandboxDetailsDto> GetSandboxDetailsAsync(int sandboxId)
+        public async Task<SandboxDetails> GetSandboxDetailsAsync(int sandboxId)
         {
             return await GetSandboxDetailsInternalAsync(sandboxId);
         }
@@ -45,13 +46,13 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && s.Deleted == false).ToListAsync();
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && !s.Deleted).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
         }      
 
-        public async Task<SandboxDetailsDto> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
+        public async Task<SandboxDetails> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
             _logger.LogInformation(SepesEventId.SandboxCreate, "Sandbox {0}: Starting", studyId);
 
@@ -76,7 +77,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check uniqueness of name
-            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && sb.Deleted == false).AnyAsync())
+            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted).AnyAsync())
             {
                 throw new ArgumentException($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
             }

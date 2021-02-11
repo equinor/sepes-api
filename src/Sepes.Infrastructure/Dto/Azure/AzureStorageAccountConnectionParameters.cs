@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Dto.Azure
         {
             get
             {
-                return String.IsNullOrWhiteSpace(ConnectionString) == false && ConnectionString == "UseDevelopmentStorage=true";
+                return !String.IsNullOrWhiteSpace(ConnectionString) && ConnectionString == "UseDevelopmentStorage=true";
 
             }
         }

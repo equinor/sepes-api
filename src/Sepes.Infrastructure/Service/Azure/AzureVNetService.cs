@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName) == false)
+            if (!parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName))
             {
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }

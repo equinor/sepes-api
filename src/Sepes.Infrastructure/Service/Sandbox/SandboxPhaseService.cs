@@ -4,17 +4,15 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,7 +43,7 @@ namespace Sepes.Infrastructure.Service
             _nsgRuleService = nsgRuleService;
         }
 
-        public async Task<SandboxDetailsDto> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
+        public async Task<SandboxDetails> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
 
@@ -171,7 +169,7 @@ namespace Sepes.Infrastructure.Service
                 var vmInternetRule = await _virtualMachineRuleService.GetInternetRule(curVm.Id);
 
                 //Check if internet is set to open in Sepes
-                if (_virtualMachineRuleService.IsRuleSetToDeny(vmInternetRule) == false)
+                if (!_virtualMachineRuleService.IsRuleSetToDeny(vmInternetRule))
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
@@ -186,7 +184,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            if (anyVmsFound == false)
+            if (!anyVmsFound)
             {
                 validationErrors.Add($"Sandbox contains no Virtual Machines");
             }

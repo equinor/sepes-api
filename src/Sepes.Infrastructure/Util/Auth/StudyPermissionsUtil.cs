@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
 using System.Threading.Tasks;
@@ -26,15 +27,15 @@ namespace Sepes.Infrastructure.Util
             dto.AddRemoveParticipant = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Participant);           
         }
 
-        public static async Task DecorateDto(IUserService userService, Study studyDb, SandboxPermissionsDto dto, SandboxPhase phase)
+        public static async Task DecorateDto(IUserService userService, Study studyDb, SandboxPermissions sandboxPermissions, SandboxPhase phase)
         {
             var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
 
-            dto.Delete = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.Update = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
-            dto.EditInboundRules = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_EditInboundRules);
-            dto.OpenInternet = phase > SandboxPhase.Open ? currentUser.Admin : StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_OpenInternet); //TODO: was it really only admin who could do this?
-            dto.IncreasePhase = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_IncreasePhase);
+            sandboxPermissions.Delete = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            sandboxPermissions.Update = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
+            sandboxPermissions.EditInboundRules = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_EditInboundRules);
+            sandboxPermissions.OpenInternet = phase > SandboxPhase.Open ? currentUser.Admin : StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_OpenInternet); //TODO: was it really only admin who could do this?
+            sandboxPermissions.IncreasePhase = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Sandbox_IncreasePhase);
         }
 
         public static async Task DecorateDtoStudySpecific(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
