@@ -78,4 +78,4 @@ jobs:
           # $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
           # #Add-azAccount -Credential $psCred -TenantId $azureTenantId -
           az login --service-principal -u ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }} --password "{{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" --tenant $azureTenantId
-          az account show
+          az account show 
