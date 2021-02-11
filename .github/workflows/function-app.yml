@@ -68,6 +68,11 @@ jobs:
       # - run: |
       #     az webapp list --query "[?state=='Running']"
 
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+
       - name: Azure login
         shell: pwsh
         env:
@@ -75,10 +80,10 @@ jobs:
           clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
           tenantId: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-          # $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
           $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
           $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
           Add-azAccount -Credential $psCred -TenantId $Env:tenantId -ServicePrincipal
           az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
-          az account show 
+          az account show
+          write-host "checking az powershell"
+          Get-AzContext
