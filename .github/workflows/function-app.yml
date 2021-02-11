@@ -46,6 +46,7 @@ jobs:
     env:
         environment: prod
         azureSubscriptionId: 87f8c7ae-703b-4975-8a05-be359583c563
+        runner: "testing variable"
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -62,13 +63,6 @@ jobs:
         run: |
           docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
           docker push ${{ env.acr }}${{ env.environment }}
-
-      # - uses: azure/login@v1
-      #   with:
-      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      # - run: |
-      #     az webapp list --query "[?state=='Running']"
 
       - name: Install modules
         shell: pwsh
@@ -121,3 +115,4 @@ jobs:
           #echo $id
           echo $Env:id
           echo $GITHUB_WORKFLOW
+          echo ${{ env.runner }}
