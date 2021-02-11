@@ -93,9 +93,12 @@ jobs:
         env:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
+          githubId: $GITHUB_RUN_ID
         run: |
           Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
-          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "$GITHUB_RUN_ID")
+          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "$githubId")
+          $githubId
+          $GITHUB_RUN_ID
           Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
             -RgName rg-sepes-prod `
             -ImageName "$container" `
