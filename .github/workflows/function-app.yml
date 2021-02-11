@@ -73,7 +73,6 @@ jobs:
         shell: pwsh
         run: |
           Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
 
       - name: Azure login
         shell: pwsh
@@ -95,6 +94,7 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
         run: |
+          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
           Update-FunctionAppContainerSettings -FunctionName func-sepes-prod -RgName rg-sepes-prod `
             -ImageName ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -RegistryUsername "$Env:username" -RegistryPassord "$Env:password" `
             -RegistryUrl "${{ env.acr }}"
