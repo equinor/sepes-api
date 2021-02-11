@@ -77,8 +77,8 @@ jobs:
         run: |
           Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
           # $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
-          # $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
-          # $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
-          # #Add-azAccount -Credential $psCred -TenantId $azureTenantId -
+          $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
+          $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
+          Add-azAccount -Credential $psCred -TenantId $azureTenantId -
           az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
           az account show 
