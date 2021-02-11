@@ -36,8 +36,9 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:$GITHUB_RUN_ID -t ${{ env.ciTag }}:latest
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:latest
           docker push ${{ env.ciTag }}
+          # removed  -t ${{ env.ciTag }}:$GITHUB_RUN_ID
 
   prod:
     if: github.ref == 'refs/heads/functionrun'
@@ -97,7 +98,7 @@ jobs:
         run: |
           Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
           $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "$githubId")
-          Write-Host $e
+          Write-Host $githubId
           Write-Host $GITHUB_RUN_ID
           Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
             -RgName rg-sepes-prod `
@@ -111,6 +112,13 @@ jobs:
         run: |
           az logout
           LogOut-AzAccount
+
       - name: runId
+        env:
+          id: $GITHUB_RUN_ID
         shell: pwsh
-        run: echo $GITHUB_RUN_ID
+        run: |
+          echo $GITHUB_RUN_ID
+          echo ${{ env.GITHUB_RUN_ID }}
+          echo $id
+          echo $Env:id
