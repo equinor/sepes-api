@@ -75,7 +75,7 @@ jobs:
           clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
           tenantId: ${{ secrets.AZURE_TENANT_ID }}
         run: |
-          # Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
           # $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
           $azureTenantId = ""
           # $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
