@@ -118,7 +118,7 @@ jobs:
           id: $GITHUB_RUN_ID
         shell: pwsh
         run: |
-          echo $GITHUB_RUN_ID
-          echo ${{ env.GITHUB_RUN_ID }}
+          #echo $GITHUB_RUN_ID
+          #echo ${{ env.GITHUB_RUN_ID }}
           #echo $id
           echo $Env:id
