@@ -152,9 +152,9 @@ function Update-FunctionAppContainerSettings {
         $RegistryUsername
     )
     az functionapp config container set `
-    --docker-custom-image-name $ImageName `
+    --docker-custom-image-name "$ImageName" `
     --docker-registry-server-password $RegistryPassord `
-    --docker-registry-server-url $RegistryUrl `
+    --docker-registry-server-url "https://$RegistryUrl" `
     --docker-registry-server-user $RegistryUsername `
     --name $FunctionName `
     --resource-group $RgName
