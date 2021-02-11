@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Util
             dataset.FirewallRules = new List<DatasetFirewallRule>();
 
             //Add user's client IP 
-            if (clientIp != "::1")
+            if (clientIp != "::1" && clientIp != "0.0.0.1")
             {
                 dataset.FirewallRules.Add(CreateClientRule(user, clientIp));
             }
@@ -43,7 +43,11 @@ namespace Sepes.Infrastructure.Util
             //Add API Ip, so that it can upload/download files 
 
             var serverPublicIp = await IpAddressUtil.GetServerPublicIp(config);
-            dataset.FirewallRules.Add(CreateServerRule(user, serverPublicIp));
+
+            if(clientIp != serverPublicIp)
+            {
+                dataset.FirewallRules.Add(CreateServerRule(user, serverPublicIp));
+            }           
 
             logger.LogInformation($"Creating firewall rules for dataset {dataset.Id}, clientIp: {clientIp}, serverIp: {serverPublicIp}");
         }
