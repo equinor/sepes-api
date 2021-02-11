@@ -6,5 +6,8 @@ namespace Sepes.Infrastructure.Response
     {
         public bool DatabaseConnectionOk { get; set; }
         public Dictionary<string, string> IpAddresses { get; set; }
+
+        public Dictionary<string, string> Headers { get; set; }
+
     }
 }

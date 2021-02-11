@@ -33,10 +33,29 @@ namespace Sepes.Infrastructure.Service
             var response = new HealthSummaryResponse()
             {
                 DatabaseConnectionOk = await DatabaseOkayAsync(cancellation),
-                IpAddresses = await GetIPsAsync(context, cancellation)
+                IpAddresses = await GetIPsAsync(context, cancellation),
+                Headers = CleanHeaders(context)
             };
 
             return response;
+        }
+
+        Dictionary<string, string> CleanHeaders(HttpContext context)
+        {
+            var result = new Dictionary<string, string>();
+
+            foreach(var curHeader in context.Request.Headers)
+            {
+                if(curHeader.Key == "Authorization")
+                {
+                    result.Add(curHeader.Key, curHeader.Value.ToString().Substring(0, 10));
+                }
+                else
+                {
+                    result.Add(curHeader.Key, curHeader.Value);
+                }          
+            }
+            return result;
         }
 
         async Task<bool> DatabaseOkayAsync(CancellationToken cancellation = default)
@@ -72,7 +91,6 @@ namespace Sepes.Infrastructure.Service
                     { "context.Connection.LocalIpAddress MapToIPv4", localIpAddress.MapToIPv4().ToString() },
                     { "context.Connection.LocalIpAddress MapToIPv6", localIpAddress.MapToIPv6().ToString() },
                     { "context.Connection.LocalIpAddress AddressFamily", localIpAddress.AddressFamily.ToString() },
-
                 };
 
                 var counter = 0;
@@ -107,6 +125,6 @@ namespace Sepes.Infrastructure.Service
             }
 
             return null;
-        }
+        }      
     }
 }
