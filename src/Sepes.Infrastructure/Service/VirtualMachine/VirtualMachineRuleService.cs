@@ -178,7 +178,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         var currentUser = await _userService.GetCurrentUserAsync();
 
-                        if (currentUser.Admin == false)
+                        if (!currentUser.Admin)
                         {
                             validationErrors.Add($"Only admin can updated outgoing rules when Sandbox is in phase {curPhase}");
                             ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);

@@ -54,9 +54,9 @@ namespace Sepes.Infrastructure.Query
                 WithBasicIncludesQueryable(db)
                 .Where(r => r.SandboxId == sandboxId
                 && r.ResourceType == resourceType
-                && (r.Deleted == false ||
+                && (!r.Deleted||
                 
-                (r.Deleted && includeDeletedIfOperationNotFinished && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));            
+                (r.Deleted && includeDeletedIfOperationNotFinished && !r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any())));            
 
 
             return resourceQuerable;
@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Query
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
                 .Where(r => r.Id == resourceId            
-                && (r.Deleted == false || (r.Deleted && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)));
+                && (!r.Deleted || (r.Deleted && !r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any())));
 
             return resourceQuerable;
         }

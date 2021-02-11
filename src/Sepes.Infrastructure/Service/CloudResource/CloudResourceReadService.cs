@@ -45,10 +45,10 @@ namespace Sepes.Infrastructure.Service
 
             //Filter out deleted resources
             var resourcesFiltered = sandboxFromDb.Resources
-                .Where(r => SoftDeleteUtil.IsMarkedAsDeleted(r) == false
+                .Where(r => !SoftDeleteUtil.IsMarkedAsDeleted(r)
                     || (
                     SoftDeleteUtil.IsMarkedAsDeleted(r)
-                    && r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any() == false)
+                    && !r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any())
 
                 ).ToList();
 

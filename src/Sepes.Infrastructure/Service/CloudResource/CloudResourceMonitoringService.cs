@@ -246,7 +246,7 @@ namespace Sepes.Infrastructure.Service
                         {
                             var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
 
-                            if (String.IsNullOrWhiteSpace(provisioningState) == false)
+                            if (!String.IsNullOrWhiteSpace(provisioningState))
                             { 
                                 // TODO: What to do here in addition to logging? DO NOT REMOVE DELETE MARK FROM RESOURCE. Delete from Azure? Tag resource?
                                 _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
@@ -255,10 +255,9 @@ namespace Sepes.Infrastructure.Service
                         }
                         catch (Exception ex)
                         {
-                            if(ex.Message.ToLower().Contains("could not be found") == false && ex.Message.ToLower().Contains("not found") == false)
+                            if(!ex.Message.ToLower().Contains("could not be found") && !ex.Message.ToLower().Contains("not found"))
                             {
-                                throw;
-                               
+                                throw;                               
                             }
 
                             //Do nothing, resource not found

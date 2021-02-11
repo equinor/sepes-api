@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
         {
             if (operation.DependsOnOperationId.HasValue)
             {
-                if (await operationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value) == false)
+                if (!(await operationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)))
                 {
                     var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 
