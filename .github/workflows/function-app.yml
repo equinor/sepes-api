@@ -44,6 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
         environment: prod
+        azureSubscriptionId: 87f8c7ae-703b-4975-8a05-be359583c563
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
@@ -84,6 +85,5 @@ jobs:
           $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
           Add-azAccount -Credential $psCred -TenantId $Env:tenantId -ServicePrincipal
           az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
-          az account show
-          write-host "checking az powershell"
-          Get-AzContext
+          az account set -s ${{ env.azureSubscriptionId }}
+          Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
