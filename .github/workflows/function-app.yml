@@ -70,12 +70,16 @@ jobs:
 
       - name: Azure login
         shell: pwsh
+        env:
+          clientId: ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}
+          clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
+          tenantId: ${{ secrets.AZURE_TENANT_ID }}
         run: |
           # Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
           # $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
-          $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+          $azureTenantId = ""
           # $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
           # $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
           # #Add-azAccount -Credential $psCred -TenantId $azureTenantId -
-          az login --service-principal -u ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }} --password "{{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" --tenant $azureTenantId
+          az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
           az account show 
