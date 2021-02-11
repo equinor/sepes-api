@@ -46,7 +46,7 @@ jobs:
     env:
         environment: prod
         azureSubscriptionId: 87f8c7ae-703b-4975-8a05-be359583c563
-        runner: "testing variable"
+        runner: $GITHUB_RUN_ID
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
