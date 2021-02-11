@@ -73,7 +73,7 @@ jobs:
         shell: pwsh
         run: |
           Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-          Install-Module .github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
+          Import-Module .github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
 
       - name: Azure login
         shell: pwsh
@@ -88,3 +88,9 @@ jobs:
           az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
           az account set -s ${{ env.azureSubscriptionId }}
           Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
+
+      - name: Azure logout
+        shell: pwsh
+        run: |
+          az logout
+          LogOut-AzAccount
