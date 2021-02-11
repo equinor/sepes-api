@@ -73,6 +73,7 @@ jobs:
         shell: pwsh
         run: |
           Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+          Install-Module .github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
 
       - name: Azure login
         shell: pwsh
