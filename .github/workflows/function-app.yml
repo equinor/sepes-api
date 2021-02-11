@@ -112,4 +112,5 @@ jobs:
           az logout
           LogOut-AzAccount
       - name: runId
+        shell: pwsh
         run: echo $GITHUB_RUN_ID
