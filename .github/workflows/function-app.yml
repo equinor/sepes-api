@@ -65,8 +65,8 @@ jobs:
       #   with:
       #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - run: |
-          az webapp list --query "[?state=='Running']"
+      # - run: |
+      #     az webapp list --query "[?state=='Running']"
 
       - name: Azure login
         shell: pwsh
