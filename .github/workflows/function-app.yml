@@ -61,21 +61,21 @@ jobs:
           docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
           docker push ${{ env.acr }}${{ env.environment }}
 
-      - uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - run: |
           az webapp list --query "[?state=='Running']"
 
-      # - name: Azure login
-      #   shell: pwsh
-      #   run: |
-      #     Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
-      #     $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
-      #     $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
-      #     $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
-      #     $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
-      #     #Add-azAccount -Credential $psCred -TenantId $azureTenantId -ServicePrincipal
-      #     az login --service-principal -u ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }} -p={{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }} --tenant $azureTenantId
-      #     #az account show
+      - name: Azure login
+        shell: pwsh
+        run: |
+          # Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+          # $azureAplicationId = "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}"
+          # $azureTenantId = "${{ secrets.AZURE_TENANT_ID }}"
+          # $azurePassword = ConvertTo-SecureString "${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}" -AsPlainText -Force
+          # $psCred = New-Object System.Management.Automation.PSCredential($azureAplicationId , $azurePassword)
+          # #Add-azAccount -Credential $psCred -TenantId $azureTenantId -
+          az login --service-principal -u ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }} -p={{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }} --tenant $azureTenantId
+          az account showServicePrincipal
