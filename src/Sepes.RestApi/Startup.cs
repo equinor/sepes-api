@@ -266,9 +266,7 @@ namespace Sepes.RestApi
 
         void DoMigration()
         {
-            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
-
-            string logMessage;
+            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];         
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {
