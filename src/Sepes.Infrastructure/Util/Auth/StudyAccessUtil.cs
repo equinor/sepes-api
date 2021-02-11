@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Util.Auth
     {
         public static void HasAccessToOperationOrThrow(UserDto currentUser, UserOperation operation)
         {
-            if (HasAccessToOperation(currentUser, operation) == false)
+            if (!HasAccessToOperation(currentUser, operation))
             {
                 throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation}");
             }
@@ -154,7 +154,7 @@ namespace Sepes.Infrastructure.Util.Auth
 
             if (study.Restricted)
             {
-                allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => or.AppliesOnlyToNonHiddenStudies == false);
+                allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => !or.AppliesOnlyToNonHiddenStudies);
             }
 
             if (allowedForStudyRolesQueryable.Any())
@@ -193,7 +193,7 @@ namespace Sepes.Infrastructure.Util.Auth
 
         static bool DisqualifiedBySpecialVendorAdminCase(StudyParticipant studyParticipant, UserOperation operation, string newRole)
         {
-            if (String.IsNullOrWhiteSpace(newRole) == false)
+            if (!String.IsNullOrWhiteSpace(newRole))
             {
                 if (operation == UserOperation.Study_AddRemove_Participant)
                 {

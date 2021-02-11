@@ -59,12 +59,12 @@ namespace Sepes.Infrastructure.Util.Azure
         {
             string accessKey = null;
 
-            if (String.IsNullOrWhiteSpace(parameters.StorageAccountId) == false)
+            if (!String.IsNullOrWhiteSpace(parameters.StorageAccountId))
             {
                 accessKey = await azureStorageAccountTokenService.GetStorageAccountKey(parameters.StorageAccountId, cancellationToken);
             }
-            else if (String.IsNullOrWhiteSpace(parameters.StorageAccountResourceGroup) == false
-                && String.IsNullOrWhiteSpace(parameters.StorageAccountName) == false)
+            else if (!String.IsNullOrWhiteSpace(parameters.StorageAccountResourceGroup)
+                && !String.IsNullOrWhiteSpace(parameters.StorageAccountName))
             {
                 accessKey = await azureStorageAccountTokenService.GetStorageAccountKey(
                     parameters.StorageAccountResourceGroup,

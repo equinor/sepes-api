@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Util
     {
         public static void MarkAsDeleted(ISupportSoftDelete itemToDelete, string deletedBy)
         {
-            if(IsMarkedAsDeleted(itemToDelete) == false)
+            if(!IsMarkedAsDeleted(itemToDelete))
             {
                 itemToDelete.Deleted = true;
                 itemToDelete.DeletedBy = deletedBy;

@@ -24,8 +24,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d => d.Deleted == false).ToList()))
-                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted == false).ToList()))
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d => !d.Deleted).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => !sb.Deleted).ToList()))
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 

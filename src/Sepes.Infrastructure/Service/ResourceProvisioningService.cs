@@ -209,12 +209,12 @@ namespace Sepes.Infrastructure.Service
 
                         currentOperation = await _resourceOperationUpdateService.SetErrorMessageAsync(currentOperation.Id, ex);
 
-                        if (String.IsNullOrWhiteSpace(ex.NewOperationStatus) == false)
+                        if (!String.IsNullOrWhiteSpace(ex.NewOperationStatus))
                         {
                             currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
                         }                       
 
-                        if (ex.ProceedWithOtherOperations == false)
+                        if (!ex.ProceedWithOtherOperations)
                         {
                             throw;
                         }
@@ -255,7 +255,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (ex.StoreQueueInfoOnOperation)
                 {
-                    if (queueParentItem.NextVisibleOn.HasValue == false)
+                    if (!queueParentItem.NextVisibleOn.HasValue)
                     {
                         _logger.LogError($"Could not store queue info on operation from message {queueParentItem.MessageId}, no next visible time exist");
                     }
@@ -291,11 +291,11 @@ namespace Sepes.Infrastructure.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (curDependantOnThisOp.Resource.Deleted == false)
+                            if (!curDependantOnThisOp.Resource.Deleted)
                             {
                                 if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
                                 {
-                                    if (String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) == false && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
+                                    if (!String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
                                     {
                                         if (curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15))
                                         {

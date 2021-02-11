@@ -46,7 +46,7 @@ namespace Sepes.Infrastructure.Service
         {
             var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
 
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && s.Deleted == false).ToListAsync();
+            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && !s.Deleted).ToListAsync();
             var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
 
             return sandboxDTOs;
@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Check uniqueness of name
-            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && sb.Deleted == false).AnyAsync())
+            if (await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxCreateDto.Name && !sb.Deleted).AnyAsync())
             {
                 throw new ArgumentException($"A Sandbox called {sandboxCreateDto.Name} allready exists for Study");
             }

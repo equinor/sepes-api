@@ -99,7 +99,7 @@ namespace Sepes.Infrastructure.Service
             return _db.CloudResourceOperations
                 .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
-                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (!createdEarlyerThan.HasValue || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (o.OperationType == CloudResourceOperationType.CREATE || o.OperationType == CloudResourceOperationType.UPDATE)
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
                 );
@@ -110,7 +110,7 @@ namespace Sepes.Infrastructure.Service
             return _db.CloudResourceOperations
                 .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
-                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (!createdEarlyerThan.HasValue || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW)
                 );
         }

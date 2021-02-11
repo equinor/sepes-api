@@ -46,7 +46,7 @@ namespace Sepes.Infrastructure.Service
         public async Task UpdateVmDiskSizeCache(CancellationToken cancellationToken = default)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
-            var regionsFromDb = await _db.Regions.Include(r => r.DiskSizeAssociations).ThenInclude(va => va.DiskSize).Where(r => r.Disabled == false).ToListAsync();
+            var regionsFromDb = await _db.Regions.Include(r => r.DiskSizeAssociations).ThenInclude(va => va.DiskSize).Where(r => !r.Disabled).ToListAsync();
 
             if (regionsFromDb.Count() == 0)
             {

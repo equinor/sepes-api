@@ -63,8 +63,8 @@ namespace Sepes.Infrastructure.Service
                 .Where(sku => sku.Restrictions.Count == 0 
                 ||
                 (
-                sku.Restrictions.Where(r=> r.Type == ResourceSkuRestrictionsType.Location && r.Values.Contains(region)).Any() == false
-                && sku.Restrictions.Where(r => r.Type == ResourceSkuRestrictionsType.Zone && r.Values.Contains(region)).Any() == false
+                !sku.Restrictions.Where(r=> r.Type == ResourceSkuRestrictionsType.Location && r.Values.Contains(region)).Any()
+                && !sku.Restrictions.Where(r => r.Type == ResourceSkuRestrictionsType.Zone && r.Values.Contains(region)).Any()
                 ) 
                 );
         }

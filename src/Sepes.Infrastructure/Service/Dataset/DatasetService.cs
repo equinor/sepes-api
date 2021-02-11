@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
             await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
 
             var datasetsFromDb = await _db.Datasets
-                .Where(ds => ds.StudyId == null && ds.Deleted == false)
+                .Where(ds => ds.StudyId == null && !ds.Deleted)
                 .ToListAsync();
             var dataasetsDtos = _mapper.Map<IEnumerable<DatasetLookupItemDto>>(datasetsFromDb);
 

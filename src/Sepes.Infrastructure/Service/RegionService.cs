@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<LookupDto>> GetLookup(CancellationToken cancellationToken = default)
         {
-            var regionsFromDb = await _db.Regions.Where(r => r.Disabled == false).ToListAsync(cancellationToken);
+            var regionsFromDb = await _db.Regions.Where(r => !r.Disabled).ToListAsync(cancellationToken);
             return _mapper.Map<IEnumerable<LookupDto>> (regionsFromDb);
         }
     }

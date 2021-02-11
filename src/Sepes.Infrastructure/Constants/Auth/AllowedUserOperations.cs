@@ -1,5 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Auth;
+﻿using Sepes.Infrastructure.Dto.Auth;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -110,7 +109,7 @@ namespace Sepes.Infrastructure.Constants.Auth
 
         public static IEnumerable<OperationPermission> ForRestrictedStudies(IEnumerable<OperationPermission> source)
         {
-            return source.Where(or => or.AppliesOnlyToNonHiddenStudies == false);
+            return source.Where(or => !or.AppliesOnlyToNonHiddenStudies);
         }
     }
 }

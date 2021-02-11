@@ -169,7 +169,7 @@ namespace Sepes.Infrastructure.Service
                 var vmInternetRule = await _virtualMachineRuleService.GetInternetRule(curVm.Id);
 
                 //Check if internet is set to open in Sepes
-                if (_virtualMachineRuleService.IsRuleSetToDeny(vmInternetRule) == false)
+                if (!_virtualMachineRuleService.IsRuleSetToDeny(vmInternetRule))
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
@@ -184,7 +184,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            if (anyVmsFound == false)
+            if (!anyVmsFound)
             {
                 validationErrors.Add($"Sandbox contains no Virtual Machines");
             }

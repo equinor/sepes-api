@@ -94,11 +94,11 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curResource in study.Resources)
             {
-                if (SoftDeleteUtil.IsMarkedAsDeleted(curResource) == false || includeDeleted)
+                if (!SoftDeleteUtil.IsMarkedAsDeleted(curResource) || includeDeleted)
                 {
                     if (curResource.ResourceType == AzureResourceType.ResourceGroup)
                     {
-                        if (String.IsNullOrWhiteSpace(curResource.Purpose) == false && curResource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+                        if (!String.IsNullOrWhiteSpace(curResource.Purpose) && curResource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
                         {
                             return curResource;
                         }
