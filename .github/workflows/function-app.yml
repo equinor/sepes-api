@@ -93,11 +93,11 @@ jobs:
         env:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
-          githubId: $GITHUB_RUN_ID
+          githubId: ${{ env.GITHUB_RUN_ID }}
         run: |
           Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
           $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "$githubId")
-          Write-Host $githubId
+          Write-Host $e
           Write-Host $GITHUB_RUN_ID
           Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
             -RgName rg-sepes-prod `
