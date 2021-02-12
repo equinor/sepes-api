@@ -18,12 +18,7 @@ namespace Sepes.Infrastructure.Service.Queries
         public static async Task<Sandbox> GetSandboxByIdNoChecks(SepesDbContext db, int sandboxId)
         {
             return await SandboxBaseQueries.AllSandboxesBaseQueryable(db).SingleOrDefaultAsync(sb=> sb.Id == sandboxId);
-        }
-
-        public static async Task<bool> SandboxWithNameAllreadyExists(SepesDbContext db, string name)
-        {
-            return await SandboxBaseQueries.ActiveSandboxesBaseQueryable(db).Where(sb => sb.Name == name).AnyAsync();
-        }
+        }     
 
         public static async Task<Sandbox> GetSandboxByIdThrowIfNotFoundAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
         {
