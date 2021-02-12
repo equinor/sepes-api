@@ -57,13 +57,10 @@ namespace Sepes.Infrastructure.Util
                 anyChanges = true;
             }
 
-            if (ClientIpIsValid(clientIp))
+            if (ClientIpIsValid(clientIp) && !newRuleSet.Where(r => r.RuleType == clientRule.RuleType && r.Address == clientRule.Address).Any())
             {
-                if (!newRuleSet.Where(r => r.RuleType == clientRule.RuleType && r.Address == clientRule.Address).Any())
-                {
-                    newRuleSet.Add(clientRule);
-                    anyChanges = true;
-                }
+                newRuleSet.Add(clientRule);
+                anyChanges = true;
             }
 
             if (!clientIp.Equals(serverIp) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())

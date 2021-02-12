@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Service
 
                     var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
 
-                    var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                   await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
                 }
             }
             catch (Exception ex)
@@ -94,7 +94,7 @@ namespace Sepes.Infrastructure.Service
 
                     var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = networkRuleSet };
 
-                    var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
+                    await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupForStorageAccount, storageAccountName, updateParameters, cancellation);
                 }
             }
             catch (Exception ex)
@@ -125,15 +125,9 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-
-                var existingNetworkRules = networkRuleSet.VirtualNetworkRules.ToList();
-
-                foreach (var curExistingNetworkRule in existingNetworkRules)
+                foreach (var curExistingNetworkRule in networkRuleSet.VirtualNetworkRules.Where(r=> r.State == State.NetworkSourceDeleted).ToList())
                 {
-                    if (curExistingNetworkRule.State == State.NetworkSourceDeleted)
-                    {
-                        networkRuleSet.VirtualNetworkRules.Remove(curExistingNetworkRule);
-                    }
+                    networkRuleSet.VirtualNetworkRules.Remove(curExistingNetworkRule);
                 }
             }
 
@@ -159,12 +153,9 @@ namespace Sepes.Infrastructure.Service
                 newRuleSet.VirtualNetworkRules = new List<VirtualNetworkRule>();
             }
 
-            foreach (var curVirtualNetworkRule in oldRuleSet.VirtualNetworkRules)
+            foreach (var curVirtualNetworkRule in oldRuleSet.VirtualNetworkRules.Where(r=> r.VirtualNetworkResourceId != subnetId))
             {
-                if (curVirtualNetworkRule.VirtualNetworkResourceId != subnetId)
-                {
-                    newRuleSet.VirtualNetworkRules.Add(curVirtualNetworkRule);
-                }
+                newRuleSet.VirtualNetworkRules.Add(curVirtualNetworkRule);
             }
 
             return newRuleSet;
@@ -172,13 +163,10 @@ namespace Sepes.Infrastructure.Service
 
         bool GetRuleForSubnet(NetworkRuleSet networkRuleSet, string subnetId, Microsoft.Azure.Management.Storage.Fluent.Models.Action action, out VirtualNetworkRule virtualNetworkRule)
         {
-            foreach (var curRule in networkRuleSet.VirtualNetworkRules)
+            foreach (var curRule in networkRuleSet.VirtualNetworkRules.Where(r => r.VirtualNetworkResourceId == subnetId && r.Action == action))
             {
-                if (curRule.VirtualNetworkResourceId == subnetId && curRule.Action == action)
-                {
-                    virtualNetworkRule = curRule;
-                    return true;
-                }
+                virtualNetworkRule = curRule;
+                return true;
             }
 
             virtualNetworkRule = null;

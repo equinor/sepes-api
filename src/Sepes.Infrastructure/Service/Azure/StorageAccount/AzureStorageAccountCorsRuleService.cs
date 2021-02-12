@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var blobServiceProperties = new BlobServicePropertiesInner(cors: new CorsRules(corsRulesProperties));
-            var result = await _azure.StorageAccounts.Manager.BlobServices.Inner.SetServicePropertiesAsync(resourceGroupName, resourceName, blobServiceProperties, cancellationToken);                     
+            await _azure.StorageAccounts.Manager.BlobServices.Inner.SetServicePropertiesAsync(resourceGroupName, resourceName, blobServiceProperties, cancellationToken);                     
         
         }
     }

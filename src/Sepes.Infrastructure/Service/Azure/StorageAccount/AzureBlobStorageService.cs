@@ -62,14 +62,11 @@ namespace Sepes.Infrastructure.Service.Azure
 
             var blobHttpHeader = new BlobHttpHeaders();
 
-            blobHttpHeader.ContentType = file.ContentType;
-
-            byte[] fileBytes;
+            blobHttpHeader.ContentType = file.ContentType;       
 
             using (var memoryStream = new MemoryStream())
             {
-                await file.CopyToAsync(memoryStream);
-                fileBytes = memoryStream.ToArray();
+                await file.CopyToAsync(memoryStream);              
             }
 
             using (var stream = file.OpenReadStream())
