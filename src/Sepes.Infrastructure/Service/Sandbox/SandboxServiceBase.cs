@@ -59,11 +59,6 @@ namespace Sepes.Infrastructure.Service
             return sandbox;
         }
 
-        protected async Task<bool> SandboxWithNameAllreadyExists(string sandboxName)
-        {
-            return await SandboxSingularQueries.SandboxWithNameAllreadyExists(_db, sandboxName);           
-        }
-
         protected async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes)
         {
             var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, userOperation, withIncludes);
