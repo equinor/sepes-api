@@ -19,7 +19,8 @@ env:
 
 jobs:
   dockerbuild:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/ci'
     env:
         environment: CI
     steps:
@@ -42,7 +43,7 @@ jobs:
 
   prod:
     if: github.ref == 'refs/heads/functionrun'
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     env:
         environment: prod
         azureSubscriptionId: 87f8c7ae-703b-4975-8a05-be359583c563
@@ -108,11 +109,6 @@ jobs:
       - name: runId
         env:
           id: ${{ env.GITHUB_RUN_ID }}
-        shell: pwsh
+        shell: powershell
         run: |
-          #echo $GITHUB_RUN_ID
-          #echo ${{ env.GITHUB_RUN_ID }}
-          #echo $id
-          echo $Env:id
-          echo $GITHUB_WORKFLOW
-          echo ${{ env.runner }}
+          write-host "testing $GITHUB_RUN_ID"
