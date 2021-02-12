@@ -25,12 +25,12 @@ namespace Sepes.Infrastructure.Service
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
         readonly IAzureVNetService _azureVNetService;
-        readonly IAzureStorageAccountService _azureStorageAccountService;
+        readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
         readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, ICloudResourceReadService sandboxResourceService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
-            IAzureVNetService azureVNetService, IAzureStorageAccountService azureStorageAccountService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
+            IAzureVNetService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService)
         {
 
@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
             _virtualMachineRuleService = virtualMachineRuleService;
 
             _azureVNetService = azureVNetService;
-            _azureStorageAccountService = azureStorageAccountService;
+            _azureStorageAccountNetworkRuleService = azureStorageAccountNetworkRuleService;
             _nsgRuleService = nsgRuleService;
         }
 
@@ -214,7 +214,7 @@ namespace Sepes.Infrastructure.Service
                 if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                 {
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                    await _azureStorageAccountService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                    await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                 }
                 else
                 {
@@ -296,7 +296,7 @@ namespace Sepes.Infrastructure.Service
                     if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                     {
                         var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                        await _azureStorageAccountService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                        await _azureStorageAccountNetworkRuleService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                     }
                     else
                     {

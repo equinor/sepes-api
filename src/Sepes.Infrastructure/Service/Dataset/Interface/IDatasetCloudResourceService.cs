@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task CreateResourcesForStudySpecificDatasetAsync(Dataset dataset, string clientIp, CancellationToken cancellationToken = default);
 
-        Task EnsureExistFirewallExceptionForApplication(Study study, Dataset dataset, CancellationToken cancellationToken = default);      
+        Task EnsureFirewallExistsAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default);      
 
         Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default);
 

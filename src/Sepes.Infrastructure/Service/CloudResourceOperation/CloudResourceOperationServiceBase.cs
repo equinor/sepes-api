@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -65,9 +66,10 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        protected async Task<CloudResourceOperation> GetResourceOperationOrThrowAsync(int id)
+        protected async Task<CloudResourceOperation> GetResourceOperationOrThrowAsync(int id, bool asNoTracking = false)
         {
             var entityFromDb = await _db.CloudResourceOperations
+                .If(asNoTracking, x=> x.AsNoTracking())
                 .Include(o => o.DependsOnOperation)
                 .ThenInclude(o => o.Resource)
                 .Include(o => o.Resource)

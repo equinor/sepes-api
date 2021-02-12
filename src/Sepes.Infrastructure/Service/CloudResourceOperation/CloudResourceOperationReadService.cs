@@ -27,10 +27,16 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<bool> OperationIsFinishedAndSucceededAsync(int operationId)
         {
-            var itemFromDb = await GetResourceOperationOrThrowAsync(operationId);
+            var itemFromDb = await GetResourceOperationOrThrowAsync(operationId, true);
 
             return itemFromDb.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
-        }       
+        }
+
+        public async Task<bool> OperationFailedOrAbortedAsync(int operationId)
+        {
+            var itemFromDb = await GetResourceOperationOrThrowAsync(operationId, true);
+            return (itemFromDb.Status == CloudResourceOperationState.FAILED && itemFromDb.TryCount >= itemFromDb.MaxTryCount) || itemFromDb.Status == CloudResourceOperationState.ABORTED;
+        }
 
         public async Task<CloudResourceOperation> GetUnfinishedDeleteOperation(int resourceId)
         {
@@ -38,10 +44,6 @@ namespace Sepes.Infrastructure.Service
                .Where(o => o.CloudResourceId == resourceId
                && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
                ).FirstOrDefaultAsync();
-        }
-
-      
-
-
+        }      
     }
 }

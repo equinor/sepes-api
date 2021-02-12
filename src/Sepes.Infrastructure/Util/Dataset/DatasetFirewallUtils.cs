@@ -29,30 +29,73 @@ namespace Sepes.Infrastructure.Util
             return CloudResourceConfigStringSerializer.Serialize(translated);
         }
 
-        public static async Task SetDatasetFirewallRules(IConfiguration config, ILogger logger, UserDto user, Dataset dataset, string clientIp)
+        public static async Task EnsureDatasetHasFirewallRules(IConfiguration config, ILogger logger, UserDto user, Dataset dataset, string clientIp)
         {
-            //add state
-            dataset.FirewallRules = new List<DatasetFirewallRule>();
-
-            //Add user's client IP 
-            if (clientIp != "::1" && clientIp != "0.0.0.1")
-            {
-                dataset.FirewallRules.Add(CreateClientRule(user, clientIp));
-            }
-
-            //Add API Ip, so that it can upload/download files 
-
             var serverPublicIp = await IpAddressUtil.GetServerPublicIp(config);
 
-            if(clientIp != serverPublicIp)
-            {
-                dataset.FirewallRules.Add(CreateServerRule(user, serverPublicIp));
-            }           
+            SetDatasetFirewallRules(user, dataset, clientIp, serverPublicIp);
 
             logger.LogInformation($"Creating firewall rules for dataset {dataset.Id}, clientIp: {clientIp}, serverIp: {serverPublicIp}");
         }
 
-        static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
+        public static bool SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp, string serverIp)
+        {
+            var clientRule = DatasetFirewallUtils.CreateClientRule(user, clientIp);
+            var serverRule = DatasetFirewallUtils.CreateServerRule(user, serverIp);
+
+            bool anyChanges = false;
+
+            if (dataset.FirewallRules == null)
+            {
+                dataset.FirewallRules = new List<DatasetFirewallRule>();
+            }
+
+            var newRuleSet = RemoveOldRules(dataset.FirewallRules);
+
+            if (newRuleSet.Count < dataset.FirewallRules.Count)
+            {
+                anyChanges = true;
+            }
+
+            if (ClientIpIsValid(clientIp))
+            {
+                if (!newRuleSet.Where(r => r.RuleType == clientRule.RuleType && r.Address == clientRule.Address).Any())
+                {
+                    newRuleSet.Add(clientRule);
+                    anyChanges = true;
+                }
+            }
+
+            if (!clientIp.Equals(serverIp) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
+            {
+                newRuleSet.Add(serverRule);
+                anyChanges = true;
+            }
+
+            if (anyChanges)
+            {
+                dataset.FirewallRules = newRuleSet;
+            }
+
+            return anyChanges;
+        }
+
+        static ICollection<DatasetFirewallRule> RemoveOldRules(ICollection<DatasetFirewallRule> source)
+        {
+            return source.Where(r => r.Created.AddMonths(1) >= DateTime.UtcNow).ToList();
+        }
+
+        static bool ClientIpIsValid(string clientIp)
+        {
+            if (clientIp != "::1" && clientIp != "0.0.0.1")
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
         {
             return CreateRule(user, DatasetFirewallRuleType.Client, clientIp);
         }
@@ -64,7 +107,7 @@ namespace Sepes.Infrastructure.Util
         }
 
         public static DatasetFirewallRule CreateServerRule(UserDto user, string ip)
-        {          
+        {
             return CreateRule(user, DatasetFirewallRuleType.Api, ip);
         }
 

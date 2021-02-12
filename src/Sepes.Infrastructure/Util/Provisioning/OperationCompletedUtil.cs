@@ -3,6 +3,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util.Provisioning
@@ -32,6 +33,28 @@ namespace Sepes.Infrastructure.Util.Provisioning
             }
 
             throw new ProvisioningException($"Unexpected provisioning state for allready completed Resource: {currentProvisioningState}");
+        }
+
+        public static async Task WaitForOperationToCompleteAsync(ICloudResourceOperationReadService cloudResourceOperationReadService, int operationId, int timeoutInSeconds = 60) 
+        {
+            var timeout = TimeSpan.FromSeconds(timeoutInSeconds);
+            var startTime = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - startTime) < timeout)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                if (await cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operationId))
+                {
+                    return;
+                }
+                else if (await cloudResourceOperationReadService.OperationFailedOrAbortedAsync(operationId))
+                {
+                    throw new Exception("Awaited operation failed");
+                }
+            }
+
+            throw new Exception("Awaited operation timed out");
         }
     }
 
