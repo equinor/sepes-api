@@ -100,14 +100,14 @@ namespace Sepes.Infrastructure.Service
 
                         await OperationCheckUtils.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, queueParentItem, _resourceOperationReadService);
 
-                        var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
-
                         await ProvisioningParamaterUtil.PrepareForNewOperation(currentProvisioningParameters, currentOperation, currentProvisioningResult, _resourceReadService);
 
                         await ProvisioningQueueUtil.IncreaseInvisibleBasedOnResource(currentOperation, queueParentItem, _workQueue);
 
                         if (CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(currentOperation))
                         {
+                            var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
+
                             if (await OperationCompletedUtil.HandledAsAllreadyCompletedAsync(currentOperation, _monitoringService))
                             {
                                 currentProvisioningResult = await provisioningService.GetSharedVariables(currentProvisioningParameters);
@@ -127,6 +127,7 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))
                         {
+                            var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
                             currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
@@ -145,12 +146,13 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (EnsureFirewallRulesUtil.CanHandle(currentOperation))
                         {
+                            var firewallRuleService = AzureResourceServiceResolver.GetFirewallRuleService(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
-                            if (provisioningService is IHasNetworkRules)
+                            if (firewallRuleService is IHasFirewallRules)
                             {
                                 await EnsureFirewallRulesUtil.Handle(currentOperation,
-                                    provisioningService as IHasNetworkRules,
+                                    firewallRuleService,
                                     _resourceReadService,
                                     _resourceOperationUpdateService,
                                     _logger);
@@ -159,17 +161,18 @@ namespace Sepes.Infrastructure.Service
                             }
                             else
                             {
-                                throw new ProvisioningException($"Service {provisioningService.GetType().Name} does not support firewall operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
+                                throw new ProvisioningException($"Service {firewallRuleService.GetType().Name} does not support firewall operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
                             }
                         }
                         else if (EnsureCorsRulesUtil.CanHandle(currentOperation))
                         {
+                            var corsRuleService = AzureResourceServiceResolver.GetCorsRuleServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
-                            if (provisioningService is IHasCorsRules)
+                            if (corsRuleService is IHasCorsRules)
                             {
                                 await EnsureCorsRulesUtil.Handle(currentOperation,
-                                    provisioningService as IHasCorsRules,
+                                    corsRuleService,
                                     _resourceReadService,
                                     _resourceOperationUpdateService,
                                     _logger);
@@ -178,7 +181,7 @@ namespace Sepes.Infrastructure.Service
                             }
                             else
                             {
-                                throw new ProvisioningException($"Service {provisioningService.GetType().Name} does not support CORS operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
+                                throw new ProvisioningException($"Service {corsRuleService.GetType().Name} does not support CORS operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
                             }
                         }
                         else
@@ -190,7 +193,6 @@ namespace Sepes.Infrastructure.Service
                     }
                     catch (ProvisioningException ex) //Inner loop, ordinary exception is not catched
                     {
-
                         if (ex.LogAsWarning)
                         {
                             if (ex.IncludeExceptionInWarningLog)
@@ -212,15 +214,13 @@ namespace Sepes.Infrastructure.Service
                         if (!String.IsNullOrWhiteSpace(ex.NewOperationStatus))
                         {
                             currentOperation = await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, ex.NewOperationStatus);
-                        }                       
+                        }
 
                         if (!ex.ProceedWithOtherOperations)
                         {
                             throw;
                         }
                     }
-
-
                 } //foreach               
 
                 _logger.LogInformation($"Done handling message: {queueParentItem.MessageId}");
@@ -263,7 +263,6 @@ namespace Sepes.Infrastructure.Service
                     {
                         currentOperation = await _resourceOperationUpdateService.SetQueueInformationAsync(currentOperation.Id, queueParentItem.MessageId, queueParentItem.PopReceipt, queueParentItem.NextVisibleOn.Value);
                     }
-
                 }
             }
             catch (Exception ex) //Outer loop catch 2
