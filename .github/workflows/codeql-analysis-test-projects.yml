@@ -19,7 +19,7 @@ jobs:
     name: Analyze
     runs-on: ubuntu-latest
     env:
-      config: 'Debug'
+      config: 'release'
 
     strategy:
       fail-fast: false
@@ -46,15 +46,11 @@ jobs:
 
 
     - name: Build Infrastructure
-      working-directory: src/Sepes.Infrastructure
+      working-directory: src/Sepes.Tests
       run: dotnet build --configuration $config
 
     - name: Build Function App
-      working-directory: src/Sepes.Functions
-      run: dotnet build --configuration $config
-
-    - name: Build Api
-      working-directory: src/Sepes.RestApi
+      working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet build --configuration $config
 
     # ℹ️ Command-line programs to run using the OS shell.

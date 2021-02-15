@@ -3,7 +3,7 @@
 #
 # You may wish to alter this file to override the set of languages analyzed,
 # or to provide custom queries or build logic.
-name: "CodeQL"
+name: "CodeQL Deployed code"
 
 on:
   push:
@@ -18,6 +18,8 @@ jobs:
   analyze:
     name: Analyze
     runs-on: ubuntu-latest
+    env:
+      config: 'release'
 
     strategy:
       fail-fast: false
@@ -45,8 +47,17 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v1
+     - name: Build Infrastructure
+      working-directory: src/Sepes.Infrastructure
+      run: dotnet build --configuration $config
+
+    - name: Build Function App
+      working-directory: src/Sepes.Functions
+      run: dotnet build --configuration $config
+
+    - name: Build Api
+      working-directory: src/Sepes.RestApi
+      run: dotnet build --configuration $config
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
