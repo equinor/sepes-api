@@ -45,11 +45,11 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
 
-    - name: Build Infrastructure
+    - name: Build Unit Tests
       working-directory: src/Sepes.Tests
       run: dotnet build --configuration $config
 
-    - name: Build Function App
+    - name: Build Integration Tests
       working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet build --configuration $config
 
