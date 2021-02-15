@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Util
 
         public static bool ReadyForProcessing(CloudResourceOperationDto operation)
         {
-            return IsAborted(operation) == false;          
+            return !IsAborted(operation);          
         }
 
         public static CloudResourceOperation GetCreateOperation(CloudResource resource)

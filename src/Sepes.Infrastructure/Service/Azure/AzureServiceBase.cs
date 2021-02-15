@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
 
         protected string GetSharedVariableThrowIfNotFoundOrEmpty(ResourceProvisioningParameters parameters, string variableName, string descriptionForErrorMessage)
         {
-            if (parameters.TryGetSharedVariable(variableName, out string sharedVariableValue) == false)
+            if (!parameters.TryGetSharedVariable(variableName, out string sharedVariableValue))
             {
                 throw new ArgumentException($"{this.GetType().Name}: Missing {descriptionForErrorMessage} from input");
             }

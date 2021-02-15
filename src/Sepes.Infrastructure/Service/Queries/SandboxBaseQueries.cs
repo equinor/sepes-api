@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Queries
     {
         public static IQueryable<Sandbox> ActiveSandboxesBaseQueryable(SepesDbContext db)
         {
-            return db.Sandboxes.Where(s => s.Deleted == false);
+            return db.Sandboxes.Where(s => !s.Deleted);
         }
       
         public static IQueryable<Sandbox> ActiveSandboxesMinimalIncludesQueryable(SepesDbContext db)

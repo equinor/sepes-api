@@ -135,6 +135,7 @@ namespace Sepes.RestApi
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+            services.AddScoped<IHealthService, HealthService>();
 
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
@@ -190,6 +191,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IAzureStorageAccountTokenService, AzureStorageAccountTokenService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
@@ -265,9 +267,7 @@ namespace Sepes.RestApi
 
         void DoMigration()
         {
-            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
-
-            string logMessage;
+            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];         
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
             {
@@ -343,8 +343,8 @@ namespace Sepes.RestApi
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_SWAGGER_CLIENT_SECRET]);
+                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
+                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
                 c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
                 c.OAuthAppName("Sepes Development");
                 c.OAuthScopeSeparator(" ");

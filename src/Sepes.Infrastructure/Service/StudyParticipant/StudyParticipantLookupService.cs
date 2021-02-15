@@ -72,7 +72,7 @@ namespace Sepes.Infrastructure.Service
 
                 foreach (var curAzureUser in usersFromAzureAd)
                 {
-                    if (usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId) == false)
+                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId))
                     {
                         usersFromDbAsDictionary.Add(curAzureUser.ObjectId, curAzureUser);
                     }

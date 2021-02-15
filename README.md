@@ -7,7 +7,7 @@ A platform that allows vendors prove their solutions on your data in a sandbox
 
 ## Making commits
 
-We use [commitizen](http://commitizen.github.io/cz-cli) (and [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)) to make our commits. Tip:  run "npx git-cz" to make commits. 
+We use [commitizen](http://commitizen.github.io/cz-cli) (and [conventional-changelog](https://github.com/conventional-changelog/conventional-changelog)) to make our commits. Tip: run "npx git-cz" to make commits. 
 
 We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a PATCH:
 

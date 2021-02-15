@@ -2,12 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
-    public class SandboxResourceRetryLinkResolver : IValueResolver<CloudResource, SandboxResourceLightDto, string>
+    public class SandboxResourceRetryLinkResolver : IValueResolver<CloudResource, SandboxResourceLight, string>
     {
         public readonly IConfiguration _config;
         public SandboxResourceRetryLinkResolver(IConfiguration config)
@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             this._config = config;
         }       
 
-        public string Resolve(CloudResource source, SandboxResourceLightDto destination, string destMember, ResolutionContext context)
+        public string Resolve(CloudResource source, SandboxResourceLight destination, string destMember, ResolutionContext context)
         {            
             var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 

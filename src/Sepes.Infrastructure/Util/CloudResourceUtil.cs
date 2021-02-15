@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Util
             foreach(var curResource in resources)
             {
                 if(curResource.ResourceType == resourceType &&
-                    (mustBeSandboxControlled == false || (mustBeSandboxControlled && curResource.SandboxControlled) ))
+                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled) ))
                 {
                     return curResource;
                 }
@@ -84,7 +84,7 @@ namespace Sepes.Infrastructure.Util
             return study.Sandboxes
                 .Where(sb => !SoftDeleteUtil.IsMarkedAsDeleted(sb))
                 .Select(sb => GetSandboxResourceGroupEntry(sb.Resources))
-                .Where(r => r.Deleted == false)
+                .Where(r => !r.Deleted)
                 .ToList();
         }
 
@@ -107,7 +107,7 @@ namespace Sepes.Infrastructure.Util
             foreach (var curResource in resources)
             {
                 if (curResource.ResourceType == resourceType &&
-                    (mustBeSandboxControlled == false || (mustBeSandboxControlled && curResource.SandboxControlled)))
+                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled)))
                 {
                     result.Add(curResource);
                 }

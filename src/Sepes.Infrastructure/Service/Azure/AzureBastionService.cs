@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out string subnetId) == false)
+            if (!parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out string subnetId))
             {
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }

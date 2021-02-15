@@ -28,6 +28,7 @@ spec:
             SEPES_HttpOnly: "true"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
+            AllowCorsDomains: "https://frontend-sepes-web-prod.radix.equinor.com,https://sepes.equinor.com"
           replicas: 2
           monitoring: true
           resources:
@@ -42,6 +43,7 @@ spec:
             SEPES_HttpOnly: "true"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
+            AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com"
           replicas: 2
           monitoring: true
           resources:
