@@ -47,7 +47,7 @@ jobs:
 
     # Autobuild attempts to build any compiled languages  (C/C++, C#, or Java).
     # If this step fails, then you should remove it and run the build manually (see below)
-     - name: Build Infrastructure
+    - name: Build Infrastructure
       working-directory: src/Sepes.Infrastructure
       run: dotnet build --configuration $config
 
