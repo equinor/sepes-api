@@ -55,9 +55,7 @@ namespace Sepes.Infrastructure.Service
             else if (resourceGroupResourceOperation.OperationType != CloudResourceOperationType.CREATE && resourceGroupResourceOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
             {
                 throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxId, "Could not locate RELEVANT database entry for ResourceGroupOperation"));
-            }
-
-            var operations = new List<CloudResourceOperation>();
+            }      
 
             foreach (var curResource in sandboxFromDb.Resources)
             {
