@@ -10,8 +10,8 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Mocks;
-using Sepes.Tests.Mocks.Azure;
 
 namespace Sepes.Tests.Setup
 {

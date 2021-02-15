@@ -43,6 +43,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             return responseWrapper;
         }
 
+        public async Task<ApiResponseWrapper<T>> Put<T>(string requestUri)
+        {
+            var response = await _client.PutAsync(requestUri, null);
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
+        }
+
         private async Task<T> GetResponseObject<T>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();

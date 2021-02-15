@@ -7,8 +7,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
+using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
 using System;
 using System.Linq;
@@ -46,6 +48,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
+                services.AddScoped<IAzureQueueService, AzureQueueServiceMock>();
                 services.AddAuthentication("IntegrationTest")
                     .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(
                       "IntegrationTest",

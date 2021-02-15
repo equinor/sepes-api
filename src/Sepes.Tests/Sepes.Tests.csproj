@@ -68,4 +68,8 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Mocks\Azure\" />
+	</ItemGroup>
+
 </Project>

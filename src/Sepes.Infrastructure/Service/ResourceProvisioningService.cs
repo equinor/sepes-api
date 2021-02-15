@@ -61,12 +61,12 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DequeueAndHandleWork()
         {
-            var work = await _workQueue.RecieveMessageAsync();
+            var work = await _workQueue.ReceiveMessageAsync();
 
             while (work != null)
             {
                 await HandleWork(work);
-                work = await _workQueue.RecieveMessageAsync();
+                work = await _workQueue.ReceiveMessageAsync();
             }
         }
 
