@@ -16,6 +16,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<CloudResourceOperation> GetUnfinishedDeleteOperation(int resourceId);      
 
         Task<bool> OperationIsFinishedAndSucceededAsync(int operationId);
+        Task<bool> OperationFailedOrAbortedAsync(int operationId);
         Task<bool> HasUnstartedCreateOrUpdateOperation(int resourceId);
        
     }

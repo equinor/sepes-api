@@ -30,6 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
@@ -37,6 +38,7 @@ namespace Sepes.Infrastructure.Service
            IUserService userService,
            IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
+              ICloudResourceOperationReadService cloudResourceOperationReadService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
         {
@@ -45,7 +47,8 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;
             _userService = userService;
             _studyModelService = studyModelService;
-            _cloudResourceCreateService = cloudResourceCreateService;        
+            _cloudResourceCreateService = cloudResourceCreateService;
+            _cloudResourceOperationReadService = cloudResourceOperationReadService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
         }
@@ -79,11 +82,11 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
             var parentQueueItem = QueueItemFactory.CreateParent("Create resources for Study Specific Dataset");
-            var resourceGroupDb = GetResourceGroupForStudySpecificDataset(dataset.Study);     
+            var resourceGroupDb = GetResourceGroupForStudySpecificDataset(dataset.Study);
             await OrderCreationOfStudySpecificDatasetStorageAccount(dataset, resourceGroupDb, clientIp, parentQueueItem, cancellationToken);
 
             await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
-        }      
+        }
 
         CloudResource GetResourceGroupForStudySpecificDataset(Study study, bool includeDeleted = false)
         {
@@ -132,12 +135,12 @@ namespace Sepes.Infrastructure.Service
 
                 var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, dataset.Study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
-                               
+
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetFirewallUtils.SetDatasetFirewallRules(_config, _logger, currentUser, dataset, clientIp);
+                await DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_config, _logger, currentUser, dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
@@ -157,55 +160,27 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Failed to schedule creation of Azure Storage Account", ex);
             }
-        }
+        }       
 
-        public async Task EnsureExistFirewallExceptionForApplication(Study study, Dataset dataset, CancellationToken cancellationToken = default)
+        public async Task EnsureFirewallExistsAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverRule = await DatasetFirewallUtils.CreateServerRuleAsync(_config, currentUser);
+            var serverPublicIp = await IpAddressUtil.GetServerPublicIp(_config);
 
-            bool serverRuleAllreadyExist = false;
-
-            var rulesToRemove = new List<DatasetFirewallRule>();
-
-            //Get firewall rules from  database, determine of some have to be deleted
-            foreach (var curDbRule in dataset.FirewallRules)
+            if (DatasetFirewallUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp, serverPublicIp))
             {
-                if (curDbRule.RuleType == DatasetFirewallRuleType.Api)
-                {
-                    if (curDbRule.Address == serverRule.Address)
-                    {
-                        serverRuleAllreadyExist = true;
-                    }
-                    else
-                    {
-                        if (curDbRule.Created.AddMonths(1) < DateTime.UtcNow)
-                        {
-                            rulesToRemove.Add(curDbRule);
-                        }
-                    }
-                }
-            }
+                await _db.SaveChangesAsync(cancellationToken);
 
-            foreach (var curRuleToRemove in rulesToRemove)
-            {
-                dataset.FirewallRules.Remove(curRuleToRemove);
-            }
+                var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
+                var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+                var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
+                    CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);
 
-            if (!serverRuleAllreadyExist)
-            {
-                dataset.FirewallRules.Add(serverRule);
-            }
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, firewallUpdateOperation);
 
-            await _db.SaveChangesAsync(cancellationToken);
-
-            var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
-            var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
-            var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
-                CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);
-
-            await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, firewallUpdateOperation);
+                await OperationCompletedUtil.WaitForOperationToCompleteAsync(_cloudResourceOperationReadService, firewallUpdateOperation.Id);            
+            } 
         }
 
         public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
@@ -257,6 +232,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Failed to delete resources for study specific dataset", ex);
             }
-        }       
+        }
     }
 }

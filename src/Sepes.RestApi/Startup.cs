@@ -191,6 +191,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
             services.AddTransient<IAzureStorageAccountTokenService, AzureStorageAccountTokenService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
