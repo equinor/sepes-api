@@ -85,7 +85,7 @@ jobs:
 
       - uses: cschleiden/replace-tokens@v1
         with:
-          files: '["src\Sepes.Functions\appsettings.prod.txt"]'
+          files: '["src/Sepes.Functions/appsettings.prod.txt"]'
         env:
           KeyvaultName: ${{ secrets.PROD_KEYVAULT_NAME }}
 
