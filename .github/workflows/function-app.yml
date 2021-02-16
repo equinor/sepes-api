@@ -59,6 +59,13 @@ jobs:
         run: |
           echo "Testing var1 $GITHUB_RUN_ID"
 
+      - name: runIdPWSH
+        env:
+          ID: $GITHUB_RUN_ID
+        shell: pwsh
+        run: |
+          echo "Testing var1 $env:ID"
+
       # # Docker login
       # - uses: azure/docker-login@v1
       #   with:
