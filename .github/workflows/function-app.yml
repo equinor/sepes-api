@@ -19,7 +19,7 @@ env:
 
 jobs:
   dockerbuild:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/ci'
     env:
         environment: CI
@@ -62,7 +62,7 @@ jobs:
       - name: docker build
         run: |
           docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
-          docker push ${{ env.acr }}${{ env.environment }}
+          docker push ${{ env.acr }}${{ env.environment }} -a
 
       - name: Install modules
         shell: pwsh
