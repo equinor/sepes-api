@@ -54,11 +54,15 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             assignableByVendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
             assignableByVendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
 
+            var assignableByVendorContributor = new List<LookupDto>();
+            assignableByVendorContributor.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
+
             var allData = new List<object[]>
             {
                 new object[] { StudyRoles.StudyViewer, new List<LookupDto> { }},
                 new object[] { StudyRoles.SponsorRep, assignableBySponsorRep},
-                new object[] { StudyRoles.VendorAdmin, assignableByVendorAdmin}
+                new object[] { StudyRoles.VendorAdmin, assignableByVendorAdmin},
+                new object[] { StudyRoles.VendorContributor, assignableByVendorContributor }
             };
          
             return allData;           
