@@ -52,18 +52,12 @@ namespace Sepes.Infrastructure.Service
                 {
                     continue;
                 }
-                if (role.RoleName == Constants.StudyRoles.StudyViewer)
+                if (role.RoleName == Constants.StudyRoles.VendorContributor)
                 {
-                    returnList.Add(new LookupDto { Key = Constants.StudyRoles.StudyViewer, DisplayValue = Constants.StudyRoles.StudyViewer });
-                }
-                else if (role.RoleName == Constants.StudyRoles.VendorContributor)
-                {
-                    returnList.Add(new LookupDto { Key = Constants.StudyRoles.StudyViewer, DisplayValue = Constants.StudyRoles.StudyViewer });
                     returnList.Add(new LookupDto { Key = Constants.StudyRoles.VendorContributor, DisplayValue = Constants.StudyRoles.VendorContributor });
                 }
                 else if (role.RoleName == Constants.StudyRoles.VendorAdmin)
                 {
-                    returnList.Add(new LookupDto { Key = Constants.StudyRoles.StudyViewer, DisplayValue = Constants.StudyRoles.StudyViewer });
                     returnList.Add(new LookupDto { Key = Constants.StudyRoles.VendorAdmin, DisplayValue = Constants.StudyRoles.VendorAdmin });
                     returnList.Add(new LookupDto { Key = Constants.StudyRoles.VendorContributor, DisplayValue = Constants.StudyRoles.VendorContributor });
                 }
