@@ -59,13 +59,13 @@ namespace Sepes.Infrastructure.Service
                     result.Add(Constants.StudyRoles.VendorAdmin, new LookupDto(Constants.StudyRoles.VendorAdmin));
                     result.Add(Constants.StudyRoles.VendorContributor, new LookupDto(Constants.StudyRoles.VendorContributor));
                 }
-                else if (curExistingRole.RoleName == Constants.StudyRoles.SponsorRep)
+                else if (curExistingRole.RoleName == Constants.StudyRoles.SponsorRep || curExistingRole.RoleName == Constants.StudyRoles.StudyOwner)
                 {                   
                     result.Add(Constants.StudyRoles.SponsorRep, new LookupDto(Constants.StudyRoles.SponsorRep));
                     result.Add(Constants.StudyRoles.VendorAdmin, new LookupDto(Constants.StudyRoles.VendorAdmin));
                     result.Add(Constants.StudyRoles.VendorContributor, new LookupDto(Constants.StudyRoles.VendorContributor));
                     result.Add(Constants.StudyRoles.StudyViewer, new LookupDto(Constants.StudyRoles.StudyViewer));
-                }
+                }               
             }
 
             return result.Values.ToList();

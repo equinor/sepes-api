@@ -32,20 +32,20 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             await RefreshAndSeedTestDatabase(studyRole);
             var lookupService = LookupServiceMockFactory.GetLookupService(_serviceProvider);
             var roles = await lookupService.StudyRolesUserCanGive(1);
-            var rolesList = roles.ToList();          
-            
+            var rolesList = roles.ToList();
+
             Xunit.Assert.Equal(expectedRoles.Count, rolesList.Count);
-          
+
             CollectionAssert.AreEquivalent(expectedRoles, rolesList);
         }
 
         public static List<object[]> GetData()
         {
-            var assignableBySponsorRep = new List<LookupDto>();
-            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.StudyViewer, DisplayValue = StudyRoles.StudyViewer });
-            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.SponsorRep, DisplayValue = StudyRoles.SponsorRep });
-            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
-            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
+            var assignableByStudyOwnerAndSponsorRep = new List<LookupDto>();
+            assignableByStudyOwnerAndSponsorRep.Add(new LookupDto { Key = StudyRoles.StudyViewer, DisplayValue = StudyRoles.StudyViewer });
+            assignableByStudyOwnerAndSponsorRep.Add(new LookupDto { Key = StudyRoles.SponsorRep, DisplayValue = StudyRoles.SponsorRep });
+            assignableByStudyOwnerAndSponsorRep.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
+            assignableByStudyOwnerAndSponsorRep.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
 
             var assignableByVendorAdmin = new List<LookupDto>();
             assignableByVendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
@@ -57,12 +57,13 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             var allData = new List<object[]>
             {
                 new object[] { StudyRoles.StudyViewer, new List<LookupDto> { }},
-                new object[] { StudyRoles.SponsorRep, assignableBySponsorRep},
+                new object[] { StudyRoles.StudyOwner, assignableByStudyOwnerAndSponsorRep},
+                new object[] { StudyRoles.SponsorRep, assignableByStudyOwnerAndSponsorRep},
                 new object[] { StudyRoles.VendorAdmin, assignableByVendorAdmin},
                 new object[] { StudyRoles.VendorContributor, assignableByVendorContributor }
             };
-         
-            return allData;           
+
+            return allData;
         }
     }
 }

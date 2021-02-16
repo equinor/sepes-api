@@ -14,7 +14,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase(string roleType)
         {
-            var db = await ClearTestDatabase();
+            var db = await ClearTestDatabaseAddUser();           
 
             var study = new Study()
             {
@@ -23,7 +23,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
                 StudyParticipants = new List<Infrastructure.Model.StudyParticipant>
                     {
                     
-                        new Infrastructure.Model.StudyParticipant(){ StudyId = 1, UserId = 1, RoleName = roleType }
+                        new Infrastructure.Model.StudyParticipant(){ UserId = 1, RoleName = roleType }
                     }
             };
 
