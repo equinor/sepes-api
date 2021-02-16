@@ -45,6 +45,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.11" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
     <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="System.Data.Sqlclient" Version="4.8.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.console" Version="2.4.1">
