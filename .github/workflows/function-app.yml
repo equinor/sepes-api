@@ -55,7 +55,7 @@ jobs:
       - name: runId
         env:
           id: ${{ env.GITHUB_RUN_ID }}
-        shell: powershell
+        shell: bash
         run: |
           write-host "Testing var1 $GITHUB_RUN_ID"
           write-host "Testing var2 $env:id"
