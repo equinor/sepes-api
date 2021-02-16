@@ -10,3 +10,5 @@ CodeCoverage/
 
 # Tools folder with binary files
 tools/
+
+codeqldb/
