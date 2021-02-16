@@ -121,9 +121,15 @@ function Set-FunctionAppSettings {
         $AppSettings = "./appsettings.txt"
     )
 
-    $settings = Get-Content "$AppSettings"
-    Write-Output "Updating application settings for $FunctionName"
-    az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings
+    try {
+        $settings = Get-Content "$AppSettings"
+        Write-Output "Updating application settings for $FunctionName"
+        az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings
+    }
+    catch {
+        throw "Cant set appsettings"
+    }
+    
 }
 
 function Update-FunctionAppContainerSettings {
