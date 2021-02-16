@@ -64,7 +64,7 @@ jobs:
           ID: ${env:GITHUB_RUN_ID}
         shell: pwsh
         run: |
-          Write-Host "Testing var1 $env:ID"
+          Write-Host "Testing var1 ${env:GITHUB_RUN_ID}"
 
       # # Docker login
       # - uses: azure/docker-login@v1
