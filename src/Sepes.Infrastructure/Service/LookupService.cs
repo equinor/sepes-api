@@ -1,10 +1,8 @@
 ﻿using AutoMapper;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,12 +11,12 @@ namespace Sepes.Infrastructure.Service
 {
     public class LookupService : ILookupService
     {
+        public SepesDbContext _db;
         public IMapper _mapper;
         public IUserService _userService;
-        public SepesDbContext _db;
         public IStudyModelService _studyModelService;
 
-        public LookupService(IMapper mapper, IUserService userService, SepesDbContext db, IStudyModelService studyModelService)
+        public LookupService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyModelService studyModelService)
         {
             _mapper = mapper;
             _userService = userService;
@@ -40,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<LookupDto>> StudyRolesUserCanGive(int studyId)
         {
             var user = await _userService.GetCurrentUserAsync();
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
+            var studyFromDb = await _studyModelService.GetByIdWithoutPermissionCheckAsync(studyId, true, true);
                     
             var existingParticipantRoles = studyFromDb.StudyParticipants.Where(x => x.UserId == user.Id).ToList();
             var result = new Dictionary<string, LookupDto>();
