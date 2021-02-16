@@ -124,10 +124,10 @@ function Set-FunctionAppSettings {
     try {
         $settings = Get-Content "$AppSettings"
         Write-Output "Updating application settings for $FunctionName"
-        $settings = az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings
+        $settings = az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings | Out-Null
     }
     catch {
-        throw "Cant set appsettings"
+        throw "Can't set appsettings"
     }
     
 }
