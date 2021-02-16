@@ -17,18 +17,29 @@ We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a P
 
 ## Setup local dev environment
 
-- [Use this guide](./docs/developers/setup-dev-environment.md)
+TODO: Fix this, old guide is gone  
 
-## Test
+## Tests
+The project Sepes.Tests contains Unit Tests, and the Sepes.RestApi.IntegrationTests contains the Integration Tests
+xUnit is used as test framework.
+For Integration tests, WebApplicationFactory is used, calling the Api Controllers and their dependencies through actual HTTP requests.
 
-### Unit Tests
+### How to run tests
 
-#### How to run unit tests
+#### Prerequisites:
+* Integration tests uses a SQL database, and it should NOT be the same as the development database, because it will be  wiped before every test run.
+    * There is currently a bug, that requires one to specify the connection string for the integration test database, in both Sepes.RestApi and Sepes.RestApi.IntegrationTests
+    * Use the config key: ConnectionStrings:SqlDatabaseIntegrationTests to specify the connectionString for the Integration test database. 
 
-1. In Visual Studio, open the "Test Explorer"-Window and click the "Run All Tests In View"
-2. CMD / Bash etc: From the  use dotnet 
+#### Best option: Run from Visual Studio
+Open the "Test Explorer"-Window and click the "Run All Tests In View"
 
-#### How to generate test coverage report
+#### Console
+* To run both unit and integration tests, navigate to the solution folder and run the "dotnet test" command from there
+* To run only unit tests or integration tests, navigate to their respective project folder and run "dotnet test" 
+ 
+
+### How to generate test coverage report
 Go to the solution folder and run the testcoverage.bat file.
 It will produce a coverage file and open it in the browser.
 
