@@ -3,6 +3,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
@@ -18,13 +19,14 @@ namespace Sepes.RestApi.IntegrationTests
         const string _studySpecificDatasetEndpoint = "api/studies/{0}/datasets/studyspecific";
         const string _sandboxEndpoint = "api/studies/{0}/sandboxes";
         const string _sandboxDatasetEndpoint = "api/sandbox/{0}/datasets/{1}";
-        const string _vmEndpoint = "api/virtualmachines/{0}";      
+        const string _vmEndpoint = "api/virtualmachines/{0}";     
 
         public StudyAndSandboxTest(TestHostFixture testHostFixture)
             :base (testHostFixture)
-        {            
-          
-        }       
+        {
+            //, IResourceProvisioningService resourceProvisioningService
+            //_resourceProvisioningService = resourceProvisioningService;
+        }
 
         [Theory]
         [InlineData(true, false)]
@@ -90,6 +92,17 @@ namespace Sepes.RestApi.IntegrationTests
             Assert.Contains(vmCreateDto.Name, vmDto.Name);
             Assert.Equal(vmCreateDto.OperatingSystem, vmDto.OperatingSystem);
             Assert.Equal(sandboxDto.Region, vmDto.Region);//Same region as sandbox
+
+            //Setup infrastructure
+            SetUserType(isAdmin: true);
+            var doWorkResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
+            Assert.Equal(System.Net.HttpStatusCode.OK, doWorkResponseWrapper.StatusCode);         
+
+         
+
+            //CREATE
+            //GET HOLD OF QUEUE
+            //RUN QUEUE ITEMS
 
             //OPEN INTERNET
 

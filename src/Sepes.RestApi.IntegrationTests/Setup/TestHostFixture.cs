@@ -12,7 +12,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
     {
         public HttpClient Client;
         public SepesDbContext DbContext;
-        public CustomWebApplicationFactory<Startup> factory;
+        public CustomWebApplicationFactory<Startup> Factory;
 
         public TestHostFixture()
         {
@@ -21,8 +21,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
         public void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            factory = new CustomWebApplicationFactory<Startup>(isEmployee, isAdmin, isSponsor, isDatasetAdmin);       
-            Client = factory.CreateClient();
+            Factory = new CustomWebApplicationFactory<Startup>(isEmployee, isAdmin, isSponsor, isDatasetAdmin);       
+            Client = Factory.CreateClient();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("IntegrationTest");
         }
     }

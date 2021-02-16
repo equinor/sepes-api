@@ -29,6 +29,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             return responseWrapper;
         }
 
+        public async Task<ApiResponseWrapper> Get(string requestUri)
+        {
+            var response = await _client.GetAsync(requestUri);
+            var responseWrapper = CreateResponseWrapper(response);
+            return responseWrapper;
+        }
+
         public async Task<ApiResponseWrapper<T>> Delete<T>(string requestUri)
         {
             var response = await _client.DeleteAsync(requestUri);
@@ -62,6 +69,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             var responseWrapper = new ApiResponseWrapper<T>();
             responseWrapper.StatusCode = message.StatusCode;
             responseWrapper.Response = await GetResponseObject<T>(message);
+            return responseWrapper;
+        }
+
+        ApiResponseWrapper CreateResponseWrapper(HttpResponseMessage message)
+        {
+            var responseWrapper = new ApiResponseWrapper();
+            responseWrapper.StatusCode = message.StatusCode;       
             return responseWrapper;
         }
     }

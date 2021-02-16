@@ -127,14 +127,7 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
-        }
-
-        public async Task Delete(string resourceGroupName, string networkName)
-        {
-            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, networkName);
-        }
+        }     
 
         public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
         {
