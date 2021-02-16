@@ -83,6 +83,12 @@ jobs:
           az account set -s ${{ env.azureSubscriptionId }}
           Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
 
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["src\Sepes.Functions\appsettings.prod.txt"]'
+        env:
+          KeyvaultName: ${{ secrets.PROD_KEYVAULT_NAME }}
+
       - name: Deploy Function
         shell: pwsh
         env:
@@ -91,15 +97,15 @@ jobs:
         run: |
           Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
           $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
-          Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
-            -RgName rg-sepes-prod `
+          $functionName = "func-sepes-prod"
+          $rg = "rg-sepes-prod"
+          $appSettings = ".\src\Sepes.Functions\appsettings.prod.txt"
+
+          FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
+
+          Update-FunctionAppContainerSettings -FunctionName $functionName `
+            -RgName $rg `
             -ImageName "$container" `
             -RegistryUsername "$Env:username" `
             -RegistryPassord "$Env:password" `
             -RegistryUrl "${{ env.acr }}"
-
-      - name: Azure logout
-        shell: pwsh
-        run: |
-          az logout
-          LogOut-AzAccount

@@ -118,9 +118,6 @@ function Set-FunctionAppSettings {
         $RgName,
         [Parameter()]
         [string]
-        $StorageAccountName,
-        [Parameter()]
-        [string]
         $AppSettings = "./appsettings.txt"
     )
 
