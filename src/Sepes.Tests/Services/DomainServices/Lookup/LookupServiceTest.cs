@@ -28,53 +28,42 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             Xunit.Assert.Equal(roles.Count(), expectedValue);
         }
 
-        [MemberData(nameof(GetData), parameters: 2)]
+        [MemberData(nameof(GetData))]
         [Theory]
-        public async void GetStudyRolesNamesUserCanGive(string studyRole, List<LookupDto> expectedValue)
+        public async void GetStudyRolesUserCanGive(string studyRole, List<LookupDto> expectedRoles)
         {
             await RefreshAndSeedTestDatabase(studyRole);
             var lookupService = LookupServiceMockFactory.GetLookupService(_serviceProvider);
-            var roles =  await lookupService.StudyRolesUserCanGive(1);
-            roles = roles.ToList();
-
-            //Assert.Equal(roles, expectedValue);
-            /*
-            var result = true;
-            foreach(var role in roles)
-            {
-                if (!expectedValue.Contains(role))
-                {
-                    result = true;
-                }
-            }
-            */
-
-            CollectionAssert.AreEquivalent(roles.ToList(), expectedValue);
+            var roles = await lookupService.StudyRolesUserCanGive(1);
+            var rolesList = roles.ToList();          
+            
+            Xunit.Assert.Equal(expectedRoles.Count, rolesList.Count);
+          
+            CollectionAssert.AreEquivalent(expectedRoles, rolesList);
         }
 
-        public static List<object[]> GetData(int numTests)
+        public static List<object[]> GetData()
         {
-            var sponsorRepList = new List<LookupDto>();
-            sponsorRepList.Add(new LookupDto { Key = StudyRoles.StudyViewer, DisplayValue = StudyRoles.StudyViewer });
-            sponsorRepList.Add(new LookupDto { Key = StudyRoles.SponsorRep, DisplayValue = StudyRoles.SponsorRep });
-            sponsorRepList.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
-            sponsorRepList.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
+            var assignableBySponsorRep = new List<LookupDto>();
+            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.StudyViewer, DisplayValue = StudyRoles.StudyViewer });
+            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.SponsorRep, DisplayValue = StudyRoles.SponsorRep });
+            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
+            assignableBySponsorRep.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
 
-            var vendorAdmin = new List<LookupDto>();
-            vendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
-            vendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
+            var assignableByVendorAdmin = new List<LookupDto>();
+            assignableByVendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin });
+            assignableByVendorAdmin.Add(new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor });
+
             var allData = new List<object[]>
             {
                 new object[] { StudyRoles.StudyViewer, new List<LookupDto> { }},
-                new object[] { StudyRoles.SponsorRep, sponsorRepList}
-                
+                new object[] { StudyRoles.SponsorRep, assignableBySponsorRep},
+                new object[] { StudyRoles.VendorAdmin, assignableByVendorAdmin}
             };
-            //new object[] { StudyRoles.VendorAdmin, vendorAdmin},
-            return allData;
-            //return allData.Take(numTests);
+         
+            return allData;           
         }
-
     }
 }
-    
+
 
