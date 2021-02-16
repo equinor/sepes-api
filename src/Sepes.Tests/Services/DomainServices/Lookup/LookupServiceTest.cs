@@ -1,13 +1,10 @@
-﻿using Sepes.Tests.Setup;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
-using System.Linq;
-using Sepes.Infrastructure.Dto;
-using Xunit.Extensions;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sepes.Infrastructure.Constants;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Sepes.Infrastructure.Dto;
+using Sepes.Tests.Setup;
+using System.Collections.Generic;
+using System.Linq;
+using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.Lookup
 {
