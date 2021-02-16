@@ -86,7 +86,7 @@ function New-FunctionApp {
         }
     }
     catch {
-        
+        $_.Exception.Message
     }
     $funcApp = Get-AzFunctionApp -Name $FunctionName -ResourceGroupName $RgName
     try {
@@ -124,7 +124,8 @@ function Set-FunctionAppSettings {
     try {
         $settings = Get-Content "$AppSettings"
         Write-Output "Updating application settings for $FunctionName"
-        $settings = az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings | Out-Null
+        # The return has to be surrpressed because the return contains the storage account key
+        $functionSettings = az functionapp config appsettings set -n $FunctionName -g $RgName --settings $settings | Out-Null
     }
     catch {
         throw "Can't set appsettings"
