@@ -101,7 +101,7 @@ jobs:
           $rg = "rg-sepes-prod"
           $appSettings = ".\src\Sepes.Functions\appsettings.prod.txt"
 
-          FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
+          Set-FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
 
           Update-FunctionAppContainerSettings -FunctionName $functionName `
             -RgName $rg `
