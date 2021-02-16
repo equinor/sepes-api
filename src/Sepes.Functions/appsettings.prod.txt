@@ -10,6 +10,7 @@
 "AzureAd__ClientSecret=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/AzureAdClientSecret)"
 "AzureAd__TenantId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/AzureAdTenantId)"
 "AzureVmTempPasswordStorageKeyVault_Url=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/AzureAdTenantId)"
-"ResourceProvisioningQueueConnectionString" =@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/ResourceProvisioningQueueConnectionString)"
+"ResourceProvisioningQueueConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/ResourceProvisioningQueueConnectionString)"
 "SepesRWConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/sepesrwconnectionstring)"
 "SubscriptionId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/SubscriptionId)"
+"test1=test2"
