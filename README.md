@@ -19,6 +19,19 @@ We use (semver)[https://semver.org] to choose if a change is MAJOR, MINOR or a P
 
 - [Use this guide](./docs/developers/setup-dev-environment.md)
 
+## Test
+
+### Unit Tests
+
+#### How to run unit tests
+
+1. In Visual Studio, open the "Test Explorer"-Window and click the "Run All Tests In View"
+2. CMD / Bash etc: From the  use dotnet 
+
+#### How to generate test coverage report
+Go to the solution folder and run the testcoverage.bat file.
+It will produce a coverage file and open it in the browser.
+
 ## System architecture
 
 C4 context diagram:
