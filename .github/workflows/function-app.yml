@@ -57,62 +57,59 @@ jobs:
           echo "runner_id=$GITHUB_RUN_ID" >> $GITHUB_ENV
 
       - name: Set runner Id
-        env:
-          ID: $runner_id
         # shell: pwsh
         run: |
-          echo $ID test1
           echo $runner_id test2
 
-      # # Docker login
-      # - uses: azure/docker-login@v1
-      #   with:
-      #     login-server: ${{ secrets.ACR_URL }}
-      #     username: ${{ secrets.ACR_USERNAME }}
-      #     password: ${{ secrets.ACR_PASSWORD }}
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
 
-      # # Builds the function app
-      # - name: docker build
-      #   run: |
-      #     docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
-      #     docker push ${{ env.acr }}${{ env.environment }}
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$runner_id -t ${{ env.acr }}${{ env.environment }}:latest
+          docker push ${{ env.acr }}${{ env.environment }}
 
-      # - name: Install modules
-      #   shell: pwsh
-      #   run: |
-      #     Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
 
-      # - name: Azure login
-      #   shell: pwsh
-      #   env:
-      #     clientId: ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}
-      #     clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
-      #     tenantId: ${{ secrets.AZURE_TENANT_ID }}
-      #   run: |
-      #     $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
-      #     $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
-      #     Add-azAccount -Credential $psCred -TenantId $Env:tenantId -ServicePrincipal
-      #     az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
-      #     az account set -s ${{ env.azureSubscriptionId }}
-      #     Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
+      - name: Azure login
+        shell: pwsh
+        env:
+          clientId: ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}
+          clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
+          tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
+          $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
+          Add-azAccount -Credential $psCred -TenantId $Env:tenantId -ServicePrincipal
+          az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+          az account set -s ${{ env.azureSubscriptionId }}
+          Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
 
-      # - name: Deploy Function
-      #   shell: pwsh
-      #   env:
-      #     username: ${{ secrets.ACR_USERNAME }}
-      #     password: ${{ secrets.ACR_PASSWORD }}
-      #   run: |
-      #     Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
-      #     $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
-      #     Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
-      #       -RgName rg-sepes-prod `
-      #       -ImageName "$container" `
-      #       -RegistryUsername "$Env:username" `
-      #       -RegistryPassord "$Env:password" `
-      #       -RegistryUrl "${{ env.acr }}"
+      - name: Deploy Function
+        shell: pwsh
+        env:
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
+          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
+          Update-FunctionAppContainerSettings -FunctionName func-sepes-prod `
+            -RgName rg-sepes-prod `
+            -ImageName "$container" `
+            -RegistryUsername "$Env:username" `
+            -RegistryPassord "$Env:password" `
+            -RegistryUrl "${{ env.acr }}"
 
-      # - name: Azure logout
-      #   shell: pwsh
-      #   run: |
-      #     az logout
-      #     LogOut-AzAccount
+      - name: Azure logout
+        shell: pwsh
+        run: |
+          az logout
+          LogOut-AzAccount
