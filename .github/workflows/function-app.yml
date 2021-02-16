@@ -11,7 +11,7 @@ on:
   push:
     paths:
       - src/Sepes.Functions/*
-      - .github/scripts\powershell-modules/FunctionApp/FunctionApp.psm1
+      - .github/scripts/powershell-modules/FunctionApp/FunctionApp.psm1
       - .github/workflows/function-app.yml
 env:
   ciTag: ${{ secrets.ACR_URL }}/function-app/ci
