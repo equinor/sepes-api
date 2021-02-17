@@ -3,7 +3,6 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
@@ -24,14 +23,13 @@ namespace Sepes.RestApi.IntegrationTests
         public StudyAndSandboxTest(TestHostFixture testHostFixture)
             :base (testHostFixture)
         {
-            //, IResourceProvisioningService resourceProvisioningService
-            //_resourceProvisioningService = resourceProvisioningService;
+         
         }
 
-        [Theory]
+        [Theory]       
         [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
+        //[InlineData(false, true)]
+        //[InlineData(true, true)]
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
             await WithBasicSeeds();
@@ -93,8 +91,8 @@ namespace Sepes.RestApi.IntegrationTests
             Assert.Equal(vmCreateDto.OperatingSystem, vmDto.OperatingSystem);
             Assert.Equal(sandboxDto.Region, vmDto.Region);//Same region as sandbox
 
-            //Setup infrastructure
-            SetUserType(isAdmin: true);
+            //SETUP INFRASTRUCTURE
+            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
             var doWorkResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
             Assert.Equal(System.Net.HttpStatusCode.OK, doWorkResponseWrapper.StatusCode);         
 

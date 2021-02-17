@@ -1,19 +1,18 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Service;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Common.Mocks.Azure
 {
-    public class AzureGenericProvisioningServiceMock
+    public abstract class AzureGenericProvisioningServiceMock
     {
         protected readonly ILogger _logger;
         protected readonly string _resourceType;
 
-        public AzureGenericProvisioningServiceMock(ILogger<AzureGenericProvisioningServiceMock> logger, string resourceType) 
+        public AzureGenericProvisioningServiceMock(ILogger<AzureGenericProvisioningServiceMock> logger, string resourceType)
         {
             _logger = logger;
             _resourceType = resourceType;
@@ -26,14 +25,14 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         public Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
-            if(_resourceType == AzureResourceType.ResourceGroup)
+            if (_resourceType == AzureResourceType.ResourceGroup)
             {
                 Log($"Creating resource group: {parameters.ResourceGroupName}");
             }
             else
             {
                 Log($"Creating resource {parameters.Name} in resource group {parameters.ResourceGroupName}");
-            }           
+            }
 
             throw new System.NotImplementedException();
         }
@@ -49,6 +48,11 @@ namespace Sepes.Tests.Common.Mocks.Azure
                 Log($"Updating resource {parameters.Name} in resource group {parameters.ResourceGroupName}");
             }
 
+            throw new System.NotImplementedException();
+        }
+
+        public Task Delete(string resourceGroupName, string resourceName)
+        {
             throw new System.NotImplementedException();
         }
 
@@ -99,5 +103,20 @@ namespace Sepes.Tests.Common.Mocks.Azure
         {
             throw new System.NotImplementedException();
         }
+
+        //ResourceProvisioningResult CreateCRUDResult(IVirtualMachine vm)
+        //{
+        //    var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(vm);
+        //    crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
+        //    return crudResult;
+        //}
+
+        //ResourceProvisioningResult CreateBasicProvisioningResult(string resourceGroupName, string resourceName)
+        //{
+        //    //Id, foreign name
+        //    nameof//ResourceGroipma,e
+        //}
+
+        protected abstract void DecorateProvisioningResult(ResourceProvisioningResult result);
     }
 }

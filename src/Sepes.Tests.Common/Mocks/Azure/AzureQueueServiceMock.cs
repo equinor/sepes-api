@@ -32,9 +32,11 @@ namespace Sepes.Tests.Common.Mocks.Azure
             AddBackItemsThatShouldBeVisibleAgain();
 
             if (_queue.TryDequeue(out QueueStorageItem dequeuedMessage))
-            {
-                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();
-                _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage, 30));
+            {              
+                dequeuedMessage.NextVisibleOn = DateTime.UtcNow.AddSeconds(30);
+                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();             
+
+                _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage));
 
                 return dequeuedMessage;
             }
@@ -124,10 +126,10 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         public string PopReceipt { get; set; }
 
-        public QueueMessageWrapper(QueueStorageItem message, int invisibleFor)
+        public QueueMessageWrapper(QueueStorageItem message)
         {
             Message = message;
-            VisibleAgain = DateTime.UtcNow.AddSeconds(invisibleFor);
+            VisibleAgain = message.NextVisibleOn.Value.UtcDateTime;
         }
 
     }    

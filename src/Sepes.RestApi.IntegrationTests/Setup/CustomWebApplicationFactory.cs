@@ -53,8 +53,14 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
                 //MOCK AZURE SERVICES
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
-                services.SwapTransientWithScoped<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
-                
+                //TODO: Replace with a mock scenario factory
+                //services.SwapTransientWithScoped<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
+                //services.SwapTransientWithScoped<IAzureVirtualNetworkService, AzureVirtualNetworkServiceMock>();
+                //services.SwapTransientWithScoped<IAzureVirtualMachineService, AzureVirtualMachineServiceMock>();
+                //services.SwapTransientWithScoped<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupServiceMock>();
+                //services.SwapTransientWithScoped<IAzureRoleAssignmentService, AzureRoleAssignmentServiceMock>();
+                //services.SwapTransientWithScoped<IAzureBastionService, AzureBastionServiceMock>();
+
                 services.AddAuthentication("IntegrationTest")
                     .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(
                       "IntegrationTest",
