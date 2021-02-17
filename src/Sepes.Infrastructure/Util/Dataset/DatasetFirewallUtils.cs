@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Util
                 anyChanges = true;
             }
 
-            if (ClientIpIsValid(clientIp) && !clientIp.Equals(serverIp) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
+            if (!clientIp.Equals(serverIp) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
             {
                 newRuleSet.Add(serverRule);
                 anyChanges = true;

@@ -1,10 +1,8 @@
-﻿using AutoMapper;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -17,12 +15,10 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
     {
-        readonly IMapper _mapper;
-
-        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger, IMapper mapper)
+        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
             : base(config, logger)
         {
-            _mapper = mapper;
+        
         }
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
@@ -54,15 +50,7 @@ namespace Sepes.Infrastructure.Service
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
             return crudResult;
-        }
-
-        public async Task<AzureResourceGroupDto> Create(string resourceGroupName, Region region, Dictionary<string, string> tags)
-        {
-            var resourceGroup = await CreateInternal(resourceGroupName, region, tags);
-            return MapToDto(resourceGroup);
-        }     
-
-        
+        }              
 
         async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
@@ -81,15 +69,7 @@ namespace Sepes.Infrastructure.Service
             
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
             return crudResult;
-        }
-
-        AzureResourceGroupDto MapToDto(IResourceGroup resourceGroup)
-        {
-            var mapped = _mapper.Map<AzureResourceGroupDto>(resourceGroup);
-            mapped.ResourceGroupName = mapped.Name;
-
-            return mapped;
-        }
+        }      
 
         public async Task<IResourceGroup> GetResourceAsync(string resourceGroupName, bool failOnError = true)
         {
@@ -108,15 +88,8 @@ namespace Sepes.Infrastructure.Service
                 {
                     return null;
                 }
-            }
-          
+            }         
         }
-
-        async Task<bool> Exists(string resourceGroupName, CancellationToken cancellation)
-        {
-           return await _azure.ResourceGroups.ContainAsync(resourceGroupName, cancellation);
-        }
-
 
         public async Task<string> GetProvisioningState(string resourceGroupName)
         {
@@ -152,13 +125,7 @@ namespace Sepes.Infrastructure.Service
                     throw;
                 }               
             }        
-        }
-
-        public async Task<IPagedCollection<IResourceGroup>> GetResourceGroupsAsList()
-        {
-            var rg = await _azure.ResourceGroups.ListAsync();
-            return rg;
-        }
+        }      
 
         public Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {

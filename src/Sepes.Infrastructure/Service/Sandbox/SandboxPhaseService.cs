@@ -24,13 +24,13 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationReadService _sandboxResourceOperationService;
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
-        readonly IAzureVNetService _azureVNetService;
+        readonly IAzureVirtualNetworkService _azureVNetService;
         readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
         readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, ICloudResourceReadService sandboxResourceService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
-            IAzureVNetService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
+            IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService)
         {
 
