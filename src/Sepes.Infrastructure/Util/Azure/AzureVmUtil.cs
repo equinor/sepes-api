@@ -22,19 +22,21 @@ namespace Sepes.Infrastructure.Util
             return null;
         }
 
-        public static string GetSizeCategory(string vmName)
+        public static string GetSizeCategory(string vmSize)
         {
-            if (vmName.ToLower().Contains("standard_e"))
-            {
-                return "memory";
-            }
-            else if (vmName.ToLower().Contains("standard_nv"))
-            {
-                return "gpu";
-            }
-            else if (vmName.ToLower().Contains("standard_f"))
-            {
-                return "compute";
+            if (!string.IsNullOrEmpty(vmSize)) { 
+                if (vmSize.ToLower().Contains("standard_e"))
+                {
+                    return "memory";
+                }
+                else if (vmSize.ToLower().Contains("standard_nv"))
+                {
+                    return "gpu";
+                }
+                else if (vmSize.ToLower().Contains("standard_f"))
+                {
+                    return "compute";
+                }
             }
 
             return "unknowncategory";
@@ -42,6 +44,11 @@ namespace Sepes.Infrastructure.Util
 
         public static string GetDisplayTextSizeForDropdown(VmSize vmSizeInfo)
         {
+            if (vmSizeInfo == null)
+            {
+                return "unknown";
+            }
+
             return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
         }
 
@@ -52,6 +59,10 @@ namespace Sepes.Infrastructure.Util
 
         public static string GetOsCategory(List<VmOsDto> osList, string operatingSystemName)
         {
+            if (osList == null)
+            {
+                throw new ArgumentException("List of OS is null");
+            }
             var foundOs = osList.Where(os => os.Key == operatingSystemName).FirstOrDefault();
 
             if (foundOs == null)
