@@ -1,4 +1,5 @@
-﻿using Sepes.RestApi.IntegrationTests.Setup;
+﻿using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using System;
 using System.Collections.Generic;
@@ -29,10 +30,21 @@ namespace Sepes.RestApi.IntegrationTests
 
         public Task DisposeAsync() => Task.CompletedTask;
 
-        protected static async Task WithBasicSeeds()
+        protected async Task WithBasicSeeds()
         {
             await SeedRegions();
         }
+
+        protected async Task<ApiResponseWrapper> ProcessWorkQueue()
+        {
+            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
+
+            var responseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
+
+            return responseWrapper;
+        } 
 
         protected static async Task SeedRegions()
         {

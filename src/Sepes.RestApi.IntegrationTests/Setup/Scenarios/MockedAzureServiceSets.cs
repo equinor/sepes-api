@@ -5,7 +5,7 @@ using Sepes.Tests.Common.Extensions;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
 {
-    public class E2EHappyPathServices : IMockServicesForScenarioProvider
+    public class MockedAzureServiceSets : IMockServicesForScenarioProvider
     {
         public void RegisterServices(IServiceCollection serviceCollection)
         {
@@ -18,8 +18,6 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
             serviceCollection.SwapTransient<IAzureBastionService>(provider => AzureBastionMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureVirtualMachineService>(provider => AzureVirtualMachineMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureRoleAssignmentService>(provider => AzureRoleAssignmentMockServiceFactory.CreateBasicForCreate().Object);
-           
-
         }
     }
 }

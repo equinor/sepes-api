@@ -8,7 +8,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 {
     public static class SandboxResourceListAsserts
     {
-        public static void HappyPathAssert(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper)
+        public static void ExpectSuccess(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper)
         {
             ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);          
 

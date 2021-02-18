@@ -1,6 +1,8 @@
 ﻿using Sepes.Infrastructure.Dto.Study;
+using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -24,7 +26,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithoutVendor_ShouldFail(bool isAdmin, bool isSponsor)
         {
-            SetScenario(new E2EHappyPathServices(), isEmployee: true, isAdmin, isSponsor);           
+            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin, isSponsor);           
 
             var studyCreateRequest = new StudyCreateDto() { Name = "studyName" };
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
@@ -38,7 +40,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
         {
-            SetScenario(new E2EHappyPathServices(), isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);      
+            SetScenario(new MockedAzureServiceSets(), isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);      
 
             var studyCreateRequest = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor" };
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
@@ -52,19 +54,32 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {          
-            SetScenario(new E2EHappyPathServices(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
-            var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode= "wbs" };
-            var responseWrapper = await _restHelper.Post<StudyDto, StudyCreateDto>(_endpoint, studyCreateDto);
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
-            Assert.NotNull(responseWrapper.Response);
+            var studySeedResponse = await StudyCreator.Create(_restHelper);
+            var studyCreateRequest = studySeedResponse.Request;
+            var studyResponseWrapper = studySeedResponse.Response;
 
-            var studyDto = responseWrapper.Response;           
+            CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
+        }
 
-            Assert.NotEqual<int>(0, studyDto.Id);
-            Assert.Equal(studyCreateDto.Name,  studyDto.Name);
-            Assert.Equal(studyCreateDto.Vendor, studyDto.Vendor);
-            Assert.Equal(studyCreateDto.WbsCode, studyDto.WbsCode);
-        }       
+        [Theory]
+        [InlineData(true, false)]      
+        public async Task AddStudy_ShouldCreateResourceGroupForStudySpecificDatasets(bool isAdmin, bool isSponsor)
+        {
+            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
+
+            var studySeedResponse = await StudyCreator.Create(_restHelper);
+            var studyCreateRequest = studySeedResponse.Request;
+            var studyResponseWrapper = studySeedResponse.Response;
+            CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
+
+            //Look in database, should have a resource group defined
+
+            //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
+            var processWorkQueueResponse = await ProcessWorkQueue();
+
+            //Look in database, resource group should appear to have been created
+        }
     }
 }
