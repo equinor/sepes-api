@@ -17,8 +17,8 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         public void Init(string connectionString, string queueName)
         {
-            //Don't care about connection strings and names
-        }
+           //Don't care about connection strings and names
+        }       
 
         public async Task<QueueStorageItem> SendMessageAsync(string messageText, TimeSpan? visibilityTimeout, CancellationToken cancellationToken)
         {
@@ -32,9 +32,9 @@ namespace Sepes.Tests.Common.Mocks.Azure
             AddBackItemsThatShouldBeVisibleAgain();
 
             if (_queue.TryDequeue(out QueueStorageItem dequeuedMessage))
-            {
+            {              
                 dequeuedMessage.NextVisibleOn = DateTime.UtcNow.AddSeconds(30);
-                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();
+                dequeuedMessage.PopReceipt = Guid.NewGuid().ToString();             
 
                 _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage));
 
@@ -42,7 +42,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
             }
 
             return null;
-        }
+        }         
 
         public async Task<QueueUpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
         {
@@ -57,7 +57,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
                 messageToUpdate.Message.NextVisibleOn = DateTime.UtcNow.AddSeconds(timespan);
                 messageToUpdate.Message.PopReceipt = Guid.NewGuid().ToString();
 
-                return await Task.FromResult(new QueueUpdateReceipt(messageToUpdate.Message.PopReceipt, messageToUpdate.VisibleAgain));
+                return await Task.FromResult(new QueueUpdateReceipt(messageToUpdate.Message.PopReceipt, messageToUpdate.VisibleAgain));                
             }
 
             throw new ArgumentException($"No item with message id: {messageId} found!");
@@ -71,13 +71,13 @@ namespace Sepes.Tests.Common.Mocks.Azure
                 {
                     return itemToUpdate;
                 }
-            }
+            }           
 
             throw new ArgumentException($"No item with message id: {messageId} found!");
         }
 
         public Task DeleteMessageAsync(string messageId, string popReceipt)
-        { 
+        {
             if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete))
             {
                 if (popReceipt == itemToDelete.Message.PopReceipt)
@@ -124,13 +124,15 @@ namespace Sepes.Tests.Common.Mocks.Azure
     {
         public QueueStorageItem Message { get; set; }
 
-        public DateTime VisibleAgain { get; set; }     
+        public DateTime VisibleAgain { get; set; }
+
+        public string PopReceipt { get; set; }
 
         public QueueMessageWrapper(QueueStorageItem message)
         {
             Message = message;
-            VisibleAgain = message.NextVisibleOn.Value.UtcDateTime;        
+            VisibleAgain = message.NextVisibleOn.Value.UtcDateTime;
         }
 
-    }
+    }    
 }
