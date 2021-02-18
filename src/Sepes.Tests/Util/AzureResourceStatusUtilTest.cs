@@ -11,7 +11,7 @@ namespace Sepes.Tests.Util
     public class AzureResourceStatusUtilTest
     {
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue()
+        public void DecideWhatOperationToBaseStatusOn_withEmptyParameter_shouldThrow()
         {
             var cloudResource = new CloudResource() { };
 
@@ -20,7 +20,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue2()
+        public void DecideWhatOperationToBaseStatusOn_withEmptyList_shouldThrow()
         {
             var cloudResourceOperation = new List<CloudResourceOperation>() { };
             var cloudResource = new CloudResource() { Operations = cloudResourceOperation };
@@ -29,7 +29,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue3()
+        public void DecideWhatOperationToBaseStatusOn_withValues_ShouldReturnExpected()
         {
             var cloudResourceOperationList = new List<CloudResourceOperation>() { };
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.DONE_SUCCESSFUL };
@@ -40,7 +40,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue5()
+        public void DecideWhatOperationToBaseStatusOn_withValues_ShouldReturnExpected2()
         {
             var cloudResourceOperationList = new List<CloudResourceOperation>() { };
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.FAILED };
@@ -51,7 +51,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue4()
+        public void DecideWhatOperationToBaseStatusOn_withValues_ShouldReturnExpected3()
         {
             var cloudResourceOperationList = new List<CloudResourceOperation>() { };
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.ABORTED };
@@ -64,7 +64,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue6()
+        public void DecideWhatOperationToBaseStatusOn_withValues_ShouldReturnExpected4()
         {
             var cloudResourceOperationList = new List<CloudResourceOperation>() { };
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.ABORTED };
@@ -86,7 +86,7 @@ namespace Sepes.Tests.Util
         [InlineData(CloudResourceOperationState.FAILED, CloudResourceOperationType.DELETE, "Delete failed (0/0)")]
         [InlineData(CloudResourceOperationState.FAILED, CloudResourceOperationType.UPDATE, "Update failed (0/0)")]
         [Theory]
-        public void VmRule_IsSameRule_withSameRule_shouldBeTrue10(string status, string operationType, string expectedResult)
+        public void ResourceStatus_shouldReturnCorrectStatus(string status, string operationType, string expectedResult)
         {
             var cloudResourceOperationList = new List<CloudResourceOperation>() { };
             var cloudOperation1 = new CloudResourceOperation() { Status = status, OperationType = operationType };
