@@ -26,9 +26,6 @@ namespace Sepes.Tests.Util
 
             var res = AzureResourceTagsFactory.SandboxResourceTags(config, study, sandbox);
 
-            Dictionary<string, string> expectedResult = new Dictionary<string, string>();
-            expectedResult.Add("txt", "notepad.exe");
-
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";
             var expectedResultOwnerEmail = "John@doe.com";
@@ -76,9 +73,6 @@ namespace Sepes.Tests.Util
             var study = new Study() { Name = "Study1", WbsCode = "123", StudyParticipants = participants };
 
             var res = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(config, study, "dataset1");
-
-            Dictionary<string, string> expectedResult = new Dictionary<string, string>();
-            expectedResult.Add("txt", "notepad.exe");
 
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";
