@@ -52,23 +52,31 @@ namespace Sepes.Infrastructure.Service
              
                 if (curExistingRole.RoleName == Constants.StudyRoles.VendorContributor)
                 {
-                    result.Add(Constants.StudyRoles.VendorContributor, new LookupDto(Constants.StudyRoles.VendorContributor));
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
                 }
                 else if (curExistingRole.RoleName == Constants.StudyRoles.VendorAdmin)
                 {
-                    result.Add(Constants.StudyRoles.VendorAdmin, new LookupDto(Constants.StudyRoles.VendorAdmin));
-                    result.Add(Constants.StudyRoles.VendorContributor, new LookupDto(Constants.StudyRoles.VendorContributor));
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorAdmin);
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
                 }
                 else if (curExistingRole.RoleName == Constants.StudyRoles.SponsorRep || curExistingRole.RoleName == Constants.StudyRoles.StudyOwner)
-                {                   
-                    result.Add(Constants.StudyRoles.SponsorRep, new LookupDto(Constants.StudyRoles.SponsorRep));
-                    result.Add(Constants.StudyRoles.VendorAdmin, new LookupDto(Constants.StudyRoles.VendorAdmin));
-                    result.Add(Constants.StudyRoles.VendorContributor, new LookupDto(Constants.StudyRoles.VendorContributor));
-                    result.Add(Constants.StudyRoles.StudyViewer, new LookupDto(Constants.StudyRoles.StudyViewer));
+                {
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.SponsorRep);
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorAdmin);
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
+                    EnsureItemExistsForRole(result, Constants.StudyRoles.StudyViewer);
                 }               
             }
 
             return result.Values.ToList();
+        }
+
+        static void EnsureItemExistsForRole(Dictionary<string, LookupDto> lookupValues, string key)
+        {
+            if (!lookupValues.ContainsKey(key))
+            {
+                lookupValues.Add(key, new LookupDto(key));
+            }
         }
     }
 }
