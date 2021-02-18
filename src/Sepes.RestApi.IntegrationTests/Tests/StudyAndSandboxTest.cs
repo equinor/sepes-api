@@ -4,8 +4,11 @@ using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -34,7 +37,7 @@ namespace Sepes.RestApi.IntegrationTests
         {
             await WithBasicSeeds();
 
-            SetUserType(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario(new E2EHappyPathServices(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
             //CREATE STUDY
             var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode = "wbs" };
@@ -91,16 +94,14 @@ namespace Sepes.RestApi.IntegrationTests
             Assert.Equal(vmCreateDto.OperatingSystem, vmDto.OperatingSystem);
             Assert.Equal(sandboxDto.Region, vmDto.Region);//Same region as sandbox
 
-            //SETUP INFRASTRUCTURE
+            //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API
             //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
             var doWorkResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
-            Assert.Equal(System.Net.HttpStatusCode.OK, doWorkResponseWrapper.StatusCode);         
+            Assert.Equal(System.Net.HttpStatusCode.OK, doWorkResponseWrapper.StatusCode);
+                       
+            var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxDto.Id}/resources");
 
-         
-
-            //CREATE
-            //GET HOLD OF QUEUE
-            //RUN QUEUE ITEMS
+            SandboxResourceListAsserts.HappyPathAssert(sandboxResourcesResponseWrapper);
 
             //OPEN INTERNET
 

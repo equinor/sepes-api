@@ -26,13 +26,16 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         readonly bool _isSponsor;
         readonly bool _isDatasetAdmin;
 
-        public CustomWebApplicationFactory(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        readonly IMockServicesForScenarioProvider _mockServicesForScenarioProvider;
+
+        public CustomWebApplicationFactory(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
             :base()
         {
             _isEmployee = isEmployee;
             _isAdmin = isAdmin;
             _isSponsor = isSponsor;
             _isDatasetAdmin = isDatasetAdmin;
+            _mockServicesForScenarioProvider = mockServicesForScenarioProvider;
         }
 
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
@@ -51,15 +54,12 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
 
-                //MOCK AZURE SERVICES
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
-                //TODO: Replace with a mock scenario factory
-                //services.SwapTransientWithScoped<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
-                //services.SwapTransientWithScoped<IAzureVirtualNetworkService, AzureVirtualNetworkServiceMock>();
-                //services.SwapTransientWithScoped<IAzureVirtualMachineService, AzureVirtualMachineServiceMock>();
-                //services.SwapTransientWithScoped<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupServiceMock>();
-                //services.SwapTransientWithScoped<IAzureRoleAssignmentService, AzureRoleAssignmentServiceMock>();
-                //services.SwapTransientWithScoped<IAzureBastionService, AzureBastionServiceMock>();
+
+                if (_mockServicesForScenarioProvider != null)
+                {
+                    _mockServicesForScenarioProvider.RegisterServices(services);
+                }                            
 
                 services.AddAuthentication("IntegrationTest")
                     .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(

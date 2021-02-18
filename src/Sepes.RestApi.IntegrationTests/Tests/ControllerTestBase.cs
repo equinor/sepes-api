@@ -19,9 +19,9 @@ namespace Sepes.RestApi.IntegrationTests
             _restHelper = new RestHelper(testHostFixture.Client);
         }
 
-        protected void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        protected void SetScenario(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            _testHostFixture.SetUserType(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+            _testHostFixture.SetScenario(mockServicesForScenarioProvider, isEmployee, isAdmin, isSponsor, isDatasetAdmin);
             _restHelper = new RestHelper(_testHostFixture.Client);
         }
 

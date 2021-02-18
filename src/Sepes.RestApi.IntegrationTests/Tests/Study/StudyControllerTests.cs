@@ -1,6 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto.Study;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -24,7 +24,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithoutVendor_ShouldFail(bool isAdmin, bool isSponsor)
         {
-            SetUserType(isEmployee: true, isAdmin, isSponsor);
+            SetScenario(new E2EHappyPathServices(), isEmployee: true, isAdmin, isSponsor);           
 
             var studyCreateRequest = new StudyCreateDto() { Name = "studyName" };
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
@@ -38,7 +38,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
         {
-            SetUserType(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
+            SetScenario(new E2EHappyPathServices(), isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);      
 
             var studyCreateRequest = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor" };
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
@@ -51,8 +51,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(false, true)]
         [InlineData(true, true)]
         public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
-        {
-            SetUserType(isEmployee:true, isAdmin: isAdmin, isSponsor: isSponsor);
+        {          
+            SetScenario(new E2EHappyPathServices(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
             var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode= "wbs" };
             var responseWrapper = await _restHelper.Post<StudyDto, StudyCreateDto>(_endpoint, studyCreateDto);
