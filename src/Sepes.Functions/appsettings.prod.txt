@@ -13,4 +13,4 @@
 "ResourceProvisioningQueueConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/ResourceProvisioningQueueConnectionString)"
 "SepesRWConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/sepesrwconnectionstring)"
 "SubscriptionId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/SubscriptionId)"
-"test1=test2"
+"FUNCTIONS_WORKER_RUNTIME=dotnet"
