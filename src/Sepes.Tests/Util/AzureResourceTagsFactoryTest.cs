@@ -46,12 +46,8 @@ namespace Sepes.Tests.Util
             var user = new User() { Id = 1, FullName = "John Doe", EmailAddress = "John@doe.com" };
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });
             var study = new Study() { Name = "Study1", WbsCode = "123", StudyParticipants = participants };
-            var sandbox = new Sandbox() { Study = study, Name = "Sandbox1" };
 
             var res = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(config, study);
-
-            Dictionary<string, string> expectedResult = new Dictionary<string, string>();
-            expectedResult.Add("txt", "notepad.exe");
 
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";
