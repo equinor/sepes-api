@@ -5,7 +5,9 @@ using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
 using System.Collections.Generic;
@@ -42,63 +44,49 @@ namespace Sepes.RestApi.IntegrationTests
             //CREATE STUDY
             var studyCreateDto = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor", WbsCode = "wbs" };
             var studyResponseWrapper = await _restHelper.Post<StudyDto, StudyCreateDto>(_studiesEndpoint, studyCreateDto);
-            Assert.Equal(System.Net.HttpStatusCode.OK, studyResponseWrapper.StatusCode);
-            Assert.NotNull(studyResponseWrapper.Response);
+            CreateStudyAsserts.ExpectSuccess(studyCreateDto, studyResponseWrapper);
 
-            var studyDto = studyResponseWrapper.Response;
-
-            Assert.NotEqual<int>(0, studyDto.Id);
-            Assert.Equal(studyCreateDto.Name, studyDto.Name);
-            Assert.Equal(studyCreateDto.Vendor, studyDto.Vendor);
-            Assert.Equal(studyCreateDto.WbsCode, studyDto.WbsCode);
+            var createStudyResponse = studyResponseWrapper.Response;
 
             //CREATE STUDY SPECIFIC DATASET
             var datasetCreateRequest = new DatasetCreateUpdateInputBaseDto() { Location = "norwayeast", Name = "datasetName", Classification = "open" };
-            var dataseResponseWrapper = await _restHelper.Post<DatasetDto, DatasetCreateUpdateInputBaseDto>(String.Format(_studySpecificDatasetEndpoint, studyDto.Id), datasetCreateRequest);
-            Assert.Equal(System.Net.HttpStatusCode.OK, dataseResponseWrapper.StatusCode);
-            Assert.NotNull(dataseResponseWrapper.Response);
-            var createDatasetResponse = dataseResponseWrapper.Response;
-            Assert.NotEqual<int>(0, createDatasetResponse.Id);
-            Assert.Equal(datasetCreateRequest.Name, createDatasetResponse.Name);
-            Assert.Equal(datasetCreateRequest.Classification, createDatasetResponse.Classification);
+            var dataseResponseWrapper = await _restHelper.Post<DatasetDto, DatasetCreateUpdateInputBaseDto>(String.Format(_studySpecificDatasetEndpoint, createStudyResponse.Id), datasetCreateRequest);
+            CreateDatasetAsserts.ExpectSuccess(datasetCreateRequest, dataseResponseWrapper);
+
+            var createDatasetResponse = dataseResponseWrapper.Response;          
 
             //CREATE SANDBOX
             var sandboxCreateDto = new SandboxCreateDto() { Name = "sandboxName", Region = "norwayeast" };
-            var sandboxResponseWrapper = await _restHelper.Post<SandboxDetails, SandboxCreateDto>(String.Format(_sandboxEndpoint, studyDto.Id), sandboxCreateDto);
-            Assert.Equal(System.Net.HttpStatusCode.OK, sandboxResponseWrapper.StatusCode);
-            Assert.NotNull(sandboxResponseWrapper.Response);
+            var sandboxResponseWrapper = await _restHelper.Post<SandboxDetails, SandboxCreateDto>(String.Format(_sandboxEndpoint, createStudyResponse.Id), sandboxCreateDto);
+
+            CreateSandboxAsserts.ExpectSuccess(sandboxCreateDto, sandboxResponseWrapper);
 
             var sandboxDto = sandboxResponseWrapper.Response;
-            Assert.NotEqual<int>(0, sandboxDto.Id);
-            Assert.Equal(sandboxCreateDto.Name, sandboxDto.Name);
-            Assert.Equal(sandboxCreateDto.Region, sandboxDto.Region);
 
             //ADD DATASET TO SANDBOX
             var sandboxDatasetResponseWrapper = await _restHelper.Put<AvailableDatasets>(String.Format(_sandboxDatasetEndpoint, sandboxDto.Id, createDatasetResponse.Id));
-            Assert.Equal(System.Net.HttpStatusCode.OK, sandboxDatasetResponseWrapper.StatusCode);
-            Assert.NotNull(sandboxDatasetResponseWrapper.Response);
-            var addDatasetResponse = sandboxDatasetResponseWrapper.Response;
-            Assert.Equal("Open", addDatasetResponse.Classification);
-            Assert.NotEmpty(addDatasetResponse.Datasets);
+            AddDatasetToSandboxAsserts.ExpectSuccess(createDatasetResponse.Id, createDatasetResponse.Name, createDatasetResponse.Classification, "Open", sandboxDatasetResponseWrapper);
+            
+            var addDatasetToSandboxResponse = sandboxDatasetResponseWrapper.Response;
 
             //CREATE VM
             var vmCreateDto = CreateVmDtoFactory.New("integrationtest");
 
             var vmResponseWrapper = await _restHelper.Post<VmDto, VirtualMachineCreateDto>(String.Format(_vmEndpoint, sandboxDto.Id), vmCreateDto);
-            Assert.Equal(System.Net.HttpStatusCode.OK, vmResponseWrapper.StatusCode);
-            Assert.NotNull(vmResponseWrapper.Response);
 
-            var vmDto = vmResponseWrapper.Response;
-            Assert.NotEqual<int>(0, vmDto.Id);
-            Assert.Contains(vmCreateDto.Name, vmDto.Name);
-            Assert.Equal(vmCreateDto.OperatingSystem, vmDto.OperatingSystem);
-            Assert.Equal(sandboxDto.Region, vmDto.Region);//Same region as sandbox
+            CreateVirtualMachineAsserts.ExpectSuccess(vmCreateDto, sandboxDto.Region, vmResponseWrapper);
+
+            var createVmResponse = vmResponseWrapper.Response;
+
+            //TODO: GET SANDBOX RESOURCE LIST AND ASSERT RESULT BEFORE CREATION
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API
             //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
             var doWorkResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
             Assert.Equal(System.Net.HttpStatusCode.OK, doWorkResponseWrapper.StatusCode);
-                       
+            
+            
+            //GET SANDBOX RESOURCE LIST AND ASSERT RESULT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxDto.Id}/resources");
 
             SandboxResourceListAsserts.HappyPathAssert(sandboxResourcesResponseWrapper);
