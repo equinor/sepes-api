@@ -37,7 +37,7 @@ namespace Sepes.Tests.Util
             var vNetService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.VirtualNetwork);
 
             Assert.NotNull(vNetService);
-            Assert.IsAssignableFrom<IAzureVNetService>(vNetService);
+            Assert.IsAssignableFrom<IAzureVirtualNetworkService>(vNetService);
 
 
             //Trying Bastion

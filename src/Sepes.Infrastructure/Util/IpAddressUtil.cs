@@ -91,6 +91,11 @@ namespace Sepes.Infrastructure.Util
 
             var remoteIpAddress = context.Connection.RemoteIpAddress;
 
+            if(remoteIpAddress == null)
+            {
+                return null;
+            }
+
             string clientIp;
 
             if (remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)

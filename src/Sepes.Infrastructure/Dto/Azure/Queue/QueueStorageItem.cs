@@ -2,7 +2,7 @@
 
 namespace Sepes.Infrastructure.Dto.Azure
 {
-    public class QueueStorageItemDto
+    public class QueueStorageItem
     {
         public string MessageId { get; set; }
 

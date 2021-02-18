@@ -7,11 +7,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
+using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
 using System;
 using System.Linq;
+using Sepes.Tests.Common.Extensions;
 
 namespace Sepes.RestApi.IntegrationTests.Setup
 {
@@ -46,6 +50,17 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
+
+                //MOCK AZURE SERVICES
+                services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
+                //TODO: Replace with a mock scenario factory
+                //services.SwapTransientWithScoped<IAzureResourceGroupService, AzureResourceGroupServiceMock>();
+                //services.SwapTransientWithScoped<IAzureVirtualNetworkService, AzureVirtualNetworkServiceMock>();
+                //services.SwapTransientWithScoped<IAzureVirtualMachineService, AzureVirtualMachineServiceMock>();
+                //services.SwapTransientWithScoped<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupServiceMock>();
+                //services.SwapTransientWithScoped<IAzureRoleAssignmentService, AzureRoleAssignmentServiceMock>();
+                //services.SwapTransientWithScoped<IAzureBastionService, AzureBastionServiceMock>();
+
                 services.AddAuthentication("IntegrationTest")
                     .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(
                       "IntegrationTest",
@@ -53,7 +68,9 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     );
 
                 IConfiguration configuration;
+
                 var sp = services.BuildServiceProvider();
+
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
@@ -74,7 +91,9 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     ));
 
                 sp = services.BuildServiceProvider();
+
                 SepesDbContext dbContext;
+
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;

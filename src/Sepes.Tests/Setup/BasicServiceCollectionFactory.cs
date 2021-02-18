@@ -10,8 +10,8 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Mocks;
-using Sepes.Tests.Mocks.Azure;
 
 namespace Sepes.Tests.Setup
 {
@@ -58,8 +58,8 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
             services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             services.AddTransient<IAzureBastionService, AzureBastionService>();
-            services.AddTransient<IAzureVNetService, AzureVNetService>();
-            services.AddTransient<IAzureVmService, AzureVmService>();
+            services.AddTransient<IAzureVirtualNetworkService, AzureVNetService>();
+            services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
             services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();

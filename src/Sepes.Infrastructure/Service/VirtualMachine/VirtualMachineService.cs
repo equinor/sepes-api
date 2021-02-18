@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -40,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
         readonly ICloudResourceDeleteService _sandboxResourceDeleteService;
         readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVmService _azureVmService;
+        readonly IAzureVirtualMachineExtenedInfoService _azureVirtualMachineExtenedInfoService;
 
         public VirtualMachineService(ILogger<VirtualMachineService> logger,
             IConfiguration config,
@@ -55,7 +53,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceDeleteService sandboxResourceDeleteService,
             ICloudResourceReadService sandboxResourceService,
             IProvisioningQueueService workQueue,
-            IAzureVmService azureVmService)
+            IAzureVirtualMachineExtenedInfoService azureVirtualMachineExtenedInfoService)
         {
             _logger = logger;
             _db = db;
@@ -70,7 +68,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceUpdateService = sandboxResourceUpdateService;
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
             _workQueue = workQueue;
-            _azureVmService = azureVmService;
+            _azureVirtualMachineExtenedInfoService = azureVirtualMachineExtenedInfoService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, VirtualMachineCreateDto userInput)
@@ -206,7 +204,7 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForCloudResource(vmId);
             }
 
-            var dto = await _azureVmService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
+            var dto = await _azureVirtualMachineExtenedInfoService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
 
             var availableSizes = await _vmSizeService.AvailableSizes(vmResource.Region, cancellationToken);
 

@@ -61,8 +61,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Study> GetByIdWithoutPermissionCheckAsync(int studyId, bool withIncludes = false, bool disableTracking = false)
         {
             return await StudySingularQueries.GetStudyByIdNoAccessCheck(_db, studyId, withIncludes, disableTracking);
-        }
-
-       
+        }       
     }
 }

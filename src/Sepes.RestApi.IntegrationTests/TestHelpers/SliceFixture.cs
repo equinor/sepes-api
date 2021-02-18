@@ -1,13 +1,12 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using MediatR;
+﻿
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
-using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.RestApi;
+using Sepes.RestApi.IntegrationTests.Setup;
+using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers
 {
@@ -90,14 +89,8 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         public static Task ExecuteDbContextAsync(Func<SepesDbContext, Task> action)
             => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>()));
 
-        public static Task ExecuteDbContextAsync(Func<SepesDbContext, IMediator, Task> action)
-            => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>(), sp.GetService<IMediator>()));
-
         public static Task<T> ExecuteDbContextAsync<T>(Func<SepesDbContext, Task<T>> action)
             => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>()));
-
-        public static Task<T> ExecuteDbContextAsync<T>(Func<SepesDbContext, IMediator, Task<T>> action)
-            => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>(), sp.GetService<IMediator>()));
 
         public static Task InsertAsync<T>(params T[] entities) where T : class
         {
@@ -163,32 +156,6 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
                 db.Set<TEntity4>().Add(entity4);
 
                 return db.SaveChangesAsync();
-            });
-        }
-
-        //public static Task<T> FindAsync<T>(int id)
-        //    where T : class, IEntity
-        //{
-        //    return ExecuteDbContextAsync(db => db.Set<T>().FindAsync(id));
-        //}
-
-        public static Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
-            });
-        }
-
-        public static Task SendAsync(IRequest request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
             });
         }
     }

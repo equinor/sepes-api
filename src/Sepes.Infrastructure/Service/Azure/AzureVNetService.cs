@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class AzureVNetService : AzureServiceBase, IAzureVNetService
+    public class AzureVNetService : AzureServiceBase, IAzureVirtualNetworkService
     {
         public AzureVNetService(IConfiguration config, ILogger<AzureVNetService> logger)
             : base(config, logger)
@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vNetDto == null)
             {
-                vNetDto = await CreateAsync(parameters.Region, parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
+                vNetDto = await CreateInternalAsync(parameters.Region, parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
             }           
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
 
-            await ApplySecurityGroup(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);
+            await ApplySecurityGroupInternalAsync(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);
 
             _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<AzureVNetDto> CreateAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        async Task<AzureVNetDto> CreateInternalAsync(Region region, string resourceGroupName, string networkName, string sandboxSubnetName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var networkDto = new AzureVNetDto();
 
@@ -112,7 +112,7 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }
 
-        public async Task ApplySecurityGroup(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        async Task ApplySecurityGroupInternalAsync(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
         {
             //Add the security group to a subnet.
             var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
@@ -127,14 +127,7 @@ namespace Sepes.Infrastructure.Service
                 .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
-        }
-
-        public async Task Delete(string resourceGroupName, string networkName)
-        {
-            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
-            await _azure.Networks.DeleteByResourceGroupAsync(resourceGroupName, networkName);
-        }
+        }     
 
         public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
         {
@@ -194,63 +187,5 @@ namespace Sepes.Infrastructure.Service
         {
             throw new NotImplementedException();
         }
-
-
-
-
-        //public async Task<INetwork> Create(Region region, string resourceGroupName, string studyName, string sandboxName)
-        //{
-        //    var networkName = CreateVNetName(studyName, sandboxName);
-
-        //    var addressSpace = "10.100.10.0/23"; // Until 10.100.11.255 Can have 512 adresses, but must reserve some;
-
-        //    var bastionSubnetName = AzureVNetConstants.BASTION_SUBNET_NAME;
-        //    var bastionSubnetAddress = "10.100.0.0/24"; //Can only use 256 adress, so max is 10.100.0.255
-
-        //    var sandboxSubnetName = $"snet-{sandboxName}";
-        //    var sandboxSubnetAddress = "10.100.1.0/24";
-
-        //    var network = await _azure.Networks.Define(networkName)
-        //        .WithRegion(region)
-        //        .WithExistingResourceGroup(resourceGroupName)
-        //        .WithAddressSpace(addressSpace)
-        //        .WithSubnet(bastionSubnetName, bastionSubnetAddress)
-        //        .WithSubnet(sandboxSubnetName, sandboxSubnetAddress)
-        //        .CreateAsync();
-        //    using (NetworkManagementClient client = new NetworkManagementClient(credentials))
-        //    {
-
-        //        VirtualNetworkInner vnet = new VirtualNetworkInner()
-        //    {
-        //        Location = "West US",
-        //        AddressSpace = new AddressSpace()
-        //        {
-        //            AddressPrefixes = new List<string>() { "0.0.0.0/16" }
-        //        },
-
-        //        DhcpOptions = new DhcpOptions()
-        //        {
-        //            DnsServers = new List<string>() { "1.1.1.1", "1.1.2.4" }
-        //        },
-
-        //        Subnets = new List<Subnet>()
-        //{
-        //    new Subnet()
-        //    {
-        //        Name = subnet1Name,
-        //        AddressPrefix = "1.0.1.0/24",
-        //    },
-        //    new Subnet()
-        //    {
-        //        Name = subnet2Name,
-        //       AddressPrefix = "1.0.2.0/24",
-        //    }
-        //}
-        //    };
-
-        //    await client.VirtualNetworks.CreateOrUpdateAsync(resourceGroupName, vNetName, vnet);
-        //    }
-        //    return network;
-        //}
     }
 }

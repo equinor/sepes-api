@@ -3,6 +3,7 @@ using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Infrastructure.Dto.Azure.Queue;
 using System;
 using System.Linq;
 using System.Threading;
@@ -27,17 +28,17 @@ namespace Sepes.Infrastructure.Service
             _queueName = queueName;
         }
 
-        public async Task<QueueStorageItemDto> SendMessageAsync(string message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
+        public async Task<QueueStorageItem> SendMessageAsync(string message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             var client = await CreateQueueClient();
             var base64Message = Base64Encode(message);
             var sendResponse = await client.SendMessageAsync(base64Message, visibilityTimeout, cancellationToken: cancellationToken);
 
-            return new QueueStorageItemDto() { MessageId = sendResponse.Value.MessageId, MessageText = message, PopReceipt = sendResponse.Value.PopReceipt, NextVisibleOn = sendResponse.Value.TimeNextVisible };          
+            return new QueueStorageItem() { MessageId = sendResponse.Value.MessageId, MessageText = message, PopReceipt = sendResponse.Value.PopReceipt, NextVisibleOn = sendResponse.Value.TimeNextVisible };          
         }       
 
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
-        public async Task<QueueStorageItemDto> RecieveMessageAsync()
+        public async Task<QueueStorageItem> ReceiveMessageAsync()
         {
             var client = await CreateQueueClient();
             QueueMessage[] messages = await client.ReceiveMessagesAsync();
@@ -45,22 +46,22 @@ namespace Sepes.Infrastructure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItemDto() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt, NextVisibleOn = firstMessage.NextVisibleOn };
+                return new QueueStorageItem() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt, NextVisibleOn = firstMessage.NextVisibleOn };
             }
 
             return null;
         }
 
         // Updates the message in-place in the queue.
-        // The message parameter is a message that has been fetched with RecieveMessageRaw() or RecieveMessages()
-        public async Task<UpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
+        // The message parameter is a message that has been fetched with ReceiveMessageAsync()
+        public async Task<QueueUpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
         {
-            var client = await CreateQueueClient();
+            var client = await CreateQueueClient();        
             var updateReceipt = await client.UpdateMessageAsync(messageId, popReceipt, Base64Encode(updatedMessage), TimeSpan.FromSeconds(timespan));
-            return updateReceipt.Value;
+            return new QueueUpdateReceipt(updateReceipt.Value.PopReceipt, updateReceipt.Value.NextVisibleOn);
         }
 
-        // Message needs to be retrieved with recieveMessage(s)() to be able to be deleted.
+        // Message needs to be retrieved with ReceiveMessageAsync() to be able to be deleted.
         public async Task DeleteMessageAsync(string messageId, string popReceipt)
         {
             var client = await CreateQueueClient();

@@ -84,6 +84,11 @@ namespace Sepes.Infrastructure.Util
 
         static bool ClientIpIsValid(string clientIp)
         {
+            if (String.IsNullOrWhiteSpace(clientIp))
+            {
+                return false;
+            }
+
             if (clientIp != "::1" && clientIp != "0.0.0.1")
             {
                 return true;
