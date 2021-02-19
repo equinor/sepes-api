@@ -85,7 +85,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     if (virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
                     {
-                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks}, saw {vmSettings.DataDisks.Count} on VM");
+                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {vmSettings.DataDisks.Count} on VM");
                     }
                 }                   
             }            

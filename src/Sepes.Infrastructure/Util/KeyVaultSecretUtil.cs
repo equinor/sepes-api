@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Util
             {
                 try
                 {
-                    var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                    _ = await client.PurgeDeletedSecretAsync(secretName);
                 }
                 catch (Exception ex)
                 {

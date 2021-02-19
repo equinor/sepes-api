@@ -173,7 +173,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DeleteAsync(int id)
         {
-            var vmResource = await GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
+            await GetVmResourceEntry(id, UserOperation.Study_Crud_Sandbox);
 
             var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id);
 

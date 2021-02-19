@@ -72,7 +72,7 @@ namespace Sepes.RestApi.IntegrationTests
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
-            var processWorkQueueResponse = await ProcessWorkQueue();            
+            _ = await ProcessWorkQueue();            
             
             //GET SANDBOX RESOURCE LIST AND ASSERT RESULT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
