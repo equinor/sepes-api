@@ -13,10 +13,7 @@ namespace Sepes.RestApi.IntegrationTests
 {
     [Collection("Integration tests collection")]
     public class CreateStudyAndAllRelatedResourcesTest : ControllerTestBase
-    {       
-       
-        const string _sandboxDatasetEndpoint = "api/sandbox/{0}/datasets/{1}";     
-
+    {
         public CreateStudyAndAllRelatedResourcesTest(TestHostFixture testHostFixture)
             :base (testHostFixture)
         {
@@ -88,6 +85,12 @@ namespace Sepes.RestApi.IntegrationTests
             //TODO: OPEN INTERNET
 
             //TODO: MOVE TO NEXT PHASE
+
+            //TRY TO DELETE STUDY, GET ERROR
+
+            //DELETE STUDY
+
+            //DELETE SANDBOX
 
 
         } 

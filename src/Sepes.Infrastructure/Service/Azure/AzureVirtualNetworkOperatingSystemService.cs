@@ -14,15 +14,15 @@ using static Sepes.Infrastructure.Constants.AzureVmOperatingSystemConstants;
 
 namespace Sepes.Infrastructure.Service.Azure
 {
-    public class AzureVmOsService : AzureApiServiceBase, IAzureVmOsService
+    public class AzureVirtualNetworkOperatingSystemService : AzureApiServiceBase, IAzureVirtualNetworkOperatingSystemService
     {
-        public AzureVmOsService(IConfiguration config, ILogger<AzureVmOsService> logger, ITokenAcquisition tokenAcquisition)
+        public AzureVirtualNetworkOperatingSystemService(IConfiguration config, ILogger<AzureVirtualNetworkOperatingSystemService> logger, ITokenAcquisition tokenAcquisition)
             : base(config, logger, tokenAcquisition)
         {
 
         }
         
-        public async Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default)
         {
             var requestsToPerform = new List<ImageRequestProperties>() {
                 CreateWindowsRequestProps("Windows 2019 Datacenter Core", region, "2019-Datacenter-Core"),

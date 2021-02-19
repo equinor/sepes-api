@@ -8,5 +8,7 @@
         public const string VIRTUAL_MACHINES = "api/virtualmachines/{0}";
 
         public const string STUDY_SPECIFIC_DATASETS = "api/studies/{0}/datasets/studyspecific";
+
+        public const string STUDY_SPECIFIC_DATASETS_RESOURCES = "api/studies/{studyId}/datasets/{datasetId}/resources";
     }
 }

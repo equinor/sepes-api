@@ -2,6 +2,8 @@
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
 using System.Threading.Tasks;
 using Xunit;
@@ -75,11 +77,15 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
 
             //Look in database, should have a resource group defined
+            var resourceGroupEntry = await SliceFixture.GetResource(studyId: studyResponseWrapper.Response.Id);
+            CloudResourceBasicAsserts.StudyDatasetResourceGroupBeforeProvisioningAssert(resourceGroupEntry);     
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
-            var processWorkQueueResponse = await ProcessWorkQueue();
+            _ = await ProcessWorkQueue();
 
-            //Look in database, resource group should appear to have been created
+            //Get resource from database again and assert
+            resourceGroupEntry = await SliceFixture.GetResource(studyId: studyResponseWrapper.Response.Id);
+            CloudResourceBasicAsserts.StudyDatasetResourceGroupAfterProvisioningAssert(resourceGroupEntry);
         }
     }
 }

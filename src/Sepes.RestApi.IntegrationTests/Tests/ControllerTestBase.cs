@@ -33,18 +33,7 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task WithBasicSeeds()
         {
             await SeedRegions();
-        }
-
-        protected async Task<ApiResponseWrapper> ProcessWorkQueue()
-        {
-            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
-
-            var responseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
-
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
-
-            return responseWrapper;
-        } 
+        }        
 
         protected static async Task SeedRegions()
         {
@@ -65,6 +54,17 @@ namespace Sepes.RestApi.IntegrationTests
             };
 
             await SliceFixture.InsertAsync(region);
+        }
+
+        protected async Task<ApiResponseWrapper> ProcessWorkQueue()
+        {
+            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
+
+            var responseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
+
+            return responseWrapper;
         }
     }
 }
