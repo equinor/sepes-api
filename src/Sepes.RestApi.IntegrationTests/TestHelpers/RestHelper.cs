@@ -68,7 +68,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         {
             var responseWrapper = new ApiResponseWrapper<T>();
             responseWrapper.StatusCode = message.StatusCode;
-            responseWrapper.Response = await GetResponseObject<T>(message);
+            responseWrapper.ReasonPhrase = message.ReasonPhrase;
+            responseWrapper.Content = await GetResponseObject<T>(message);
+           
             return responseWrapper;
         }
 

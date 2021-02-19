@@ -28,32 +28,28 @@ namespace Sepes.RestApi.IntegrationTests
         {
             await WithBasicSeeds();
 
-            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
             //CREATE STUDY
-            var studyCreateResult = await StudyCreator.Create(_restHelper);
-            var studyCreateRequest = studyCreateResult.Request;
-            var studyResponseWrapper = studyCreateResult.Response;
-            CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
-
-            var createStudyResponse = studyResponseWrapper.Response;
+            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);    
+            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);          
 
             //CREATE STUDY SPECIFIC DATASET
-            var datasetSeedResponse = await DatasetCreator.Create(_restHelper, createStudyResponse.Id);
+            var datasetSeedResponse = await DatasetCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
             var datasetCreateRequest = datasetSeedResponse.Request;
             var datasetResponseWrapper = datasetSeedResponse.Response;        
             CreateDatasetAsserts.ExpectSuccess(datasetCreateRequest, datasetResponseWrapper);
 
-            var createDatasetResponse = datasetResponseWrapper.Response;
+            var createDatasetResponse = datasetResponseWrapper.Content;
 
             //CREATE SANDBOX
-            var sandboxSeedResponse = await SandboxCreator.Create(_restHelper, createStudyResponse.Id);
+            var sandboxSeedResponse = await SandboxCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
             var sandboxCreateRequest = sandboxSeedResponse.Request;
             var sandboxResponseWrapper = sandboxSeedResponse.Response;
 
             CreateSandboxAsserts.ExpectSuccess(sandboxCreateRequest, sandboxResponseWrapper);
 
-            var sandboxResponse = sandboxResponseWrapper.Response;
+            var sandboxResponse = sandboxResponseWrapper.Content;
 
             //ADD DATASET TO SANDBOX
             var addDatasetToSandboxResponse = await SandboxOperations.AddDataset(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);       

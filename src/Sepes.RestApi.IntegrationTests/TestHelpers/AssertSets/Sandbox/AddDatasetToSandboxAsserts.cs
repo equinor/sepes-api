@@ -11,10 +11,10 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
         {
             ApiResponseBasicAsserts.ExpectSuccess<AvailableDatasets>(responseWrapper);
 
-            Assert.NotEmpty(responseWrapper.Response.Datasets);
-            Assert.Equal(totalClassification, responseWrapper.Response.Classification);
+            Assert.NotEmpty(responseWrapper.Content.Datasets);
+            Assert.Equal(totalClassification, responseWrapper.Content.Classification);
 
-            var newlyAddedDataset = responseWrapper.Response.Datasets.SingleOrDefault(ds => ds.DatasetId == datasetId);
+            var newlyAddedDataset = responseWrapper.Content.Datasets.SingleOrDefault(ds => ds.DatasetId == datasetId);
 
             Assert.NotNull(newlyAddedDataset);
 

@@ -1,7 +1,6 @@
 ﻿using Sepes.Infrastructure.Dto.Study;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
@@ -13,8 +12,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
     [Collection("Integration tests collection")]
     public class StudyControllerTests : ControllerTestBase
     {
-        const string _endpoint = "api/studies";      
-       
+        const string _endpoint = "api/studies";        
 
         public StudyControllerTests(TestHostFixture testHostFixture)
             :base(testHostFixture)
@@ -28,64 +26,33 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true)]
         public async Task AddStudy_WithoutVendor_ShouldFail(bool isAdmin, bool isSponsor)
         {
-            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin, isSponsor);           
+            SetScenario(isEmployee: true, isAdmin, isSponsor);           
 
             var studyCreateRequest = new StudyCreateDto() { Name = "studyName" };
             var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
             Assert.Equal(System.Net.HttpStatusCode.BadRequest, responseWrapper.StatusCode);
-            Assert.Contains("The Vendor field is required", responseWrapper.Response.Message);
-        }
-
-        [Theory]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        public async Task AddStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
-        {
-            SetScenario(new MockedAzureServiceSets(), isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);      
-
-            var studyCreateRequest = new StudyCreateDto() { Name = "studyName", Vendor = "Vendor" };
-            var responseWrapper = await _restHelper.Post<Infrastructure.Dto.ErrorResponse, StudyCreateDto>(_endpoint, studyCreateRequest);
-            Assert.Equal(System.Net.HttpStatusCode.Forbidden, responseWrapper.StatusCode);
-            Assert.Contains("does not have permission to perform operation", responseWrapper.Response.Message);
-        }
-
-        [Theory]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
-        {          
-            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
-
-            var studySeedResponse = await StudyCreator.Create(_restHelper);
-            var studyCreateRequest = studySeedResponse.Request;
-            var studyResponseWrapper = studySeedResponse.Response;
-
-            CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
+            Assert.Contains("The Vendor field is required", responseWrapper.Content.Message);
         }
 
         [Theory]
         [InlineData(true, false)]      
         public async Task AddStudy_ShouldCreateResourceGroupForStudySpecificDatasets(bool isAdmin, bool isSponsor)
         {
-            SetScenario(new MockedAzureServiceSets(), isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
-            var studySeedResponse = await StudyCreator.Create(_restHelper);
-            var studyCreateRequest = studySeedResponse.Request;
-            var studyResponseWrapper = studySeedResponse.Response;
-            CreateStudyAsserts.ExpectSuccess(studyCreateRequest, studyResponseWrapper);
+            var createStudyApiConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
+     
+            CreateStudyAsserts.ExpectSuccess(createStudyApiConversation.Request, createStudyApiConversation.Response);
 
-            //Look in database, should have a resource group defined
-            var resourceGroupEntry = await SliceFixture.GetResource(studyId: studyResponseWrapper.Response.Id);
-            CloudResourceBasicAsserts.StudyDatasetResourceGroupBeforeProvisioningAssert(resourceGroupEntry);     
+            var databaseEntryForStudyDatasetResourceGroup = await SliceFixture.GetResource(studyId: createStudyApiConversation.Response.Content.Id);
+            CloudResourceBasicAsserts.StudyDatasetResourceGroupBeforeProvisioningAssert(databaseEntryForStudyDatasetResourceGroup);     
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
             _ = await ProcessWorkQueue();
 
             //Get resource from database again and assert
-            resourceGroupEntry = await SliceFixture.GetResource(studyId: studyResponseWrapper.Response.Id);
-            CloudResourceBasicAsserts.StudyDatasetResourceGroupAfterProvisioningAssert(resourceGroupEntry);
+            databaseEntryForStudyDatasetResourceGroup = await SliceFixture.GetResource(studyId: createStudyApiConversation.Response.Content.Id);
+            CloudResourceBasicAsserts.StudyDatasetResourceGroupAfterProvisioningAssert(databaseEntryForStudyDatasetResourceGroup);
         }
     }
 }
