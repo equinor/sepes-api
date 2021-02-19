@@ -54,6 +54,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
             {
                 messageToUpdate.Message.MessageText = updatedMessage;
                 messageToUpdate.VisibleAgain = DateTime.UtcNow.AddSeconds(timespan);
+                messageToUpdate.Message.NextVisibleOn = DateTime.UtcNow.AddSeconds(timespan);
                 messageToUpdate.Message.PopReceipt = Guid.NewGuid().ToString();
 
                 return await Task.FromResult(new QueueUpdateReceipt(messageToUpdate.Message.PopReceipt, messageToUpdate.VisibleAgain));                
@@ -66,7 +67,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
         {
             if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate))
             {
-                if (popReceipt == itemToUpdate.PopReceipt)
+                if (popReceipt == itemToUpdate.Message.PopReceipt)
                 {
                     return itemToUpdate;
                 }
@@ -79,9 +80,10 @@ namespace Sepes.Tests.Common.Mocks.Azure
         {
             if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete))
             {
-                if (popReceipt == itemToDelete.PopReceipt)
+                if (popReceipt == itemToDelete.Message.PopReceipt)
                 {
-                    _invisibleItems[messageId] = null; 
+                    _invisibleItems.Remove(messageId);                 
+                    return Task.CompletedTask;
                 }
             }
 

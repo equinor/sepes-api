@@ -9,11 +9,7 @@ using System.Text;
 namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceUtil
-    {
-        public static ResourceProvisioningResult CreateResultFromIResource(IResource resource)
-        {
-            return new ResourceProvisioningResult() { Resource = resource};
-        }
+    {     
 
         public static void ThrowIfResourceIsNull(IResource resource, string resourceType, string name, string errorMessagePrefix)
         {

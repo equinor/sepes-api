@@ -16,12 +16,12 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
         public TestHostFixture()
         {
-            SetUserType(true);
+            SetScenario();
         }
 
-        public void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        public void SetScenario(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            Factory = new CustomWebApplicationFactory<Startup>(isEmployee, isAdmin, isSponsor, isDatasetAdmin);       
+            Factory = new CustomWebApplicationFactory<Startup>(mockServicesForScenarioProvider, isEmployee, isAdmin, isSponsor, isDatasetAdmin);       
             Client = Factory.CreateClient();
             Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("IntegrationTest");
         }

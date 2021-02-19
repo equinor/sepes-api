@@ -17,4 +17,8 @@
     <Folder Include="ModelFactory\Study\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="4.13.1" />
+  </ItemGroup>
+
 </Project>

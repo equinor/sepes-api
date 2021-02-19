@@ -1,11 +1,15 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
+using Sepes.Infrastructure.Extensions;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.RestApi.IntegrationTests.Setup;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers
@@ -92,6 +96,26 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         public static Task<T> ExecuteDbContextAsync<T>(Func<SepesDbContext, Task<T>> action)
             => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>()));
 
+        public static Task<T> FindAsync<T>(int id)
+          where T : class, IHasNummericalId
+        {
+            return ExecuteDbContextAsync<T>(db => db.Set<T>().FindAsync(id).AsTask());
+        }
+
+        public static Task<CloudResource> GetResource(int resourceId = 0, int studyId = 0, int sandboxId = 0)     
+        {
+            return ExecuteDbContextAsync<CloudResource>
+                (db =>
+                db.CloudResources
+                .Include(r=> r.ChildResources)
+                .Include(r=>r.Operations)
+                .If(resourceId > 0, x=> x.Where(r=> r.Id == resourceId))
+                .If(studyId > 0, x => x.Where(r => r.StudyId == studyId))
+                .If(sandboxId > 0, x => x.Where(r => r.SandboxId == sandboxId))
+                .AsNoTracking()
+                .FirstOrDefaultAsync());
+        }
+
         public static Task InsertAsync<T>(params T[] entities) where T : class
         {
             return ExecuteDbContextAsync(db =>
@@ -100,9 +124,10 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
                 {
                     db.Set<T>().Add(entity);
                 }
+
                 return db.SaveChangesAsync();
             });
-        }
+        }      
 
         public static Task InsertAsync<TEntity>(TEntity entity) where TEntity : class
         {
