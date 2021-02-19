@@ -1,6 +1,6 @@
 {
   "name": "sepes",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "private": true,
   "scripts": {
     "config": "node tools/config.js"
