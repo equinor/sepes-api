@@ -19,6 +19,7 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly IServiceProvider _serviceProvider;
+        readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
         readonly IProvisioningQueueService _workQueue;
         readonly ICloudResourceReadService _resourceReadService;
@@ -33,6 +34,7 @@ namespace Sepes.Infrastructure.Service
         public ResourceProvisioningService(
             ILogger<ResourceProvisioningService> logger,
             IServiceProvider serviceProvider,
+            IUserService userService,
             IRequestIdService requestIdService,
             IProvisioningQueueService workQueue,
             ICloudResourceReadService resourceService,
@@ -44,7 +46,8 @@ namespace Sepes.Infrastructure.Service
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _requestIdService = requestIdService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
+            _requestIdService = requestIdService ?? throw new ArgumentNullException(nameof(requestIdService));
             _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
 
             //Resource services
@@ -53,20 +56,27 @@ namespace Sepes.Infrastructure.Service
 
             //Resource operation services
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
-            _resourceOperationUpdateService = resourceOperationUpdateService;
+            _resourceOperationUpdateService = resourceOperationUpdateService ?? throw new ArgumentNullException(nameof(resourceOperationUpdateService));
 
-            _azureRoleAssignmentService = azureRoleAssignmentService;
-            _monitoringService = monitoringService;
+            _azureRoleAssignmentService = azureRoleAssignmentService ?? throw new ArgumentNullException(nameof(azureRoleAssignmentService));
+            _monitoringService = monitoringService ?? throw new ArgumentNullException(nameof(monitoringService));
         }
 
         public async Task DequeueAndHandleWork()
         {
-            var work = await _workQueue.RecieveMessageAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
+
+            if (!currentUser.Admin)
+            {
+                throw new ForbiddenException("This action requires Admin");
+            }
+
+            var work = await _workQueue.ReceiveMessageAsync();
 
             while (work != null)
             {
                 await HandleWork(work);
-                work = await _workQueue.RecieveMessageAsync();
+                work = await _workQueue.ReceiveMessageAsync();
             }
         }
 

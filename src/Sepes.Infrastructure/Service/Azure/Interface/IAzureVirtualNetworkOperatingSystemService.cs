@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Azure.Interface
 {
-    public interface IAzureVmOsService
+    public interface IAzureVirtualNetworkOperatingSystemService
     {
-        Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default(CancellationToken));
+        Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default);
     }
 }

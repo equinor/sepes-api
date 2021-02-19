@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Util
     {
         public static DatasetClassification GetClassificationCode(string classification)
         {
-            return Enum.Parse<DatasetClassification>(classification);           
+            return Enum.Parse<DatasetClassification>(classification, true);           
         }
         public static string GetRestrictionText(DatasetClassification classification)
         {

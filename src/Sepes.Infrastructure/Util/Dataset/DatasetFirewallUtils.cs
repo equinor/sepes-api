@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Util
                 anyChanges = true;
             }
 
-            if (!clientIp.Equals(serverIp) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
+            if ((String.IsNullOrWhiteSpace(clientIp) || !clientIp.Equals(serverIp)) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
             {
                 newRuleSet.Add(serverRule);
                 anyChanges = true;
@@ -84,6 +84,11 @@ namespace Sepes.Infrastructure.Util
 
         static bool ClientIpIsValid(string clientIp)
         {
+            if (String.IsNullOrWhiteSpace(clientIp))
+            {
+                return false;
+            }
+
             if (clientIp != "::1" && clientIp != "0.0.0.1")
             {
                 return true;

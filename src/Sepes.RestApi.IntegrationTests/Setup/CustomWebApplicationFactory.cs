@@ -7,11 +7,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
+using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
 using System;
 using System.Linq;
+using Sepes.Tests.Common.Extensions;
 
 namespace Sepes.RestApi.IntegrationTests.Setup
 {
@@ -22,13 +26,16 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         readonly bool _isSponsor;
         readonly bool _isDatasetAdmin;
 
-        public CustomWebApplicationFactory(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        readonly IMockServicesForScenarioProvider _mockServicesForScenarioProvider;
+
+        public CustomWebApplicationFactory(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
             :base()
         {
             _isEmployee = isEmployee;
             _isAdmin = isAdmin;
             _isSponsor = isSponsor;
             _isDatasetAdmin = isDatasetAdmin;
+            _mockServicesForScenarioProvider = mockServicesForScenarioProvider;
         }
 
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
@@ -46,6 +53,14 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
+
+                services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
+
+                if (_mockServicesForScenarioProvider != null)
+                {
+                    _mockServicesForScenarioProvider.RegisterServices(services);
+                }                            
+
                 services.AddAuthentication("IntegrationTest")
                     .AddScheme<AuthenticationSchemeOptions, IntegrationTestAuthenticationHandler>(
                       "IntegrationTest",
@@ -53,7 +68,9 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     );
 
                 IConfiguration configuration;
+
                 var sp = services.BuildServiceProvider();
+
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;
@@ -74,7 +91,9 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     ));
 
                 sp = services.BuildServiceProvider();
+
                 SepesDbContext dbContext;
+
                 using (var scope = sp.CreateScope())
                 {
                     var scopedServices = scope.ServiceProvider;

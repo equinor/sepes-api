@@ -5,13 +5,10 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,7 +33,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}. Creating!");
 
-                nsg = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, parameters.Tags, cancellationToken);
+                nsg = await CreateInternal(parameters.Region, parameters.ResourceGroupName, parameters.Name, parameters.Tags, cancellationToken);
             }
 
             var result = CreateResult(nsg);
@@ -57,7 +54,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
-            await Delete(parameters.ResourceGroupName, parameters.Name);
+            await DeleteInternal(parameters.ResourceGroupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
@@ -72,7 +69,7 @@ namespace Sepes.Infrastructure.Service
             return crudResult;
         }
 
-        public async Task<INetworkSecurityGroup> Create(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        async Task<INetworkSecurityGroup> CreateInternal(Region region, string resourceGroupName, string nsgName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var nsg = await _azure.NetworkSecurityGroups
                 .Define(nsgName)
@@ -102,7 +99,7 @@ namespace Sepes.Infrastructure.Service
             .ApplyAsync();
         }
 
-        public async Task Delete(string resourceGroupName, string securityGroupName)
+        async Task DeleteInternal(string resourceGroupName, string securityGroupName)
         {
             var resource = await GetResourceAsync(resourceGroupName, securityGroupName);
 
@@ -145,31 +142,7 @@ namespace Sepes.Infrastructure.Service
 
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
-        }
-
-        //public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesForAddress(string resourceGroupName, string nsgName, string address, CancellationToken cancellationToken = default)
-        //{
-        //    var nsg = await GetResourceAsync(resourceGroupName, nsgName);
-
-        //    var result = new Dictionary<string, NsgRuleDto>();
-
-        //    foreach (var curRuleKvp in nsg.SecurityRules)
-        //    {
-        //        if (
-        //            (curRuleKvp.Value.Direction == "Inbound" && curRuleKvp.Value.DestinationAddressPrefixes.Contains(address))
-        //            ||
-        //            (curRuleKvp.Value.Direction == "Outbound" && curRuleKvp.Value.SourceAddressPrefixes.Contains(address))
-        //            )
-        //        {
-        //            if (!result.ContainsKey(curRuleKvp.Value.Name))
-        //            {
-        //                result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol });
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
+        }        
 
         public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
         {

@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<ProvisioningQueueParentDto> SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default);
 
-        Task<ProvisioningQueueParentDto> RecieveMessageAsync();     
+        Task<ProvisioningQueueParentDto> ReceiveMessageAsync();     
 
         Task DeleteMessageAsync(ProvisioningQueueParentDto message);
 

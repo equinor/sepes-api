@@ -35,6 +35,13 @@ namespace Sepes.RestApi.Controller
             var roles = _lookupService.StudyRoles();
             return new JsonResult(roles);
         }
+
+        [HttpGet("studyroles/{studyId}")]
+        public async Task<IActionResult> StudyRolesUserCanGive(int studyId)
+        {
+            var roles =  await _lookupService.StudyRolesUserCanGive(studyId);
+            return new JsonResult(roles);
+        }
     }
 
 }
