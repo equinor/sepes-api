@@ -14,4 +14,3 @@
 "SepesRWConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/sepesrwconnectionstring)"
 "SubscriptionId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/SubscriptionId)"
 "FUNCTIONS_WORKER_RUNTIME=dotnet"
-"AzureVmTempPasswordStorageKeyVault_Url="
