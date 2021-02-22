@@ -1,4 +1,5 @@
-﻿using Sepes.RestApi.IntegrationTests.Dto;
+﻿using Sepes.Infrastructure.Model;
+using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
@@ -35,8 +36,18 @@ namespace Sepes.RestApi.IntegrationTests
         {
             await RegionSeed.Seed();
             await UserSeed.Seed();
-        } 
-        
+        }
+
+        protected async Task<Study> WithStudyCreatedByCurrentUser()
+        {
+            return await StudySeed.CreatedByCurrentUser();
+        }
+
+        protected async Task<Study> WithStudyCreatedByOtherUser(string myRole)
+        {
+            return await StudySeed.CreatedByOtherUser(currentUserRole: myRole);
+        }
+
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()
         {
             //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this

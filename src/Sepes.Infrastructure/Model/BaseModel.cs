@@ -5,7 +5,7 @@ namespace Sepes.Infrastructure.Model
 {
     public interface IHasNummericalId
     {
-        public int Id { get; }     
+        public int Id { get; set; }     
     }
 
     public interface IHasCreatedFields

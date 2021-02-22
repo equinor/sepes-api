@@ -1,10 +1,9 @@
 ﻿using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
-using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;

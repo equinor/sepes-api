@@ -3,7 +3,6 @@ using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
-using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
 using System.Threading.Tasks;
 using Xunit;
 

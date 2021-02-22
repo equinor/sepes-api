@@ -11,6 +11,11 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(HttpStatusCode.OK, responseWrapper.StatusCode);
         }
 
+        public static void ExpectNoContent(ApiResponseWrapper responseWrapper)
+        {
+            Assert.Equal(HttpStatusCode.NoContent, responseWrapper.StatusCode);
+        }
+
         public static void ExpectSuccess<T>(ApiResponseWrapper<T> responseWrapper)
         {        
             Assert.Equal(HttpStatusCode.OK, responseWrapper.StatusCode);

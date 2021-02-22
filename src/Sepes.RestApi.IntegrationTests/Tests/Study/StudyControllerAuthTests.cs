@@ -1,6 +1,7 @@
-﻿using Sepes.RestApi.IntegrationTests.RequestHelpers;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Study;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -10,9 +11,9 @@ namespace Sepes.RestApi.IntegrationTests.Tests
     public class StudyControllerAuthTests : ControllerTestBase
     {
         public StudyControllerAuthTests(TestHostFixture testHostFixture)
-            :base(testHostFixture)
+            : base(testHostFixture)
         {
-         
+
         }
 
         [Theory]
@@ -26,7 +27,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);      
+            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
 
             CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
         }
@@ -40,25 +41,43 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectFailure(_restHelper);        
+            var studyCreateConversation = await StudyCreator.CreateAndExpectFailure(_restHelper);
 
-            CreateStudyAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");      
+            CreateStudyAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");
         }
 
         [Theory]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public async Task DeleteStudy_WithRequiredRole_ShouldSucceed(bool isEmployee, bool isAdmin, bool isSponsor, bool isSponsorRep)
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+
+        public async Task DeleteStudy_CreatedByMe_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
-            SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario(isAdmin: isAdmin, isSponsor: isSponsor);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByCurrentUser();
+            var studyDeleteConversation = await StudyDeleter.DeleteAndExpectSuccess(_restHelper, createdStudy.Id);
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
+            DeleteBasicAsserts.ExpectNoContent(studyDeleteConversation.Response);
+        }
 
-            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
+        [Theory]
+        [InlineData(false, StudyRoles.SponsorRep)]
+        [InlineData(true, StudyRoles.StudyOwner)]
+        [InlineData(true, StudyRoles.SponsorRep)]
+        [InlineData(true, StudyRoles.VendorAdmin)]
+        [InlineData(true, StudyRoles.VendorContributor)]
+        [InlineData(true, StudyRoles.StudyViewer)]
+
+        public async Task DeleteStudy_CreatedByOther_WithRequiredRole_ShouldSucceed(bool isAdmin, string myRole)
+        {
+            SetScenario(isAdmin: isAdmin);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByOtherUser(myRole);
+
+            var studyDeleteConversation = await StudyDeleter.DeleteAndExpectSuccess(_restHelper, createdStudy.Id);
+
+            DeleteBasicAsserts.ExpectNoContent(studyDeleteConversation.Response);
         }
 
 
@@ -66,13 +85,43 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public async Task DeleteStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
+        public async Task DeleteStudy_CreatedByMe_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
         {
             SetScenario(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByCurrentUser();
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectFailure(_restHelper);
+            var studyDeleteConversation = await StudyDeleter.DeleteAndExpectFailure(_restHelper, createdStudy.Id);
 
-            CreateStudyAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");
+            CreateStudyAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
+        }
+
+        [Theory]
+        [InlineData(false, false, StudyRoles.VendorAdmin)]
+        [InlineData(false, false, StudyRoles.VendorContributor)]
+        [InlineData(false, false, StudyRoles.StudyViewer)]
+
+        [InlineData(false, true, StudyRoles.VendorAdmin)]
+        [InlineData(false, true, StudyRoles.VendorContributor)]
+        [InlineData(false, true, StudyRoles.StudyViewer)]
+
+        [InlineData(true, false, StudyRoles.VendorAdmin)]
+        [InlineData(true, false, StudyRoles.VendorContributor)]
+        [InlineData(true, false, StudyRoles.StudyViewer)]
+
+        [InlineData(true, true, StudyRoles.VendorAdmin)]
+        [InlineData(true, true, StudyRoles.VendorContributor)]
+        [InlineData(true, true, StudyRoles.StudyViewer)]
+
+        public async Task DeleteStudy_CreatedByOther_WithoutRequiredRole_ShouldFail(bool sponsor, bool datasetAdmin, string myRole)
+        {
+            SetScenario(isSponsor: sponsor, isDatasetAdmin: datasetAdmin);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByOtherUser(myRole);
+
+            var studyDeleteConversation = await StudyDeleter.DeleteAndExpectFailure(_restHelper, createdStudy.Id);
+
+            CreateStudyAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
         }
     }
 }

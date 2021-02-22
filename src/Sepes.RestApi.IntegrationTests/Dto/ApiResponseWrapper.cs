@@ -2,6 +2,17 @@
 
 namespace Sepes.RestApi.IntegrationTests.Dto
 {
+
+    public class ApiConversation<TResponse>
+    {
+        public ApiConversation(ApiResponseWrapper<TResponse> response)
+        {           
+            Response = response;
+        }   
+
+        public ApiResponseWrapper<TResponse> Response { get; private set; }
+    }
+
     public class ApiConversation<TRequest, TResponse>
     {
         public ApiConversation(TRequest request, ApiResponseWrapper<TResponse> response)
