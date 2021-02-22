@@ -26,12 +26,16 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             bool restricted = false,
             int ownerUserId = TestUserConstants.COMMON_ALTERNATIVE_STUDY_OWNER_DB_ID,
             int userId = TestUserConstants.COMMON_CUR_USER_DB_ID,
-            string currentUserRole = StudyRoles.SponsorRep)
+            string currentUserRole = null)
         {
             var study = StudyBasic(name, vendor, wbs, restricted);
 
             AddParticipant(study, ownerUserId, StudyRoles.StudyOwner);
-            AddParticipant(study, userId, currentUserRole);
+
+            if (!String.IsNullOrWhiteSpace(currentUserRole))
+            {
+                AddParticipant(study, userId, currentUserRole);
+            }         
 
             return await SliceFixture.InsertAsync(study);             
         }

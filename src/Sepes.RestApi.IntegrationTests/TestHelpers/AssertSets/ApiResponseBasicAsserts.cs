@@ -27,7 +27,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(expectedStatusCode, responseWrapper.StatusCode);
         }
 
-        public static void ExpectFailure(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, HttpStatusCode expectedStatusCode, string messageShouldContain = null)
+        public static void ExpectFailureWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, HttpStatusCode expectedStatusCode, string messageShouldContain = null)
         {
             Assert.Equal(expectedStatusCode, responseWrapper.StatusCode);            
 
@@ -43,10 +43,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
 
         }
 
-        public static void ExpectForbidden(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
+        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
         {
-            ExpectFailure(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
-
-        }
+            ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
+        }     
     }
 }

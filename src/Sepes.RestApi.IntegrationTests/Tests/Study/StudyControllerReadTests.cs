@@ -8,28 +8,55 @@ using Xunit;
 namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
-    public class StudyControllerAuthTests : ControllerTestBase
+    public class StudyControllerReadTests : ControllerTestBase
     {
-        public StudyControllerAuthTests(TestHostFixture testHostFixture)
+        public StudyControllerReadTests(TestHostFixture testHostFixture)
             : base(testHostFixture)
         {
 
         }
 
         [Theory]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isEmployee, bool isAdmin, bool isSponsor)
+        [InlineData(false, false, false, true)]
+        [InlineData(false, false, true, false)]
+        [InlineData(false, true, false, false)]
+        [InlineData(true, false, false, true)]
+        [InlineData(true, false, true, false)]         
+        public async Task Read_Study_CreatedByMe_ShouldSucceed(bool restrictedStudy, bool isEmployee, bool isAdmin, bool isSponsor)
         {
             SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByCurrentUser(restricted: restrictedStudy);
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
+            var studyCreateConversation = await StudyReader.ReadAndExpectSuccess(_restHelper, createdStudy.Id);
 
-            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
+            ReadStudyAsserts.ExpectSuccess(studyCreateConversation.Response);
+        }
+
+        [Theory]
+        [InlineData(false, true, false, false, null)]
+        [InlineData(false, false, true, false, null)]
+
+        //Sponsor needs relevant role
+        [InlineData(false, false, false, true, StudyRoles.SponsorRep)]
+        [InlineData(false, false, false, true, StudyRoles.VendorAdmin)]
+        [InlineData(false, false, false, true, StudyRoles.VendorContributor)]
+        [InlineData(false, false, false, true, StudyRoles.StudyViewer)]
+
+        [InlineData(true, false, true, false, null)]
+        [InlineData(true, true, false, true, StudyRoles.SponsorRep)]
+        [InlineData(true, true, false, true, StudyRoles.VendorAdmin)]
+        [InlineData(true, true, false, true, StudyRoles.VendorContributor)]
+        [InlineData(true, true, false, true, StudyRoles.StudyViewer)]    
+        public async Task Read_Study_CreatedByOther_ShouldSucceed(bool restrictedStudy, bool employee, bool isAdmin, bool isSponsor, string roleName)
+        {
+            SetScenario(isEmployee: employee, isAdmin: isAdmin, isSponsor: isSponsor);
+            await WithBasicSeeds();
+            var createdStudy = await WithStudyCreatedByOtherUser(restricted: restrictedStudy, roleName);
+
+            var studyCreateConversation = await StudyReader.ReadAndExpectSuccess(_restHelper, createdStudy.Id);
+
+            ReadStudyAsserts.ExpectSuccess(studyCreateConversation.Response);
         }
 
 
@@ -37,13 +64,13 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public async Task AddStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
+        public async Task Read_Study_CreatedByOther_WithoutRelevantRoles_ShouldFail(bool restrictedStudy, bool employee, bool isAdmin, bool isSponsor, string roleName)
         {
             SetScenario(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
 
             var studyCreateConversation = await StudyCreator.CreateAndExpectFailure(_restHelper);
 
-            CreateStudyAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");
+             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");
         }
 
         [Theory]
@@ -73,7 +100,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isAdmin: isAdmin);
             await WithBasicSeeds();
-            var createdStudy = await WithStudyCreatedByOtherUser(myRole);
+            var createdStudy = await WithStudyCreatedByOtherUser(myRole: myRole);
 
             var studyDeleteConversation = await StudyDeleter.DeleteAndExpectSuccess(_restHelper, createdStudy.Id);
 
@@ -93,7 +120,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             var studyDeleteConversation = await StudyDeleter.DeleteAndExpectFailure(_restHelper, createdStudy.Id);
 
-            CreateStudyAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
+             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
         }
 
         [Theory]
@@ -117,11 +144,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isSponsor: sponsor, isDatasetAdmin: datasetAdmin);
             await WithBasicSeeds();
-            var createdStudy = await WithStudyCreatedByOtherUser(myRole);
+            var createdStudy = await WithStudyCreatedByOtherUser(myRole: myRole);
 
             var studyDeleteConversation = await StudyDeleter.DeleteAndExpectFailure(_restHelper, createdStudy.Id);
 
-            CreateStudyAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
+             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
         }
     }
 }
