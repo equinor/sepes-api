@@ -2,11 +2,10 @@
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using System.IO;
 
-namespace Ras.Ui
+namespace Sepes.RestApi.Database
 {
 
     public class SepesDbContextFactory : IDesignTimeDbContextFactory<SepesDbContext>
