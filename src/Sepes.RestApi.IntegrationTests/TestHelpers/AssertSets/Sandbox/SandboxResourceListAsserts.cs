@@ -12,7 +12,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
         {
             ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);          
 
-            var sandboxResourceResponse = responseWrapper.Response;
+            var sandboxResourceResponse = responseWrapper.Content;
 
             foreach (var curResource in sandboxResourceResponse)
             {

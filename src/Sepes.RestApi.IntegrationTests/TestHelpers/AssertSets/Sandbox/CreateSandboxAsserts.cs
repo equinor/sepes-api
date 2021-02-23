@@ -11,9 +11,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
         {
             ApiResponseBasicAsserts.ExpectSuccess<SandboxDetails>(responseWrapper);            
          
-            Assert.NotEqual<int>(0, responseWrapper.Response.Id);
-            Assert.Equal(createRequest.Name, responseWrapper.Response.Name);
-            Assert.Equal(createRequest.Region, responseWrapper.Response.Region);
+            Assert.NotEqual<int>(0, responseWrapper.Content.Id);
+            Assert.Equal(createRequest.Name, responseWrapper.Content.Name);
+            Assert.Equal(createRequest.Region, responseWrapper.Content.Region);
         }
     }
 }

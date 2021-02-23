@@ -66,6 +66,20 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             }
         }
 
+        public async static Task<TEntity> InsertAsync<TEntity>(TEntity entity) where TEntity : class
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetService<SepesDbContext>();
+               
+                    dbContext.Set<TEntity>().Add(entity);
+
+                    await dbContext.SaveChangesAsync();
+
+                    return entity;             
+            }
+        }
+
         public static async Task<T> ExecuteScopeAsync<T>(Func<IServiceProvider, Task<T>> action)
         {
             using (var scope = _scopeFactory.CreateScope())
@@ -102,14 +116,14 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             return ExecuteDbContextAsync<T>(db => db.Set<T>().FindAsync(id).AsTask());
         }
 
-        public static Task<CloudResource> GetResource(int resourceId = 0, int studyId = 0, int sandboxId = 0)     
+        public static Task<CloudResource> GetResource(int resourceId = 0, int studyId = 0, int sandboxId = 0)
         {
             return ExecuteDbContextAsync<CloudResource>
                 (db =>
                 db.CloudResources
-                .Include(r=> r.ChildResources)
-                .Include(r=>r.Operations)
-                .If(resourceId > 0, x=> x.Where(r=> r.Id == resourceId))
+                .Include(r => r.ChildResources)
+                .Include(r => r.Operations)
+                .If(resourceId > 0, x => x.Where(r => r.Id == resourceId))
                 .If(studyId > 0, x => x.Where(r => r.StudyId == studyId))
                 .If(sandboxId > 0, x => x.Where(r => r.SandboxId == sandboxId))
                 .AsNoTracking()
@@ -127,17 +141,8 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
                 return db.SaveChangesAsync();
             });
-        }      
-
-        public static Task InsertAsync<TEntity>(TEntity entity) where TEntity : class
-        {
-            return ExecuteDbContextAsync(db =>
-            {
-                db.Set<TEntity>().Add(entity);
-
-                return db.SaveChangesAsync();
-            });
         }
+
 
         public static Task InsertAsync<TEntity, TEntity2>(TEntity entity, TEntity2 entity2)
             where TEntity : class
