@@ -48,7 +48,7 @@ jobs:
       # run tests with built project
     - name: Test PR
       working-directory: src/Sepes.Tests    
-      run: dotnet test --no-restore --no-build --configuration $config /p:CollectCoverage=true /p:CoverletOutput=${{github.workspace}}/CodeCoverageRaw/UnitTest/coverage.cobertura.xml /p:CoverletOutputFormat=cobertura --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
+      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings coverage.runsettings --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
       
     # add report as PR comment (if PR)
     - name: Add PR comment
