@@ -34,7 +34,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (!String.IsNullOrWhiteSpace(currentUserRole))
             {
-                AddParticipant(study, userId, currentUserRole);
+            AddParticipant(study, userId, currentUserRole);
             }         
 
             return await SliceFixture.InsertAsync(study);             
