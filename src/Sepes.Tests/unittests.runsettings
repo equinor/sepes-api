@@ -7,6 +7,10 @@
           <Format>cobertura</Format>
           <Exclude>[Sepes.RestApi.Database]*,[Sepes.Tests.Common]*,[*]Sepes.Infrastructure.Dto.*,[*]Sepes.Infrastructure.Response.*,[*]Sepes.Infrastructure.Service.Azure.*,[*]Sepes.Infrastructure.Model.*,[*]Sepes.Infrastructure.Constants.*,[*]Sepes.Infrastructure.Exceptions.*,[*]Sepes.Infrastructure.Migrations.*,[*]Sepes.Infrastructure.Extensions.*,[*]Microsoft.AspNetCore.Authentication.*</Exclude>     
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <SingleHit>true</SingleHit>
+          <UseSourceLink>true</UseSourceLink>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
         </Configuration>
       </DataCollector>
     </DataCollectors>
