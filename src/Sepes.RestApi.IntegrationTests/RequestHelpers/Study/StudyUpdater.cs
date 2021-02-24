@@ -7,22 +7,21 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
 {
     public static class StudyUpdater
     {
-        static async Task<ApiConversation<StudyCreateDto, TResponse>> Update<TResponse>(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")         
-        {
-            var request = new StudyCreateDto() { Name = studyName, Vendor = vendor, WbsCode = wbsCode };
-            var response = await restHelper.Post<TResponse, StudyCreateDto>("api/studies", request);
+        static async Task<ApiConversation<StudyDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, StudyDto studyDto)         
+        {         
+            var response = await restHelper.Put<TResponse, StudyDto>($"api/studies/{studyId}/details", studyDto);
 
-            return new ApiConversation<StudyCreateDto, TResponse>(request, response);
+            return new ApiConversation<StudyDto, TResponse>(studyDto, response);
         }
 
-        public static async Task<ApiConversation<StudyCreateDto, StudyDto>> UpdateAndExpectSuccess(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")
+        public static async Task<ApiConversation<StudyDto, StudyDto>> UpdateAndExpectSuccess(RestHelper restHelper, int studyId, StudyDto studyDto)
         {
-            return await Update<StudyDto>(restHelper, studyName, vendor, wbsCode);
+            return await Update<StudyDto>(restHelper, studyId, studyDto);
         }
 
-        public static async Task<ApiConversation<StudyCreateDto, Infrastructure.Dto.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")
+        public static async Task<ApiConversation<StudyDto, Infrastructure.Dto.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, int studyId, StudyDto studyDto)
         {
-            return await Update<Infrastructure.Dto.ErrorResponse>(restHelper, studyName, vendor, wbsCode);
+            return await Update<Infrastructure.Dto.ErrorResponse>(restHelper, studyId, studyDto);
         }
     } 
 }

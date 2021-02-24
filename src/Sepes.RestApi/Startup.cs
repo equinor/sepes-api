@@ -80,7 +80,7 @@ namespace Sepes.RestApi
 
             var enableSensitiveDataLogging = true;
 
-            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];          
 
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
@@ -270,7 +270,7 @@ namespace Sepes.RestApi
         {
             var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];         
 
-            if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "false")
+            if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "true")
             {
                 Log("Migrations are disabled and will be skipped!");
 

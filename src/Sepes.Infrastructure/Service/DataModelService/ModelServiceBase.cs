@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,7 +31,7 @@ namespace Sepes.Infrastructure.Service
 
         protected string GetDbConnectionString()
         {
-           return ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.DB_READ_WRITE_CONNECTION_STRING);
+            return _db.Database.GetDbConnection().ConnectionString;        
         }
 
         public async Task<TModel> AddAsync(TModel entity)

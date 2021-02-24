@@ -1,6 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.RestApi.IntegrationTests.Constants;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;

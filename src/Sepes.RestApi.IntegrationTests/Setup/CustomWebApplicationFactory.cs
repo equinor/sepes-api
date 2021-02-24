@@ -75,7 +75,17 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     var scopedServices = scope.ServiceProvider;
                     configuration = scopedServices.GetRequiredService<IConfiguration>();
                 }
-                var dbConnectionString = ConnectionStringUtil.GetDatabaseConnectionString(configuration);           
+                var dbConnectionString = ConnectionStringUtil.GetDatabaseConnectionString(configuration);
+
+                if (services.Any(x => x.ServiceType == typeof(SepesDbContext)))
+                {
+                    var serviceDescriptors = services.Where(x => x.ServiceType == typeof(SepesDbContext)).ToList();
+
+                    foreach (var serviceDescriptor in serviceDescriptors)
+                    {
+                        services.Remove(serviceDescriptor);
+                    }
+                }
 
                 services.AddDbContext<SepesDbContext>(options =>
                     options.UseSqlServer(

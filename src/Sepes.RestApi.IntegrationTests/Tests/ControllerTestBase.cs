@@ -43,9 +43,9 @@ namespace Sepes.RestApi.IntegrationTests
             return await StudySeed.CreatedByCurrentUser(restricted: restricted);
         }
 
-        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string myRole = null)
+        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string studyRole = null)
         {
-            return await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: myRole);
+            return await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole);
         }
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()

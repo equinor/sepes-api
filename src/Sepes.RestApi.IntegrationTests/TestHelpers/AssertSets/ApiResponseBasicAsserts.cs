@@ -46,6 +46,6 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
         public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
         {
             ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
-        }     
+        }      
     }
 }

@@ -1,78 +1,125 @@
-﻿//using Sepes.Infrastructure.Constants;
-//using Sepes.RestApi.IntegrationTests.RequestHelpers;
-//using Sepes.RestApi.IntegrationTests.Setup;
-//using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
-//using System.Threading.Tasks;
-//using Xunit;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.Study;
+using Sepes.RestApi.IntegrationTests.RequestHelpers;
+using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
-//namespace Sepes.RestApi.IntegrationTests.Tests
-//{
-//    [Collection("Integration tests collection")]
-//    public class StudyControllerReadTests : ControllerTestBase
-//    {
-//        public StudyControllerReadTests(TestHostFixture testHostFixture)
-//            : base(testHostFixture)
-//        {
+namespace Sepes.RestApi.IntegrationTests.Tests
+{
+    [Collection("Integration tests collection")]
+    public class StudyControllerReadTests : ControllerTestBase
+    {
+        public StudyControllerReadTests(TestHostFixture testHostFixture)
+            : base(testHostFixture)
+        {
 
-//        }
+        }
 
-//        [Theory]
-//        [InlineData(false, false, false, true)]
-//        [InlineData(false, false, true, false)]
-//        [InlineData(false, true, false, false)]
-//        [InlineData(true, false, false, true)]
-//        [InlineData(true, false, true, false)]         
-//        public async Task Read_Study_CreatedByMe_ShouldSucceed(bool restrictedStudy, bool isEmployee, bool isAdmin, bool isSponsor)
-//        {
-//            SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
-//            await WithBasicSeeds();
-//            var createdStudy = await WithStudyCreatedByCurrentUser(restricted: restrictedStudy);
+        [Theory]
+        [InlineData(true, false, false, false, true)]
+        [InlineData(true, false, false, true, false)]
+        [InlineData(true, false, true, false, false)]
+        [InlineData(true, true, false, false, true)]
+        [InlineData(true, true, false, true, false)]
 
-//            var studyCreateConversation = await StudyReader.ReadAndExpectSuccess(_restHelper, createdStudy.Id);
+        [InlineData(false, false, true, false, false, null)]
+        [InlineData(false, false, false, true, false, null)]
+        [InlineData(false, false, false, false, true, StudyRoles.SponsorRep)]
+        [InlineData(false, false, false, false, true, StudyRoles.VendorAdmin)]
+        [InlineData(false, false, false, false, true, StudyRoles.VendorContributor)]
+        [InlineData(false, false, false, false, true, StudyRoles.StudyViewer)]
+        [InlineData(false, true, false, true, false, null)]
+        [InlineData(false, true, true, false, true, StudyRoles.SponsorRep)]
+        [InlineData(false, true, true, false, true, StudyRoles.VendorAdmin)]
+        [InlineData(false, true, true, false, true, StudyRoles.VendorContributor)]
+        [InlineData(false, true, true, false, true, StudyRoles.StudyViewer)]
+        public async Task Read_Study_HavingCorrectRoles_ShouldSucceed(bool createdByCurrentUser, bool restrictedStudy, bool isEmployee, bool isAdmin, bool isSponsor, string roleName = null)
+        {
+            
+            SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
+            await WithBasicSeeds();
+            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restrictedStudy) : await WithStudyCreatedByOtherUser(restrictedStudy, roleName);
 
-//            ReadStudyAsserts.ExpectSuccess(studyCreateConversation.Response);
-//        }
+            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
+            ReadStudyAsserts.ExpectSuccess(studyReadConversation.Response);
+        }
 
-//        [Theory]
-//        [InlineData(false, true, false, false, null)]
-//        [InlineData(false, false, true, false, null)]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]    
 
-//        //Sponsor needs relevant role
-//        [InlineData(false, false, false, true, StudyRoles.SponsorRep)]
-//        [InlineData(false, false, false, true, StudyRoles.VendorAdmin)]
-//        [InlineData(false, false, false, true, StudyRoles.VendorContributor)]
-//        [InlineData(false, false, false, true, StudyRoles.StudyViewer)]
+        public async Task Read_StudyList_WithoutRelevantRoles_ShouldFail(bool datasetAdmin)
+        {       
+            SetScenario(isDatasetAdmin: datasetAdmin);
+            await WithBasicSeeds();
+            _ = await WithStudyCreatedByCurrentUser(false);
+            _ = await WithStudyCreatedByCurrentUser(true);
+            _ = await WithStudyCreatedByOtherUser(false);
+            _ = await WithStudyCreatedByOtherUser(true);
 
-//        [InlineData(true, false, true, false, null)]
-//        [InlineData(true, true, false, true, StudyRoles.SponsorRep)]
-//        [InlineData(true, true, false, true, StudyRoles.VendorAdmin)]
-//        [InlineData(true, true, false, true, StudyRoles.VendorContributor)]
-//        [InlineData(true, true, false, true, StudyRoles.StudyViewer)]    
-//        public async Task Read_Study_CreatedByOther_ShouldSucceed(bool restrictedStudy, bool employee, bool isAdmin, bool isSponsor, string roleName)
-//        {
-//            SetScenario(isEmployee: employee, isAdmin: isAdmin, isSponsor: isSponsor);
-//            await WithBasicSeeds();
-//            var createdStudy = await WithStudyCreatedByOtherUser(restricted: restrictedStudy, roleName);
+            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
+            Assert.Empty(studyReadConversation.Response.Content);
+        }
 
-//            var studyCreateConversation = await StudyReader.ReadAndExpectSuccess(_restHelper, createdStudy.Id);
+        [Theory] 
+        [InlineData(true, StudyRoles.SponsorRep)]
+        [InlineData(true, StudyRoles.VendorAdmin)]
+        [InlineData(true, StudyRoles.VendorContributor)]
+        [InlineData(true, StudyRoles.StudyViewer)]      
 
-//            ReadStudyAsserts.ExpectSuccess(studyCreateConversation.Response);
-//        }
+        public async Task Read_StudyList_ShouldOnlyContainRelevantRestrictedStudies(bool employee, string myRole)
+        {
+            SetScenario(isEmployee: employee);
+            await WithBasicSeeds();
 
+            var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, myRole);
+            var studyThisUserShouldNotSee = await WithStudyCreatedByOtherUser(true);
 
-//        //[Theory]
-//        //[InlineData(true, false)]
-//        //[InlineData(false, true)]
-//        //[InlineData(true, true)]
-//        //public async Task Read_Study_CreatedByOther_WithoutRelevantRoles_ShouldFail(bool restrictedStudy, bool employee, bool isAdmin, bool isSponsor, string roleName)
-//        //{
-//        //    SetScenario(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
+            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
+            Assert.NotEmpty(studyReadConversation.Response.Content);
+            Assert.NotNull(studyReadConversation.Response.Content.FirstOrDefault(s => s.Id == studyThisUserShouldSee.Id));
+            Assert.Null(studyReadConversation.Response.Content.FirstOrDefault(s => s.Id == studyThisUserShouldNotSee.Id));
+        }
 
-//        //    var studyCreateConversation = await StudyCreator.CreateAndExpectFailure(_restHelper);
+        [Theory]             
+        [InlineData(true, true, false)]
+        [InlineData(true, false, true)] 
+        [InlineData(true, false, false)] 
+        [InlineData(false, false, false)]
+        [InlineData(false, false, true)] 
+        public async Task Read_Study_WithoutRelevantRoles_ShouldFail(bool employee, bool isSponsor, bool datasetAdmin)
+        {
+            SetScenario(isEmployee: employee, isSponsor: isSponsor, isDatasetAdmin: datasetAdmin);
+            await WithBasicSeeds();
 
-//        //     ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyCreateConversation.Response, "does not have permission to perform operation");
-//        //}
+            var createdStudy = await WithStudyCreatedByOtherUser(restricted: true);         
 
-      
-//    }
-//}
+            var studyReadConversation = await GenericReader.ReadAndExpectFailure<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
+            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyReadConversation.Response, "does not have permission to perform operation");
+        }
+
+        [Theory]
+        [InlineData(false, false, null)]
+        [InlineData(true, true, null)]
+        [InlineData(true, true, StudyRoles.VendorAdmin)]
+        [InlineData(true, true, StudyRoles.VendorContributor)]
+
+        public async Task Read_Study_ResultsAndLearnings_WithoutRelevantRoles_ShouldFail(bool restricted, bool employee, string studyRole = null)
+        {
+            SetScenario(isEmployee: employee);
+            await WithBasicSeeds();
+
+            var createdStudy = await WithStudyCreatedByOtherUser(restricted, studyRole);
+
+            var studyReadConversation = await GenericReader.ReadAndExpectFailure<StudyDetailsDto>(_restHelper, GenericReader.StudyResultsAndLearningsUrl(createdStudy.Id));
+
+            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyReadConversation.Response, "does not have permission to perform operation");
+        }
+    }
+}
