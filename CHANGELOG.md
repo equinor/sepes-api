@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.12](https://github.com/equinor/sepes-api/compare/0.4.11...0.4.12) (2021-02-24)
+
+
+### Features
+
+* **dataset:** showing restriction based on selected datasets ([#550](https://github.com/equinor/sepes-api/issues/550)) ([223db73](https://github.com/equinor/sepes-api/commit/223db733b22450309a9d20b4089c224a9c47b8fc))
+
+
+### Bug Fixes
+
+* **dataset:** increased upload sas token timeout to 30m ([64360c4](https://github.com/equinor/sepes-api/commit/64360c4a5b9b1059e92b5b08889339bb752dbc95))
+* **participant:** fixed error in participant lookup where same role was added multiple times ([#567](https://github.com/equinor/sepes-api/issues/567)) ([c8d79c9](https://github.com/equinor/sepes-api/commit/c8d79c99b2970e80b17e1b544e28247b932ae911))
+* **sandbox:** fixed mapping in resource response ([#568](https://github.com/equinor/sepes-api/issues/568)) ([a8673a4](https://github.com/equinor/sepes-api/commit/a8673a4937b668c41d6a591b9c8fb82210094787))
+* add nullchecks for azureVmUtil and add tests ([b64cf0d](https://github.com/equinor/sepes-api/commit/b64cf0d9b2081ff02a9f402d7470b3d2c8f5904c))
+* better handle TaskCancelledException and dont log as error ([#558](https://github.com/equinor/sepes-api/issues/558)) ([01c402c](https://github.com/equinor/sepes-api/commit/01c402cd233627cde4fb9d10c3163303a2bd3c66)), closes [#483](https://github.com/equinor/sepes-api/issues/483)
+* New endpoint for study roles where it will return which role a u… ([#560](https://github.com/equinor/sepes-api/issues/560)) ([673283b](https://github.com/equinor/sepes-api/commit/673283b7980f6a60e0dbdbc93faae2cdfdeb1e3a))
+* **dataset:** now adding correct client ip firewall rule ([ce3c464](https://github.com/equinor/sepes-api/commit/ce3c464dea5bb86093daf51cdef9986f06f2fcff))
+* **sandbox:** removed duplicate check of existing name ([71a2abc](https://github.com/equinor/sepes-api/commit/71a2abc5b28ab3671ff5ffb3c00bc00884a1116f))
+
 ### [0.4.11](https://github.com/equinor/sepes-api/compare/0.4.10...0.4.11) (2021-02-19)
 
 ### [0.4.10](https://github.com/equinor/sepes-api/compare/0.4.9...0.4.10) (2021-02-19)
