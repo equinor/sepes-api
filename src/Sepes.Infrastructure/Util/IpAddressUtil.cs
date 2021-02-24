@@ -4,8 +4,6 @@ using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Sepes.Infrastructure.Constants;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -110,7 +108,7 @@ namespace Sepes.Infrastructure.Util
             return clientIp;
         }      
 
-        public static bool GetForwardedForHeader(HttpContext context, out string headerValue)
+        static bool GetForwardedForHeader(HttpContext context, out string headerValue)
         {
             if (GetRequestHeaderValue(context, "X-Forwarded-For", out headerValue))
             {
@@ -120,7 +118,7 @@ namespace Sepes.Infrastructure.Util
             return false;
         }
 
-        public static bool GetRealIpHeader(HttpContext context, out string headerValue)
+        static bool GetRealIpHeader(HttpContext context, out string headerValue)
         {
             if (GetRequestHeaderValue(context, "X-Real-IP", out headerValue))
             {
@@ -143,15 +141,6 @@ namespace Sepes.Infrastructure.Util
             headerValue = null;
             return false;
         }
-
-        public static void EnsureListContainsIpAddress(List<string> list, string ipAddress)
-        {
-            if (!list.Contains(ipAddress))
-            {
-                list.Add(ipAddress);
-            }
-        }
-
     }
 
     public class IpAddressResponse

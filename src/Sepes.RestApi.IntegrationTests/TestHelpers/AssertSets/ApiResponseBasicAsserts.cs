@@ -1,5 +1,7 @@
 ﻿using Sepes.RestApi.IntegrationTests.Dto;
+using System;
 using System.Net;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
@@ -43,9 +45,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
 
         }
 
-        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
+        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = "does not have permission to perform operation")
         {
             ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
-        }      
+        }
     }
 }

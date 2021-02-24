@@ -49,22 +49,21 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(false, false, true, false, true, StudyRoles.VendorContributor)]
         [InlineData(false, false, true, false, true, StudyRoles.StudyViewer)]
         [InlineData(true, false, false, false, false, null)]
-        [InlineData(true, false, false, false, true, null)]     
+        [InlineData(true, false, false, false, true, null)]
         [InlineData(true, false, true, false, false, null)]
         [InlineData(true, true, false, false, false, null)]
         [InlineData(true, true, false, false, true, null)]
-        [InlineData(true, true, false, true, false, null)]
         [InlineData(true, true, true, false, false, null)]
         [InlineData(true, false, true, false, false, StudyRoles.VendorAdmin)]
         [InlineData(true, false, true, false, false, StudyRoles.VendorContributor)]
         [InlineData(true, false, true, false, false, StudyRoles.StudyViewer)]
-        [InlineData(true, false, true, false, true, StudyRoles.VendorAdmin)]       
+        [InlineData(true, false, true, false, true, StudyRoles.VendorAdmin)]
         [InlineData(true, false, true, false, true, StudyRoles.StudyViewer)]
         public async Task UpdateStudyMetadata_WithoutRequiredRole_ShouldFail(bool createdByCurrentUser, bool restricted, bool isEmployee, bool sponsor, bool isDatasetAdmin, string studyRole = null)
         {
             SetScenario(isEmployee: isEmployee, isSponsor: sponsor, isDatasetAdmin: isDatasetAdmin);
-            await WithBasicSeeds();
-            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restricted: restricted) : await WithStudyCreatedByOtherUser(restricted, studyRole);
+            await WithUserSeeds();
+            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restricted, studyRole) : await WithStudyCreatedByOtherUser(restricted, studyRole);
             var updateRequst = new StudyDto() { Name = "newName", Vendor = "newVendor" };
             var studyDeleteConversation = await StudyUpdater.UpdateAndExpectFailure(_restHelper, createdStudy.Id, updateRequst);
 

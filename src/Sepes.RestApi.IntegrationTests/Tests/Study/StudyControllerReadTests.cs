@@ -41,8 +41,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             
             SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
-            await WithBasicSeeds();
-            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restrictedStudy) : await WithStudyCreatedByOtherUser(restrictedStudy, roleName);
+            await WithUserSeeds();
+            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restrictedStudy, roleName) : await WithStudyCreatedByOtherUser(restrictedStudy, roleName);
 
             var studyReadConversation = await GenericReader.ReadAndExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
             ReadStudyAsserts.ExpectSuccess(studyReadConversation.Response);
@@ -55,7 +55,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Read_StudyList_WithoutRelevantRoles_ShouldFail(bool datasetAdmin)
         {       
             SetScenario(isDatasetAdmin: datasetAdmin);
-            await WithBasicSeeds();
+            await WithUserSeeds();
             _ = await WithStudyCreatedByCurrentUser(false);
             _ = await WithStudyCreatedByCurrentUser(true);
             _ = await WithStudyCreatedByOtherUser(false);
@@ -75,7 +75,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Read_StudyList_ShouldOnlyContainRelevantRestrictedStudies(bool employee, string myRole)
         {
             SetScenario(isEmployee: employee);
-            await WithBasicSeeds();
+            await WithUserSeeds();
 
             var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, myRole);
             var studyThisUserShouldNotSee = await WithStudyCreatedByOtherUser(true);
@@ -96,7 +96,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Read_Study_WithoutRelevantRoles_ShouldFail(bool employee, bool isSponsor, bool datasetAdmin)
         {
             SetScenario(isEmployee: employee, isSponsor: isSponsor, isDatasetAdmin: datasetAdmin);
-            await WithBasicSeeds();
+            await WithUserSeeds();
 
             var createdStudy = await WithStudyCreatedByOtherUser(restricted: true);         
 
@@ -113,7 +113,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Read_Study_ResultsAndLearnings_WithoutRelevantRoles_ShouldFail(bool restricted, bool employee, string studyRole = null)
         {
             SetScenario(isEmployee: employee);
-            await WithBasicSeeds();
+            await WithUserSeeds();
 
             var createdStudy = await WithStudyCreatedByOtherUser(restricted, studyRole);
 

@@ -10,13 +10,25 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 {
     public static class StudySeed
     {
-        public static async Task<Study> CreatedByCurrentUser(string name = StudyConstants.CREATED_BY_ME_NAME, string vendor = StudyConstants.CREATED_BY_ME_VENDOR, string wbs = StudyConstants.CREATED_BY_ME_WBS, bool restricted = false, int userId = TestUserConstants.COMMON_CUR_USER_DB_ID)
+        public static async Task<Study> CreatedByCurrentUser(
+            string name = StudyConstants.CREATED_BY_ME_NAME,
+            string vendor = StudyConstants.CREATED_BY_ME_VENDOR,
+            string wbs = StudyConstants.CREATED_BY_ME_WBS,
+            bool restricted = false,
+            int userId = TestUserConstants.COMMON_CUR_USER_DB_ID,
+            string currentUserRole = null
+            )
         {
             var study = StudyBasic(name, vendor, wbs, restricted);
 
             AddParticipant(study, userId, StudyRoles.StudyOwner);
 
-           return await SliceFixture.InsertAsync(study);
+            if (!String.IsNullOrWhiteSpace(currentUserRole))
+            {
+                AddParticipant(study, userId, currentUserRole);
+            }
+
+            return await SliceFixture.InsertAsync(study);
         }
 
         public static async Task<Study> CreatedByOtherUser(
@@ -34,7 +46,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (!String.IsNullOrWhiteSpace(currentUserRole))
             {
-            AddParticipant(study, userId, currentUserRole);
+              AddParticipant(study, userId, currentUserRole);
             }         
 
             return await SliceFixture.InsertAsync(study);             
