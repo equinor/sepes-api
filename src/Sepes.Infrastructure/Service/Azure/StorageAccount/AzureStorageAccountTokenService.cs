@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
         public async Task<UriBuilder> CreateFileUploadUriBuilder(string containerName, CancellationToken cancellationToken = default)
         {
-            return await CreateUriBuilderWithSasToken(containerName, permission: BlobContainerSasPermissions.Write, cancellationToken: cancellationToken);
+            return await CreateUriBuilderWithSasToken(containerName, permission: BlobContainerSasPermissions.Write, expiresOnMinutes: 30, cancellationToken: cancellationToken);
         }
 
         async Task<UriBuilder> CreateUriBuilderWithSasToken(
