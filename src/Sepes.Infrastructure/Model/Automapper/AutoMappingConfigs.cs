@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Util;
 using System.Linq;
 
@@ -23,8 +24,8 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
             CreateMap<Study, StudyDetailsDto>()
-                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d => d.Deleted == false).ToList()))
-                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => sb.Deleted == false).ToList()))
+                .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Dataset).Where(d => !d.Deleted).ToList()))
+                .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.Sandboxes.Where(sb => !sb.Deleted).ToList()))
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
@@ -44,7 +45,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Dataset, DatasetLookupItemDto>();
 
             CreateMap<Dataset, DatasetListItemDto>()
-                     .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.SandboxDatasets.Select(sd => sd.Sandbox).ToList()));
+                     .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.SandboxDatasets.Where(sd => !sd.Sandbox.Deleted).Select(sd => sd.Sandbox).ToList()));
 
             CreateMap<StudyDataset, StudyDatasetDto>()
                   .ForMember(dest => dest.Id, source => source.MapFrom(x => x.Dataset.Id))
@@ -81,9 +82,9 @@ namespace Sepes.Infrastructure.Model.Automapper
                   .ForMember(dest => dest.CurrentPhase, source => source.MapFrom<SandboxPhaseNameResolver>());
 
 
-            CreateMap<Sandbox, SandboxListItemDto>();
+            CreateMap<Sandbox, SandboxListItem>();
 
-            CreateMap<Sandbox, SandboxDetailsDto>()
+            CreateMap<Sandbox, SandboxDetails>()
          .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
          .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
@@ -92,7 +93,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
             CreateMap<SandboxCreateDto, Sandbox>();
 
-            CreateMap<CloudResource, SandboxResourceLightDto>()
+            CreateMap<CloudResource, SandboxResourceLight>()
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
              .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))

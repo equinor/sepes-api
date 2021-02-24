@@ -62,8 +62,7 @@ namespace Sepes.Tests.Setup
 
             var workQueue = new Mock<IProvisioningQueueService>();
 
-            var azureVmService = new Mock<IAzureVmService>();
-
+            var azureVmService = new Mock<IAzureVirtualMachineExtenedInfoService>();
 
             return new VirtualMachineService(logger, config, db, mapper, userService.Object, sandboxServiceMock.Object, virtualMachineSizeService.Object, 
                 vmLookupService, sandboxResourceCreateService.Object, sandboxResourceUpdateService.Object, sandboxResourceDeleteService.Object,

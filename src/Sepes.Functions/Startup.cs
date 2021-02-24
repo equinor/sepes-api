@@ -117,10 +117,12 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
             builder.Services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             builder.Services.AddTransient<IAzureBastionService, AzureBastionService>();
-            builder.Services.AddTransient<IAzureVNetService, AzureVNetService>();
-            builder.Services.AddTransient<IAzureVmService, AzureVmService>();
+            builder.Services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
+            builder.Services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
             builder.Services.AddTransient<IAzureQueueService, AzureQueueService>();
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            builder.Services.AddTransient<IAzureStorageAccountCorsRuleService, AzureStorageAccountCorsRuleService>();
+            builder.Services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             builder.Services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
             builder.Services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();

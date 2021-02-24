@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmSize>> AvailableSizes(string region, CancellationToken cancellationToken = default)
         {
-            var relevantDbRegion = await _db.Regions.Include(r => r.VmSizeAssociations).ThenInclude(va => va.VmSize).Where(r => r.Key == region && r.Disabled == false).SingleOrDefaultAsync();
+            var relevantDbRegion = await _db.Regions.Include(r => r.VmSizeAssociations).ThenInclude(va => va.VmSize).Where(r => r.Key == region && !r.Disabled).SingleOrDefaultAsync();
 
             if (relevantDbRegion == null)
             {
@@ -88,7 +88,7 @@ namespace Sepes.Infrastructure.Service
         public async Task UpdateVmSizeCache(CancellationToken cancellationToken = default)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
-            var regionsFromDb = await _db.Regions.Include(r => r.VmSizeAssociations).ThenInclude(va => va.VmSize).Where(r => r.Disabled == false).ToListAsync();
+            var regionsFromDb = await _db.Regions.Include(r => r.VmSizeAssociations).ThenInclude(va => va.VmSize).Where(r => !r.Disabled).ToListAsync();
 
             if (regionsFromDb == null || (regionsFromDb != null & regionsFromDb.Count() == 0))
             {

@@ -31,13 +31,13 @@ namespace Sepes.Infrastructure.Model.Factory
         {
             var resourceType = AzureResourceType.StorageAccount;
             var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceName, tags, resourceGroupName);
-            
+
             newResource.DatasetId = datasetId;
             newResource.ParentResourceId = resourceGroupId;
 
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetStorageAccount;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE);           
+            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE);
             SetOperationProperties(newResource, createOperationDescription, operationDependsOn: dependsOnId);
 
             return newResource;
@@ -62,10 +62,10 @@ namespace Sepes.Infrastructure.Model.Factory
         }
 
         public static CloudResource CreateSandboxResourceEntry(UserDto currentUser, string sessionId, int sandboxId, string region, string resourceType, int resourceGroupId, string resourceName, Dictionary<string, string> tags,
-       string configString = null,
-       string batchId = null,
-       int dependsOn = 0,
-      string resourceGroupName = null
+            string configString = null,
+            string batchId = null,
+            int dependsOn = 0,
+            string resourceGroupName = null
         )
         {
             var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceName, tags, resourceGroupName);
@@ -99,6 +99,7 @@ namespace Sepes.Infrastructure.Model.Factory
                 Operations = new List<CloudResourceOperation> {
                     new CloudResourceOperation()
                     {
+                    Status = CloudResourceOperationState.NEW,
                     OperationType = CloudResourceOperationType.CREATE,
                     CreatedBy = currentUser.UserName,
                     CreatedBySessionId = sessionId,

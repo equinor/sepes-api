@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Creating Bastion for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            if (parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out string subnetId) == false)
+            if (!parameters.TryGetSharedVariable(AzureCrudSharedVariable.BASTION_SUBNET_ID, out string subnetId))
             {
                 throw new ArgumentException("AzureBastionService: Missing Bastion subnet ID from input");
             }
@@ -37,7 +37,7 @@ namespace Sepes.Infrastructure.Service
 
             if (bastionHost == null)
             {
-                bastionHost = await Create(parameters.Region, parameters.ResourceGroupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
+                bastionHost = await CreateInternal(parameters.Region, parameters.ResourceGroupName, parameters.Name, subnetId, parameters.Tags, cancellationToken);
                 _logger.LogInformation($"Done creating Bastion for sandbox with Id: {parameters.SandboxName}! Bastion Id: {bastionHost.Id}");
             }
             else
@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
         {
-            await Delete(parameters.ResourceGroupName, parameters.Name);
+            await DeleteInternal(parameters.ResourceGroupName, parameters.Name);
 
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
             var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
@@ -74,7 +74,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<BastionHost> Create(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        async Task<BastionHost> CreateInternal(Region region, string resourceGroupName, string bastionName, string subnetId, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
             var publicIpName = AzureResourceNameUtil.BastionPublicIp(bastionName);
 
@@ -112,7 +112,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task Delete(string resourceGroupName, string bastionHostName)
+        async Task DeleteInternal(string resourceGroupName, string bastionHostName)
         {
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {

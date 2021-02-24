@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -41,24 +42,27 @@ namespace Sepes.Infrastructure.Service
             return datasetDtos;
         }
 
-        public async Task<IEnumerable<AvailableDatasetDto>> AllAvailable(int sandboxId)
+        public async Task<AvailableDatasets> AllAvailable(int sandboxId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read, true);
 
             var availableDatasets = studyFromDb
                 .StudyDatasets
-                .Select(sd => new AvailableDatasetDto()
+                .Select(sd => new AvailableDatasetItem()
                 {
                     DatasetId = sd.DatasetId,
                     Name = sd.Dataset.Name,
                     Classification = sd.Dataset.Classification,
                     AddedToSandbox = sd.Dataset.SandboxDatasets.Where(sd => sd.SandboxId == sandboxId).Any()
-                });        
+                });
 
-            return availableDatasets;
+            var result = new AvailableDatasets(availableDatasets);
+            DatasetClassificationUtils.SetRestrictionProperties(result);
+
+            return result;
         }
 
-        public async Task Add(int sandboxId, int datasetId)
+        public async Task<AvailableDatasets> Add(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -88,9 +92,11 @@ namespace Sepes.Infrastructure.Service
             var sandboxDataset = new SandboxDataset { SandboxId = sandboxId, DatasetId = datasetId, Added = DateTime.UtcNow, AddedBy = (await _userService.GetCurrentUserAsync()).UserName };
             await _db.SandboxDatasets.AddAsync(sandboxDataset);
             await _db.SaveChangesAsync();
+
+            return await AllAvailable(sandboxId);
         }
 
-        public async Task Remove(int sandboxId, int datasetId)
+        public async Task<AvailableDatasets> Remove(int sandboxId, int datasetId)
         {
             var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox);
 
@@ -108,6 +114,8 @@ namespace Sepes.Infrastructure.Service
                 _db.SandboxDatasets.Remove(sandboxDatasetRelation);
                 await _db.SaveChangesAsync();
             }
+
+            return await AllAvailable(sandboxId);
         }
 
         async Task ValidateAddOrRemoveDataset(int sandboxId)

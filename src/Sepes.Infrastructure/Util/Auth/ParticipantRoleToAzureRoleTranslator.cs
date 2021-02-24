@@ -28,11 +28,11 @@ namespace Sepes.Infrastructure.Util.Auth
             {
                 var translatedRole = translator(curParticipant.RoleName);
 
-                if (String.IsNullOrWhiteSpace(translatedRole) == false)
+                if (!String.IsNullOrWhiteSpace(translatedRole))
                 {
                     var lookupKey = CreateAssignmentLookupKey(curParticipant.User.ObjectId, translatedRole);
 
-                    if (desiredRolesLookup.ContainsKey(lookupKey) == false)
+                    if (!desiredRolesLookup.ContainsKey(lookupKey))
                     {
                         desiredRolesLookup.Add(lookupKey, new CloudResourceDesiredRoleAssignmentDto(curParticipant.User.ObjectId, translatedRole));
                     }

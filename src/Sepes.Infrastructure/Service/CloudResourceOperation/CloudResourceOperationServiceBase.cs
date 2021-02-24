@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -65,9 +66,10 @@ namespace Sepes.Infrastructure.Service
             return entityFromDb;
         }
 
-        protected async Task<CloudResourceOperation> GetResourceOperationOrThrowAsync(int id)
+        protected async Task<CloudResourceOperation> GetResourceOperationOrThrowAsync(int id, bool asNoTracking = false)
         {
             var entityFromDb = await _db.CloudResourceOperations
+                .If(asNoTracking, x=> x.AsNoTracking())
                 .Include(o => o.DependsOnOperation)
                 .ThenInclude(o => o.Resource)
                 .Include(o => o.Resource)
@@ -99,7 +101,7 @@ namespace Sepes.Infrastructure.Service
             return _db.CloudResourceOperations
                 .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
-                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (!createdEarlyerThan.HasValue || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (o.OperationType == CloudResourceOperationType.CREATE || o.OperationType == CloudResourceOperationType.UPDATE)
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS)
                 );
@@ -110,7 +112,7 @@ namespace Sepes.Infrastructure.Service
             return _db.CloudResourceOperations
                 .Where(o => o.CloudResourceId == resourceId
                 && (batchId == null || (batchId != null && o.BatchId != batchId))
-                && (createdEarlyerThan.HasValue == false || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
+                && (!createdEarlyerThan.HasValue || (createdEarlyerThan.HasValue && o.Created < createdEarlyerThan.Value))
                 && (String.IsNullOrWhiteSpace(o.Status) || o.Status == CloudResourceOperationState.NEW)
                 );
         }

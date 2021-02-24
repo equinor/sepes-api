@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
         }
 
-        public async Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
+        async Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service.Azure
             return result;
         }
 
-        public async Task<AzureRoleAssignment> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default)
+        async Task<AzureRoleAssignment> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default)
         {
             if (String.IsNullOrWhiteSpace(roleAssignmentId))
             {
@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service.Azure
             return result;
         }
 
-        public async Task<AzureRoleAssignment> DeleteRoleAssignment(string roleAssignmentId, CancellationToken cancellationToken = default)
+        async Task<AzureRoleAssignment> DeleteRoleAssignment(string roleAssignmentId, CancellationToken cancellationToken = default)
         {
             var getRoleUrl = CreateLinkForExistingRoleAssignment(roleAssignmentId);
             var result = await PerformRequest<AzureRoleAssignment>(getRoleUrl, HttpMethod.Delete, needsAuth: true, cancellationToken: cancellationToken);

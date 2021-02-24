@@ -142,13 +142,13 @@ namespace Sepes.Infrastructure.Service.Azure
                     var errorMessageBuilder = new StringBuilder();
                     errorMessageBuilder.Append($"{this.GetType()}: Response for {method} against the url {url} failed with status code {responseMessage.StatusCode}");
 
-                    if (String.IsNullOrWhiteSpace(responseMessage.ReasonPhrase) == false) {
+                    if (!String.IsNullOrWhiteSpace(responseMessage.ReasonPhrase)) {
                         errorMessageBuilder.Append($", reason: {responseMessage.ReasonPhrase}");
                     }
 
                     var responseString = await responseMessage.Content.ReadAsStringAsync();
 
-                    if (String.IsNullOrWhiteSpace(responseString) == false)
+                    if (!String.IsNullOrWhiteSpace(responseString))
                     {
                         errorMessageBuilder.Append($", response content: {responseString}");
                     }

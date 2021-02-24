@@ -81,11 +81,11 @@ namespace Sepes.Infrastructure.Service
 
         protected void ValidateRoleNameThrowIfInvalid(string role)
         {
-            if ((role.Equals(StudyRoles.SponsorRep) ||
+            if (!(role.Equals(StudyRoles.SponsorRep) ||
                 role.Equals(StudyRoles.StudyOwner) ||
                 role.Equals(StudyRoles.StudyViewer) ||
                 role.Equals(StudyRoles.VendorAdmin) ||
-                role.Equals(StudyRoles.VendorContributor)) == false)
+                role.Equals(StudyRoles.VendorContributor)))
             {
                 throw new ArgumentException($"Invalid Role supplied: {role}");
             }

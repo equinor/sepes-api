@@ -1,13 +1,16 @@
-﻿using System;
-using System.IO;
-using System.Threading.Tasks;
-using MediatR;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
-using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.Infrastructure.Extensions;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.RestApi;
+using Sepes.RestApi.IntegrationTests.Setup;
+using System;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers
 {
@@ -63,6 +66,20 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             }
         }
 
+        public async static Task<TEntity> InsertAsync<TEntity>(TEntity entity) where TEntity : class
+        {
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetService<SepesDbContext>();
+               
+                    dbContext.Set<TEntity>().Add(entity);
+
+                    await dbContext.SaveChangesAsync();
+
+                    return entity;             
+            }
+        }
+
         public static async Task<T> ExecuteScopeAsync<T>(Func<IServiceProvider, Task<T>> action)
         {
             using (var scope = _scopeFactory.CreateScope())
@@ -90,14 +107,28 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         public static Task ExecuteDbContextAsync(Func<SepesDbContext, Task> action)
             => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>()));
 
-        public static Task ExecuteDbContextAsync(Func<SepesDbContext, IMediator, Task> action)
-            => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>(), sp.GetService<IMediator>()));
-
         public static Task<T> ExecuteDbContextAsync<T>(Func<SepesDbContext, Task<T>> action)
             => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>()));
 
-        public static Task<T> ExecuteDbContextAsync<T>(Func<SepesDbContext, IMediator, Task<T>> action)
-            => ExecuteScopeAsync(sp => action(sp.GetService<SepesDbContext>(), sp.GetService<IMediator>()));
+        public static Task<T> FindAsync<T>(int id)
+          where T : class, IHasNummericalId
+        {
+            return ExecuteDbContextAsync<T>(db => db.Set<T>().FindAsync(id).AsTask());
+        }
+
+        public static Task<CloudResource> GetResource(int resourceId = 0, int studyId = 0, int sandboxId = 0)
+        {
+            return ExecuteDbContextAsync<CloudResource>
+                (db =>
+                db.CloudResources
+                .Include(r => r.ChildResources)
+                .Include(r => r.Operations)
+                .If(resourceId > 0, x => x.Where(r => r.Id == resourceId))
+                .If(studyId > 0, x => x.Where(r => r.StudyId == studyId))
+                .If(sandboxId > 0, x => x.Where(r => r.SandboxId == sandboxId))
+                .AsNoTracking()
+                .FirstOrDefaultAsync());
+        }
 
         public static Task InsertAsync<T>(params T[] entities) where T : class
         {
@@ -107,19 +138,11 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
                 {
                     db.Set<T>().Add(entity);
                 }
-                return db.SaveChangesAsync();
-            });
-        }
-
-        public static Task InsertAsync<TEntity>(TEntity entity) where TEntity : class
-        {
-            return ExecuteDbContextAsync(db =>
-            {
-                db.Set<TEntity>().Add(entity);
 
                 return db.SaveChangesAsync();
             });
         }
+
 
         public static Task InsertAsync<TEntity, TEntity2>(TEntity entity, TEntity2 entity2)
             where TEntity : class
@@ -163,32 +186,6 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
                 db.Set<TEntity4>().Add(entity4);
 
                 return db.SaveChangesAsync();
-            });
-        }
-
-        //public static Task<T> FindAsync<T>(int id)
-        //    where T : class, IEntity
-        //{
-        //    return ExecuteDbContextAsync(db => db.Set<T>().FindAsync(id));
-        //}
-
-        public static Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
-            });
-        }
-
-        public static Task SendAsync(IRequest request)
-        {
-            return ExecuteScopeAsync(sp =>
-            {
-                var mediator = sp.GetService<IMediator>();
-
-                return mediator.Send(request);
             });
         }
     }

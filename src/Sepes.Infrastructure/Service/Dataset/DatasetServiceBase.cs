@@ -35,11 +35,11 @@ namespace Sepes.Infrastructure.Service
                  .Include(d=> d.FirewallRules)
                  .Include(d=> d.Resources)
                  .ThenInclude(r=> r.Operations)
-                 .Where(ds => ds.Deleted == false);
+                 .Where(ds => !ds.Deleted);
 
             if (excludeStudySpecific)
             {
-                queryable = queryable.Where(ds => ds.StudyId.HasValue == false);
+                queryable = queryable.Where(ds => !ds.StudyId.HasValue);
             }
 
             return queryable;
@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
-            if (StudyAccessUtil.HasAccessToOperation(await _userService.GetCurrentUserWithStudyParticipantsAsync(), operation) == false)
+            if (!StudyAccessUtil.HasAccessToOperation(await _userService.GetCurrentUserWithStudyParticipantsAsync(), operation))
             {
                 throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation}");
             }
@@ -101,7 +101,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task ThrowIfOperationNotAllowed(UserOperation operation, Study study)
         {
-            if (await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation) == false)
+            if (!(await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation)))
             {
                 throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation}");
             }

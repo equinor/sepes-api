@@ -9,7 +9,7 @@ namespace Sepes.Infrastructure.Service.Queries
     {
         public static IQueryable<Study> ActiveStudiesBaseQueryable(SepesDbContext db)
         {
-            return db.Studies.Where(s => s.Closed == false);
+            return db.Studies.Where(s => !s.Closed);
         }      
       
         public static IQueryable<Study> ActiveStudiesWithParticipantsQueryable(SepesDbContext db)
@@ -35,7 +35,6 @@ namespace Sepes.Infrastructure.Service.Queries
             return ActiveStudiesBaseQueryable(db)
                 .Include(s => s.Resources)
                   .ThenInclude(s => s.ChildResources)
-
                  .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
                     .ThenInclude(sd => sd.SandboxDatasets)

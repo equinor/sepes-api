@@ -1,4 +1,8 @@
-﻿using Sepes.RestApi.IntegrationTests.Setup;
+﻿using Sepes.Infrastructure.Model;
+using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using System.Threading.Tasks;
 using Xunit;
@@ -7,7 +11,7 @@ namespace Sepes.RestApi.IntegrationTests
 {
     [Collection("Integration tests collection")]
     public class ControllerTestBase : IAsyncLifetime
-    { 
+    {
         protected readonly TestHostFixture _testHostFixture;
         protected RestHelper _restHelper;
 
@@ -15,16 +19,44 @@ namespace Sepes.RestApi.IntegrationTests
         {
             _testHostFixture = testHostFixture;
             _restHelper = new RestHelper(testHostFixture.Client);
-        }
+        }        
 
-        protected void SetUserType(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            _testHostFixture.SetUserType(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+            var azureServices = new MockedAzureServiceSets();
+            _testHostFixture.SetScenario(azureServices, isEmployee, isAdmin, isSponsor, isDatasetAdmin);
             _restHelper = new RestHelper(_testHostFixture.Client);
         }
 
         public Task InitializeAsync() => SliceFixture.ResetCheckpoint();
 
         public Task DisposeAsync() => Task.CompletedTask;
+
+        protected async Task WithBasicSeeds()
+        {
+            await RegionSeed.Seed();
+            await UserSeed.Seed();
+        }
+
+        protected async Task<Study> WithStudyCreatedByCurrentUser()
+        {
+            return await StudySeed.CreatedByCurrentUser();
+        }
+
+        protected async Task<Study> WithStudyCreatedByOtherUser(string myRole)
+        {
+            return await StudySeed.CreatedByOtherUser(currentUserRole: myRole);
+        }
+
+        protected async Task<ApiResponseWrapper> ProcessWorkQueue()
+        {
+            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
+
+            var responseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
+
+            return responseWrapper;
+        }
     }
 }

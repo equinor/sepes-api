@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
@@ -109,7 +110,7 @@ namespace Sepes.Infrastructure.Service
 
             return logMessage;
         }
-        public async Task<SandboxResourceLightDto> RetryLastOperation(int resourceId)
+        public async Task<SandboxResourceLight> RetryLastOperation(int resourceId)
         {
             var resource = await _cloudResourceService.GetByIdAsync(resourceId);
 
@@ -145,7 +146,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception(ReScheduleLogPrefix(sandboxFromDb.StudyId, sandboxFromDb.Id, $"Could not locate RELEVANT database entry for ResourceGroupOperation", resourceId));
             }
 
-            return _mapper.Map<SandboxResourceLightDto>(resource);
+            return _mapper.Map<SandboxResourceLight>(resource);
         }
     }
 }

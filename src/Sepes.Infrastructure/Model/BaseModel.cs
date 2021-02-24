@@ -3,6 +3,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Sepes.Infrastructure.Model
 {
+    public interface IHasNummericalId
+    {
+        public int Id { get; set; }     
+    }
+
     public interface IHasCreatedFields
     {
         DateTime Created { get; set; }
@@ -16,7 +21,7 @@ namespace Sepes.Infrastructure.Model
 
         string UpdatedBy { get; set; }
     }
-    public class BaseModel : IHasCreatedFields
+    public class BaseModel : IHasNummericalId, IHasCreatedFields
     {
         public int Id { get; set; }
      

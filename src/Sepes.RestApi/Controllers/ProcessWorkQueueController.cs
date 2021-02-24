@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service.Interface;
 using System.Net.Mime;
 using System.Threading.Tasks;
@@ -9,7 +8,7 @@ namespace Sepes.RestApi.Controllers
 {
     [Route("api/provisioningqueue")]
     [ApiController]
-    [Authorize(Roles = AppRoles.Admin)]
+    [Authorize()]
     public class ProcessWorkQueueController : ControllerBase
     {
         readonly IResourceProvisioningService _service;
@@ -21,12 +20,11 @@ namespace Sepes.RestApi.Controllers
 
         [HttpGet("lookforwork")]
         [Consumes(MediaTypeNames.Application.Json)]
-        [Authorize(Roles = AppRoles.Admin)]
+        [Authorize()]
         public async Task<IActionResult> Work()
         {
-           await _service.DequeueAndHandleWork();
+            await _service.DequeueAndHandleWork();
             return new OkResult();
-        }   
-
+        }
     }
 }

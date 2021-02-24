@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Interfaces;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto.Study
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public List<DatasetListItemDto> Datasets { get; set; }
 
-        public List<SandboxListItemDto> Sandboxes { get; set; }
+        public List<SandboxListItem> Sandboxes { get; set; }
 
         public List<StudyParticipantDto> Participants { get; set; }
         

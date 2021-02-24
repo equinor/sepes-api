@@ -18,197 +18,197 @@
 //        public SandboxServiceTests()
 //             : base()
 //        {
-           
+
 //        }
-      
-        //[Theory]
-        //[InlineData(AppRoles.Admin, SandboxPhase.Open)]
-        //public async Task MoveSandbox_WithNoPhases_ToNextPhase_ShouldSucceed(string appRole, SandboxPhase currentPhase)
-        //{
-        //    var db = await ClearTestDatabaseAddUser();
 
-        //    var sandboxId = 1;
+//[Theory]
+//[InlineData(AppRoles.Admin, SandboxPhase.Open)]
+//public async Task MoveSandbox_WithNoPhases_ToNextPhase_ShouldSucceed(string appRole, SandboxPhase currentPhase)
+//{
+//    var db = await ClearTestDatabaseAddUser();
 
-        //    SandboxPopulator.AddWithoutPhases(db, sandboxId, "hasNoPhases");
+//    var sandboxId = 1;
 
-        //   var sandboxService = SandboxServiceWithMocksFactory.Create(_serviceProvider, appRole, UserConstants.COMMON_CUR_USER_DB_ID, db);
+//    SandboxPopulator.AddWithoutPhases(db, sandboxId, "hasNoPhases");
 
-        //    await sandboxService.MoveToNextPhaseAsync(sandboxId, default(CancellationToken));
+//   var sandboxService = SandboxServiceWithMocksFactory.Create(_serviceProvider, appRole, UserConstants.COMMON_CUR_USER_DB_ID, db);
 
-        //    var sandbox = await sandboxService.GetSandboxDetailsAsync(sandboxId);
+//    await sandboxService.MoveToNextPhaseAsync(sandboxId, default(CancellationToken));
 
-        //    Assert.NotNull(sandbox);
-        //    Assert.Equal(SandboxPhase.DataAvailable, sandbox.CurrentPhase);         
-        //}
+//    var sandbox = await sandboxService.GetSandboxDetailsAsync(sandboxId);
 
-        //async Task<StudyDto> AddStudyToTestDatabase(int studyId)
-        //{
-        //    var studyService = ServiceProvider.GetService<IStudyService>();
-        //    StudyCreateDto study = new StudyCreateDto()
-        //    {
-        //        Name = "TestStudy",
-        //        Vendor = "Bouvet",
-        //        WbsCode = "1234.1345afg"
-        //    };
+//    Assert.NotNull(sandbox);
+//    Assert.Equal(SandboxPhase.DataAvailable, sandbox.CurrentPhase);         
+//}
 
-        //    return await studyService.CreateStudyAsync(study);
-        //}
+//async Task<StudyDto> AddStudyToTestDatabase(int studyId)
+//{
+//    var studyService = ServiceProvider.GetService<IStudyService>();
+//    StudyCreateDto study = new StudyCreateDto()
+//    {
+//        Name = "TestStudy",
+//        Vendor = "Bouvet",
+//        WbsCode = "1234.1345afg"
+//    };
 
-        //[Fact]
-        //public async void GetSandboxesByStudyIdAsync_ShouldReturnSandboxes()
-        //{
-        //    RefreshTestDb();
-        //    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
-        //    int studyId = 1;
-        //    await AddStudyToTestDatabase(studyId);
+//    return await studyService.CreateStudyAsync(study);
+//}
 
-        //    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
-        //    var sandbox2 = new SandboxCreateDto() { Name = "TestSandbox2" };
-        //    _ = await sandboxService.CreateAsync(studyId, sandbox);
-        //    _ = await sandboxService.CreateAsync(studyId, sandbox2);
+//[Fact]
+//public async void GetSandboxesByStudyIdAsync_ShouldReturnSandboxes()
+//{
+//    RefreshTestDb();
+//    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
+//    int studyId = 1;
+//    await AddStudyToTestDatabase(studyId);
 
-        //    var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
+//    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+//    var sandbox2 = new SandboxCreateDto() { Name = "TestSandbox2" };
+//    _ = await sandboxService.CreateAsync(studyId, sandbox);
+//    _ = await sandboxService.CreateAsync(studyId, sandbox2);
 
-        //    Assert.NotEmpty(sandboxes);
-        //    Assert.Equal(2, sandboxes.Count());
+//    var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
-        //}
+//    Assert.NotEmpty(sandboxes);
+//    Assert.Equal(2, sandboxes.Count());
 
-
-
-        //[Fact]
-        //public async void AddSandboxToStudyAsync_ShouldAddSandbox()
-        //{
-        //    Refres();
-
-        //    int studyId = 1;
-        //    var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
-
-        //    Assert.NotNull(newlyCreatedSandbox);
-        //    Assert.NotNull(newlyCreatedSandbox.Resources);
-        //    Assert.Equal(6, newlyCreatedSandbox.Resources.Count); //Resource group, network, nsg, diag stor, bastion
-
-        //    //Resource group test
-        //    var sandboxResourceGroup = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.ResourceGroup);
-        //    Assert.NotNull(sandboxResourceGroup);
-        //    Assert.Equal("Success", sandboxResourceGroup.LastKnownProvisioningState);
-
-        //    //Diag storage account
-        //    var diagStorageAccount = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.StorageAccount);
-        //    CommonTestsForScheduledResources(diagStorageAccount);
-
-        //    //VNet resource and operation created
-        //    var vNet = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.VirtualNetwork);
-        //    CommonTestsForScheduledResources(vNet);
-
-        //    //NSG resource and operation created
-        //    var nsg = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.NetworkSecurityGroup);
-        //    CommonTestsForScheduledResources(nsg);
-        //}
-
-        //void CommonTestsForScheduledResources(SandboxResourceLightDto dto)
-        //{
-        //    Assert.NotNull(dto);
-        //    Assert.Null(dto.LastKnownProvisioningState);
-        //    Assert.Null(dto.Status);
-        //}
-
-        //[Fact]
-        //public async void SetUpSandboxResources_ShouldSucceed()
-        //{
-        //    RefreshTestDb();
-
-        //    int studyId = 1;
-        //    var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
-
-        //    var provisioningService = ServiceProvider.GetService<ISandboxResourceProvisioningService>();
+//}
 
 
-        //    await provisioningService.DequeueWorkAndPerformIfAny();
+
+//[Fact]
+//public async void AddSandboxToStudyAsync_ShouldAddSandbox()
+//{
+//    Refres();
+
+//    int studyId = 1;
+//    var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
+
+//    Assert.NotNull(newlyCreatedSandbox);
+//    Assert.NotNull(newlyCreatedSandbox.Resources);
+//    Assert.Equal(6, newlyCreatedSandbox.Resources.Count); //Resource group, network, nsg, diag stor, bastion
+
+//    //Resource group test
+//    var sandboxResourceGroup = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.ResourceGroup);
+//    Assert.NotNull(sandboxResourceGroup);
+//    Assert.Equal(CloudResourceProvisioningStates.SUCCEEDED, sandboxResourceGroup.LastKnownProvisioningState);
+
+//    //Diag storage account
+//    var diagStorageAccount = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.StorageAccount);
+//    CommonTestsForScheduledResources(diagStorageAccount);
+
+//    //VNet resource and operation created
+//    var vNet = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.VirtualNetwork);
+//    CommonTestsForScheduledResources(vNet);
+
+//    //NSG resource and operation created
+//    var nsg = newlyCreatedSandbox.Resources.FirstOrDefault(o => o.Type == AzureResourceType.NetworkSecurityGroup);
+//    CommonTestsForScheduledResources(nsg);
+//}
+
+//void CommonTestsForScheduledResources(SandboxResourceLightDto dto)
+//{
+//    Assert.NotNull(dto);
+//    Assert.Null(dto.LastKnownProvisioningState);
+//    Assert.Null(dto.Status);
+//}
+
+//[Fact]
+//public async void SetUpSandboxResources_ShouldSucceed()
+//{
+//    RefreshTestDb();
+
+//    int studyId = 1;
+//    var newlyCreatedSandbox = await CreateAndGetSandbox(studyId);
+
+//    var provisioningService = ServiceProvider.GetService<ISandboxResourceProvisioningService>();
 
 
-        //    //Call the method that picks up work
-        //}
+//    await provisioningService.DequeueWorkAndPerformIfAny();
 
-        //async Task CreateSandbox(int studyId)
-        //{
-        //    RefreshTestDb();
-        //    var sandboxService = ServiceProvider.GetService<ISandboxService>();
 
-        //    await AddStudyToTestDatabase(studyId);
+//    //Call the method that picks up work
+//}
 
-        //    var sandboxCreateDto = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
-        //    _ = await sandboxService.CreateAsync(studyId, sandboxCreateDto);
-        //}
+//async Task CreateSandbox(int studyId)
+//{
+//    RefreshTestDb();
+//    var sandboxService = ServiceProvider.GetService<ISandboxService>();
 
-        //async Task<SandboxDto> CreateAndGetSandbox(int studyId)
-        //{
-        //    var sandboxService = ServiceProvider.GetService<ISandboxService>();
+//    await AddStudyToTestDatabase(studyId);
 
-        //    await CreateSandbox(studyId);
-        //    var sandboxesForStydy = await sandboxService.GetSandboxesForStudyAsync(studyId);
-        //    var newlyCreatedSandbox = sandboxesForStydy.FirstOrDefault();
+//    var sandboxCreateDto = new SandboxCreateDto() { Name = "TestSandbox", Region = "norwayeast" };
+//    _ = await sandboxService.CreateAsync(studyId, sandboxCreateDto);
+//}
 
-        //    return newlyCreatedSandbox;
-        //}
+//async Task<SandboxDto> CreateAndGetSandbox(int studyId)
+//{
+//    var sandboxService = ServiceProvider.GetService<ISandboxService>();
 
-        //[Theory]
-        //[InlineData("TestSandbox", "")]
-        //[InlineData("TestSandbox", null)]
-        //public async void AddSandboxToStudyAsync_ToStudyWithoutWbs_ShouldFail(string name, string wbs)
-        //{
-        //    RefreshTestDb();
-        //    IStudyService studyService = ServiceProvider.GetService<IStudyService>();
-        //    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
+//    await CreateSandbox(studyId);
+//    var sandboxesForStydy = await sandboxService.GetSandboxesForStudyAsync(studyId);
+//    var newlyCreatedSandbox = sandboxesForStydy.FirstOrDefault();
 
-        //    StudyCreateDto study = new StudyCreateDto()
-        //    {
-        //        Name = "TestStudy",
-        //        Vendor = "Bouvet",
-        //        WbsCode = wbs
-        //    };
+//    return newlyCreatedSandbox;
+//}
 
-        //    StudyDto createdStudy = await studyService.CreateStudyAsync(study);
-        //    int studyID = (int)createdStudy.Id;
+//[Theory]
+//[InlineData("TestSandbox", "")]
+//[InlineData("TestSandbox", null)]
+//public async void AddSandboxToStudyAsync_ToStudyWithoutWbs_ShouldFail(string name, string wbs)
+//{
+//    RefreshTestDb();
+//    IStudyService studyService = ServiceProvider.GetService<IStudyService>();
+//    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
 
-        //    var sandbox = new SandboxCreateDto() { Name = name };
+//    StudyCreateDto study = new StudyCreateDto()
+//    {
+//        Name = "TestStudy",
+//        Vendor = "Bouvet",
+//        WbsCode = wbs
+//    };
 
-        //    await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(studyID, sandbox));
-        //}
+//    StudyDto createdStudy = await studyService.CreateStudyAsync(study);
+//    int studyID = (int)createdStudy.Id;
 
-        //[Fact]
-        //public async void RemoveSandboxFromStudyAsync_ShouldRemoveSandbox()
-        //{
-        //    RefreshTestDb();
-        //    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
-        //    int studyId = 1;
-        //    await AddStudyToTestDatabase(studyId);
+//    var sandbox = new SandboxCreateDto() { Name = name };
 
-        //    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
-        //    _ = await sandboxService.CreateAsync(studyId, sandbox);
-        //    var sandboxFromDb = await sandboxService.GetSandboxesForStudyAsync(studyId);
-        //    var sandboxId = (int)sandboxFromDb.First().Id;
-        //    _ = await sandboxService.DeleteAsync(studyId, sandboxId);
+//    await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(studyID, sandbox));
+//}
 
-        //    var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
+//[Fact]
+//public async void RemoveSandboxFromStudyAsync_ShouldRemoveSandbox()
+//{
+//    RefreshTestDb();
+//    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
+//    int studyId = 1;
+//    await AddStudyToTestDatabase(studyId);
 
-        //    Assert.Empty(sandboxes);
-        //}
+//    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+//    _ = await sandboxService.CreateAsync(studyId, sandbox);
+//    var sandboxFromDb = await sandboxService.GetSandboxesForStudyAsync(studyId);
+//    var sandboxId = (int)sandboxFromDb.First().Id;
+//    _ = await sandboxService.DeleteAsync(studyId, sandboxId);
 
-        //[Theory]
-        //[InlineData(1, 420)]
-        //[InlineData(420, 1)]
-        //public async void RemoveSandboxFromStudyAsync_ShouldThrow_IfSandboxOrStudyDoesNotExist(int providedStudyId, int providedSandboxId)
-        //{
-        //    RefreshTestDb();
-        //    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
-        //    int studyId = 1;
-        //    await AddStudyToTestDatabase(studyId);
+//    var sandboxes = await sandboxService.GetSandboxesForStudyAsync(studyId);
 
-        //    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
-        //    _ = await sandboxService.CreateAsync(studyId, sandbox);
+//    Assert.Empty(sandboxes);
+//}
 
-        //    await Assert.ThrowsAsync<NotFoundException>(() => sandboxService.DeleteAsync(providedStudyId, providedSandboxId));
-        //}
+//[Theory]
+//[InlineData(1, 420)]
+//[InlineData(420, 1)]
+//public async void RemoveSandboxFromStudyAsync_ShouldThrow_IfSandboxOrStudyDoesNotExist(int providedStudyId, int providedSandboxId)
+//{
+//    RefreshTestDb();
+//    ISandboxService sandboxService = ServiceProvider.GetService<ISandboxService>();
+//    int studyId = 1;
+//    await AddStudyToTestDatabase(studyId);
+
+//    var sandbox = new SandboxCreateDto() { Name = "TestSandbox" };
+//    _ = await sandboxService.CreateAsync(studyId, sandbox);
+
+//    await Assert.ThrowsAsync<NotFoundException>(() => sandboxService.DeleteAsync(providedStudyId, providedSandboxId));
+//}
 //    }
 //}

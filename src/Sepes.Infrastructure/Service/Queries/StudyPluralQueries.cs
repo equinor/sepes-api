@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Where(s =>
-                (s.Restricted == false || s.StudyParticipants.Where(sp => sp.UserId == userId).Any()));
+                (!s.Restricted || s.StudyParticipants.Where(sp => sp.UserId == userId).Any()));
         }
 
         #endregion

@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
         public static async Task Handle(
             CloudResourceOperationDto operation,
-            IHasNetworkRules networkRuleService,
+            IHasFirewallRules networkRuleService,
             ICloudResourceReadService resourceReadService,
             ICloudResourceOperationUpdateService operationUpdateService,
             ILogger logger)
@@ -38,12 +38,12 @@ namespace Sepes.Infrastructure.Util.Provisioning
 
                 if (string.IsNullOrWhiteSpace(operation.DesiredState))
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}");
+                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                 }
 
                 var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredFirewallRules(operation.DesiredState);
 
-                var setRulesTask = networkRuleService.SetNetworkRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
+                var setRulesTask = networkRuleService.SetFirewallRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
 
                 while (!setRulesTask.IsCompleted)
                 {

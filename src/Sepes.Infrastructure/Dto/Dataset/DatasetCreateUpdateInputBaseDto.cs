@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Sepes.Infrastructure.Dto.Dataset
+﻿namespace Sepes.Infrastructure.Dto.Dataset
 {
     public class DatasetCreateUpdateInputBaseDto
     {

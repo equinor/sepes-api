@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 
@@ -13,22 +14,22 @@ namespace Sepes.Infrastructure.Util
         public static IHasProvisioningState GetServiceWithProvisioningState(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
             AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
-            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
+            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVirtualNetworkService>(),
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVirtualMachineService>(),
             _ => null,
         };
 
         public static IHasTags GetServiceWithTags(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
             AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
-            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
+            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVirtualNetworkService>(),
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVirtualMachineService>(),
             _ => null,
         };
 
@@ -37,9 +38,9 @@ namespace Sepes.Infrastructure.Util
             AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
             AzureResourceType.NetworkSecurityGroup => serviceProvider.GetRequiredService<IAzureNetworkSecurityGroupService>(),
             AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountService>(),
-            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVNetService>(),
+            AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVirtualNetworkService>(),
             AzureResourceType.Bastion => serviceProvider.GetRequiredService<IAzureBastionService>(),
-            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVmService>(),
+            AzureResourceType.VirtualMachine => serviceProvider.GetRequiredService<IAzureVirtualMachineService>(),
             _ => null,
         };
 
@@ -54,6 +55,19 @@ namespace Sepes.Infrastructure.Util
 
             return service;
         }
+
+        public static IHasCorsRules GetCorsRuleServiceOrThrow(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        {           
+            AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountCorsRuleService>(),    
+            _ => throw new NullReferenceException($"Unable to cors provisioning service for type {resourceType}"),
+        };
+
+        public static IHasFirewallRules GetFirewallRuleService(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        {
+            AzureResourceType.StorageAccount => serviceProvider.GetRequiredService<IAzureStorageAccountNetworkRuleService>(),
+            _ => throw new NullReferenceException($"Unable to resolve firewall service for type {resourceType}"),
+        };
+
     }
 }
 
