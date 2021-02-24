@@ -17,9 +17,9 @@ namespace Sepes.Infrastructure.Service
         readonly IServiceProvider _serviceProvider;
         readonly IConfiguration _config;
         readonly ILogger _logger;
-        
+
         readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;  
+        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
 
         public CloudResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<CloudResourceMonitoringService> logger, ICloudResourceReadService sandboxResourceService, ICloudResourceUpdateService sandboxResourceUpdateService)
         {
@@ -27,9 +27,9 @@ namespace Sepes.Infrastructure.Service
 
             _config = config;
             _logger = logger;
-         
+
             _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceUpdateService = sandboxResourceUpdateService;      
+            _sandboxResourceUpdateService = sandboxResourceUpdateService;
         }
 
         public async Task StartMonitoringSession()
@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
 
             var monitoringDisabled = _config[ConfigConstants.DISABLE_MONITORING];
 
-            if(!String.IsNullOrWhiteSpace(monitoringDisabled) && monitoringDisabled.ToLower() == "true")
+            if (!String.IsNullOrWhiteSpace(monitoringDisabled) && monitoringDisabled.ToLower() == "true")
             {
                 _logger.LogWarning($"Monitoring is disabled, aborting!");
                 return;
@@ -50,46 +50,78 @@ namespace Sepes.Infrastructure.Service
             {
 
                 try
-                {  
+                {
                     if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
                     {
-                        _logger.LogInformation($"No valid foreign resource Id specified for {curRes.Id}. Foreign Id was {curRes.ResourceId}. Aborting monitoring");
-                        continue;
+                        if (curRes.Created.AddMinutes(15) < DateTime.UtcNow)
+                        {
+                            _logger.LogWarning(SepesEventId.MONITORING_NEW_RESOURCE_ID_NOT_SET);
+                        }
+                        else
+                        {                            
+                            _logger.LogInformation($"No valid foreign resource Id specified for {curRes.Id}. Foreign Id was {curRes.ResourceId}. Aborting monitoring");
+                            continue;
+                        }
                     }
 
                     if (curRes.ResourceName == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
                     {
-                        _logger.LogInformation($"No valid name specified for {curRes.Id}. Name was {curRes.ResourceName}. Aborting monitoring");
-                        continue;
+                        if (curRes.Created.AddMinutes(15) < DateTime.UtcNow)
+                        {
+                            _logger.LogWarning(SepesEventId.MONITORING_NEW_RESOURCE_NAME_NOT_SET);
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"No valid name specified for {curRes.Id}. Name was {curRes.ResourceName}. Aborting monitoring");
+                            continue;
+                            
+                        }
                     }
 
                     if (String.IsNullOrWhiteSpace(curRes.ResourceType))
                     {
-                        _logger.LogInformation($"Resource type field empty in DB for resource id: {curRes.Id}");
+                      
+                            _logger.LogInformation($"Resource type field empty in DB for resource id: {curRes.Id}");
+                      
+                          
                         continue;
                     }
 
                     //First detect if monitoring should proceed
                     if (curRes.Operations.Count == 0)
                     {
-                        _logger.LogWarning($"No operations found for resource {curRes.Id}. Aborting monitoring");
-                        continue;
-                    }
-
-                    foreach(var curOperations in curRes.Operations)
-                    {
-                        if(curOperations.Status == CloudResourceOperationState.NEW || curOperations.Status == CloudResourceOperationState.IN_PROGRESS)
+                        if (curRes.Created.AddMinutes(5) < DateTime.UtcNow)
                         {
-                            _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
+                            _logger.LogWarning(SepesEventId.MONITORING_NO_OPERATIONS);
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"No operations found for resource {curRes.Id}. Aborting monitoring");
                             continue;
                         }
-                    }                
+                    }
+
+                    foreach (var curOperation in curRes.Operations)
+                    {
+                        if (curOperation.Status == CloudResourceOperationState.NEW || curOperation.Status == CloudResourceOperationState.IN_PROGRESS)
+                        {
+                            if (curOperation.Created.AddMinutes(5) < DateTime.UtcNow)
+                            {
+                                _logger.LogWarning(SepesEventId.MONITORING_OPERATION_FROZEN);
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
+                                continue;
+                            }
+                        }
+                    }
 
                     _logger.LogInformation($"Initial checks passed. Performing monitoring for resource {curRes.Id}.");
 
                     await GetAndLogProvisioningState(curRes);
                     await CheckAndUpdateTags(curRes);
-                    
+
                 }
                 catch (Exception ex)
                 {
@@ -170,21 +202,21 @@ namespace Sepes.Infrastructure.Service
 
                 if (serviceForResource == null)
                 {
-                    _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
+                    LogMonitoringError(resource, SepesEventId.MONITORING_NO_TAG_SERVICE, $"Could not resolve tag service for resource type: {resource.ResourceType}", critical: true);
                 }
                 else
                 {
-
                     // Read info used to create tags from resourceGroup in DB
                     // These tags should be checked with the ones in Azure.            
                     var tagsFromDb = AzureResourceTagsFactory.TagStringToDictionary(resource.Tags);
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
-                    if(tagsFromAzure == null)
+                    if (tagsFromDb != null && tagsFromDb.Count > 0 &&  tagsFromAzure == null)
                     {
-                        _logger.LogWarning($"No tags found for resource {resource.Id}!");
+                        _logger.LogWarning(SepesEventId.MONITORING_NO_TAGS, $"No tags found for resource {resource.Id}!");
                         return;
                     }
+
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
                     foreach (var tag in tagsFromAzure)
@@ -196,20 +228,19 @@ namespace Sepes.Infrastructure.Service
                             {
                                 // If Tag exists in Azure but not in tags generated from DB-data, report.
                                 // Means that user has added tags themselves in Azure.
-                                _logger.LogWarning($"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
-                                //TODO: Proper report!
+                                LogMonitoringError(resource, SepesEventId.MONITORING_MANUALLY_ADDED_TAGS, $"Tag {tag.Key} : {tag.Value} has been added after resource creation!");                          
+                               
                             }
                             else
                             {
                                 // If Tag exists in Azure and Db but has different value in Azure
                                 if (!tag.Value.Equals(dbValue))
                                 {
-                                    //Report
-                                    _logger.LogWarning($"Tag {tag.Key} : {tag.Value} does not match Db-info: {tag.Key} : {dbValue}");
+                                    LogMonitoringError(resource, SepesEventId.MONITORING_INCORRECT_TAGS, $"Tag {tag.Key} : {tag.Value} does not match value from Sepes : {dbValue}");
+                                  
                                     //Update tag in Azure to match DB-information.
                                     await serviceForResource.UpdateTagAsync(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
-                                    _logger.LogInformation($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
-                                    //TODO: Proper report!
+                                    _logger.LogWarning($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");                                  
                                 }
                             }
                         }
@@ -218,9 +249,10 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex, $"Tag check/update failed for resource id: {resource.Id}");
+                LogMonitoringError(resource, SepesEventId.MONITORING_CRITICAL, $"Tag check/update failed", ex);               
             }
         }
+
 
         public async Task CheckForOrphanResources()
         {
@@ -233,12 +265,11 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {                   
-
                     var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, resource.ResourceType);
 
                     if (serviceForResource == null)
                     {
-                        _logger.LogCritical($"Service not found for Azure Resource Type: {resource.ResourceType}, for resource: {resource.ResourceName}");
+                        LogMonitoringError(resource, SepesEventId.MONITORING_NO_PROVISIONING_STATE_SERVICE, $"Could not resolve provisioning service for resource type: {resource.ResourceType}", critical: true);                     
                     }
                     else
                     {
@@ -247,17 +278,15 @@ namespace Sepes.Infrastructure.Service
                             var provisioningState = await serviceForResource.GetProvisioningState(resource.ResourceGroupName, resource.ResourceName);
 
                             if (!String.IsNullOrWhiteSpace(provisioningState))
-                            { 
-                                // TODO: What to do here in addition to logging? DO NOT REMOVE DELETE MARK FROM RESOURCE. Delete from Azure? Tag resource?
-                                _logger.LogCritical($"Found orphan resource in Azure: Id: {resource.Id}, Name: {resource.ResourceName}");
-
+                            {
+                                LogMonitoringError(resource, SepesEventId.MONITORING_DELETED_RESOURCE_STILL_PRESENT_IN_CLOUD, "Resource is deleted from Sepes, but still exists in cloud");
                             }
                         }
                         catch (Exception ex)
                         {
-                            if(!ex.Message.ToLower().Contains("could not be found") && !ex.Message.ToLower().Contains("not found"))
+                            if (!ex.Message.ToLower().Contains("could not be found") && !ex.Message.ToLower().Contains("not found"))
                             {
-                                throw;                               
+                                throw;
                             }
 
                             //Do nothing, resource not found
@@ -267,11 +296,33 @@ namespace Sepes.Infrastructure.Service
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogCritical(ex, $"Orphan check failed for resource: {resource.Id}");
+                    LogMonitoringError(resource, SepesEventId.MONITORING_CRITICAL, $"Orphan check failed", ex);                 
                 }
             }
 
             _logger.LogInformation($"Done looking for orphan resources");
+        }
+
+
+        void LogMonitoringError(CloudResource resource, string eventId, string message, Exception ex = null, bool critical = false)
+        {
+            var errorMessage = $"Tag error for resource {resource.Id} ({resource.ResourceName}): {message}";
+
+            if (ex == null)
+            {
+                if (critical)
+                {
+                    _logger.LogCritical(eventId, errorMessage);
+                }
+                else
+                {
+                    _logger.LogWarning(eventId, errorMessage);
+                }
+            }
+            else
+            {
+                _logger.LogCritical(eventId, ex, errorMessage);
+            }
         }
     }
 }
