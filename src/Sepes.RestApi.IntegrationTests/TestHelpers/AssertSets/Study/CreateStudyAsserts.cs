@@ -16,15 +16,6 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(createRequest.Vendor, responseWrapper.Content.Vendor);
             Assert.Equal(createRequest.WbsCode, responseWrapper.Content.WbsCode); 
         }
-
-        public static void ExpectFailureWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, HttpStatusCode statusCode, string messageShouldContain = null)
-        {
-            ApiResponseBasicAsserts.ExpectFailure(responseWrapper, statusCode, messageShouldContain);
-        }
-
-        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
-        {
-            ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
-        }
+   
     }
 }

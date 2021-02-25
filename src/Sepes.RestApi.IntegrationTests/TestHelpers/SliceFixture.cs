@@ -24,7 +24,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                //.AddJsonFile("appsettings.json", true, true)
+                //.AddJsonFile("appsettings.development.json", true, true)
                 .AddUserSecrets<IntegrationTestsCollection>()
                 .AddEnvironmentVariables();
             _configuration = builder.Build();
@@ -42,7 +42,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             WithReseed = true
         };
 
-        public static Task ResetCheckpoint() => _checkpoint.Reset(_configuration.GetConnectionString("SqlDatabaseIntegrationTests"));
+        public static Task ResetCheckpoint() => _checkpoint.Reset(ConnectionStringUtil.GetDatabaseConnectionString(_configuration));
 
         public static async Task ExecuteScopeAsync(Func<IServiceProvider, Task> action)
         {

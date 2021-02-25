@@ -8,14 +8,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
+using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
 using System;
 using System.Linq;
-using Sepes.Tests.Common.Extensions;
 
 namespace Sepes.RestApi.IntegrationTests.Setup
 {
@@ -41,7 +40,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            string connectionStringSetting = "SqlDatabaseIntegrationTests";
+           
             builder.ConfigureTestServices(services =>
             {
                 var descriptor = services.SingleOrDefault(
@@ -76,13 +75,21 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     var scopedServices = scope.ServiceProvider;
                     configuration = scopedServices.GetRequiredService<IConfiguration>();
                 }
+                var dbConnectionString = ConnectionStringUtil.GetDatabaseConnectionString(configuration);
 
-                if (string.IsNullOrEmpty(configuration.GetConnectionString(connectionStringSetting)))
-                    throw new ArgumentException($"Could not find a connection string in any configuration provider for {connectionStringSetting}");
+                if (services.Any(x => x.ServiceType == typeof(SepesDbContext)))
+                {
+                    var serviceDescriptors = services.Where(x => x.ServiceType == typeof(SepesDbContext)).ToList();
+
+                    foreach (var serviceDescriptor in serviceDescriptors)
+                    {
+                        services.Remove(serviceDescriptor);
+                    }
+                }
 
                 services.AddDbContext<SepesDbContext>(options =>
                     options.UseSqlServer(
-                        configuration.GetConnectionString(connectionStringSetting),
+                        dbConnectionString,
                         options =>
                         {
                             options.MigrationsAssembly("Sepes.Infrastructure");

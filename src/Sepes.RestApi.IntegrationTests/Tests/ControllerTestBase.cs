@@ -38,14 +38,19 @@ namespace Sepes.RestApi.IntegrationTests
             await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudyCreatedByCurrentUser()
-        {
-            return await StudySeed.CreatedByCurrentUser();
+        protected async Task WithUserSeeds()
+        {         
+            await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudyCreatedByOtherUser(string myRole)
+        protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
         {
-            return await StudySeed.CreatedByOtherUser(currentUserRole: myRole);
+            return await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole);
+        }
+
+        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string studyRole = null)
+        {
+            return await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole);
         }
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()

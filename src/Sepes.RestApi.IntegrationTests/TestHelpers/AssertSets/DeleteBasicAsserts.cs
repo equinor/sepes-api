@@ -18,7 +18,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
 
         public static void ExpectFailureWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, HttpStatusCode statusCode, string messageShouldContain = null)
         {
-            ApiResponseBasicAsserts.ExpectFailure(responseWrapper, statusCode, messageShouldContain);
+            ApiResponseBasicAsserts.ExpectFailureWithMessage(responseWrapper, statusCode, messageShouldContain);
         }
 
         public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
