@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Util
                 return "unknown";
             }
 
-            return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} MB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
+            return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} GB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
         }
 
         public static string GetDiskSizeDisplayTextForDropdown(int diskSize)
