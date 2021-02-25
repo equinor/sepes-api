@@ -85,7 +85,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Sandbox, SandboxListItem>();
 
             CreateMap<Sandbox, SandboxDetails>()
-         .ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
+         //.ForMember(dest => dest.Resources, source => source.MapFrom(x => x.Resources))
          .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.Study.Name))
          .ForMember(dest => dest.Datasets, source => source.MapFrom(x => x.SandboxDatasets))
          .ForMember(dest => dest.LinkToCostAnalysis, source => source.MapFrom<SandboxResourceExternalCostAnalysis>())
@@ -176,12 +176,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<VmSize, VmSizeLookupDto>()
                .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
 
-            CreateMap<DiskSize, VmDiskLookupDto>()
-               .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
-
-            CreateMap<Region, LookupDto>()
-             .ForMember(dest => dest.Key, source => source.MapFrom(x => x.Key))
-              .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.Name));
+              
         }
     }
 }

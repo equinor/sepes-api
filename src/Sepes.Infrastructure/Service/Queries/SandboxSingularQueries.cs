@@ -18,7 +18,7 @@ namespace Sepes.Infrastructure.Service.Queries
         public static async Task<Sandbox> GetSandboxByIdNoChecks(SepesDbContext db, int sandboxId)
         {
             return await SandboxBaseQueries.AllSandboxesBaseQueryable(db).SingleOrDefaultAsync(sb=> sb.Id == sandboxId);
-        }     
+        }   
 
         public static async Task<Sandbox> GetSandboxByIdThrowIfNotFoundAsync(SepesDbContext db, int sandboxId, bool withIncludes = false)
         {
@@ -47,16 +47,41 @@ namespace Sepes.Infrastructure.Service.Queries
             throw new ForbiddenException($"User {(await userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {sandboxFromDb.StudyId}");          
         }
 
+        public static async Task<Sandbox> GetSandboxDetailsByIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int sandboxId)
+        {
+            var queryable = SandboxBaseQueries.SandboxDetailsQueryable(db);
+
+            var sandboxFromDb = await GetSandboxFromQueryableThrowIfNotExistsOrNoAccess(queryable, sandboxId, userService, UserOperation.Study_Read);
+
+            return sandboxFromDb;          
+        }
+
         public static async Task<Sandbox> GetSandboxByResourceIdCheckAccessOrThrow(SepesDbContext db, IUserService userService, int resourceId, UserOperation operation, bool withIncludes = false)
         {
             var sandboxId = await GetSandboxIdByResourceIdAsync(db, resourceId);
             var sandbox = await GetSandboxByIdCheckAccessOrThrow(db, userService, sandboxId, operation, withIncludes);
 
-            return sandbox;
-           
+            return sandbox;           
         }
 
-        #endregion                 
+        #endregion
+
+        static async Task<Sandbox> GetSandboxFromQueryableThrowIfNotExistsOrNoAccess(IQueryable<Sandbox> queryable, int sandboxId, IUserService userService, UserOperation operation)
+        {          
+            var sandbox = await queryable.SingleOrDefaultAsync(s => s.Id == sandboxId);
+
+            if (sandbox == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            if (await StudyAccessUtil.HasAccessToOperationForStudyAsync(userService, sandbox.Study, operation))
+            {
+                return sandbox;
+            }
+
+            throw new ForbiddenException($"User {(await userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {sandbox.StudyId}");                   
+        }
 
         static async Task<int> GetSandboxIdByResourceIdAsync(SepesDbContext db, int resourceId)
         {

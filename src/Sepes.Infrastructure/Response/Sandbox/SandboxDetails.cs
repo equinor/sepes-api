@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Response.Sandbox
 
         public bool Deleted { get; set; }
 
-        public List<SandboxResourceLight> Resources { get; set; }
+        //public List<SandboxResourceLight> Resources { get; set; }
 
         public string RestrictionDisplayText { get; set; }
 
