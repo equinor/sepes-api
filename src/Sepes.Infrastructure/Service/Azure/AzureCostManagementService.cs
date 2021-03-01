@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service.Azure
         public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
         {
         }
-        public async Task<double> GetVmPrice(string region, string size, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<double> GetVmPrice(string region, string size, CancellationToken cancellationToken = default)
         {
             //Size
             var sizePriceUrl = $"https://prices.azure.com/api/retail/prices?$filter=serviceName eq 'Virtual Machines' and armRegionName eq '{region}' and armSkuName eq '{size}' and priceType eq 'Consumption'";
