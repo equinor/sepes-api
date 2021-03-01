@@ -60,5 +60,10 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             return sandbox;
         }
+
+        public async Task<Sandbox> GetDetailedByIdAsync(int id)
+        {
+            return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
+        }
     }
 }

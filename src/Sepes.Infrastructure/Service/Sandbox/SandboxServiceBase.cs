@@ -37,7 +37,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task<SandboxDetails> GetSandboxDetailsInternalAsync(int sandboxId)
         {
-            var sandboxFromDb = await SandboxSingularQueries.GetSandboxDetailsByIdCheckAccessOrThrow(_db, _userService, sandboxId);
+            var sandboxFromDb = await _sandboxModelService.GetDetailedByIdAsync(sandboxId);
 
             var sandboxDetailsDto = _mapper.Map<SandboxDetails>(sandboxFromDb);
 
