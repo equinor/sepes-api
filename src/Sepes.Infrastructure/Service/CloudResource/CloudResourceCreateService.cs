@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Model.Factory;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -22,8 +23,8 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IRequestIdService _requestIdService;
 
-        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IRequestIdService requestIdService)
-         : base(db, config, mapper, logger, userService)
+        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, ISandboxModelService sandboxModelService, IRequestIdService requestIdService)
+         : base(db, config, mapper, logger, userService, sandboxModelService)
         {
             _requestIdService = requestIdService;
 

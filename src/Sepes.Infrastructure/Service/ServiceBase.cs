@@ -10,7 +10,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class ServiceBase<TModel> where TModel : BaseModel
@@ -63,11 +62,6 @@ namespace Sepes.Infrastructure.Service
         protected async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
         {
             return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
-        }
-
-        protected async Task<Sandbox> GetSandboxByIdNoChecksAsync(int sandboxId)
-        {
-            return await SandboxSingularQueries.GetSandboxByIdNoChecks(_db, sandboxId);
-        }
+        }       
     }
 }

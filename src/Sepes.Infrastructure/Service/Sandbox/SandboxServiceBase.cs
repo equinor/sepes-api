@@ -8,8 +8,8 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -22,17 +22,17 @@ namespace Sepes.Infrastructure.Service
         protected readonly SepesDbContext _db;
         protected readonly IMapper _mapper;
         protected readonly ILogger _logger;
-        protected readonly IUserService _userService;    
+        protected readonly IUserService _userService;
+        protected readonly ISandboxModelService _sandboxModelService;
 
-
-        public SandboxServiceBase(IConfiguration configuration, SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService)
+        public SandboxServiceBase(IConfiguration configuration, SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, ISandboxModelService sandboxModelService)
         {
             _configuration = configuration;
             _db = db;
             _logger = logger;
             _mapper = mapper;          
             _userService = userService;
-
+            _sandboxModelService = sandboxModelService;
         }
 
         protected async Task<SandboxDetails> GetSandboxDetailsInternalAsync(int sandboxId)
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task<Sandbox> GetWithoutChecks(int sandboxId)
         {
-            var sandbox = await SandboxSingularQueries.GetSandboxByIdNoChecks(_db, sandboxId);
+            var sandbox = await _sandboxModelService.GetByIdWithoutPermissionCheckAsync(sandboxId);
 
             if (sandbox == null)
             {
@@ -59,16 +59,9 @@ namespace Sepes.Infrastructure.Service
             return sandbox;
         }
 
-        protected async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes)
+        protected async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes, bool disableTracking = false)
         {
-            var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, userOperation, withIncludes);
-
-            if (sandbox == null)
-            {
-                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
-            }
-
-            return sandbox;
+           return await _sandboxModelService.GetByIdAsync(sandboxId, userOperation, withIncludes, disableTracking);         
         }
 
         protected async Task<SandboxDto> GetDtoAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)

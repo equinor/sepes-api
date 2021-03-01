@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -24,8 +25,8 @@ namespace Sepes.Infrastructure.Service
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
 
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, IStudyReadService studyService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
-            : base(config, db, mapper, logger, userService)
+            IUserService userService, IStudyReadService studyService, ISandboxModelService sandboxModelService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            : base(config, db, mapper, logger, userService, sandboxModelService)
         {
             _studyService = studyService;
             _sandboxResourceCreateService = sandboxCloudResourceService;
