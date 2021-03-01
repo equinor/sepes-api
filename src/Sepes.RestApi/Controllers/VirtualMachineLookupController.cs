@@ -22,14 +22,7 @@ namespace Sepes.RestApi.Controllers
         {          
             _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
-        }
-
-        [HttpPost("{sandboxId}/calculatedprice")]
-        public async Task<IActionResult> GetCalculatedPrice(int sandboxId, CalculateVmPriceUserInputDto input)
-        {
-            var createdVm = await _vmLookupService.CalculatePrice(sandboxId, input);
-            return new JsonResult(createdVm);
-        }
+        }       
 
         [HttpPost("{sandboxId}/calculatedVmprice")]
         public async Task<IActionResult> GetCalculatedVmPrice(int sandboxId, CalculateVmPriceUserInputDto input)
@@ -39,7 +32,7 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpPost("validateUsername")]
-        public IActionResult validateUsername(VmUsernameDto input)
+        public IActionResult ValidateUsername(VmUsernameDto input)
         {
             var usernameValidationResult = _vmLookupService.CheckIfUsernameIsValidOrThrow(input);
             return new JsonResult(usernameValidationResult);

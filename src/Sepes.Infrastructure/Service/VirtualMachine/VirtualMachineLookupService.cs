@@ -1,19 +1,16 @@
-﻿using AutoMapper;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using System.Linq;
-using Sepes.Infrastructure.Constants;
-using System.Text;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -21,46 +18,26 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly ISandboxService _sandboxService;
-        readonly IAzureCostManagementService _costService;
         readonly SepesDbContext _db;
-        readonly IMapper _mapper;
 
         public VirtualMachineLookupService(
             ILogger<VirtualMachineService> logger,
-            SepesDbContext db,
-            IMapper mapper,
-            ISandboxService sandboxService,
-            IAzureCostManagementService costService)
+            SepesDbContext db,        
+            ISandboxService sandboxService)
         {
             _db = db;
             _logger = logger;
-            _sandboxService = sandboxService;
-            _costService = costService;
-            _mapper = mapper;
+            _sandboxService = sandboxService; 
         }
 
         public string CalculateName(string studyName, string sandboxName, string userPrefix)
         {
             return AzureResourceNameUtil.VirtualMachine(studyName, sandboxName, userPrefix);
-        }
-
-        public async Task<double> CalculatePrice(int sandboxId, CalculateVmPriceUserInputDto userInput, CancellationToken cancellationToken = default)
-        {
-            var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
-
-            var vmPrice = await _costService.GetVmPrice(sandbox.Region, userInput.Size, cancellationToken);
-
-            return vmPrice;
-        }
+        }      
 
         public async Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default)
-
         {
-            var vmDisks = await _db.DiskSizes.ToListAsync();
-            var sortedByPrice = vmDisks.OrderBy(x => x.Size);
-           
-
-            return _mapper.Map<List<VmDiskLookupDto>>(sortedByPrice);
+           return await _db.DiskSizes.OrderBy(x => x.Size).Select(ds=> new VmDiskLookupDto(){ Key = ds.Key, DisplayValue = ds.DisplayText }).ToListAsync(); 
         }
 
         public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
@@ -69,7 +46,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var sandbox = await _sandboxService.GetAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
+                var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
 
                 result = await AvailableOperatingSystems(sandbox.Region, cancellationToken);
 
@@ -83,9 +60,9 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+
         public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default)
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+
         {
             //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 
 
@@ -106,7 +83,7 @@ namespace Sepes.Infrastructure.Service
                 new VmOsDto() { Key = "centos", DisplayValue = "CentOS 7.5", Category = "linux" }
             };
 
-            return result;
+            return await Task.FromResult(result);
         }
 
         public VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(VmUsernameDto input)

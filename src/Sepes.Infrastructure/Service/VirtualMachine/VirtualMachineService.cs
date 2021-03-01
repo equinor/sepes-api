@@ -211,7 +211,6 @@ namespace Sepes.Infrastructure.Service
 
             var availableSizesDict = availableSizes.ToDictionary(s => s.Key, s => s);
 
-
             if (!String.IsNullOrWhiteSpace(dto.SizeName) && availableSizesDict.TryGetValue(dto.SizeName, out VmSize curSize))
             {
                 dto.Size = _mapper.Map<VmSizeDto>(curSize);
