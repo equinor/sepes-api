@@ -66,7 +66,7 @@ namespace Sepes.Infrastructure.Service
        
        
 
-        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(10) < DateTime.UtcNow)
+        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.Deleted && sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
         public async Task<bool> ResourceIsDeleted(int resourceId)
