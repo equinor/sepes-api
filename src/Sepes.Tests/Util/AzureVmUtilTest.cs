@@ -55,7 +55,7 @@ namespace Sepes.Tests.Util
 
             var result = AzureVmUtil.GetDisplayTextSizeForDropdown(vmSize);
 
-            var expectedResult = "first (4 cores, 3 MB Memory, os disk: 1000, max data disks: 4)";
+            var expectedResult = "first (4 cores, 3 GB Memory, os disk: 1000, max data disks: 4)";
 
             Assert.Equal(expectedResult, result);
 
