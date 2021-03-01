@@ -9,9 +9,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sepes.Tests.Setup
 {
@@ -19,18 +16,14 @@ namespace Sepes.Tests.Setup
     {
         public static IVirtualMachineLookupService GetVirtualMachineLookupService(ServiceProvider serviceProvider)
         {
-            var db = serviceProvider.GetService<SepesDbContext>();
-            var mapper = serviceProvider.GetService<IMapper>();
+            var db = serviceProvider.GetService<SepesDbContext>();       
             var logger = serviceProvider.GetService<ILogger<VirtualMachineService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var sandboxServiceMock = new Mock<ISandboxService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
+            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));          
 
-            var costServiceMock = new Mock<IAzureCostManagementService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-
-            return new VirtualMachineLookupService(logger, db, mapper, sandboxServiceMock.Object, costServiceMock.Object);
+            return new VirtualMachineLookupService(logger, db, sandboxServiceMock.Object);
         }
 
         public static IVirtualMachineService GetVirtualMachineService(ServiceProvider serviceProvider)
@@ -48,7 +41,6 @@ namespace Sepes.Tests.Setup
             sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
 
             var virtualMachineSizeService = new Mock<IVirtualMachineSizeService>();
-            //virtualMachineSizeService.Setup(x => x.(1, It.IsAny<SandboxCreateDto>()));
 
             var vmLookupService = GetVirtualMachineLookupService(serviceProvider);
 
