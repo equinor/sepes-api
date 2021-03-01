@@ -10,6 +10,7 @@ namespace Sepes.Infrastructure.Model.Automapper
     public class SandboxResourceRetryLinkResolver : IValueResolver<CloudResource, SandboxResourceLight, string>
     {
         public readonly IConfiguration _config;
+
         public SandboxResourceRetryLinkResolver(IConfiguration config)
         {
             this._config = config;
