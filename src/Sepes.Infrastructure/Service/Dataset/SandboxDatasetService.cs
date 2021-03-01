@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -18,12 +19,13 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxDatasetService : ServiceBase<Dataset>, ISandboxDatasetService
     {
+        ISandboxModelService _sandboxModelService;
 
-        public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService)
+        public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService, ISandboxModelService sandboxModelService)
             : base(db, mapper, userService)
         {
 
-
+            _sandboxModelService = sandboxModelService;
         }
 
         public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)
@@ -120,7 +122,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task ValidateAddOrRemoveDataset(int sandboxId)
         {
-            var sandboxFromDb = await GetSandboxByIdNoChecksAsync(sandboxId);
+            var sandboxFromDb = await _sandboxModelService.GetByIdWithoutPermissionCheckAsync(sandboxId);
 
             if (sandboxFromDb == null)
             {

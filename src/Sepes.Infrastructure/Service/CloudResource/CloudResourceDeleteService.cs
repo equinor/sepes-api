@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -15,17 +16,23 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceDeleteService : CloudResourceServiceBase, ICloudResourceDeleteService
-    {       
+    {
         readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
-        public CloudResourceDeleteService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceDeleteService> logger, IUserService userService,
-           
-            ICloudResourceOperationReadService cloudResourceOperationService, ICloudResourceOperationCreateService cloudResourceOperationCreateService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
+        public CloudResourceDeleteService(SepesDbContext db,
+            IConfiguration config,
+            IMapper mapper,
+            ILogger<CloudResourceDeleteService> logger,
+            IUserService userService,
+            ISandboxModelService sandboxModelService,
+            ICloudResourceOperationReadService cloudResourceOperationService,
+            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-         : base(db, config, mapper, logger, userService)
-        {           
+         : base(db, config, mapper, logger, userService, sandboxModelService)
+        {
             _cloudResourceOperationReadService = cloudResourceOperationService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
@@ -45,7 +52,7 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"{deletePrefixForLogMessages}: Marking db entry as deleted");
 
-            MarkAsDeletedInternal(resourceFromDb, currentUser.UserName);           
+            MarkAsDeletedInternal(resourceFromDb, currentUser.UserName);
 
             var deleteOperation = await EnsureExistsDeleteOperationInternalAsync(currentUser, deletePrefixForLogMessages, resourceFromDb);
 
@@ -97,7 +104,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogInformation($"{deleteDescription}: Existing delete operation found, re-queueing that");
                 await _cloudResourceOperationUpdateService.ReInitiateAsync(resource.Id);
-                
+
             }
 
             return deleteOperation;
@@ -131,9 +138,9 @@ namespace Sepes.Infrastructure.Service
         {
             var resourceFromDb = await GetInternalAsync(resourceId);
 
-            if(resourceFromDb != null)
+            if (resourceFromDb != null)
             {
-                foreach(var curOperation in resourceFromDb.Operations)
+                foreach (var curOperation in resourceFromDb.Operations)
                 {
                     _db.CloudResourceOperations.Remove(curOperation);
                 }

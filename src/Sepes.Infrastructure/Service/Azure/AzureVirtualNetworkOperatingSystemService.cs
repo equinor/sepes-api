@@ -64,13 +64,13 @@ namespace Sepes.Infrastructure.Service.Azure
             return new ImageRequestProperties() { OsType = AzureVmConstants.LINUX, PrettyName = prettyName, Region = region, Publisher = publisher, Offer = offer, Skus = skus, PickOnlyHighest = pickOnlyHighest };
         }
 
-        async Task<List<VirtualMachineImageResource>> GetImages(ImageRequestProperties request, CancellationToken cancellationToken = default(CancellationToken))
+        async Task<List<VirtualMachineImageResource>> GetImages(ImageRequestProperties request, CancellationToken cancellationToken = default)
         {
             var images = await GetImages(request.Region, request.Publisher, request.Offer, request.Skus, cancellationToken);
             return images;
         }
 
-        async Task<List<VirtualMachineImageResource>> GetImages(string region, string publisher, string offer, string skus, CancellationToken cancellationToken = default(CancellationToken))
+        async Task<List<VirtualMachineImageResource>> GetImages(string region, string publisher, string offer, string skus, CancellationToken cancellationToken = default)
         {
             var imagesUrl = $"https://management.azure.com/subscriptions/{_subscriptionId}/providers/Microsoft.Compute/locations/{region}/publishers/{publisher}/artifacttypes/vmimage/offers/{offer}/skus/{skus}/versions?api-version=2020-06-01";
             var images = await GetResponse<List<VirtualMachineImageResource>>(imagesUrl, cancellationToken: cancellationToken);

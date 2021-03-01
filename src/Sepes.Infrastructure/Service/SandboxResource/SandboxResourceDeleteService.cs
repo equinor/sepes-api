@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
@@ -20,9 +21,10 @@ namespace Sepes.Infrastructure.Service
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxResourceDeleteService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService,
+               ISandboxModelService sandboxModelService,
                ICloudResourceDeleteService cloudResourceDeleteService, ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
-              : base(config, db, mapper, logger, userService)
+              : base(config, db, mapper, logger, userService, sandboxModelService)
         {
          
             _cloudResourceDeleteService = cloudResourceDeleteService;

@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
@@ -21,10 +22,10 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceReadService _cloudResourceService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
-        public SandboxResourceRetryService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService,               
+        public SandboxResourceRetryService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService, ISandboxModelService sandboxModelService,
             ICloudResourceReadService cloudResourceService,            
             IProvisioningQueueService provisioningQueueService)
-              : base(config, db, mapper, logger, userService)
+              : base(config, db, mapper, logger, userService, sandboxModelService)
         {          
             _cloudResourceService = cloudResourceService;            
             _provisioningQueueService = provisioningQueueService;

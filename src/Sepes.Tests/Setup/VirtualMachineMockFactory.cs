@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup
@@ -34,11 +35,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<VirtualMachineService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var sandboxServiceMock = new Mock<ISandboxService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-
-            var costServiceMock = new Mock<IAzureCostManagementService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
+            var sandboxModelServiceMock = new Mock<ISandboxModelService>();                
 
             var virtualMachineSizeService = new Mock<IVirtualMachineSizeService>();
 
@@ -56,7 +53,7 @@ namespace Sepes.Tests.Setup
 
             var azureVmService = new Mock<IAzureVirtualMachineExtenedInfoService>();
 
-            return new VirtualMachineService(logger, config, db, mapper, userService.Object, sandboxServiceMock.Object, virtualMachineSizeService.Object, 
+            return new VirtualMachineService(logger, config, db, mapper, userService.Object, sandboxModelServiceMock.Object, virtualMachineSizeService.Object, 
                 vmLookupService, sandboxResourceCreateService.Object, sandboxResourceUpdateService.Object, sandboxResourceDeleteService.Object,
                 sandboxResourceService.Object, workQueue.Object, azureVmService.Object);
         }

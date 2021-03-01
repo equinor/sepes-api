@@ -10,6 +10,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
@@ -29,8 +30,8 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
-        readonly IUserService _userService;
-        readonly ISandboxService _sandboxService;
+        readonly IUserService _userService;      
+        readonly ISandboxModelService _sandboxModelService;
         readonly IVirtualMachineSizeService _vmSizeService;
         readonly IVirtualMachineLookupService _vmLookupService;
         readonly ICloudResourceReadService _sandboxResourceService;
@@ -44,8 +45,8 @@ namespace Sepes.Infrastructure.Service
             IConfiguration config,
             SepesDbContext db,
             IMapper mapper,
-            IUserService userService,
-            ISandboxService sandboxService,
+            IUserService userService,         
+            ISandboxModelService sandboxModelService,
             IVirtualMachineSizeService vmSizeService,
             IVirtualMachineLookupService vmLookupService,
             ICloudResourceCreateService sandboxResourceCreateService,
@@ -59,8 +60,8 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _config = config;
             _mapper = mapper;
-            _userService = userService;
-            _sandboxService = sandboxService;
+            _userService = userService;         
+            _sandboxModelService = sandboxModelService;
             _vmSizeService = vmSizeService;
             _vmLookupService = vmLookupService;
             _sandboxResourceService = sandboxResourceService;
@@ -83,7 +84,7 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-                var sandbox = await SandboxSingularQueries.GetSandboxByIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Crud_Sandbox, true);
+                var sandbox = await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
                 var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
@@ -185,8 +186,8 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
-        {
-            var sandbox = await _sandboxService.GetAsync(sandboxId, UserOperation.Study_Read);
+        {          
+            var sandbox = await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Study_Read, true);
 
             var virtualMachines = await CloudResourceQueries.GetSandboxVirtualMachinesList(_db, sandbox.Id);
 
