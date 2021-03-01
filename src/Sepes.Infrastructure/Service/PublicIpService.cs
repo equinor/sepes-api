@@ -47,12 +47,14 @@ namespace Sepes.Infrastructure.Service
 
         async Task<string> GetServerPublicIpFromExternalService()
         {
-            var tryCount = 1;
+            var tryCount = 0;
 
             try
             {
-                while (tryCount < 3)
+                do
                 {
+                    tryCount++;
+
                     using (var client = new HttpClient())
                     {
                         var ipUrls = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.SERVER_PUBLIC_IP_URLS);
@@ -84,9 +86,9 @@ namespace Sepes.Infrastructure.Service
                             {
                                 errorMessageSb.AppendLine(await GetPublicIpErrorMessage(curIpUrl, responseMessage: responseMessage, exception: ex));
                             }
-                        }                      
+                        }
                     }
-                }
+                } while (tryCount < 3);
 
             }
             catch (Exception ex)
