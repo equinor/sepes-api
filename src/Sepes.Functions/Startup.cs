@@ -86,6 +86,7 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
             builder.Services.AddScoped<IUserService, FunctionUserService>();
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
+            builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();

@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,16 +13,16 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class HealthService : IHealthService
-    {
-        readonly IConfiguration _config;
+    {       
         readonly SepesDbContext _db;
         readonly ILogger _logger;
+        readonly IPublicIpService _publicIpService;
 
-        public HealthService(IConfiguration config, ILogger<HealthService> logger, SepesDbContext db)
-        {
-            _config = config;
+        public HealthService(ILogger<HealthService> logger, SepesDbContext db, IPublicIpService publicIpService)
+        {           
             _db = db;
             _logger = logger;
+            _publicIpService = publicIpService;
         }
 
         public async Task<HealthSummaryResponse> GetHealthSummaryAsync(HttpContext context, CancellationToken cancellation = default)
@@ -82,7 +79,7 @@ namespace Sepes.Infrastructure.Service
 
                 var response = new Dictionary<string, string>()
                      {
-                    { "Server public ip from 3rd party", await IpAddressUtil.GetServerPublicIp(_config) },
+                    { "Server public ip from 3rd party", await _publicIpService.GetServerPublicIp() },
                     { "context.Connection.RemoteIpAddress", remoteIpAddress.ToString() },
                     { "context.Connection.RemoteIpAddress MapToIPv4", remoteIpAddress.MapToIPv4().ToString() },
                     { "context.Connection.RemoteIpAddress MapToIPv6", remoteIpAddress.MapToIPv6().ToString() },
