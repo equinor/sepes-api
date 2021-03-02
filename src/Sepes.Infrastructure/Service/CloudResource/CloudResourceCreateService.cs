@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
@@ -149,12 +148,6 @@ namespace Sepes.Infrastructure.Service
         {
             _db.CloudResources.Add(resource);
             await _db.SaveChangesAsync();           
-        }
-
-        async Task<CloudResourceDto> SaveToDbAndMap(CloudResource resource)
-        {
-            await SaveToDb(resource);  
-            return MapEntityToDto(resource);
-        }      
+        }            
     }
 }
