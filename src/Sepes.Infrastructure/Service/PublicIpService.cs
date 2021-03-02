@@ -1,84 +1,84 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using System;
-using System.Net.Http;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class PublicIpService : IPublicIpService
     {
+        readonly ILogger _logger;
+        readonly IConfiguration _configuration;        
+        readonly IPublicIpFromThirdPartyService _publicIpFromThirdPartyService;
 
-        public PublicIpService()
+        string _cachedValue;
+
+        readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
+
+        public PublicIpService(IConfiguration configuration, ILogger<PublicIpService> logger, IPublicIpFromThirdPartyService publicIpFromThirdPartyService)
         {
-
+            _logger = logger;
+            _configuration = configuration;       
+            _publicIpFromThirdPartyService = publicIpFromThirdPartyService;
         }
 
-        public async Task<string> GetServerPublicIp(string curIpUrl)
+        public async Task<string> GetIp(CancellationToken cancellation = default)
         {
-            using (var client = new HttpClient())
+            try
             {
+                await _semaphore.WaitAsync();
 
-                HttpResponseMessage responseMessage = null;
-
-                try
+                if (String.IsNullOrWhiteSpace(_cachedValue))
                 {
-                    responseMessage = await client.GetAsync(curIpUrl);
+                    _cachedValue = await GetFromThirdParty(cancellation);
+                }
 
-                    if (responseMessage.IsSuccessStatusCode)
+                return _cachedValue;
+            }
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        async Task<string> GetFromThirdParty(CancellationToken cancellation = default)
+        {
+            var tryCount = 0;
+
+            try
+            {
+                do
+                {
+                    tryCount++;
+
+                    var thirdPartyUrls = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.SERVER_PUBLIC_IP_URLS);                  
+
+                    foreach (var curUrl in thirdPartyUrls)
                     {
-                        var responseString = await responseMessage.Content.ReadAsStringAsync();
-
-                        var deserializedResponse = JsonConvert.DeserializeObject<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
-
-                        return deserializedResponse.ip;
+                        try
+                        {
+                            var publicIpFromExternalService = await _publicIpFromThirdPartyService.GetIp(curUrl, cancellation);                         
+                            return publicIpFromExternalService;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to get public ip. Attempt {tryCount}");                         
+                        }
                     }
-                    else
-                    {
-                        throw new Exception(await CreateErrorMessage(curIpUrl, responseMessage: responseMessage));
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(await CreateErrorMessage(curIpUrl, responseMessage: responseMessage, exception: ex), ex);
 
-                }
+                } while (tryCount < 3);
 
             }
-
-            throw new Exception(await CreateErrorMessage(curIpUrl));
-        }
-
-        async Task<string> CreateErrorMessage(string url, HttpResponseMessage responseMessage = null, Exception exception = null)
-        {
-            var resultBuilder = new StringBuilder($"Request to {url} failed.");
-
-            if (responseMessage != null)
+            catch (Exception ex)
             {
-                resultBuilder.AppendLine($" Status code: {responseMessage.StatusCode}, reason: {responseMessage.ReasonPhrase}");
-
-                var responseString = await responseMessage.Content.ReadAsStringAsync();
-
-                if (!String.IsNullOrWhiteSpace(responseString))
-                {
-                    resultBuilder.AppendLine($" Response from server: {responseString}");
-                }
+                _logger.LogError(ex, $"Failed to get public ip. Gave up after {tryCount} attempts");               
             }
 
-            if (exception != null)
-            {
-                resultBuilder.AppendLine($" Exception from server: {exception}");
-            }
-
-            return resultBuilder.ToString();
-        }
-    }
-
-    public class IpAddressResponse
-    {
-#pragma warning disable IDE1006 // Naming Styles
-        public string ip { get; set; }
-#pragma warning restore IDE1006 // Naming Styles
+            throw new Exception($"Failed to get IP");
+        }       
     }
 }

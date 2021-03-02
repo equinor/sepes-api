@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger<DatasetCloudResourceService> _logger;
 
         readonly IUserService _userService;
-        readonly IPublicIpWithCacheAndRetryService _publicIpWithCacheAndRetryService;
+        readonly IPublicIpService _publicIpService;
         readonly IStudyModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
 
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
            IUserService userService,
-           IPublicIpWithCacheAndRetryService publicIpWithCacheAndRetryService,
+           IPublicIpService publicIpService,
            IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
               ICloudResourceOperationReadService cloudResourceOperationReadService,
@@ -47,7 +47,7 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _logger = logger;
             _userService = userService;
-            _publicIpWithCacheAndRetryService = publicIpWithCacheAndRetryService;
+            _publicIpService = publicIpService;
             _studyModelService = studyModelService;
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceOperationReadService = cloudResourceOperationReadService;
@@ -142,7 +142,7 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                var serverPublicIp = await _publicIpWithCacheAndRetryService.GetServerPublicIp();
+                var serverPublicIp = await _publicIpService.GetIp();
 
                 DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_logger, currentUser, dataset, clientIp, serverPublicIp);
 
@@ -170,7 +170,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverPublicIp = await _publicIpWithCacheAndRetryService.GetServerPublicIp();
+            var serverPublicIp = await _publicIpService.GetIp();
 
             if (DatasetFirewallUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp, serverPublicIp))
             {

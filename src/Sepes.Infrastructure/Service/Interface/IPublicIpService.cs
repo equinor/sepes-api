@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IPublicIpService
     {
-        Task<string> GetServerPublicIp(string url);
+        Task<string> GetIp(CancellationToken cancellation = default);      
     }
 }

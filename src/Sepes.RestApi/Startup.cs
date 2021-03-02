@@ -135,8 +135,8 @@ namespace Sepes.RestApi
             services.AddScoped<IPrincipalService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
+            services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
-            services.AddSingleton<IPublicIpWithCacheAndRetryService, PublicIpWithCacheAndRetryService>();
             services.AddScoped<IHealthService, HealthService>();
 
             //Data model services v2
