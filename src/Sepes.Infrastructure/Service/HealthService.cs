@@ -16,13 +16,13 @@ namespace Sepes.Infrastructure.Service
     {       
         readonly SepesDbContext _db;
         readonly ILogger _logger;
-        readonly IPublicIpService _publicIpService;
+        readonly IPublicIpWithCacheAndRetryService _publicIpWithCacheAndRetryService;
 
-        public HealthService(ILogger<HealthService> logger, SepesDbContext db, IPublicIpService publicIpService)
+        public HealthService(ILogger<HealthService> logger, SepesDbContext db, IPublicIpWithCacheAndRetryService publicIpWithCacheAndRetryService)
         {           
             _db = db;
             _logger = logger;
-            _publicIpService = publicIpService;
+            _publicIpWithCacheAndRetryService = publicIpWithCacheAndRetryService;
         }
 
         public async Task<HealthSummaryResponse> GetHealthSummaryAsync(HttpContext context, CancellationToken cancellation = default)
@@ -79,7 +79,7 @@ namespace Sepes.Infrastructure.Service
 
                 var response = new Dictionary<string, string>()
                      {
-                    { "Server public ip from 3rd party", await _publicIpService.GetServerPublicIp() },
+                    { "Server public ip from 3rd party", await _publicIpWithCacheAndRetryService.GetServerPublicIp() },
                     { "context.Connection.RemoteIpAddress", remoteIpAddress.ToString() },
                     { "context.Connection.RemoteIpAddress MapToIPv4", remoteIpAddress.MapToIPv4().ToString() },
                     { "context.Connection.RemoteIpAddress MapToIPv6", remoteIpAddress.MapToIPv6().ToString() },

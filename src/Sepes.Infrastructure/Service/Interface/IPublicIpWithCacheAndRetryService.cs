@@ -2,8 +2,8 @@
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IPublicIpService
+    public interface IPublicIpWithCacheAndRetryService
     {
-        Task<string> GetServerPublicIp(string url);
+        Task<string> GetServerPublicIp();
     }
 }

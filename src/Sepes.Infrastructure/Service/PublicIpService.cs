@@ -1,108 +1,58 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Sepes.Infrastructure.Constants;
+﻿using Newtonsoft.Json;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using System;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class PublicIpService : IPublicIpService
     {
-        readonly IConfiguration _configuration;
-        readonly ILogger _logger;
 
-        string _serverPublicIp;
-
-        readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
-
-        public PublicIpService(IConfiguration configuration, ILogger<PublicIpService> logger)
+        public PublicIpService()
         {
-            _configuration = configuration;
-            _logger = logger;
+
         }
 
-        public async Task<string> GetServerPublicIp()
+        public async Task<string> GetServerPublicIp(string curIpUrl)
         {
-            try
+            using (var client = new HttpClient())
             {
-                if (String.IsNullOrWhiteSpace(_serverPublicIp))
+
+                HttpResponseMessage responseMessage = null;
+
+                try
                 {
-                    await _semaphore.WaitAsync();
-                    _serverPublicIp = await GetServerPublicIpFromExternalService();
+                    responseMessage = await client.GetAsync(curIpUrl);
+
+                    if (responseMessage.IsSuccessStatusCode)
+                    {
+                        var responseString = await responseMessage.Content.ReadAsStringAsync();
+
+                        var deserializedResponse = JsonConvert.DeserializeObject<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
+
+                        return deserializedResponse.ip;
+                    }
+                    else
+                    {
+                        throw new Exception(await CreateErrorMessage(curIpUrl, responseMessage: responseMessage));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(await CreateErrorMessage(curIpUrl, responseMessage: responseMessage, exception: ex), ex);
+
                 }
 
-                return _serverPublicIp;
-            }           
-            finally
-            {
-                _semaphore.Release();
             }
+
+            throw new Exception(await CreateErrorMessage(curIpUrl));
         }
 
-        async Task<string> GetServerPublicIpFromExternalService()
+        async Task<string> CreateErrorMessage(string url, HttpResponseMessage responseMessage = null, Exception exception = null)
         {
-            var tryCount = 0;
-
-            try
-            {
-                do
-                {
-                    tryCount++;
-
-                    using (var client = new HttpClient())
-                    {
-                        var ipUrls = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.SERVER_PUBLIC_IP_URLS);
-
-                        var errorMessageSb = new StringBuilder();
-
-                        foreach (var curIpUrl in ipUrls)
-                        {
-                            HttpResponseMessage responseMessage = null;
-
-                            try
-                            {
-                                responseMessage = await client.GetAsync(curIpUrl);
-
-                                if (responseMessage.IsSuccessStatusCode)
-                                {
-                                    var responseString = await responseMessage.Content.ReadAsStringAsync();
-
-                                    var deserializedResponse = JsonConvert.DeserializeObject<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
-
-                                    return deserializedResponse.ip;
-                                }
-                                else
-                                {
-                                    errorMessageSb.AppendLine(await GetPublicIpErrorMessage(curIpUrl, responseMessage: responseMessage));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                errorMessageSb.AppendLine(await GetPublicIpErrorMessage(curIpUrl, responseMessage: responseMessage, exception: ex));
-                            }
-                        }
-                    }
-                } while (tryCount < 3);
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Failed getting server public IP. Attempt {tryCount}");
-                tryCount++;               
-            }                  
-
-            throw new Exception($"Failed to get server public IP after {tryCount} tries.");
-        }
-
-        async Task<string> GetPublicIpErrorMessage(string url, HttpResponseMessage responseMessage = null, Exception exception = null)
-        {
-            var resultBuilder = new StringBuilder($"Failed to get server public ip from {url}.");
+            var resultBuilder = new StringBuilder($"Request to {url} failed.");
 
             if (responseMessage != null)
             {
