@@ -1,11 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util
 {
@@ -29,10 +27,8 @@ namespace Sepes.Infrastructure.Util
             return CloudResourceConfigStringSerializer.Serialize(translated);
         }
 
-        public static async Task EnsureDatasetHasFirewallRules(IConfiguration config, ILogger logger, UserDto user, Dataset dataset, string clientIp)
+        public static void EnsureDatasetHasFirewallRules(ILogger logger, UserDto user, Dataset dataset, string clientIp, string serverPublicIp)
         {
-            var serverPublicIp = await IpAddressUtil.GetServerPublicIp(config);
-
             SetDatasetFirewallRules(user, dataset, clientIp, serverPublicIp);
 
             logger.LogInformation($"Creating firewall rules for dataset {dataset.Id}, clientIp: {clientIp}, serverIp: {serverPublicIp}");
@@ -100,13 +96,7 @@ namespace Sepes.Infrastructure.Util
         public static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
         {
             return CreateRule(user, DatasetFirewallRuleType.Client, clientIp);
-        }
-
-        public async static Task<DatasetFirewallRule> CreateServerRuleAsync(IConfiguration config, UserDto user)
-        {
-            var serverPublicIp = await IpAddressUtil.GetServerPublicIp(config);
-            return CreateServerRule(user, serverPublicIp);
-        }
+        }      
 
         public static DatasetFirewallRule CreateServerRule(UserDto user, string ip)
         {
