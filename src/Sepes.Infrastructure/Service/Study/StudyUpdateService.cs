@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
 
-            if(updatedStudy.LogoUrl == "")
+            if(String.IsNullOrWhiteSpace(updatedStudy.LogoUrl))
             {
                 studyFromDb.LogoUrl = "";
                 await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
