@@ -18,8 +18,6 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         {
             var sandbox = SandboxBasic(studyId, name, region, phase);
 
-            //Todo: add resources
-
             return await SliceFixture.InsertAsync(sandbox);
         }
 
@@ -36,8 +34,11 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 UpdatedBy = "seed",
                 Updated = DateTime.UtcNow,
                 TechnicalContactEmail = "seedcreator@somesystem.com",
-                TechnicalContactName = "Seed"
-                
+                TechnicalContactName = "Seed",
+                Resources = new List<CloudResource>() {
+                 new CloudResource() { ResourceType = AzureResourceType.ResourceGroup, Purpose = CloudResourcePurpose.SandboxResourceGroup, SandboxControlled = true, ResourceGroupName = "sandboxresourcegroup"  }
+                }
+
             };
 
             int counter = 0;
@@ -50,6 +51,6 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             return sb;
         }
-      
+
     }
 }

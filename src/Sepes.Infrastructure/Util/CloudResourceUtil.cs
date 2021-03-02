@@ -70,7 +70,7 @@ namespace Sepes.Infrastructure.Util
 
             foreach (var curResource in resources)
             {
-                if (curResource.ResourceType == AzureResourceType.ResourceGroup && curResource.SandboxControlled)
+                if (curResource.ResourceType == AzureResourceType.ResourceGroup && (curResource.SandboxControlled || curResource.Purpose == CloudResourcePurpose.SandboxResourceGroup ))
                 {
                     return curResource;
                 }

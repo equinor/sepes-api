@@ -1,9 +1,11 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,8 +31,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {            
             SetScenario(isAdmin: true);
             await WithUserSeeds();
-            var sandbox = await WithSandbox(createdByCurrentUser, restrictedStudy);
-            await ReadAllAndAssertExpectSuccess(sandbox);
+            var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy);
+            await ReadAllAndAssertExpectSuccess(virtualMachine);
         }
 
         [Theory]
@@ -40,8 +42,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isSponsor: true);
             await WithUserSeeds();
-            var sandbox = await WithSandbox(true, restrictedStudy);
-            await ReadAllAndAssertExpectSuccess(sandbox);
+            var virtualMachine = await WithVirtualMachine(true, restrictedStudy);
+            await ReadAllAndAssertExpectSuccess(virtualMachine);
         }
 
         [Theory]
@@ -59,8 +61,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: true);
             await WithUserSeeds();
-            var sandbox = await WithSandbox(false, restrictedStudy, studyRole);
-            await ReadAllAndAssertExpectSuccess(sandbox);                  
+            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, studyRole);
+            await ReadAllAndAssertExpectSuccess(virtualMachine);                  
         }     
 
 
@@ -70,25 +72,29 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(false, true, false)]
         [InlineData(true, false, false)]
         [InlineData(true, true, true)]       
-        public async Task Read_RestrictedStudy_WithoutRelevantRoles_ShouldFail(bool employee, bool sponsor, bool datasetAdmin)
+        public async Task Read_RestrictedStudyRelatedEntity_WithoutRelevantRoles_ShouldFail(bool employee, bool sponsor, bool datasetAdmin)
         {
             SetScenario(isEmployee: employee, isSponsor: sponsor, isDatasetAdmin: datasetAdmin);
             await WithUserSeeds();
 
-            var sandbox = await WithSandbox(false, true);
+            var virtualMachine = await WithVirtualMachine(false, true);
 
-            await ReadAllAndAssertExpectForbidden(sandbox);
+            await ReadAllAndAssertExpectForbidden(virtualMachine);
         }
 
-        async Task ReadAllAndAssertExpectSuccess(Sandbox sandbox)
+        async Task ReadAllAndAssertExpectSuccess(CloudResource vm)
         {
-            await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(sandbox.StudyId));
-            await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
+            await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
+            //await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
         }
 
-        async Task ReadAllAndAssertExpectForbidden(Sandbox sandbox) {
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyUrl(sandbox.StudyId));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxUrl(sandbox.Id));
+        async Task ReadAllAndAssertExpectForbidden(CloudResource vm) {
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
+           // await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
         }       
     }
 }

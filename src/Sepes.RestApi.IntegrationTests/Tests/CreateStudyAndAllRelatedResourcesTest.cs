@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.RestApi.IntegrationTests
+namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
     public class CreateStudyAndAllRelatedResourcesTest : ControllerTestBase

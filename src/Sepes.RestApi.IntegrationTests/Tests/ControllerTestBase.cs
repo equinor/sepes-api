@@ -1,5 +1,4 @@
 ﻿using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
@@ -53,7 +52,18 @@ namespace Sepes.RestApi.IntegrationTests
         {
             var study = await WithStudy(createdByCurrentUser, restricted, studyRole);
             var sandbox = await SandboxSeed.Create(study.Id, phase: phase);
+            sandbox.Study = study;
+            study.Sandboxes.Add(sandbox);
             return sandbox;
+        }
+
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
+        {
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase);
+            var vm = await VirtualMachineSeed.CreateSimple(sandbox);
+            sandbox.Resources.Add(vm);
+            vm.Sandbox = sandbox;
+            return vm;
         }
 
         protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
