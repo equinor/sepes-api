@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -52,6 +53,12 @@ namespace Sepes.Infrastructure.Service
             if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
+            }
+
+            if(updatedStudy.LogoUrl == "")
+            {
+                studyFromDb.LogoUrl = "";
+                await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
             }
 
             studyFromDb.Updated = DateTime.UtcNow;

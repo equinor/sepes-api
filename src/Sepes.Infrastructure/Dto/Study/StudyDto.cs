@@ -15,6 +15,8 @@ namespace Sepes.Infrastructure.Dto.Study
 
         public bool Restricted { get; set; }
 
+        public string LogoUrl { get; set; }
+
         public List<StudyParticipantDto> Participants { get; set; }        
     }
 }
