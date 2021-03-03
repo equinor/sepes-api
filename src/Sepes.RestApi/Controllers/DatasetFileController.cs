@@ -62,5 +62,13 @@ namespace Sepes.RestApi.Controller
             var sasToken = await _datasetFileService.GetFileUploadUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);         
             return new JsonResult(sasToken);
         }
+
+        [HttpGet("saskeydelete")]
+        public async Task<IActionResult> GetFileDeleteSasToken(int datasetId, CancellationToken cancellationToken = default)
+        {
+            var clientIp = IpAddressUtil.GetClientIp(HttpContext);
+            var sasTokenDelete = await _datasetFileService.GetFileDeleteUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);
+            return new JsonResult(sasTokenDelete);
+        }
     }
 }

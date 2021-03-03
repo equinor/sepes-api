@@ -48,6 +48,11 @@ namespace Sepes.Infrastructure.Service.Azure
             return await CreateUriBuilderWithSasToken(containerName, permission: BlobContainerSasPermissions.Write, expiresOnMinutes: 30, cancellationToken: cancellationToken);
         }
 
+        public async Task<UriBuilder> CreateFileDeleteUriBuilder(string containerName, CancellationToken cancellationToken = default)
+        {
+            return await CreateUriBuilderWithSasToken(containerName, permission: BlobContainerSasPermissions.Delete, expiresOnMinutes: 5, cancellationToken: cancellationToken);
+        }
+
         async Task<UriBuilder> CreateUriBuilderWithSasToken(
             string containerName,
             string resourceType = "c",

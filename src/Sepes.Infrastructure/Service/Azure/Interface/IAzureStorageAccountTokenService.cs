@@ -15,5 +15,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<Uri> GetSasKey(string containerName = "files", CancellationToken cancellationToken = default);
         Task<UriBuilder> CreateFileDownloadUriBuilder(string containerName, CancellationToken cancellationToken = default);
         Task<UriBuilder> CreateFileUploadUriBuilder(string containerName, CancellationToken cancellationToken = default);
+
+        Task<UriBuilder> CreateFileDeleteUriBuilder(string containerName, CancellationToken cancellationToken = default);
     }
 }
