@@ -42,7 +42,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await WithBasicSeeds();
 
             SetScenario(isSponsor: true);
-          
+
             var virtualMachine = await WithVirtualMachine(true, restrictedStudy);
 
             await PerformTestsExpectSuccess(virtualMachine.Sandbox.Id);
@@ -72,7 +72,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await WithBasicSeeds();
 
             SetScenario();
-           
+
             var virtualMachine = await WithVirtualMachine(false, restrictedStudy, studyRole);
             await PerformTestsExpectSuccess(virtualMachine.Sandbox.Id);
         }
@@ -87,7 +87,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await WithBasicSeeds();
 
             SetScenario();
-          
+
             var virtualMachine = await WithVirtualMachine(false, restrictedStudy, studyRole);
             await PerformTestsExpectFailure(virtualMachine.Sandbox.Id);
         }
@@ -98,7 +98,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         async Task PerformTestsExpectSuccess(int sandboxId)
-        {           
+        {
             var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(sandboxId));
             SandboxDetailsAsserts.ReadyForPhaseShiftExpectSuccess(sandboxDetailsConversation.Response);
 

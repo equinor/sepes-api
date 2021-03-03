@@ -9,16 +9,28 @@ using System.Threading.Tasks;
 namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 {
     public static class VirtualMachineSeed
-    {     
+    {
+        public static async Task<CloudResource> CreateSimple(
+          Sandbox sandbox,     
+          string vmNameSuffix = VirtualMachineConstants.NAME)
+        {
+            var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);
+            var vmResource = CreateVmResource(sandbox, sandboxResourceGroup, sandbox.Study.Name, vmNameSuffix);
+            return await SliceFixture.InsertAsync(vmResource);
+        }
 
         public static async Task<CloudResource> Create(
             Sandbox sandbox,
-            string vmNameSuffix = VirtualMachineConstants.NAME,
+            string studyName,           
+            string vmNameSuffix = VirtualMachineConstants.NAME,         
             string size = VirtualMachineConstants.SIZE,
             string osCategory = VirtualMachineConstants.OS_CATEGORY_WINDOWS,
             string os = VirtualMachineConstants.OS_WINDOWS)
         {
-            var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);
+
+            var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);         
+            //Todo: create the vm state object
+            var vmResource = CreateVmResource(sandbox, sandboxResourceGroup, studyName, vmNameSuffix);           
 
            var vmSettings = CreateVmSettingsString(size, osCategory, os);       
 
@@ -35,7 +47,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             vmResource.SandboxId = sandbox.Id;
             vmResource.ConfigString = configString;
             return vmResource;
-        }
+        }      
 
         static string CreateVmSettingsString(string size = VirtualMachineConstants.SIZE, string osCategory = "windows", string os = "win2019datacenter")
         {
