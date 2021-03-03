@@ -21,16 +21,14 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
         {
             ApiResponseBasicAsserts.ExpectSuccess<SandboxDetails>(responseWrapper);
             Assert.NotEqual<int>(0, responseWrapper.Content.Id);
-            Assert.Equal(SandboxPhase.Open, responseWrapper.Content.CurrentPhase);
-            Assert.True(responseWrapper.Content.ReadyForPhaseChange);
+            Assert.Equal(SandboxPhase.Open, responseWrapper.Content.CurrentPhase);           
         }
 
         public static void AfterPhaseShiftExpectSuccess(ApiResponseWrapper<SandboxDetails> responseWrapper)
         {
             ApiResponseBasicAsserts.ExpectSuccess<SandboxDetails>(responseWrapper);
             Assert.NotEqual<int>(0, responseWrapper.Content.Id);
-            Assert.Equal(SandboxPhase.DataAvailable, responseWrapper.Content.CurrentPhase);
-            Assert.False(responseWrapper.Content.ReadyForPhaseChange);
+            Assert.Equal(SandboxPhase.DataAvailable, responseWrapper.Content.CurrentPhase);          
         }
     }
 }
