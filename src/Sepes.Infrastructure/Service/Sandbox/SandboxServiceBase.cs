@@ -37,16 +37,17 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task<SandboxDetails> GetSandboxDetailsInternalAsync(int sandboxId)
         {
-            var sandboxFromDb = await _sandboxModelService.GetDetailedByIdAsync(sandboxId);
+            var sandboxFromDb = await _sandboxModelService.GetDetailsByIdAsync(sandboxId);
 
             var sandboxDetailsDto = _mapper.Map<SandboxDetails>(sandboxFromDb);
 
-            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDetailsDto.Permissions, sandboxDetailsDto.CurrentPhase);
+            await StudyPermissionsUtil.DecorateDto(_userService, sandboxFromDb.Study, sandboxDetailsDto.Permissions, sandboxDetailsDto.CurrentPhase);           
 
             DatasetClassificationUtils.SetRestrictionProperties(sandboxDetailsDto);           
 
             return sandboxDetailsDto;
         }
+      
 
         protected async Task<Sandbox> GetWithoutChecks(int sandboxId)
         {

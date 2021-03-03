@@ -12,13 +12,15 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
     public static class SandboxSeed
     {
         public static async Task<Sandbox> Create(
-                int studyId,
-                string studyName,
+                Study study,
                 string sandboxName = SandboxConstants.NAME,
                 string region = TestConstants.REGION,
-                SandboxPhase phase = SandboxPhase.Open)
+                SandboxPhase phase = SandboxPhase.Open,
+             bool addDatasets = false)
         {
-            var sandbox = SandboxBasic(studyId, studyName, sandboxName, region, phase);
+            var sandbox = SandboxBasic(study.Id, study.Name, sandboxName, region, phase);
+
+            AddDatasets(addDatasets, study, sandbox);
 
             return await SliceFixture.InsertAsync(sandbox);
         }
@@ -64,6 +66,23 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             result.Add(CloudResourceFactory.Create(region, AzureResourceType.Bastion, resourceGroupName, AzureResourceNameUtil.Bastion(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
 
             return result;
+        }
+
+        static void AddDatasets(bool addDatasets, Study study, Sandbox sandbox)
+        {
+            if (addDatasets)
+            {
+                if (study.StudySpecificDatasets != null)
+                {
+                    sandbox.SandboxDatasets = new List<SandboxDataset>();
+
+                    foreach (var curDs in study.StudySpecificDatasets)
+                    {
+                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.Id, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed"  });
+                    }
+                }
+            }
+
         }
 
     }

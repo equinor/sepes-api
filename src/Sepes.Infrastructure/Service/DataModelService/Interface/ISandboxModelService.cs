@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<Sandbox> GetByIdAsync(int id, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false);
 
-        Task<Sandbox> GetDetailedByIdAsync(int id);
+        Task<Sandbox> GetDetailsByIdAsync(int id);
 
         Task<string> GetRegionByIdAsync(int id, UserOperation userOperation);
 

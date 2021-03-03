@@ -43,23 +43,23 @@ namespace Sepes.RestApi.IntegrationTests
             await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = true)
+        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false)
         {
             return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets);
         }
 
-        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
+        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
-            var study = await WithStudy(createdByCurrentUser, restricted, studyRole);
-            var sandbox = await SandboxSeed.Create(study.Id, study.Name, phase: phase);
+            var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
+            var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasets);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
         }
 
-        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
-            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase);
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
             var vm = await VirtualMachineSeed.Create(sandbox);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;

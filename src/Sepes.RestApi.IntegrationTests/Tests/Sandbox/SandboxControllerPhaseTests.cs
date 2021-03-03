@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
@@ -91,12 +92,18 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await PerformTestsExpectFailure(virtualMachine.Sandbox.Id);
         }
 
-        async Task PerformTestsExpectSuccess(int sandboxId)
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
         {
-            var conversation = await GenericPoster.PostAndExpectSuccess<SandboxDetails>(_restHelper, GenericPoster.SandboxNextPhase(sandboxId));
-            SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(conversation.Response);           
+            return await base.WithVirtualMachine(createdByCurrentUser, restricted, studyRole, addDatasets: true);
+        }
 
-          
+        async Task PerformTestsExpectSuccess(int sandboxId)
+        {           
+            var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(sandboxId));
+            SandboxDetailsAsserts.ReadyForPhaseShiftExpectSuccess(sandboxDetailsConversation.Response);
+
+            var phaseShiftConversation = await GenericPoster.PostAndExpectSuccess<SandboxDetails>(_restHelper, GenericPoster.SandboxNextPhase(sandboxId));
+            SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(phaseShiftConversation.Response);
         }      
 
         async Task PerformTestsExpectFailure(int sandboxId)

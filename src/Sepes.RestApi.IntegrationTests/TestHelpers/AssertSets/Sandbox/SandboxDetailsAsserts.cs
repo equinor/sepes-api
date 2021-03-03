@@ -17,11 +17,20 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
             Assert.Equal(createRequest.Region, responseWrapper.Content.Region);
         }
 
+        public static void ReadyForPhaseShiftExpectSuccess(ApiResponseWrapper<SandboxDetails> responseWrapper)
+        {
+            ApiResponseBasicAsserts.ExpectSuccess<SandboxDetails>(responseWrapper);
+            Assert.NotEqual<int>(0, responseWrapper.Content.Id);
+            Assert.Equal(SandboxPhase.Open, responseWrapper.Content.CurrentPhase);
+            Assert.True(responseWrapper.Content.ReadyForPhaseChange);
+        }
+
         public static void AfterPhaseShiftExpectSuccess(ApiResponseWrapper<SandboxDetails> responseWrapper)
         {
             ApiResponseBasicAsserts.ExpectSuccess<SandboxDetails>(responseWrapper);
             Assert.NotEqual<int>(0, responseWrapper.Content.Id);
-            Assert.Equal(SandboxPhase.DataAvailable, responseWrapper.Content.CurrentPhase);          
+            Assert.Equal(SandboxPhase.DataAvailable, responseWrapper.Content.CurrentPhase);
+            Assert.False(responseWrapper.Content.ReadyForPhaseChange);
         }
     }
 }

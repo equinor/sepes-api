@@ -65,7 +65,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         {
             if (addDatasets)
             {
-                for (var counter = 1; counter <= 3; counter++)
+                for (var counter = 0; counter <= 2; counter++)
                 {                  
                     var datasetName = $"ds-{counter}";
                     var datasetClassification = (DatasetClassification)counter;
