@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System;
@@ -12,21 +13,22 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
     {
         public static async Task<Sandbox> Create(
                 int studyId,
-                string name = SandboxConstants.NAME,
-                string region = SandboxConstants.REGION,
+                string studyName,
+                string sandboxName = SandboxConstants.NAME,
+                string region = TestConstants.REGION,
                 SandboxPhase phase = SandboxPhase.Open)
         {
-            var sandbox = SandboxBasic(studyId, name, region, phase);
+            var sandbox = SandboxBasic(studyId, studyName, sandboxName, region, phase);
 
             return await SliceFixture.InsertAsync(sandbox);
         }
 
-        static Sandbox SandboxBasic(int studyId, string name, string region, SandboxPhase phase = SandboxPhase.Open)
+        static Sandbox SandboxBasic(int studyId, string studyName, string sandboxName, string region, SandboxPhase phase = SandboxPhase.Open)
         {
             var sb = new Sandbox()
             {
                 StudyId = studyId,
-                Name = name,
+                Name = sandboxName,
                 Region = region,
                 PhaseHistory = new List<SandboxPhaseHistory>(),
                 CreatedBy = "seed",
@@ -35,9 +37,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Updated = DateTime.UtcNow,
                 TechnicalContactEmail = "seedcreator@somesystem.com",
                 TechnicalContactName = "Seed",
-                Resources = new List<CloudResource>() {
-                 new CloudResource() { ResourceType = AzureResourceType.ResourceGroup, Purpose = CloudResourcePurpose.SandboxResourceGroup, SandboxControlled = true, ResourceGroupName = "sandboxresourcegroup"  }
-                }
+                Resources = SandboxResources(region, studyName, sandboxName)
 
             };
 
@@ -50,6 +50,20 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             }
 
             return sb;
+        }
+
+        static List<CloudResource> SandboxResources(string region, string studyName, string sandboxName)
+        {
+            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(studyName, sandboxName);
+            var resourceGroup = CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true);
+
+            var result = new List<CloudResource>() { resourceGroup };
+            result.Add(CloudResourceFactory.Create(region, AzureResourceType.StorageAccount, resourceGroupName, AzureResourceNameUtil.DiagnosticsStorageAccount(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CloudResourceFactory.Create(region, AzureResourceType.NetworkSecurityGroup, resourceGroupName, AzureResourceNameUtil.NetworkSecGroup(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CloudResourceFactory.Create(region, AzureResourceType.VirtualNetwork, resourceGroupName, AzureResourceNameUtil.VNet(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CloudResourceFactory.Create(region, AzureResourceType.Bastion, resourceGroupName, AzureResourceNameUtil.Bastion(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+
+            return result;
         }
 
     }

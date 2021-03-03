@@ -43,15 +43,15 @@ namespace Sepes.RestApi.IntegrationTests
             await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
+        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = true)
         {
-            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole);
+            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets);
         }
 
         protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
         {
             var study = await WithStudy(createdByCurrentUser, restricted, studyRole);
-            var sandbox = await SandboxSeed.Create(study.Id, phase: phase);
+            var sandbox = await SandboxSeed.Create(study.Id, study.Name, phase: phase);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
@@ -60,11 +60,11 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
         {
             var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase);
-            var vm = await VirtualMachineSeed.CreateSimple(sandbox);
+            var vm = await VirtualMachineSeed.Create(sandbox);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
-        }
+        }       
 
         protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
         {

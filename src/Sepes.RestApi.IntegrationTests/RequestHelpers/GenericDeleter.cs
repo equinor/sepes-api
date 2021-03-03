@@ -29,13 +29,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, string url)
         {
             return await Delete<Infrastructure.Dto.ErrorResponse>(restHelper, url);
-        }
-
-        public static void ExpectForbiddenWithMessage(Task<Func<ApiResponseWrapper<Infrastructure.Dto.ErrorResponse>>> apiCaller)
-        {
-            var result = apiCaller.Result();
-            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(result, "does not have permission to perform operation");
-        }
+        }       
 
         public static string StudyUrl(int studyId) => $"api/studies/{studyId}";     
     } 

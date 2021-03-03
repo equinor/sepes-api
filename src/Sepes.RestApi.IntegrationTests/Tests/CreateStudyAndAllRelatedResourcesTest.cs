@@ -46,7 +46,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var sandboxCreateRequest = sandboxSeedResponse.Request;
             var sandboxResponseWrapper = sandboxSeedResponse.Response;
 
-            CreateSandboxAsserts.ExpectSuccess(sandboxCreateRequest, sandboxResponseWrapper);
+            SandboxDetailsAsserts.NewlyCreatedExpectSuccess(sandboxCreateRequest, sandboxResponseWrapper);
 
             var sandboxResponse = sandboxResponseWrapper.Content;
 

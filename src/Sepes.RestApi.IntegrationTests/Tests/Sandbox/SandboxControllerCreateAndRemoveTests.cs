@@ -95,7 +95,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task PerformTestsExpectSuccess(int studyId)
         {
             var sandboxCreateConversation = await SandboxCreator.CreateAndExpectSuccess(_restHelper, studyId);
-            CreateSandboxAsserts.ExpectSuccess(sandboxCreateConversation.Request, sandboxCreateConversation.Response);           
+            SandboxDetailsAsserts.NewlyCreatedExpectSuccess(sandboxCreateConversation.Request, sandboxCreateConversation.Response);           
 
             var sandboxRemoveConversation = await SandboxDeleter.DeleteAndExpectSuccess(_restHelper, studyId);
             DeleteBasicAsserts.ExpectNoContent(sandboxRemoveConversation.Response);

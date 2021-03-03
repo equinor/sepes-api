@@ -15,6 +15,9 @@ namespace Sepes.Test.Common.ServiceMockFactories
             mock.Setup(us => us.SetFirewallRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<FirewallRule>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((string a, string b, List<FirewallRule> c, CancellationToken cancellation) => c );
 
+            mock.Setup(us => us.AddStorageAccountToVNet(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()));
+                       
+
             return mock;
         }
     }
