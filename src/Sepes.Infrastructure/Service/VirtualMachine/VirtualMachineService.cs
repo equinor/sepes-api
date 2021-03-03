@@ -277,7 +277,6 @@ namespace Sepes.Infrastructure.Service
 
         async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, VirtualMachineCreateDto userInput)
         {
-
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
             var availableOs = await _vmLookupService.AvailableOperatingSystems(region);

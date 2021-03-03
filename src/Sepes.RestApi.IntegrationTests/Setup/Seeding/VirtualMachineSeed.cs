@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Model;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
@@ -22,24 +24,47 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             string studyName,           
             string vmNameSuffix = VirtualMachineConstants.NAME,         
             string size = VirtualMachineConstants.SIZE,
-            string os = VirtualMachineConstants.OS_WINDOWS,
-            string username = VirtualMachineConstants.USERNAME)
+            string osCategory = VirtualMachineConstants.OS_CATEGORY_WINDOWS,
+            string os = VirtualMachineConstants.OS_WINDOWS)
         {
 
             var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);         
             //Todo: create the vm state object
             var vmResource = CreateVmResource(sandbox, sandboxResourceGroup, studyName, vmNameSuffix);           
 
+           var vmSettings = CreateVmSettingsString(size, osCategory, os);       
+
+            var vmResource = CreateVmResource(sandbox, sandboxResourceGroup, sandbox.Study.Name, vmNameSuffix, vmSettings);
+
             return await SliceFixture.InsertAsync(vmResource);
         }
 
-        static CloudResource CreateVmResource(Sandbox sandbox, CloudResource sandboxResourceGroup, string studyName, string nameSuffix)
+        static CloudResource CreateVmResource(Sandbox sandbox, CloudResource sandboxResourceGroup, string studyName, string nameSuffix, string configString = null)
         {
             var vmResourceName = AzureResourceNameUtil.VirtualMachine(studyName, sandbox.Name, nameSuffix);
 
-            var vmResource = CloudResourceFactory.Create(sandboxResourceGroup.Region, sandboxResourceGroup.ResourceName, $"{vmResourceName}-resourceId", $"{vmResourceName}-resourceKey", vmResourceName);
+            var vmResource = CloudResourceFactory.Create(sandboxResourceGroup.Region, AzureResourceType.VirtualMachine, sandboxResourceGroup.ResourceName, vmResourceName, parentResource: sandboxResourceGroup);
             vmResource.SandboxId = sandbox.Id;
+            vmResource.ConfigString = configString;
             return vmResource;
         }      
+
+        static string CreateVmSettingsString(string size = VirtualMachineConstants.SIZE, string osCategory = "windows", string os = "win2019datacenter")
+        {
+            var vmSettings = new VmSettingsDto()
+            {
+                DiagnosticStorageAccountName = "diagstorageaccountname",
+                NetworkName = "networkName",
+                SubnetName = "subnetname",
+                Size = size,
+                Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(1),
+                OperatingSystemCategory = osCategory,
+                OperatingSystem = os,
+                Username = VirtualMachineConstants.USERNAME,
+                Password = "nameinkeyvault",
+            };
+
+            return CloudResourceConfigStringSerializer.Serialize(vmSettings);
+        }
     }
 }

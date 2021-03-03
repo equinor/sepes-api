@@ -14,6 +14,8 @@ namespace Sepes.Test.Common.ServiceMockFactories
             var mock = new Mock<IAzureVirtualNetworkService>();          
             mock.Setup(us => us.EnsureCreated(It.IsAny<ResourceProvisioningParameters>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync((ResourceProvisioningParameters ipt, CancellationToken cancellation) => ProvisioningResultFactory.Create(ipt, AzureResourceType.VirtualNetwork));
+            mock.Setup(us => us.EnsureSandboxSubnetHasServiceEndpointForStorage(It.IsAny<string>(), It.IsAny<string>()));
+              
 
             return mock;
 

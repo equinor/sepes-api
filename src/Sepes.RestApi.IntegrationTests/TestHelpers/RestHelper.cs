@@ -22,6 +22,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             return responseWrapper;
         }
 
+        public async Task<ApiResponseWrapper<T>> Post<T>(string requestUri)
+        {
+            var response = await _client.PostAsync(requestUri, null);
+            var responseWrapper = await CreateResponseWrapper<T>(response);
+            return responseWrapper;
+        }
+
         public async Task<ApiResponseWrapper<T>> Get<T>(string requestUri)
         {
             var response = await _client.GetAsync(requestUri);
