@@ -15,5 +15,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<BlobStorageItemDto>> GetFileListAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default);
 
         Task<string> GetFileUploadUriBuilderWithSasTokenAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default);
+
+        Task<string> GetFileDeleteUriBuilderWithSasTokenAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default);
     }
 }

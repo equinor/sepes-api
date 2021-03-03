@@ -154,5 +154,31 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
             }
         }
+
+        public async Task<string> GetFileDeleteUriBuilderWithSasTokenAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
+
+                if (IsStudySpecific(dataset))
+                {
+                    //Verify access to study
+                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+                    _azureStorageAccountTokenService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                }
+
+                var uriBuilder = await _azureStorageAccountTokenService.CreateFileDeleteUriBuilder("files", cancellationToken);
+
+                return uriBuilder.Uri.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
+            }
+        }
     }
 }
