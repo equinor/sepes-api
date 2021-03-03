@@ -19,7 +19,7 @@ namespace Sepes.RestApi.IntegrationTests
         {
             _testHostFixture = testHostFixture;
             _restHelper = new RestHelper(testHostFixture.Client);
-        }        
+        }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
@@ -39,18 +39,41 @@ namespace Sepes.RestApi.IntegrationTests
         }
 
         protected async Task WithUserSeeds()
-        {         
+        {
             await UserSeed.Seed();
+        }
+
+        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
+        {
+            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole);
+        }
+
+        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
+        {
+            var study = await WithStudy(createdByCurrentUser, restricted, studyRole);
+            var sandbox = await SandboxSeed.Create(study.Id, phase: phase);
+            sandbox.Study = study;
+            study.Sandboxes.Add(sandbox);
+            return sandbox;
+        }
+
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open)
+        {
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase);
+            var vm = await VirtualMachineSeed.CreateSimple(sandbox);
+            sandbox.Resources.Add(vm);
+            vm.Sandbox = sandbox;
+            return vm;
         }
 
         protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
         {
-            return await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole);
+            return await WithStudy(true, restricted, studyRole);
         }
 
         protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string studyRole = null)
         {
-            return await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole);
+            return await WithStudy(false, restricted, studyRole);
         }
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()

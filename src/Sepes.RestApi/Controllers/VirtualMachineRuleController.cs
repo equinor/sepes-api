@@ -41,13 +41,6 @@ namespace Sepes.RestApi.Controllers
         {
             var allRules = await _service.SetRules(vmId, updatedRuleSet);
             return new JsonResult(allRules);
-        }
-
-        //[HttpDelete("{ruleId}")]
-        //public async Task<IActionResult> DeleteRule(int vmId, string ruleId)
-        //{
-        //    var deletedRule = await _service.DeleteRule(vmId, ruleId);
-        //    return new JsonResult(deletedRule);
-        //}       
+        }              
     }
 }

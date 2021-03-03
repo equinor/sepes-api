@@ -64,6 +64,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Created = DateTime.UtcNow,
                 UpdatedBy = "seed",
                 Updated = DateTime.UtcNow,
+                Sandboxes = new List<Sandbox>()
             };
         }
 

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.RestApi.IntegrationTests
+namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
     public class CreateStudyAndAllRelatedResourcesTest : ControllerTestBase
@@ -42,7 +42,7 @@ namespace Sepes.RestApi.IntegrationTests
             var createDatasetResponse = datasetResponseWrapper.Content;
 
             //CREATE SANDBOX
-            var sandboxSeedResponse = await SandboxCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
+            var sandboxSeedResponse = await SandboxCreator.CreateAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
             var sandboxCreateRequest = sandboxSeedResponse.Request;
             var sandboxResponseWrapper = sandboxSeedResponse.Response;
 

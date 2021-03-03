@@ -27,14 +27,7 @@ namespace Sepes.RestApi.Controllers
         {
             var createdVm = await _vmService.CreateAsync(sandboxId, newVm);
             return new JsonResult(createdVm);
-        }     
-
-        //[HttpPut("{vmId}")]
-        //public async Task<IActionResult> UpdateAsync(int vmId, NewVmDto upadatedVm)
-        //{
-        //    var createdVm = await _vmService.UpdateAsync(sandboxId, upadatedVm);
-        //    return new JsonResult(createdVm);
-        //}
+        }
 
         [HttpDelete("{vmId}")]
         public async Task<IActionResult> DeleteAsync(int vmId)

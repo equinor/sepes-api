@@ -19,34 +19,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         }
 
-        [Theory]
-        [InlineData(true, false, false, false, true)]
-        [InlineData(true, false, false, true, false)]
-        [InlineData(true, false, true, false, false)]
-        [InlineData(true, true, false, false, true)]
-        [InlineData(true, true, false, true, false)]
-
-        [InlineData(false, false, true, false, false, null)]
-        [InlineData(false, false, false, true, false, null)]
-        [InlineData(false, false, false, false, true, StudyRoles.SponsorRep)]
-        [InlineData(false, false, false, false, true, StudyRoles.VendorAdmin)]
-        [InlineData(false, false, false, false, true, StudyRoles.VendorContributor)]
-        [InlineData(false, false, false, false, true, StudyRoles.StudyViewer)]
-        [InlineData(false, true, false, true, false, null)]
-        [InlineData(false, true, true, false, true, StudyRoles.SponsorRep)]
-        [InlineData(false, true, true, false, true, StudyRoles.VendorAdmin)]
-        [InlineData(false, true, true, false, true, StudyRoles.VendorContributor)]
-        [InlineData(false, true, true, false, true, StudyRoles.StudyViewer)]
-        public async Task Read_Study_HavingCorrectRoles_ShouldSucceed(bool createdByCurrentUser, bool restrictedStudy, bool isEmployee, bool isAdmin, bool isSponsor, string roleName = null)
-        {
-            
-            SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
-            await WithUserSeeds();
-            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restrictedStudy, roleName) : await WithStudyCreatedByOtherUser(restrictedStudy, roleName);
-
-            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
-            ReadStudyAsserts.ExpectSuccess(studyReadConversation.Response);
-        }
+       
 
         [Theory]
         [InlineData(false)]
@@ -61,7 +34,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             _ = await WithStudyCreatedByOtherUser(false);
             _ = await WithStudyCreatedByOtherUser(true);
 
-            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
             ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
             Assert.Empty(studyReadConversation.Response.Content);
         }
@@ -80,7 +53,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, myRole);
             var studyThisUserShouldNotSee = await WithStudyCreatedByOtherUser(true);
 
-            var studyReadConversation = await GenericReader.ReadAndExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
             ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
             Assert.NotEmpty(studyReadConversation.Response.Content);
             Assert.NotNull(studyReadConversation.Response.Content.FirstOrDefault(s => s.Id == studyThisUserShouldSee.Id));
@@ -100,7 +73,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             var createdStudy = await WithStudyCreatedByOtherUser(restricted: true);         
 
-            var studyReadConversation = await GenericReader.ReadAndExpectFailure<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
+            var studyReadConversation = await GenericReader.ReadExpectFailure(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyReadConversation.Response, "does not have permission to perform operation");
         }
 
@@ -117,7 +90,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             var createdStudy = await WithStudyCreatedByOtherUser(restricted, studyRole);
 
-            var studyReadConversation = await GenericReader.ReadAndExpectFailure<StudyDetailsDto>(_restHelper, GenericReader.StudyResultsAndLearningsUrl(createdStudy.Id));
+            var studyReadConversation = await GenericReader.ReadExpectFailure(_restHelper, GenericReader.StudyResultsAndLearningsUrl(createdStudy.Id));
 
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyReadConversation.Response, "does not have permission to perform operation");
         }
