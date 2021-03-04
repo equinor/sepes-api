@@ -45,15 +45,7 @@ namespace Sepes.RestApi.Controller
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);
             var files = await _datasetFileService.GetFileListAsync(datasetId, clientIp, cancellationToken);
             return new JsonResult(files);
-        }
-
-        [HttpDelete("files/fileName")]
-        public async Task<IActionResult> DeleteFile(int datasetId, string fileName, CancellationToken cancellationToken = default)
-        {
-            var clientIp = IpAddressUtil.GetClientIp(HttpContext);
-            await _datasetFileService.DeleteFileAsync(datasetId, fileName, clientIp, cancellationToken);
-            return new NoContentResult();
-        }        
+        }              
 
         [HttpGet("saskey")]
         public async Task<IActionResult> GetFileUploadSasToken(int datasetId, CancellationToken cancellationToken = default)
@@ -61,6 +53,14 @@ namespace Sepes.RestApi.Controller
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);
             var sasToken = await _datasetFileService.GetFileUploadUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);         
             return new JsonResult(sasToken);
+        }
+
+        [HttpGet("saskeydelete")]
+        public async Task<IActionResult> GetFileDeleteSasToken(int datasetId, CancellationToken cancellationToken = default)
+        {
+            var clientIp = IpAddressUtil.GetClientIp(HttpContext);
+            var sasTokenDelete = await _datasetFileService.GetFileDeleteUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);
+            return new JsonResult(sasTokenDelete);
         }
     }
 }

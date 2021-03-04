@@ -3,12 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Model.Factory;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -22,8 +22,8 @@ namespace Sepes.Infrastructure.Service
     {
         readonly IRequestIdService _requestIdService;
 
-        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IRequestIdService requestIdService)
-         : base(db, config, mapper, logger, userService)
+        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, ISandboxModelService sandboxModelService, IRequestIdService requestIdService)
+         : base(db, config, mapper, logger, userService, sandboxModelService)
         {
             _requestIdService = requestIdService;
 
@@ -148,12 +148,6 @@ namespace Sepes.Infrastructure.Service
         {
             _db.CloudResources.Add(resource);
             await _db.SaveChangesAsync();           
-        }
-
-        async Task<CloudResourceDto> SaveToDbAndMap(CloudResource resource)
-        {
-            await SaveToDb(resource);  
-            return MapEntityToDto(resource);
-        }      
+        }            
     }
 }

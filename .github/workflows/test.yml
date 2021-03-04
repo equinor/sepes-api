@@ -1,7 +1,5 @@
 name: Unit Tests
 on:
-  push:
-    branches: [ master, develop ]
   pull_request:    
     branches: [ master, develop ]
 jobs:
@@ -48,7 +46,7 @@ jobs:
       # run tests with built project
     - name: Test PR
       working-directory: src/Sepes.Tests    
-      run: dotnet test --no-restore --no-build --configuration $config /p:CollectCoverage=true /p:CoverletOutput=${{github.workspace}}/CodeCoverageRaw/UnitTest/coverage.cobertura.xml /p:CoverletOutputFormat=cobertura --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
+      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings unittests.runsettings --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
       
     # add report as PR comment (if PR)
     - name: Add PR comment
@@ -71,7 +69,7 @@ jobs:
     - name: Build Coverage Report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:${{github.workspace}}/CodeCoverageRaw/UnitTest/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlSummary
+        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlSummary
 
     # upload code coverage report as build artifact
     - name: Upload a Build Artifact

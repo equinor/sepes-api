@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -9,7 +8,6 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 
@@ -57,6 +55,12 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
 
+            if(String.IsNullOrWhiteSpace(updatedStudy.LogoUrl))
+            {
+                studyFromDb.LogoUrl = "";
+                await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
+            }
+
             studyFromDb.Updated = DateTime.UtcNow;
 
             Validate(studyFromDb);
@@ -98,12 +102,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
             }
-        }
-
-        void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
-        {
-            study.StudyParticipants = new List<StudyParticipant>();
-            study.StudyParticipants.Add(new StudyParticipant() { UserId = user.Id, RoleName = StudyRoles.StudyOwner, Created = DateTime.UtcNow, CreatedBy = user.UserName });
-        }
+        }      
     }
 }

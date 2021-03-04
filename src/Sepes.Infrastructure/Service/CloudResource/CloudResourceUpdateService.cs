@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading.Tasks;
@@ -13,8 +14,8 @@ namespace Sepes.Infrastructure.Service
     public class CloudResourceUpdateService : CloudResourceServiceBase, ICloudResourceUpdateService
     {       
 
-        public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService)
-         : base(db, config, mapper, logger, userService)
+        public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService, ISandboxModelService sandboxModelService)
+         : base(db, config, mapper, logger, userService, sandboxModelService)
         {           
            
         }     

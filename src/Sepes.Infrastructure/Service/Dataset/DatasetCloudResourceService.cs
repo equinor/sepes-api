@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger<DatasetCloudResourceService> _logger;
 
         readonly IUserService _userService;
-
+        readonly IPublicIpService _publicIpService;
         readonly IStudyModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
@@ -36,6 +36,7 @@ namespace Sepes.Infrastructure.Service
 
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
            IUserService userService,
+           IPublicIpService publicIpService,
            IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
               ICloudResourceOperationReadService cloudResourceOperationReadService,
@@ -46,6 +47,7 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _logger = logger;
             _userService = userService;
+            _publicIpService = publicIpService;
             _studyModelService = studyModelService;
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceOperationReadService = cloudResourceOperationReadService;
@@ -140,7 +142,9 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
-                await DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_config, _logger, currentUser, dataset, clientIp);
+                var serverPublicIp = await _publicIpService.GetIp();
+
+                DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_logger, currentUser, dataset, clientIp, serverPublicIp);
 
                 await _db.SaveChangesAsync();
 
@@ -166,7 +170,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var serverPublicIp = await IpAddressUtil.GetServerPublicIp(_config);
+            var serverPublicIp = await _publicIpService.GetIp();
 
             if (DatasetFirewallUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp, serverPublicIp))
             {

@@ -1,11 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -31,7 +33,7 @@ namespace Sepes.Infrastructure.Service
 
         protected string GetDbConnectionString()
         {
-           return ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.DB_READ_WRITE_CONNECTION_STRING);
+            return _db.Database.GetDbConnection().ConnectionString;        
         }
 
         public async Task<TModel> AddAsync(TModel entity)
@@ -79,11 +81,14 @@ namespace Sepes.Infrastructure.Service
         protected async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
         {
             return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
-        }
+        }    
 
-        protected async Task<Sandbox> GetSandboxByIdNoChecksAsync(int sandboxId)
+        protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
         {
-            return await SandboxSingularQueries.GetSandboxByIdNoChecks(_db, sandboxId);
+            if (!await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation))
+            {
+                throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {study}");
+            }
         }
     }
 }

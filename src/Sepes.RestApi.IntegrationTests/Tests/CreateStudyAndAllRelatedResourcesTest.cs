@@ -8,18 +8,18 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.RestApi.IntegrationTests
+namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
     public class CreateStudyAndAllRelatedResourcesTest : ControllerTestBase
     {
         public CreateStudyAndAllRelatedResourcesTest(TestHostFixture testHostFixture)
-            :base (testHostFixture)
+            : base(testHostFixture)
         {
-         
+
         }
 
-        [Theory]       
+        [Theory]
         [InlineData(true, false)]
         //[InlineData(false, true)]
         //[InlineData(true, true)]
@@ -30,35 +30,35 @@ namespace Sepes.RestApi.IntegrationTests
             SetScenario(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
 
             //CREATE STUDY
-            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);    
-            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);          
+            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
+            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
 
             //CREATE STUDY SPECIFIC DATASET
             var datasetSeedResponse = await DatasetCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
             var datasetCreateRequest = datasetSeedResponse.Request;
-            var datasetResponseWrapper = datasetSeedResponse.Response;        
+            var datasetResponseWrapper = datasetSeedResponse.Response;
             CreateDatasetAsserts.ExpectSuccess(datasetCreateRequest, datasetResponseWrapper);
 
             var createDatasetResponse = datasetResponseWrapper.Content;
 
             //CREATE SANDBOX
-            var sandboxSeedResponse = await SandboxCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
+            var sandboxSeedResponse = await SandboxCreator.CreateAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
             var sandboxCreateRequest = sandboxSeedResponse.Request;
             var sandboxResponseWrapper = sandboxSeedResponse.Response;
 
-            CreateSandboxAsserts.ExpectSuccess(sandboxCreateRequest, sandboxResponseWrapper);
+            SandboxDetailsAsserts.NewlyCreatedExpectSuccess(sandboxCreateRequest, sandboxResponseWrapper);
 
             var sandboxResponse = sandboxResponseWrapper.Content;
 
             //ADD DATASET TO SANDBOX
-            var addDatasetToSandboxResponse = await SandboxOperations.AddDataset(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);       
-            var sandboxDatasetResponseWrapper = addDatasetToSandboxResponse.Response;           
+            var addDatasetToSandboxResponse = await SandboxOperations.AddDataset(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);
+            var sandboxDatasetResponseWrapper = addDatasetToSandboxResponse.Response;
             AddDatasetToSandboxAsserts.ExpectSuccess(createDatasetResponse.Id, createDatasetResponse.Name, createDatasetResponse.Classification, "Open", sandboxDatasetResponseWrapper);
-            
+
             //CREATE VM
             var virtualMachineSeedResponse = await VirtualMachineCreator.Create(_restHelper, sandboxResponse.Id);
             var virtualMachineCreateRequest = virtualMachineSeedResponse.Request;
-            var virtualMachineResponseWrapper = virtualMachineSeedResponse.Response;         
+            var virtualMachineResponseWrapper = virtualMachineSeedResponse.Response;
 
             CreateVirtualMachineAsserts.ExpectSuccess(virtualMachineCreateRequest, sandboxResponse.Region, virtualMachineResponseWrapper);
 
@@ -67,8 +67,8 @@ namespace Sepes.RestApi.IntegrationTests
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
-            var processWorkQueueResponse = await ProcessWorkQueue();            
-            
+            var processWorkQueueResponse = await ProcessWorkQueue();
+
             //GET SANDBOX RESOURCE LIST AND ASSERT RESULT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
             SandboxResourceListAsserts.ExpectSuccess(sandboxResourcesResponseWrapper);
@@ -88,6 +88,6 @@ namespace Sepes.RestApi.IntegrationTests
             //DELETE SANDBOX
 
 
-        } 
+        }
     }
 }

@@ -19,7 +19,7 @@ namespace Sepes.RestApi.IntegrationTests
         {
             _testHostFixture = testHostFixture;
             _restHelper = new RestHelper(testHostFixture.Client);
-        }        
+        }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
@@ -38,14 +38,42 @@ namespace Sepes.RestApi.IntegrationTests
             await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudyCreatedByCurrentUser()
+        protected async Task WithUserSeeds()
         {
-            return await StudySeed.CreatedByCurrentUser();
+            await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudyCreatedByOtherUser(string myRole)
+        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false)
         {
-            return await StudySeed.CreatedByOtherUser(currentUserRole: myRole);
+            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets);
+        }
+
+        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        {
+            var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
+            var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasets);
+            sandbox.Study = study;
+            study.Sandboxes.Add(sandbox);
+            return sandbox;
+        }
+
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        {
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
+            var vm = await VirtualMachineSeed.Create(sandbox, sandbox.Study.Name);
+            sandbox.Resources.Add(vm);
+            vm.Sandbox = sandbox;
+            return vm;
+        }       
+
+        protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
+        {
+            return await WithStudy(true, restricted, studyRole);
+        }
+
+        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string studyRole = null)
+        {
+            return await WithStudy(false, restricted, studyRole);
         }
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()

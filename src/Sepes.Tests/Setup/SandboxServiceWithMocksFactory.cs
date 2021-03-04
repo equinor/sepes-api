@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup
@@ -28,10 +29,12 @@ namespace Sepes.Tests.Setup
 
             var studyServiceMock = StudyServiceMockFactory.ReadService(serviceProvider);
 
+            var sandboxModelServiceMock = new Mock<ISandboxModelService>();
+
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(config, db, mapper, logger, userService.Object, studyServiceMock, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
+            return new SandboxService(config, db, mapper, logger, userService.Object,  studyServiceMock, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

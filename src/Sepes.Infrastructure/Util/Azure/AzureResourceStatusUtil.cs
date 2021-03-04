@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
+using System;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Util
@@ -10,6 +11,11 @@ namespace Sepes.Infrastructure.Util
         public static CloudResourceOperation DecideWhatOperationToBaseStatusOn(CloudResource resource)
         {
             CloudResourceOperation baseStatusOnThisOperation = null;
+
+            if(resource.Operations == null)
+            {
+                throw new ArgumentNullException($"AzureResourceStatusUtil - DecideWhatOperationToBaseStatusOn: Missing include on operations");
+            }
 
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
             {               

@@ -3,7 +3,8 @@
     public static class ApiUrls
     {
         public const string STUDIES = "api/studies";
-        public const string SANDBOXES = "api/studies/{0}/sandboxes";
+        public const string STUDY_SANDBOXES = "api/studies/{0}/sandboxes";
+        public const string SANDBOX = "api/sandboxes/{0}";
         public const string SANDBOX_DATASETS = "api/sandbox/{0}/datasets/{1}";    
         public const string VIRTUAL_MACHINES = "api/virtualmachines/{0}";
 

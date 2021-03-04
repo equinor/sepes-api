@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
 using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -22,8 +23,8 @@ namespace Sepes.Infrastructure.Service
     public class CloudResourceReadService : CloudResourceServiceBase, ICloudResourceReadService
     {
         public readonly IConfiguration _config;
-        public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService)
-         : base(db, config, mapper, logger, userService)
+        public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService, ISandboxModelService sandboxModelService)
+         : base(db, config, mapper, logger, userService, sandboxModelService)
         {
             _config = config;
         } 
@@ -66,7 +67,7 @@ namespace Sepes.Infrastructure.Service
        
        
 
-        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(10) < DateTime.UtcNow)
+        public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.Deleted && sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
 
         public async Task<bool> ResourceIsDeleted(int resourceId)

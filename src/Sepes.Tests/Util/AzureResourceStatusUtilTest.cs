@@ -16,7 +16,6 @@ namespace Sepes.Tests.Util
             var cloudResource = new CloudResource() { };
 
             var ex = Assert.Throws<ArgumentNullException>(() => AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource));
-
         }
 
         [Fact]
