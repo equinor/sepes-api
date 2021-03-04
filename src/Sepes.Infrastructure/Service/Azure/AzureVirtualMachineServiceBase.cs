@@ -15,19 +15,32 @@ namespace Sepes.Infrastructure.Service
                   
         }
 
-        protected async Task<IVirtualMachine> GetInternalAsync(string resourceGroupName, string resourceName)
+        protected async Task<IVirtualMachine> GetInternalAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true)
         {
             var resource = await _azure.VirtualMachines.GetByResourceGroupAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                if (failIfNotFound)
+                {
+                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             return resource;
         }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetInternalAsync(resourceGroupName, resourceName);
+            var resource = await GetInternalAsync(resourceGroupName, resourceName, false);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                return null;
             }
 
             return resource.ProvisioningState;

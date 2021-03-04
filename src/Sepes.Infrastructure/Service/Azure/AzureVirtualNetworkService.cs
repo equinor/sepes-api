@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Service
 
         ResourceProvisioningResult CreateResult(AzureVNetDto networkDto)
         {
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(networkDto.Network);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(networkDto.Network);
             crudResult.CurrentProvisioningState = networkDto.ProvisioningState;
             crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.BASTION_SUBNET_ID, networkDto.BastionSubnetId);
             return crudResult;
@@ -101,7 +101,7 @@ namespace Sepes.Infrastructure.Service
             var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
 
             //Ensure resource is is managed by this instance         
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, network.Tags);
 
             var sandboxSubnet = AzureVNetUtil.GetSandboxSubnetOrThrow(network);
 
@@ -119,8 +119,8 @@ namespace Sepes.Infrastructure.Service
             var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, nsg.Tags);
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, network.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, nsg.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, network.Tags);
 
             await network.Update()
                 .UpdateSubnet(subnetName)
@@ -129,9 +129,22 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }     
 
-        public async Task<INetwork> GetResourceAsync(string resourceGroupName, string resourceName)
+        async Task<INetwork> GetResourceInternalAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true)
         {
             var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                if (failIfNotFound)
+                {
+                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             return resource;
         }
 
@@ -152,11 +165,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName, false);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                return null;
             }
 
             return resource.Inner.ProvisioningState.ToString();
@@ -164,21 +177,21 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var vNet = await GetResourceAsync(resourceGroupName, resourceName);
+            var vNet = await GetResourceInternalAsync(resourceGroupName, resourceName);
             return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(vNet.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
 
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
         }
 
-        public Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
             throw new NotImplementedException();
         }

@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             {
                 logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Deleting {operation.Resource.ResourceType}"));
 
-                var deleteTask = provisioningService.Delete(currentCrudInput);
+                var deleteTask = provisioningService.EnsureDeleted(currentCrudInput);
 
                 while (!deleteTask.IsCompleted)
                 {

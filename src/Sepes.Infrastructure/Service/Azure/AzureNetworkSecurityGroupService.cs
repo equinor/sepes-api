@@ -27,11 +27,11 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Ensuring Network Security Group exists for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
           
-            var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var nsg = await GetResourceInternalAsync(parameters.ResourceGroupName, parameters.Name, false);
 
             if (nsg == null)
             {
-                _logger.LogInformation($"Network Security Group not foundfor sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}. Creating!");
+                _logger.LogInformation($"Network Security Group not found for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}. Creating!");
 
                 nsg = await CreateInternal(parameters.Region, parameters.ResourceGroupName, parameters.Name, parameters.Tags, cancellationToken);
             }
@@ -45,25 +45,24 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
-            var nsg = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var nsg = await GetResourceInternalAsync(parameters.ResourceGroupName, parameters.Name);
 
             var result = CreateResult(nsg);
 
             return result;
         }
 
-        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
-            await DeleteInternal(parameters.ResourceGroupName, parameters.Name);
-
+            await EnsureDeletedInternalAsync(parameters.ResourceGroupName, parameters.Name);
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
             return crudResult;
         }
 
         ResourceProvisioningResult CreateResult(INetworkSecurityGroup nsg)
         {
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(nsg);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(nsg);
             crudResult.CurrentProvisioningState = nsg.Inner.ProvisioningState.ToString();
             crudResult.NewSharedVariables.Add(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, nsg.Name);
             return crudResult;
@@ -99,29 +98,49 @@ namespace Sepes.Infrastructure.Service
             .ApplyAsync();
         }
 
-        async Task DeleteInternal(string resourceGroupName, string securityGroupName)
+        async Task EnsureDeletedInternalAsync(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, securityGroupName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName, false);
+
+            if (resource == null)
+            {
+                //Allready deleted
+                _logger.LogWarning($"Deleting resource {resourceName} failed because it was not found. Assuming allready deleted");
+                return;
+            }         
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
-            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, securityGroupName);
-        }
+            await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, resourceName);
+        }       
 
-        public async Task<INetworkSecurityGroup> GetResourceAsync(string resourceGroupName, string resourceName)
+        public async Task<INetworkSecurityGroup> GetResourceInternalAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true)
         {
             var resource = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, resourceName);
+
+            if (resource == null)
+            {
+                if (failIfNotFound)
+                {
+                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             return resource;
         }
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName, false);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                return null;
             }
 
             return resource.Inner.ProvisioningState.ToString();
@@ -129,16 +148,16 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            var rg = await GetResourceInternalAsync(resourceGroupName, resourceName);
             return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
@@ -146,7 +165,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
         {
-            var nsg = await GetResourceAsync(resourceGroupName, nsgName);
+            var nsg = await GetResourceInternalAsync(resourceGroupName, nsgName);
 
             var result = new Dictionary<string, NsgRuleDto>();
 
