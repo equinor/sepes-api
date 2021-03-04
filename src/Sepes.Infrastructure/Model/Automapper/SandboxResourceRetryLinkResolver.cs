@@ -14,22 +14,35 @@ namespace Sepes.Infrastructure.Model.Automapper
         public SandboxResourceRetryLinkResolver(IConfiguration config)
         {
             this._config = config;
-        }       
+        }
 
         public string Resolve(CloudResource source, SandboxResourceLight destination, string destMember, ResolutionContext context)
-        {            
-            var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
-
-            if(baseStatusOnThisOperation != null)
+        {
+            if(source != null)
             {
-                if (source.ResourceType == AzureResourceType.VirtualMachine && baseStatusOnThisOperation.Status == CloudResourceOperationState.FAILED && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount)
+                if (source.ResourceType == AzureResourceType.VirtualMachine)
                 {
-                    return AzureResourceUtil.CreateResourceRetryLink(source.Id);
-                }
-            }
-            
+                    var shouldHaveRetryLink = false;
 
-            return null;          
+                    var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
+
+                    if (baseStatusOnThisOperation == null)
+                    {
+                        shouldHaveRetryLink = true;
+                    }
+                    else if (baseStatusOnThisOperation.Status == CloudResourceOperationState.FAILED && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount)
+                    {
+                        shouldHaveRetryLink = true;
+                    }
+
+                    if (shouldHaveRetryLink)
+                    {
+                        return AzureResourceUtil.CreateResourceRetryLink(source.Id);
+                    }
+                }
+            }        
+
+            return null;
         }
-    }   
+    }
 }
