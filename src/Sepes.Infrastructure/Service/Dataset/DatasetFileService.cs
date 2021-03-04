@@ -63,36 +63,7 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Unable to delete file from Storage Account - {ex.Message}", ex);
             }
-        }
-
-        public async Task DeleteFileAsync(int datasetId, string fileName, string clientIp, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read, false);
-
-                if (IsStudySpecific(dataset))
-                {
-                    //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
-                    await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
-                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
-                    _storageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
-                }
-                else
-                {
-                    throw new NotImplementedException("Only Study specific datasets is supported");
-                    //ThrowIfOperationNotAllowed(Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);              
-                }
-
-                await _storageService.DeleteFileFromBlobContainer(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, fileName);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Unable to delete file from Storage Account", ex);
-            }
-
-        }
+        }     
 
         public async Task<List<BlobStorageItemDto>> GetFileListAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default)
         {
@@ -127,7 +98,8 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
             }
-        }
+        }    
+
 
         public async Task<string> GetFileUploadUriBuilderWithSasTokenAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default)
         {
@@ -139,8 +111,13 @@ namespace Sepes.Infrastructure.Service
                 {
                     //Verify access to study
                     var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
-                    await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
+
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
+
+                    await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
+                    _storageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                    await _storageService.EnsureContainerExist(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
+                  
                     _azureStorageAccountTokenService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
 
@@ -179,6 +156,6 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
             }
-        }
+        }     
     }
 }
