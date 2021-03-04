@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
            IPublicIpService publicIpService,
            IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
-              ICloudResourceOperationReadService cloudResourceOperationReadService,
+            ICloudResourceOperationReadService cloudResourceOperationReadService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
         {

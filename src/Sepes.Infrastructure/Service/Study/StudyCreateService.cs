@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
@@ -30,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             _datasetCloudResourceService = datasetCloudResourceService;
         }      
 
-        public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, CancellationToken cancellation = default)
+        public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, [FromForm(Name = "image")] IFormFile logo = null, CancellationToken cancellation = default)
         {           
             StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
             GenericNameValidation.ValidateName(newStudyDto.Name);
@@ -43,6 +45,12 @@ namespace Sepes.Infrastructure.Service
             studyDb = await _studyModelService.AddAsync(studyDb);
                      
             await _datasetCloudResourceService.CreateResourceGroupForStudySpecificDatasetsAsync(studyDb, cancellation);
+
+            if (logo != null)
+            {
+                studyDb.LogoUrl = await _studyLogoService.AddLogoAsync(studyDb.Id, logo);               
+                await _db.SaveChangesAsync();
+            }
 
             return await GetStudyDetailsDtoByIdAsync(studyDb.Id, UserOperation.Study_Create);
         }        

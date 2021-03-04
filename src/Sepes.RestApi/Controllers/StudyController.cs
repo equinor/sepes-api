@@ -47,9 +47,12 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
+        public async Task<IActionResult> CreateStudyAsync([FromForm(Name = "study")] StudyCreateDto newStudy, [FromForm(Name = "image")] IFormFile logo = null)
         {
-            var study = await _studyCreateService.CreateAsync(newStudy);
+            var study = await _studyCreateService.CreateAsync(newStudy, logo);
+
+           
+
             return new JsonResult(study);
         }
 
@@ -98,8 +101,8 @@ namespace Sepes.RestApi.Controller
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
-            var updatedStudy = await _studyLogoService.AddLogoAsync(studyId, studyLogo);
-            return new JsonResult(updatedStudy);
+            var logoUrl = await _studyLogoService.AddLogoAsync(studyId, studyLogo);
+            return new JsonResult(logoUrl);
         }
     }
 }
