@@ -9,30 +9,20 @@ namespace Sepes.Infrastructure.Service
 {
     public class AzureStorageAccountBaseService : AzureServiceBase
     {
-       
-
         public AzureStorageAccountBaseService(IConfiguration config, ILogger logger)
             : base(config, logger)
         {
          
         }
-
          
 
         public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true, CancellationToken cancellationToken = default)
         {
             var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName, cancellationToken);
 
-            if (resource == null)
+            if (resource == null && failIfNotFound)
             {
-                if (failIfNotFound)
-                {
-                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
-                }
-                else
-                {
-                    return null;
-                }
+                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
             }
 
             return resource;
