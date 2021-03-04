@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.13](https://github.com/equinor/sepes-api/compare/0.4.12...0.4.13) (2021-03-04)
+
+
+### Bug Fixes
+
+* **dataset:** ensuring container exist when getting file list ([#597](https://github.com/equinor/sepes-api/issues/597)) ([e202ea3](https://github.com/equinor/sepes-api/commit/e202ea33c588d801ae8d05e20352fe309df0ba71))
+* **dataset:** getting server ip retries 3 times and caching result ([#586](https://github.com/equinor/sepes-api/issues/586)) ([ce8fd96](https://github.com/equinor/sepes-api/commit/ce8fd961be0fc7dec5333a0ded9780821f92dd4a))
+* **dataset:** new sas token endpoing for deleting files ([#592](https://github.com/equinor/sepes-api/issues/592)) ([b818d10](https://github.com/equinor/sepes-api/commit/b818d1082b1ac00015e9a2c24edb4e0f9e7ec646)), closes [#590](https://github.com/equinor/sepes-api/issues/590)
+* **monitoring:** improved log messages, added standardized eventids ([#580](https://github.com/equinor/sepes-api/issues/580)) ([37cf7f4](https://github.com/equinor/sepes-api/commit/37cf7f4515e6656ea871c68fba464f03a293750a))
+* **sandbox:** added null checks to resource endpoint ([607d8db](https://github.com/equinor/sepes-api/commit/607d8dba15105ae5d7125df00f69e025f6321d03))
+* **sandbox:** fixed mapping error occuring in sandbox response. ([#582](https://github.com/equinor/sepes-api/issues/582)) ([e01224f](https://github.com/equinor/sepes-api/commit/e01224f23004596deef11978ab9bec36277dc224))
+* **study:** remove logo if logoUrl is empty ([#589](https://github.com/equinor/sepes-api/issues/589)) ([60aa506](https://github.com/equinor/sepes-api/commit/60aa506d0c306a54b4ae14a144197644ee2d2e4c)), closes [#588](https://github.com/equinor/sepes-api/issues/588)
+
 ### [0.4.12](https://github.com/equinor/sepes-api/compare/0.4.11...0.4.12) (2021-02-24)
 
 
