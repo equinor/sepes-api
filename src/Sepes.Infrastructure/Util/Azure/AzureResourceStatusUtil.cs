@@ -11,6 +11,11 @@ namespace Sepes.Infrastructure.Util
         {
             CloudResourceOperation baseStatusOnThisOperation = null;
 
+            if(resource.Operations == null)
+            {
+                throw new System.Exception($"AzureResourceStatusUtil - DecideWhatOperationToBaseStatusOn: Missing include on operations");
+            }
+
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
             {               
                 if (curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)

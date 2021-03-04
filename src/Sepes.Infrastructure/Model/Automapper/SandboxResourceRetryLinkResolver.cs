@@ -20,10 +20,14 @@ namespace Sepes.Infrastructure.Model.Automapper
         {            
             var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 
-            if (source.ResourceType == AzureResourceType.VirtualMachine && baseStatusOnThisOperation.Status == CloudResourceOperationState.FAILED && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount)
+            if(baseStatusOnThisOperation != null)
             {
-                return AzureResourceUtil.CreateResourceRetryLink(source.Id);
+                if (source.ResourceType == AzureResourceType.VirtualMachine && baseStatusOnThisOperation.Status == CloudResourceOperationState.FAILED && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount)
+                {
+                    return AzureResourceUtil.CreateResourceRetryLink(source.Id);
+                }
             }
+            
 
             return null;          
         }
