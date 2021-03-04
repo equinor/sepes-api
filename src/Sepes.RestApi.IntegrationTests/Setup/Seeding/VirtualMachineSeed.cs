@@ -28,9 +28,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             string os = VirtualMachineConstants.OS_WINDOWS)
         {
 
-            var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);         
-            //Todo: create the vm state object
-            var vmResource = CreateVmResource(sandbox, sandboxResourceGroup, studyName, vmNameSuffix);           
+            var sandboxResourceGroup = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);                   
 
            var vmSettings = CreateVmSettingsString(size, osCategory, os);       
 

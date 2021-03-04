@@ -60,7 +60,7 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
             var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
-            var vm = await VirtualMachineSeed.Create(sandbox);
+            var vm = await VirtualMachineSeed.Create(sandbox, sandbox.Study.Name);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
