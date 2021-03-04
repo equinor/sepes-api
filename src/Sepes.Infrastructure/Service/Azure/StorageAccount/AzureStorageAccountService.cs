@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Ensuring Storage Account {parameters.Name} exists in Resource Group: {parameters.ResourceGroupName}");
 
-            var storageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var storageAccount = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name, false);
 
             if (storageAccount == null)
             {
@@ -79,31 +79,32 @@ namespace Sepes.Infrastructure.Service
             return result;
         }       
 
-        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
+        async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true, CancellationToken cancellationToken = default)
         {
             var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName, cancellationToken);
-            return resource;
-        }
-
-        public async Task<IStorageAccount> GetResourceOrThrowAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                if (failIfNotFound)
+                {
+                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return resource;
-        }
+        }    
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceAsync(resourceGroupName, resourceName, false);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                return null;
             }
 
             return resource.ProvisioningState.ToString();
@@ -131,7 +132,8 @@ namespace Sepes.Infrastructure.Service
             try
             {
                 await Delete(parameters.ResourceGroupName, parameters.Name);
-                return ResourceProvisioningResultUtil.CreateFromProvisioningState();
+                var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
+                return ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
             }
             catch (Exception)
             {
@@ -141,7 +143,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default)
         {
-            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, cancellationToken);
+            var resource = await GetResourceAsync(resourceGroupName, storageAccountName, false, cancellationToken);
 
             if (resource != null)
             {

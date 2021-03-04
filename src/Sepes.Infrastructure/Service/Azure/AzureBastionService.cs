@@ -68,7 +68,6 @@ namespace Sepes.Infrastructure.Service
         {
             await DeleteInternal(parameters.ResourceGroupName, parameters.Name);
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-
             var crudResult = ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
             return crudResult;
         }

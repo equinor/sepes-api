@@ -37,7 +37,7 @@ namespace Sepes.Infrastructure.Service
 
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
                        
-            var virtualMachine = await GetInternalAsync(parameters.ResourceGroupName, parameters.Name);
+            var virtualMachine = await GetInternalAsync(parameters.ResourceGroupName, parameters.Name, false);
                        
             if (virtualMachine == null)
             {
@@ -436,18 +436,11 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
-        {        
+        {
+            await DeleteInternalAsync(parameters.ResourceGroupName, parameters.Name, parameters.NetworkSecurityGroupName, parameters.ConfigurationString);
+            var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
 
-            try
-            {
-                await DeleteInternalAsync(parameters.ResourceGroupName, parameters.Name, parameters.NetworkSecurityGroupName, parameters.ConfigurationString);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");            
-            }
-
-            return ResourceProvisioningResultUtil.CreateFromProvisioningState();
+            return ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
         }
 
         async Task DeleteInternalAsync(string resourceGroupName, string virtualMachineName, string networkSecurityGroupName, string configString)
@@ -456,7 +449,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vm == null)
             {
-                _logger.LogWarning($"Virtual Machine {virtualMachineName} not found in RG {resourceGroupName}");
+                _logger.LogWarning($"Virtual Machine {virtualMachineName} appears to be deleted allready");
                 return;
             }
 

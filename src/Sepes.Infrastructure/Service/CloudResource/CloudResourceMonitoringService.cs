@@ -32,8 +32,10 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceUpdateService = sandboxResourceUpdateService;
         }
 
+       
         public async Task StartMonitoringSession()
         {
+           
             _logger.LogInformation($"Monitoring provisioning state and tags");
 
             var monitoringDisabled = _config[ConfigConstants.DISABLE_MONITORING];
@@ -116,8 +118,11 @@ namespace Sepes.Infrastructure.Service
                     _logger.LogInformation($"Initial checks passed. Performing monitoring for resource {curRes.Id}.");
 
                     await GetAndLogProvisioningState(curRes);
-                    await CheckAndUpdateTags(curRes);
 
+                    if(curRes.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
+                    {
+                        await CheckAndUpdateTags(curRes);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -172,12 +177,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var provisioningState = await GetProvisioningState(resource);
-
-                if (String.IsNullOrWhiteSpace(provisioningState))
-                {
-                    provisioningState = "Provisioning state was empty";
-                }
+                var provisioningState = await GetProvisioningState(resource);              
 
                 await _sandboxResourceUpdateService.UpdateProvisioningState(resource.Id, provisioningState);
             }
