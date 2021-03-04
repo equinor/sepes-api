@@ -103,5 +103,12 @@ namespace Sepes.Infrastructure.Service.Azure
             }
 
         }
+
+        public async Task EnsureContainerExist(string containerName, CancellationToken cancellationToken = default)
+        {
+            var blobServiceClient = await GetBlobServiceClient();
+            var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            await blobContainerClient.CreateIfNotExistsAsync();
+        }
     }   
 }

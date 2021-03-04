@@ -16,5 +16,7 @@ namespace Sepes.Infrastructure.Service.Azure.Interface
         Task<int> DeleteFileFromBlobContainer(string containerName, string blobName, CancellationToken cancellationToken = default);
 
         Task<List<BlobStorageItemDto>> GetFileList(string containerName, CancellationToken cancellationToken = default);
+
+        Task EnsureContainerExist(string containerName, CancellationToken cancellationToken = default);
     }
 }
