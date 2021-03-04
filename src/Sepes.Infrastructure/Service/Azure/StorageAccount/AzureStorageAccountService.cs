@@ -74,16 +74,9 @@ namespace Sepes.Infrastructure.Service
 
         ResourceProvisioningResult CreateResult(IStorageAccount storageAccount = null)
         {
-            if(storageAccount != null)
-            {
-                var result = ResourceProvisioningResultUtil.CreateResultFromIResource(storageAccount);
-                result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
-                return result;
-            }
-            else
-            {
-                return ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
-            }
+            var result = ResourceProvisioningResultUtil.CreateFromIResource(storageAccount);
+            result.CurrentProvisioningState = storageAccount.ProvisioningState.ToString();
+            return result;
         }       
 
         public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
@@ -127,18 +120,18 @@ namespace Sepes.Infrastructure.Service
             var resource = await GetResourceAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
         }
 
-        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
             try
             {
                 await Delete(parameters.ResourceGroupName, parameters.Name);
-                return CreateResult();
+                return ResourceProvisioningResultUtil.CreateFromProvisioningState();
             }
             catch (Exception)
             {
@@ -153,7 +146,7 @@ namespace Sepes.Infrastructure.Service
             if (resource != null)
             {
                 //Ensure resource is is managed by this instance
-                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+                EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
                 await _azure.StorageAccounts.DeleteByResourceGroupAsync(resourceGroupName, storageAccountName, cancellationToken);
             }

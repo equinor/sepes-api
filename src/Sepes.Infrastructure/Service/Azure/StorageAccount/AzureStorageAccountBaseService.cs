@@ -19,22 +19,23 @@ namespace Sepes.Infrastructure.Service
 
          
 
-        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
+        public async Task<IStorageAccount> GetResourceAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true, CancellationToken cancellationToken = default)
         {
             var resource = await _azure.StorageAccounts.GetByResourceGroupAsync(resourceGroupName, resourceName, cancellationToken);
-            return resource;
-        }
-
-        public async Task<IStorageAccount> GetResourceOrThrowAsync(string resourceGroupName, string resourceName, CancellationToken cancellationToken = default)
-        {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
 
             if (resource == null)
             {
-                throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                if (failIfNotFound)
+                {
+                    throw NotFoundException.CreateForAzureResource(resourceName, resourceGroupName);
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             return resource;
-        }
+        }      
     }
 }

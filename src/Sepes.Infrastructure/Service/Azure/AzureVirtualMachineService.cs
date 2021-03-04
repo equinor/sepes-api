@@ -2,16 +2,13 @@
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Azure;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -422,7 +419,7 @@ namespace Sepes.Infrastructure.Service
             var vm = await GetInternalAsync(resourceGroupName, virtualMachineName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, vm.Tags);
 
             var newDataDisk = await _azure.Disks
                 .Define($"hdd-{virtualMachineName}-data-{Guid.NewGuid().ToString().Substring(0, 5)}")
@@ -438,29 +435,24 @@ namespace Sepes.Infrastructure.Service
                   .WithExistingDataDisk(newDataDisk).ApplyAsync();
         }
 
-        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
-        {
-            string provisioningState;
+        public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
+        {        
 
             try
             {
                 await DeleteInternalAsync(parameters.ResourceGroupName, parameters.Name, parameters.NetworkSecurityGroupName, parameters.ConfigurationString);
-
-                provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");
-                provisioningState = CloudResourceProvisioningStates.NOTFOUND;
+                _logger.LogWarning(ex, $"Virtual Machine {parameters.Name} appears to be deleted allready");            
             }
 
-            return ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
+            return ResourceProvisioningResultUtil.CreateFromProvisioningState();
         }
 
         async Task DeleteInternalAsync(string resourceGroupName, string virtualMachineName, string networkSecurityGroupName, string configString)
         {
-            var vm = await GetInternalAsync(resourceGroupName, virtualMachineName);
+            var vm = await GetInternalAsync(resourceGroupName, virtualMachineName, false);
 
             if (vm == null)
             {
@@ -469,7 +461,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, vm.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, vm.Tags);
 
             await _azure.VirtualMachines.DeleteByResourceGroupAsync(resourceGroupName, virtualMachineName);
 
@@ -523,7 +515,7 @@ namespace Sepes.Infrastructure.Service
             var resource = await GetInternalAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
@@ -531,7 +523,7 @@ namespace Sepes.Infrastructure.Service
 
         ResourceProvisioningResult CreateCRUDResult(IVirtualMachine vm)
         {
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(vm);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(vm);
             crudResult.CurrentProvisioningState = vm.Inner.ProvisioningState.ToString();
             return crudResult;
         }
