@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             _datasetCloudResourceService = datasetCloudResourceService;
         }      
 
-        public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, [FromForm(Name = "image")] IFormFile logo = null, CancellationToken cancellation = default)
+        public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
         {           
             StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
             GenericNameValidation.ValidateName(newStudyDto.Name);
