@@ -15,7 +15,6 @@ jobs:
       with:
         dotnet-version: 3.1.101   
       
-
     - name: Unit Tests - Restore
       working-directory: src/Sepes.Tests
       run: dotnet restore      
@@ -63,11 +62,14 @@ jobs:
       with:
         name: 'Test Run'
         path: ${{github.workspace}}/${{env.file_name}}
+ 
+      - name: Integration Tests - Restore
+      working-directory: src/Sepes.RestApi.IntegrationTests
+      run: dotnet restore   
 
     - name: Integration Tests - Build
       working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet build --configuration $config --no-restore
-
 
     - name: Integration Tests - Run and collect coverage
       working-directory: src/Sepes.RestApi.IntegrationTests   
