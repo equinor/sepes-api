@@ -62,7 +62,7 @@ jobs:
         name: 'Test Run'
         path: ${{github.workspace}}/${{env.file_name}}
 
-      - name: Integration Tests - Restore project
+    - name: Integration Tests - Restore project
       working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet restore   
 
