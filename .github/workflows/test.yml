@@ -72,7 +72,7 @@ jobs:
 
     - name: Integration Tests - Run and collect coverage
       working-directory: src/Sepes.RestApi.IntegrationTests   
-      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings" 
+      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings
 
     # generate coverage report
     - name: Build coverage report
