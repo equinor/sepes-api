@@ -62,7 +62,7 @@ namespace Sepes.RestApi
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
+            //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
             Log("Startup - Cors domains: *");     
 
