@@ -26,6 +26,7 @@ spec:
         - environment: prod
           variables: 
             SEPES_HttpOnly: "true"
+            DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
             AllowCorsDomains: "https://frontend-sepes-web-prod.radix.equinor.com,https://sepes.equinor.com"
@@ -41,6 +42,7 @@ spec:
         - environment: dev
           variables:
             SEPES_HttpOnly: "true"
+            DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
             AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com"
