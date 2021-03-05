@@ -47,14 +47,12 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateStudyAsync([FromForm(Name = "study")] StudyCreateDto newStudy, [FromForm(Name = "image")] IFormFile logo = null)
+        public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy, IFormFile image = null)
         {
-            var study = await _studyCreateService.CreateAsync(newStudy, logo);
-
-           
+            var study = await _studyCreateService.CreateAsync(newStudy, image);          
 
             return new JsonResult(study);
-        }
+        }     
 
         [HttpDelete("{studyId}")]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
