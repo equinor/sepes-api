@@ -276,7 +276,7 @@ namespace Sepes.RestApi
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "true")
             {
                 Log("Migrations are disabled and will be skipped!");
-
+                return;
             }
             else
             {
