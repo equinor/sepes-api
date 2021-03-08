@@ -94,8 +94,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<SandboxCreateDto, Sandbox>();
 
             CreateMap<CloudResource, SandboxResourceLight>()
-            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
-             .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
+            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))           
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
                 .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())

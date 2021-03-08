@@ -40,23 +40,7 @@ namespace Sepes.Infrastructure.Service
             return await GetOrThrowInternalAsync(id);
         }
 
-        public async Task<List<SandboxResourceLight>> GetSandboxResourcesLight(int sandboxId)
-        {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
-
-            //Filter out deleted resources
-            var resourcesFiltered = sandboxFromDb.Resources
-                .Where(r => !SoftDeleteUtil.IsMarkedAsDeleted(r)
-                    || (
-                    SoftDeleteUtil.IsMarkedAsDeleted(r)
-                    && !r.Operations.Where(o => o.OperationType == CloudResourceOperationType.DELETE && o.Status == CloudResourceOperationState.DONE_SUCCESSFUL).Any())
-
-                ).ToList();
-
-            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);
-
-            return resourcesMapped;
-        }      
+            
 
         public async Task<List<CloudResource>> GetAllActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
@@ -82,19 +66,6 @@ namespace Sepes.Infrastructure.Service
             return SoftDeleteUtil.IsMarkedAsDeleted(resource);
         }
 
-        public async Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
-        {
-            var queryable = CloudResourceQueries.GetSandboxResourcesQueryable(_db, sandboxId);
-
-            var resources = await queryable.ToListAsync(cancellation);
-
-            return _mapper.Map<List<CloudResourceDto>>(resources);
-        }
-
-        public async Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default)
-        {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
-            return AzureResourceUtil.CreateResourceCostLink(_config, sandboxFromDb);
-        }
+      
     }
 }

@@ -73,18 +73,22 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
         async Task<ApiResponseWrapper<T>> CreateResponseWrapper<T>(HttpResponseMessage message)
         {
-            var responseWrapper = new ApiResponseWrapper<T>();
-            responseWrapper.StatusCode = message.StatusCode;
-            responseWrapper.ReasonPhrase = message.ReasonPhrase;
-            responseWrapper.Content = await GetResponseObject<T>(message);
-           
+            var responseWrapper = new ApiResponseWrapper<T>
+            {
+                StatusCode = message.StatusCode,
+                ReasonPhrase = message.ReasonPhrase,
+                Content = await GetResponseObject<T>(message)
+            };
+
             return responseWrapper;
         }
 
         ApiResponseWrapper CreateResponseWrapper(HttpResponseMessage message)
         {
-            var responseWrapper = new ApiResponseWrapper();
-            responseWrapper.StatusCode = message.StatusCode;       
+            var responseWrapper = new ApiResponseWrapper
+            {
+                StatusCode = message.StatusCode
+            };
             return responseWrapper;
         }
     }

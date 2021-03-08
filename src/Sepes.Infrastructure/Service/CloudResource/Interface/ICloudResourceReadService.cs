@@ -17,10 +17,10 @@ namespace Sepes.Infrastructure.Service.Interface
         Task<List<CloudResource>> GetAllActiveResources();
 
         Task<bool> ResourceIsDeleted(int resourceId);
-        Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default);
-        Task<List<SandboxResourceLight>> GetSandboxResourcesLight(int sandboxId);
+        //Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default);
+        //Task<List<SandboxResourceLight>> GetSandboxResourcesLight(int sandboxId);
 
-        Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default);
+        //Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default);
 
     }
 }

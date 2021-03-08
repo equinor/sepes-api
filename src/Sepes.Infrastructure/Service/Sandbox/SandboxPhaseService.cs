@@ -20,28 +20,29 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
-    {
-        readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ICloudResourceOperationReadService _sandboxResourceOperationService;
+    {      
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
-        readonly IAzureVirtualNetworkService _azureVNetService;
+        readonly ISandboxResourceReadService _sandboxResourceReadService;
+
+        readonly IAzureVirtualNetworkService _azureVirtualNetworkService;
         readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
-        readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
+        readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ISandboxModelService sandboxModelService, ICloudResourceReadService sandboxResourceService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
+            IUserService userService, ISandboxModelService sandboxModelService, ISandboxResourceReadService sandboxResourceReadService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService, sandboxModelService)
         {
 
-            _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceOperationService = sandboxResourceOperationService;
+            _sandboxResourceReadService = sandboxResourceReadService;
+            _cloudResourceOperationReadService = sandboxResourceOperationService;
             _virtualMachineRuleService = virtualMachineRuleService;
 
-            _azureVNetService = azureVNetService;
+            _azureVirtualNetworkService = azureVNetService;
             _azureStorageAccountNetworkRuleService = azureStorageAccountNetworkRuleService;
-            _nsgRuleService = nsgRuleService;
+            _azureNetworkSecurityGroupRuleService = nsgRuleService;
         }
 
         public async Task<SandboxDetails> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
@@ -68,7 +69,7 @@ namespace Sepes.Infrastructure.Service
 
                 var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
 
-                var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
+                var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId, cancellation);
 
                 await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
 
@@ -174,12 +175,12 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
-                else if (await _nsgRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
+                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
                 {
                     validationErrors.Add($"Internet is actually open on VM in Azure {curVm.ResourceName}");
                 }
 
-                if (await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(curVm.Id)) //Other unfinished VM update
+                if (await _cloudResourceOperationReadService.HasUnstartedCreateOrUpdateOperation(curVm.Id)) //Other unfinished VM update
                 {
                     validationErrors.Add($"Unfinished operation exists for VM {curVm.ResourceName}");
                 }
@@ -208,7 +209,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Could not locate VNet entry for Sandbox {sandbox.Id}");
             }
 
-            await _azureVNetService.EnsureSandboxSubnetHasServiceEndpointForStorage(resourceGroupResource.ResourceName, vNetResource.ResourceName);
+            await _azureVirtualNetworkService.EnsureSandboxSubnetHasServiceEndpointForStorage(resourceGroupResource.ResourceName, vNetResource.ResourceName);
 
             foreach (var curDatasetRelation in sandbox.SandboxDatasets)
             {
@@ -271,7 +272,7 @@ namespace Sepes.Infrastructure.Service
         async Task MakeDatasetsUnAvailable(int sandboxId)
         {
             var sandbox = await GetWithoutChecks(sandboxId);
-            var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId);
+            var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId);
             await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
         }
 
