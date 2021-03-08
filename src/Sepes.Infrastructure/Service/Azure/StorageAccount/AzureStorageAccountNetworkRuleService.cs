@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<FirewallRule>> SetFirewallRules(string resourceGroupName, string resourceName, List<FirewallRule> rules, CancellationToken cancellationToken = default)
         {
-            var account = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken);
+            var account = await GetResourceAsync(resourceGroupName, resourceName, cancellationToken: cancellationToken);
 
             var ruleSet = GetNetworkRuleSetForUpdate(account, false);
             ruleSet.IpRules = rules?.Select(alw => new IPRule(alw.Address, (Action)alw.Action)).ToList();
@@ -41,7 +41,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var storageAccount = await GetResourceOrThrowAsync(resourceGroupForStorageAccount, storageAccountName, cancellation);
+                var storageAccount = await GetResourceAsync(resourceGroupForStorageAccount, storageAccountName, cancellationToken: cancellation);
                 var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupForVnet, vNetName, cancellation);
 
                 if (network == null)
@@ -76,7 +76,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var storageAccount = await GetResourceOrThrowAsync(resourceGroupForStorageAccount, storageAccountName, cancellation);
+                var storageAccount = await GetResourceAsync(resourceGroupForStorageAccount, storageAccountName, cancellationToken: cancellation);
                 var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupForVnet, vNetName, cancellation);
 
                 if (network == null)

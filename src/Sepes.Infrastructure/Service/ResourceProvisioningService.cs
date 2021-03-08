@@ -140,7 +140,7 @@ namespace Sepes.Infrastructure.Service
                             var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
                             currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
-                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: currentProvisioningResult.CurrentProvisioningState);
+                            await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: null);
                         }
                         else if (EnsureRolesUtil.WillBeHandledAsEnsureRoles(currentOperation))
                         {

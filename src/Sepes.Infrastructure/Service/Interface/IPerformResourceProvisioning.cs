@@ -12,6 +12,6 @@ namespace Sepes.Infrastructure.Service
 
         Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default);
 
-        Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters);
+        Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters);
     }
 }
