@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using System;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Service.Queries

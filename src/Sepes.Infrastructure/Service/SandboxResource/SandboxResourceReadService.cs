@@ -44,8 +44,10 @@ namespace Sepes.Infrastructure.Service
 
             var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);
 
+            
+
             return resourcesMapped;
-        }
+        }      
 
         public async Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
         {

@@ -98,7 +98,9 @@ namespace Sepes.Infrastructure.Model.Automapper
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
                 .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
-                .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>());
+                .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>())
+                  .ForMember(dest => dest.AdditionalProperties, source => source.MapFrom<SandboxResourceAdditionalPropertiesResolver>())
+                ;
 
 
             //CLOUD RESOURCE

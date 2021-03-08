@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
         {
-            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId);
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId).AsNoTracking();
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Read);
 
             if(sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<string> GetRegionByIdAsync(int sandboxId, UserOperation userOperation)
         {
-            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesBaseQueryable(_db), sandboxId, userOperation);
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db).AsNoTracking(), sandboxId, userOperation);
             return sandbox.Region;
         }
 
