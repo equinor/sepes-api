@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
@@ -14,21 +15,24 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyUpdateService : StudyServiceBase, IStudyUpdateService
-    {  
+    {
         public StudyUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
             : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
-      
-         
-        } 
 
-        public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyDto updatedStudy)
+
+        }
+
+        public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
         {
+            if (studyId <= 0)
+            {
+                throw new ArgumentException("Study Id was zero or negative:" + studyId);
+            }
+
             GenericNameValidation.ValidateName(updatedStudy.Name);
 
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);
-
-            PerformUsualTestsForPostedStudy(studyId, updatedStudy);
+            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);         
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -55,10 +59,17 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
             }
 
-            if(String.IsNullOrWhiteSpace(updatedStudy.LogoUrl))
+            if (updatedStudy.DeleteLogo)
             {
-                studyFromDb.LogoUrl = "";
-                await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
+                if (!String.IsNullOrWhiteSpace(studyFromDb.LogoUrl))
+                {
+                    studyFromDb.LogoUrl = "";
+                    await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
+                }                
+            }
+            else if (logo != null)
+            {
+                studyFromDb.LogoUrl = await _studyLogoService.AddLogoAsync(studyFromDb.Id, logo);          
             }
 
             studyFromDb.Updated = DateTime.UtcNow;
@@ -69,8 +80,6 @@ namespace Sepes.Infrastructure.Service
 
             return await GetStudyDetailsDtoByIdAsync(studyFromDb.Id, UserOperation.Study_Update_Metadata);
         }
-
-      
 
         public async Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
         {
@@ -88,20 +97,6 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return new StudyResultsAndLearningsDto() { ResultsAndLearnings = studyFromDb.ResultsAndLearnings };
-        }   
-     
-
-        void PerformUsualTestsForPostedStudy(int studyId, StudyDto updatedStudy)
-        {
-            if (studyId <= 0)
-            {
-                throw new ArgumentException("Id was zero or negative:" + studyId);
-            }
-
-            if (studyId != updatedStudy.Id)
-            {
-                throw new ArgumentException($"Id in url ({studyId}) is different from Id in data ({updatedStudy.Id})");
-            }
-        }      
+        }       
     }
 }

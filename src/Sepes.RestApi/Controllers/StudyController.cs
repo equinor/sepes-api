@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BrunoZell.ModelBinding;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,10 +48,22 @@ namespace Sepes.RestApi.Controller
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateStudyAsync(StudyCreateDto newStudy)
+        public async Task<IActionResult> CreateStudyAsync(
+            [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyCreateDto study,
+            IFormFile image = null)
         {
-            var study = await _studyCreateService.CreateAsync(newStudy);
-            return new JsonResult(study);
+            var createdStudy = await _studyCreateService.CreateAsync(study, image);          
+
+            return new JsonResult(createdStudy);
+        }
+
+        [HttpPut("{studyId}/details")]       
+        public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId,
+               [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyUpdateDto study,
+               IFormFile image = null)
+        {
+            var updatedStudy = await _studyUpdateService.UpdateMetadataAsync(studyId, study, image);
+            return new JsonResult(updatedStudy);
         }
 
         [HttpDelete("{studyId}")]
@@ -69,13 +82,7 @@ namespace Sepes.RestApi.Controller
         //}
 
 
-        [HttpPut("{studyId}/details")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId, StudyDto study)
-        {
-            var updatedStudy = await _studyUpdateService.UpdateMetadataAsync(studyId, study);
-            return new JsonResult(updatedStudy);
-        }
+       
 
         [HttpGet("{studyId}/resultsandlearnings")]
         [Consumes(MediaTypeNames.Application.Json)]
@@ -98,8 +105,8 @@ namespace Sepes.RestApi.Controller
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> AddLogo(int studyId, [FromForm(Name = "image")] IFormFile studyLogo)
         {
-            var updatedStudy = await _studyLogoService.AddLogoAsync(studyId, studyLogo);
-            return new JsonResult(updatedStudy);
+            var logoUrl = await _studyLogoService.AddLogoAsync(studyId, studyLogo);
+            return new JsonResult(logoUrl);
         }
     }
 }

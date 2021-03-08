@@ -5,7 +5,6 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -102,7 +101,34 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
+        //public async Task<StudyDetailsDto> AddLogoAsync(int studyId, IFormFile studyLogo)
+        //{
+        //    var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, true);
+
+        //    if (!FileIsCorrectImageFormat(studyLogo))
+        //    {
+        //        throw new ArgumentException("Blob has invalid filename or is not of type png, jpg or bmp.");
+        //    }
+
+        //    string uniqueFileName = Guid.NewGuid().ToString("N") + studyLogo.FileName;
+
+        //    await _azureBlobStorageService.UploadFileToBlobContainer(_containerName, uniqueFileName, studyLogo);
+
+        //    string oldFileName = studyFromDb.LogoUrl;
+
+        //    studyFromDb.LogoUrl = uniqueFileName;
+
+        //    await _db.SaveChangesAsync();
+
+        //    if (!String.IsNullOrWhiteSpace(oldFileName))
+        //    {
+        //        _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, oldFileName);
+        //    }
+
+        //    return _mapper.Map<StudyDetailsDto>(studyFromDb);
+        //}       
+
+        public async Task<string> AddLogoAsync(int studyId, IFormFile studyLogo)
         {
             var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, true);
 
@@ -126,8 +152,8 @@ namespace Sepes.Infrastructure.Service
                 _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, oldFileName);
             }
 
-            return _mapper.Map<StudyDetailsDto>(studyFromDb);
-        }       
+            return studyFromDb.LogoUrl;
+        }
 
         public async Task DeleteAsync(Study study)
         {
