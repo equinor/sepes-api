@@ -88,6 +88,11 @@ namespace Sepes.Infrastructure.Service
             
             var vmList = await queryable.ToListAsync();
 
+            if (!vmList.Any())
+            {
+                return new List<CloudResource>();
+            }
+
             var sandbox = vmList.FirstOrDefault().Sandbox;
 
             await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, sandbox.Study, UserOperation.Study_Read);
