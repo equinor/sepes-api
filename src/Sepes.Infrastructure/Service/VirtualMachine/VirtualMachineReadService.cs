@@ -1,0 +1,98 @@
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Query;
+using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
+using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Sepes.Infrastructure.Service
+{
+    public class VirtualMachineReadService : VirtualMachineServiceBase, IVirtualMachineReadService
+    {  
+        readonly IVirtualMachineSizeService _virtualMachineSizeService;
+        readonly IAzureVirtualMachineExtenedInfoService _azureVirtualMachineExtenedInfoService;
+
+        public VirtualMachineReadService(
+            IConfiguration config,
+            SepesDbContext db,
+            ILogger<VirtualMachineReadService> logger,
+            IMapper mapper,
+            IUserService userService,               
+            ICloudResourceReadService cloudResourceReadService,
+            IVirtualMachineSizeService virtualMachineSizeService,
+            IAzureVirtualMachineExtenedInfoService azureVirtualMachineExtenedInfoService
+
+          )
+           : base(config, db, logger, mapper, userService, cloudResourceReadService)
+        {
+            _virtualMachineSizeService = virtualMachineSizeService;             
+            _azureVirtualMachineExtenedInfoService = azureVirtualMachineExtenedInfoService;
+        }
+
+        public async Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default)
+        {
+            var virtualMachines = await GetSandboxVirtualMachinesList(_db, sandboxId);
+
+            var virtualMachinesMapped = _mapper.Map<List<VmDto>>(virtualMachines);
+
+            return virtualMachinesMapped;
+        }
+
+        public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
+        {
+            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);           
+
+            var dto = await _azureVirtualMachineExtenedInfoService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
+
+            var availableSizes = await _virtualMachineSizeService.AvailableSizes(vmResource.Region, cancellationToken);
+
+            var availableSizesDict = availableSizes.ToDictionary(s => s.Key, s => s);
+
+            if (!String.IsNullOrWhiteSpace(dto.SizeName) && availableSizesDict.TryGetValue(dto.SizeName, out VmSize curSize))
+            {
+                dto.Size = _mapper.Map<VmSizeDto>(curSize);
+            }
+
+            return dto;
+        }
+
+        public async Task<VmExternalLink> GetExternalLink(int vmId)
+        {
+            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
+
+            var vmExternalLink = new VmExternalLink
+            {
+                Id = vmId,
+                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)
+            };
+
+            return vmExternalLink;
+        }
+
+        async Task<List<CloudResource>> GetSandboxVirtualMachinesList(SepesDbContext db, int sandboxId)
+        {
+            var queryable = CloudResourceQueries.SandboxVirtualMachinesQueryable(db, sandboxId);    
+            
+            var vmList = await queryable.ToListAsync();
+
+            var sandbox = vmList.FirstOrDefault().Sandbox;
+
+            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, sandbox.Study, UserOperation.Study_Read);
+            
+            return vmList;
+        }
+    }
+}

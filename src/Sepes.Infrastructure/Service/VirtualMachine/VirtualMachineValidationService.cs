@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -14,26 +13,17 @@ using System.Text;
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineValidationService : VirtualMachineServiceBase, IVirtualMachineValidationService
-    {           
-        readonly ISandboxModelService _sandboxModelService;
-        readonly IVirtualMachineSizeService _vmSizeService;
-        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
-        readonly ICloudResourceReadService _sandboxResourceService;   
-        readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVirtualMachineExtenedInfoService _azureVirtualMachineExtenedInfoService;
+    {         
 
         public VirtualMachineValidationService(ILogger<VirtualMachineValidationService> logger,
             IConfiguration config,
             SepesDbContext db,
             IMapper mapper,
-            IUserService userService,         
-            ISandboxModelService sandboxModelService,
-            IVirtualMachineSizeService vmSizeService,
-            IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService,
-      
-            IProvisioningQueueService workQueue,
+            IUserService userService, 
+            ICloudResourceReadService cloudResourceReadService     
+        
           )
-             : base(config, db, logger, mapper, userService)
+             : base(config, db, logger, mapper, userService, cloudResourceReadService)
         {
                 
           

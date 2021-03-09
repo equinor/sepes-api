@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
 
 
         public VirtualMachineDiskSizeImportService(
-            ILogger<VirtualMachineService> logger,
+            ILogger<VirtualMachineDiskSizeImportService> logger,
             SepesDbContext db,
             IUserService userService,
             IAzureDiskPriceService azureDiskPriceService)

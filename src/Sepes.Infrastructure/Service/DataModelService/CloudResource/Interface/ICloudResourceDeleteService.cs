@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService.Interface
@@ -9,6 +10,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task HardDeletedAsync(int resourceId);
 
-        Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId);
+        Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId, UserOperation operation);
     }
 }

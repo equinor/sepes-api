@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;

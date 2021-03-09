@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
@@ -18,8 +19,8 @@ namespace Sepes.Infrastructure.Service
         readonly IConfiguration _config;
         readonly ILogger _logger;
 
-        readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
+        readonly ICloudResourceReadService _cloudResourceReadService;
+        readonly ICloudResourceUpdateService _cloudResourceUpdateService;
 
         public CloudResourceMonitoringService(IServiceProvider serviceProvider, IConfiguration config, ILogger<CloudResourceMonitoringService> logger, ICloudResourceReadService sandboxResourceService, ICloudResourceUpdateService sandboxResourceUpdateService)
         {
@@ -28,8 +29,8 @@ namespace Sepes.Infrastructure.Service
             _config = config;
             _logger = logger;
 
-            _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceUpdateService = sandboxResourceUpdateService;
+            _cloudResourceReadService = sandboxResourceService;
+            _cloudResourceUpdateService = sandboxResourceUpdateService;
         }
 
        
@@ -46,7 +47,7 @@ namespace Sepes.Infrastructure.Service
                 return;
             }
 
-            var activeResources = await _sandboxResourceService.GetAllActiveResources();
+            var activeResources = await _cloudResourceReadService.GetAllActiveResources();
 
             foreach (var curRes in activeResources)
             { 
@@ -179,7 +180,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var provisioningState = await GetProvisioningState(resource);              
 
-                await _sandboxResourceUpdateService.UpdateProvisioningState(resource.Id, provisioningState);
+                await _cloudResourceUpdateService.UpdateProvisioningState(resource.Id, provisioningState);
             }
             catch (Exception ex)
             {
@@ -255,7 +256,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Looking for orphan resources");
 
             // Check that resources marked as deleted in db does not exist in Azure.
-            var deletedResources = await _sandboxResourceService.GetDeletedResourcesAsync();
+            var deletedResources = await _cloudResourceReadService.GetDeletedResourcesAsync();
            
             foreach (var currentDeletedResource in deletedResources)
             {

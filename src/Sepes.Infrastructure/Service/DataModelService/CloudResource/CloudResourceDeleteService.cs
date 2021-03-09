@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
@@ -38,9 +39,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
         }
 
-        public async Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId)
+        public async Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId, UserOperation operation)
         {
-            var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId, throwIfNotFound: true);
+            var resourceFromDb = await GetInternalAsync(resourceId, operation, throwIfNotFound: true);
 
             var deletePrefixForLogMessages = $"Marking resource {resourceId} ({resourceFromDb.ResourceType}) for deletion";
 

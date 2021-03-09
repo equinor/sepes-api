@@ -85,10 +85,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
         {
-            if (!await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation))
-            {
-                throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {study}");
-            }
+            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);           
         }
     }
 }

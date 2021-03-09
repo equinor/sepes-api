@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
@@ -21,38 +22,32 @@ namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineRuleService : VirtualMachineServiceBase, IVirtualMachineRuleService
     {       
-        readonly ICloudResourceReadService _sandboxResourceService;
+      
         readonly ICloudResourceOperationReadService _sandboxResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _sandboxResourceOperationCreateService;
-        readonly IProvisioningQueueService _workQueue;
+        readonly IProvisioningQueueService _provisioningQueueService;
 
-        public VirtualMachineRuleService(ILogger<VirtualMachineRuleService> logger,
+        public VirtualMachineRuleService(
+            IConfiguration configuration,
             SepesDbContext db,
+            ILogger<VirtualMachineRuleService> logger,
+            IMapper mapper,
             IUserService userService,
-            ICloudResourceReadService sandboxResourceService,
+            ICloudResourceReadService cloudResourceReadService,
+            IProvisioningQueueService  provisioningQueueService,
             ICloudResourceOperationReadService sandboxResourceOperationReadService,
-            ICloudResourceOperationCreateService sandboxResourceOperationCreateService,
-            IProvisioningQueueService workQueue)
-             : base(config, db, logger, mapper, userService)
+            ICloudResourceOperationCreateService sandboxResourceOperationCreateService)
+             : base(configuration, db, logger, mapper, userService, cloudResourceReadService)
         {
-           
-            _sandboxResourceService = sandboxResourceService;
+            _provisioningQueueService = provisioningQueueService;
             _sandboxResourceOperationReadService = sandboxResourceOperationReadService;
             _sandboxResourceOperationCreateService = sandboxResourceOperationCreateService;
-            _workQueue = workQueue;
-        }
-
-        async Task<CloudResource> GetVmResourceEntry(int vmId, UserOperation operation)
-        {
-            _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
-            var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
-
-            return vmResource;
-        }
+           
+        }       
 
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -73,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
 
             //Get config string
@@ -235,7 +230,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmRuleDto> GetInternetRule(int vmId)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -259,7 +254,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -292,7 +287,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(_workQueue, vmUpdateOperation);
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, vmUpdateOperation);
             }
         }
     }

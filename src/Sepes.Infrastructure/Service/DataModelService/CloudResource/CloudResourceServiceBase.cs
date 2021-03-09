@@ -88,13 +88,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
         }
 
 
-            public async Task<CloudResourceDto> GetDtoByIdAsync(int id)
-        {
-            var entityFromDb = await GetOrThrowInternalAsync(id);
-            var dto = MapEntityToDto(entityFromDb);
+        //    public async Task<CloudResourceDto> GetDtoByIdAsync(int id)
+        //{
+        //    var entityFromDb = await GetOrThrowInternalAsync(id);
+        //    var dto = MapEntityToDto(entityFromDb);
 
-            return dto;
-        }
+        //    return dto;
+        //}
 
         protected CloudResourceDto MapEntityToDto(CloudResource entity) => _mapper.Map<CloudResourceDto>(entity);
 

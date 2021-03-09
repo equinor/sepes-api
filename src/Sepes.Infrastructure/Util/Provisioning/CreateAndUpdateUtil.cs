@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading;

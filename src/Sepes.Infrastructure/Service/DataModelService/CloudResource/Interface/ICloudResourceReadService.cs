@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
         Task<CloudResource> GetByIdNoAccessCheckAsync(int id);
 
 
-        Task<CloudResourceDto> GetDtoByIdAsync(int id);
+        //Task<CloudResourceDto> GetDtoByIdAsync(int id);
 
         Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync();
 

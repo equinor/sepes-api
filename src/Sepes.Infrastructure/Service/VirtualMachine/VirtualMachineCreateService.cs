@@ -5,69 +5,55 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineCreateService : VirtualMachineServiceBase, IVirtualMachineCreateService
     {
-         
+
         readonly ISandboxModelService _sandboxModelService;
-        readonly IVirtualMachineSizeService _vmSizeService;
-        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
-        readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ICloudResourceCreateService _sandboxResourceCreateService;
-        readonly ICloudResourceUpdateService _sandboxResourceUpdateService;
-        readonly ICloudResourceDeleteService _sandboxResourceDeleteService;
+        readonly ICloudResourceCreateService _cloudResourceCreateService;
+        readonly ICloudResourceUpdateService _cloudResourceUpdateService;
+        readonly ICloudResourceDeleteService _cloudResourceDeleteService;
+
         readonly IProvisioningQueueService _workQueue;
-        readonly IAzureVirtualMachineExtenedInfoService _azureVirtualMachineExtenedInfoService;
+        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
+
 
         public VirtualMachineCreateService(
-              IConfiguration config,
+            IConfiguration config,
             SepesDbContext db,
-            ILogger<VirtualMachineCreateService> logger,          
+            ILogger<VirtualMachineCreateService> logger,
             IMapper mapper,
-            IUserService userService,   
-            
+            IUserService userService,
 
             ISandboxModelService sandboxModelService,
-            IVirtualMachineSizeService vmSizeService,
-            IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService,
-            ICloudResourceCreateService sandboxResourceCreateService,
-            ICloudResourceUpdateService sandboxResourceUpdateService,
-            ICloudResourceDeleteService sandboxResourceDeleteService,
-            ICloudResourceReadService sandboxResourceService,
+            ICloudResourceCreateService cloudResourceCreateService,
+            ICloudResourceReadService cloudResourceReadService,
+            ICloudResourceUpdateService cloudResourceUpdateService,
+            ICloudResourceDeleteService cloudResourceDeleteService,
             IProvisioningQueueService workQueue,
-            IAzureVirtualMachineExtenedInfoService azureVirtualMachineExtenedInfoService)
-           :base (config, db, logger, mapper, userService)
+            IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService
+
+          )
+           : base(config, db, logger, mapper, userService, cloudResourceReadService)
         {
-           
-                 
             _sandboxModelService = sandboxModelService;
-            _vmSizeService = vmSizeService;
-            _sandboxResourceService = sandboxResourceService;
-            _virtualMachineOperatingSystemService = virtualMachineOperatingSystemService;
-            _sandboxResourceCreateService = sandboxResourceCreateService;
-            _sandboxResourceUpdateService = sandboxResourceUpdateService;
-            _sandboxResourceDeleteService = sandboxResourceDeleteService;
+            _cloudResourceCreateService = cloudResourceCreateService;
+            _cloudResourceUpdateService = cloudResourceUpdateService;
+            _cloudResourceDeleteService = cloudResourceDeleteService;
             _workQueue = workQueue;
-            _azureVirtualMachineExtenedInfoService = azureVirtualMachineExtenedInfoService;
+            _virtualMachineOperatingSystemService = virtualMachineOperatingSystemService;
         }
 
         public async Task<VmDto> CreateAsync(int sandboxId, VirtualMachineCreateDto userInput)
@@ -86,7 +72,7 @@ namespace Sepes.Infrastructure.Service
 
                 var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 
-                await _sandboxResourceCreateService.ValidateThatNameDoesNotExistThrowIfInvalid(virtualMachineName);
+                await _cloudResourceCreateService.ValidateThatNameDoesNotExistThrowIfInvalid(virtualMachineName);
 
                 var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
@@ -99,15 +85,15 @@ namespace Sepes.Infrastructure.Service
                 //Make this dependent on bastion create operation to be completed, since bastion finishes last
                 var dependsOn = await CloudResourceQueries.GetCreateOperationIdForBastion(_db, sandboxId);
 
-                vmResourceEntry = await _sandboxResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
+                vmResourceEntry = await _cloudResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
 
                 //Create vm settings and immeately attach to resource entry
                 var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
                 vmResourceEntry.ConfigString = vmSettingsString;
-                await _sandboxResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
+                await _cloudResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
                 var queueParentItem = new ProvisioningQueueParentDto
-                {                    
+                {
                     Description = $"Create VM for Sandbox: {sandboxId}"
                 };
 
@@ -126,7 +112,7 @@ namespace Sepes.Infrastructure.Service
                     //Delete resource if created
                     if (vmResourceEntry != null)
                     {
-                        await _sandboxResourceDeleteService.HardDeletedAsync(vmResourceEntry.Id);
+                        await _cloudResourceDeleteService.HardDeletedAsync(vmResourceEntry.Id);
                     }
                 }
                 catch (Exception rollbackEx)
@@ -135,6 +121,44 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 throw new Exception($"Failed to create VM: {ex.Message}", ex);
+            }
+        }
+
+        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, VirtualMachineCreateDto userInput)
+        {
+            var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
+
+            var availableOs = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(region);
+            vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
+
+            vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
+
+            var diagStorageResource = await CloudResourceQueries.GetDiagStorageAccountEntry(_db, sandboxId);
+            vmSettings.DiagnosticStorageAccountName = diagStorageResource.ResourceName;
+
+            var networkResource = await CloudResourceQueries.GetNetworkEntry(_db, sandboxId);
+            vmSettings.NetworkName = networkResource.ResourceName;
+
+            var networkSetting = CloudResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
+            vmSettings.SubnetName = networkSetting.SandboxSubnetName;
+
+            vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(vmId);
+            return CloudResourceConfigStringSerializer.Serialize(vmSettings);
+        }
+
+        async Task<string> StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(int studyId, int sandboxId, string password)
+        {
+            try
+            {
+                var keyVaultSecretName = $"newvmpassword-{studyId}-{sandboxId}-{Guid.NewGuid().ToString().Replace("-", "")}";
+
+                await KeyVaultSecretUtil.AddKeyVaultSecret(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, keyVaultSecretName, password);
+
+                return keyVaultSecretName;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Unable to store VM password in Key Vault. See inner exception for details.", ex);
             }
         }
 
@@ -163,6 +187,6 @@ namespace Sepes.Infrastructure.Service
             }
 
             return result;
-        }          
+        }
     }
 }

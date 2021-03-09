@@ -39,7 +39,8 @@ namespace Sepes.Infrastructure.Service.Queries
                     .ThenInclude(sd => sd.Dataset)
                     .ThenInclude(ds => ds.Resources)
                 .Include(sb => sb.Resources)
-                    .ThenInclude(r => r.Operations);
+                    .ThenInclude(r => r.Operations)
+                .Include(sb => sb.PhaseHistory);
         }
 
         public static IQueryable<Sandbox> SandboxWithResources(SepesDbContext db, int sandboxId)
