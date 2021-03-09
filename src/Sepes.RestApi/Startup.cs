@@ -150,7 +150,8 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
-            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
+            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
+            services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
@@ -179,7 +180,10 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineService, VirtualMachineService>();
             services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-            services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
+            services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
+            services.AddTransient<IVirtualMachineDiskSizeService, VirtualMachineDiskSizeService>();
+            services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
+            services.AddTransient<IVirtualMachineOperatingSystemService, VirtualMachineOperatingSystemService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
 

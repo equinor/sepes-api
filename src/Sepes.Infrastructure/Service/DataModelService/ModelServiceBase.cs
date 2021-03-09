@@ -14,7 +14,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class ModelServiceBase<TModel> where TModel : BaseModel
     {

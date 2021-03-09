@@ -56,5 +56,19 @@ namespace Sepes.RestApi.Controllers
             var virtualMachinesForSandbox = await _vmService.GetExternalLink(vmId);
             return new JsonResult(virtualMachinesForSandbox);
         }
+
+        [HttpPost("validateUsername")]
+        public IActionResult ValidateUsername(VmUsernameDto input)
+        {
+            var usernameValidationResult = _vmService.CheckIfUsernameIsValidOrThrow(input);
+            return new JsonResult(usernameValidationResult);
+
+        }
+
+        [HttpPost("calculateName")]
+        public string CalculateName(VmCalculateNameDto input)
+        {
+            return _vmService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
+        }
     }
 }

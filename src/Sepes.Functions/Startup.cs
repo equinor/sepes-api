@@ -109,8 +109,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
-            builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-            builder.Services.AddTransient<IVirtualMachineDiskService, VirtualMachineDiskService>();
+            builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
+            builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
 
             //Azure Services

@@ -13,7 +13,7 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceDeleteService : CloudResourceServiceBase, ICloudResourceDeleteService
     {
@@ -40,7 +40,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId)
         {
-            var resourceFromDb = await GetOrThrowInternalAsync(resourceId);
+            var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId, throwIfNotFound: true);
 
             var deletePrefixForLogMessages = $"Marking resource {resourceId} ({resourceFromDb.ResourceType}) for deletion";
 
@@ -65,7 +65,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<CloudResourceDto> MarkAsDeletedAsync(int resourceId)
         {
-            var resourceFromDb = await GetOrThrowInternalAsync(resourceId);
+            var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId, throwIfNotFound: true);
 
             var user = await _userService.GetCurrentUserAsync();
 
@@ -136,7 +136,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task HardDeletedAsync(int resourceId)
         {
-            var resourceFromDb = await GetInternalAsync(resourceId);
+            var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId, throwIfNotFound: true);
 
             if (resourceFromDb != null)
             {

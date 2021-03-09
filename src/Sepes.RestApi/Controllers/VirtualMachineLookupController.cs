@@ -15,61 +15,55 @@ namespace Sepes.RestApi.Controllers
     [Authorize]
     public class VirtualMachineLookupController : ControllerBase
     {       
-        readonly IVirtualMachineSizeService _vmSizeService;
-        readonly IVirtualMachineLookupService _vmLookupService;
+        readonly IVirtualMachineSizeService _virtualMachineSizeService;
+        readonly IVirtualMachineSizeImportService _virtualMachineSizeImportService;
+        readonly IVirtualMachineDiskSizeService _virtualMachineDiskSizeService;
+        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;     
 
-        public VirtualMachineLookupController(IVirtualMachineSizeService vmSizeService, IVirtualMachineLookupService vmLookupService)
+        public VirtualMachineLookupController(
+            IVirtualMachineSizeService virtualMachineSizeService,
+            IVirtualMachineSizeImportService virtualMachineSizeImportService,
+            IVirtualMachineDiskSizeService virtualMachineDiskSizeService,
+            IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService)
         {          
-            _vmSizeService = vmSizeService;
-            _vmLookupService = vmLookupService;
+            _virtualMachineSizeService = virtualMachineSizeService;
+            _virtualMachineSizeImportService = virtualMachineSizeImportService;
+            _virtualMachineDiskSizeService = virtualMachineDiskSizeService;
+            _virtualMachineOperatingSystemService = virtualMachineOperatingSystemService; 
         }       
 
         [HttpPost("{sandboxId}/calculatedVmprice")]
         public async Task<IActionResult> GetCalculatedVmPrice(int sandboxId, CalculateVmPriceUserInputDto input)
         {
-            var createdVm = await _vmSizeService.CalculateVmPrice(sandboxId, input);
+            var createdVm = await _virtualMachineSizeService.CalculateVmPrice(sandboxId, input);
             return new JsonResult(createdVm);
-        }
-
-        [HttpPost("validateUsername")]
-        public IActionResult ValidateUsername(VmUsernameDto input)
-        {
-            var usernameValidationResult = _vmLookupService.CheckIfUsernameIsValidOrThrow(input);
-            return new JsonResult(usernameValidationResult);
-
-        }
-
-        [HttpPost("calculateName")]
-        public string CalculateName(VmCalculateNameDto input)
-        {
-            return _vmLookupService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
-        }
+        }    
 
         [HttpGet("{sandboxId}/sizes")]
         public async Task<IActionResult> GetAvailableVmSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmSizeService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
+            var availableSizes = await _virtualMachineSizeService.AvailableSizes(sandboxId, cancellationToken: cancellationToken);
             return new JsonResult(availableSizes);
         }
 
         [HttpGet("updateVmSizeCache")]
         public async Task<IActionResult> UpdateVmSizeCache(CancellationToken cancellationToken = default)
         {
-            await _vmSizeService.UpdateVmSizeCache(cancellationToken);
+            await _virtualMachineSizeImportService.UpdateVmSizeCache(cancellationToken);
             return new NoContentResult();
         }
 
         [HttpGet("disks/")]
         public async Task<IActionResult> GetAvailableDisks()
         {
-            var availableSizes = await _vmLookupService.AvailableDisks();
+            var availableSizes = await _virtualMachineDiskSizeService.AvailableDisks();
             return new JsonResult(availableSizes);
         }
 
         [HttpGet("{sandboxId}/operatingsystems")]
         public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _vmLookupService.AvailableOperatingSystems(sandboxId, cancellationToken);
+            var availableSizes = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }    
     }

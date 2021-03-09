@@ -3,7 +3,7 @@ using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Interface
+namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
     public interface ICloudResourceCreateService
     {       

@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Dto;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Interface
+namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
     public interface ICloudResourceDeleteService
     {         

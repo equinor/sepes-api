@@ -9,7 +9,7 @@ using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceUpdateService : CloudResourceServiceBase, ICloudResourceUpdateService
     {       
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var resource = await GetOrThrowInternalAsync(resourceId);           
+            var resource = await GetInternalWithoutAccessCheckAsync(resourceId);           
             resource.ResourceGroupName = updated.ResourceName;
             resource.ResourceId = updated.ResourceId;
             resource.ResourceKey = updated.ResourceKey;
@@ -34,16 +34,15 @@ namespace Sepes.Infrastructure.Service
             resource.Updated = DateTime.UtcNow;
             resource.UpdatedBy = currentUser.UserName;
             await _db.SaveChangesAsync();
-
-            var retVal = await GetDtoByIdAsync(resourceId);
-            return retVal;
+            
+            return MapEntityToDto(resource);
         }
 
         public async Task<CloudResource> Update(int resourceId, CloudResource updated)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            var resource = await GetOrThrowInternalAsync(resourceId);
+            var resource = await GetInternalWithoutAccessCheckAsync(resourceId);
             resource.ResourceId = updated.ResourceId;
             resource.ResourceKey = updated.ResourceKey;
             resource.ResourceName = updated.ResourceName;
@@ -60,7 +59,7 @@ namespace Sepes.Infrastructure.Service
         
         public async Task UpdateProvisioningState(int resourceId, string newProvisioningState)
         {
-            var resource = await GetOrThrowInternalAsync(resourceId);
+            var resource = await GetInternalWithoutAccessCheckAsync(resourceId);
 
             if (resource.LastKnownProvisioningState != newProvisioningState)
             {
@@ -85,7 +84,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentNullException("resourceNameInForeignSystem", $"Provided empty foreign system resource name for resource {resourceId} ");
             }
 
-            var resourceFromDb = await GetOrThrowInternalAsync(resourceId);          
+            var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId);          
 
             resourceFromDb.ResourceId = resourceIdInForeignSystem;
 

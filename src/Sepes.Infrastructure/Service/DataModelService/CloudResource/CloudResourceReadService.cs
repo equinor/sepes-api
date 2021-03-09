@@ -3,44 +3,37 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Query;
-using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceReadService : CloudResourceServiceBase, ICloudResourceReadService
     {
         public readonly IConfiguration _config;
+
         public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService, ISandboxModelService sandboxModelService)
          : base(db, config, mapper, logger, userService, sandboxModelService)
         {
             _config = config;
-        } 
-        
-        public async Task<CloudResource> GetByIdAsync(int id)
-        {
-            var entityFromDb = await GetOrThrowAsync(id);
-            return entityFromDb;
-        }  
-
-        public async Task<CloudResource> GetOrThrowAsync(int id)
-        {
-            return await GetOrThrowInternalAsync(id);
         }
 
-            
+        public async Task<CloudResource> GetByIdNoAccessCheckAsync(int id)
+        {
+            return await GetInternalWithoutAccessCheckAsync(id);
+        }
+
+        public async Task<CloudResource> GetByIdAsync(int id, UserOperation operation)
+        {
+            return await GetInternalAsync(id, operation, throwIfNotFound: true);
+        }            
 
         public async Task<List<CloudResource>> GetAllActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)

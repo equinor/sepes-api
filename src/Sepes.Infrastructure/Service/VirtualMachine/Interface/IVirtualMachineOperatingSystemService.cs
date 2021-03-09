@@ -5,14 +5,8 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IVirtualMachineLookupService
-    {       
-        string CalculateName(string studyName, string sandboxName, string userPrefix);
-
-        VmUsernameValidateDto CheckIfUsernameIsValidOrThrow(VmUsernameDto input);
-
-        Task<List<VmDiskLookupDto>> AvailableDisks(CancellationToken cancellationToken = default);
-
+    public interface IVirtualMachineOperatingSystemService
+    {  
         Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default);
         Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default);
     }
