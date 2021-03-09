@@ -40,34 +40,46 @@ namespace Sepes.Infrastructure.Service
             _provisioningQueueService = provisioningQueueService;
         }
 
-        public async Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto)
+        public async Task CreateBasicSandboxResourcesAsync(Sandbox sandbox)
         {
-            _logger.LogInformation($"Creating basic sandbox resources for sandbox: {dto.SandboxName}. First creating Resource Group, other resources are created by worker");
+            _logger.LogInformation($"Creating basic sandbox resources for sandbox: {sandbox.Name}. First creating Resource Group, other resources are created by worker");
 
             try
             {
+                var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, sandbox.Study, sandbox);
+
+                var creationAndSchedulingDto =
+                    new SandboxResourceCreationAndSchedulingDto()
+                    {
+                        StudyId = sandbox.Study.Id,
+                        SandboxId = sandbox.Id,
+                        StudyName = sandbox.Study.Name,
+                        SandboxName = sandbox.Name,
+                        Region = sandbox.Region,
+                        Tags = tags,
+                        BatchId = Guid.NewGuid().ToString()
+                    };
+
                 var queueParentItem = new ProvisioningQueueParentDto
                 {                  
-                    Description = $"Create basic resources for Sandbox: {dto.SandboxId}"
+                    Description = $"Create basic resources for Sandbox: {creationAndSchedulingDto.SandboxId}"
                 };
 
-                await ScheduleCreationOfSandboxResourceGroup(dto, queueParentItem);
-                await ScheduleCreationOfSandboxResourceGroupRoleAssignments(dto, queueParentItem);
-                await ScheduleCreationOfDiagStorageAccount(dto, queueParentItem);
-                await ScheduleCreationOfNetworkSecurityGroup(dto, queueParentItem);
-                await ScheduleCreationOfVirtualNetwork(dto, queueParentItem);
-                await ScheduleCreationOfBastion(dto, queueParentItem);
+                await ScheduleCreationOfSandboxResourceGroup(creationAndSchedulingDto, queueParentItem);
+                await ScheduleCreationOfSandboxResourceGroupRoleAssignments(creationAndSchedulingDto, queueParentItem);
+                await ScheduleCreationOfDiagStorageAccount(creationAndSchedulingDto, queueParentItem);
+                await ScheduleCreationOfNetworkSecurityGroup(creationAndSchedulingDto, queueParentItem);
+                await ScheduleCreationOfVirtualNetwork(creationAndSchedulingDto, queueParentItem);
+                await ScheduleCreationOfBastion(creationAndSchedulingDto, queueParentItem);
 
                 await _provisioningQueueService.SendMessageAsync(queueParentItem);
 
-                _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {dto.SandboxName}");
+                _logger.LogInformation($"Done ordering creation of basic resources for sandbox: {creationAndSchedulingDto.SandboxName}");
             }
             catch (Exception ex)
             {
                 throw new Exception($"Unable to create basic sandbox resources.", ex);
-            }
-
-            return dto;
+            }        
         }
 
         async Task ScheduleCreationOfSandboxResourceGroup(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
@@ -122,8 +134,8 @@ namespace Sepes.Infrastructure.Service
 
             var bastionName = AzureResourceNameUtil.Bastion(dto.StudyName, dto.SandboxName);
 
-            var resourceEntry = await CreateResourceEntryAndAddToQueue(dto, queueParentItem, AzureResourceType.Bastion, resourceName: bastionName, configString: configString, dependsOn: vNetCreateOperation);
-            dto.Bastion = resourceEntry;
+            _ = await CreateResourceEntryAndAddToQueue(dto, queueParentItem, AzureResourceType.Bastion, resourceName: bastionName, configString: configString, dependsOn: vNetCreateOperation);
+          
         }
 
         async Task<CloudResource> CreateResourceGroupEntryAndAddToQueue(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem, string resourceGroupName)

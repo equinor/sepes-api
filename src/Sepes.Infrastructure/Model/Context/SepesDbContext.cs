@@ -59,6 +59,24 @@ namespace Sepes.Infrastructure.Model.Context
                     s.Vendor,
                     s.LogoUrl
                 });
+
+         //   modelBuilder.Entity<Sandbox>()
+         //     .HasIndex(s => new { s.Deleted, s.StudyId })
+         //     .IncludeProperties(s => new
+         //     {
+         //         s.Id,
+         //         s.Name,
+         //         s.Region               
+         //     });
+
+         //   modelBuilder.Entity<CloudResource>()
+         //     .HasIndex(s => new { s.Deleted, s.ResourceName s.SandboxId })
+         //.IncludeProperties(s => new
+         //{
+         //    s.Id,
+           
+         //    s.Region
+         //});
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)

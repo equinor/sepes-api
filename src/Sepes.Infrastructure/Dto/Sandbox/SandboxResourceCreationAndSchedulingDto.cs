@@ -11,9 +11,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
       
         public string StudyName { get; set; }
 
-        public string SandboxName { get; set; }
-
-        public string ResourceGroupId { get { return ResourceGroup.ResourceId; } }
+        public string SandboxName { get; set; }        
 
         public string ResourceGroupName { get; set; }
 
@@ -30,8 +28,7 @@ namespace Sepes.Infrastructure.Dto.Sandbox
         public CloudResource NetworkSecurityGroup { get; set; }
 
         public CloudResource Network { get; set; }
-
-        public CloudResource Bastion { get; set; }
+     
         public SandboxResourceCreationAndSchedulingDto()
         {
 

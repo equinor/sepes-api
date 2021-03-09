@@ -98,28 +98,8 @@ namespace Sepes.Infrastructure.Service
                 await _db.SaveChangesAsync();
 
                 try
-                {
-                    // Get Dtos for arguments to sandboxWorkerService
-                    //TODO: Can get on or the other via the other, don't need two?
-                    var studyDto = await _studyService.GetStudyDtoByIdAsync(studyId, UserOperation.Study_Crud_Sandbox);
-                    var sandboxDto = await GetAsync(createdSandbox.Id, UserOperation.Study_Crud_Sandbox);
-
-                    var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, study, createdSandbox);
-
-                    //This object gets passed around
-                    var creationAndSchedulingDto =
-                        new SandboxResourceCreationAndSchedulingDto()
-                        {
-                            StudyId = studyDto.Id,
-                            SandboxId = createdSandbox.Id,
-                            StudyName = studyDto.Name,
-                            SandboxName = sandboxDto.Name,
-                            Region = sandboxCreateDto.Region,
-                            Tags = tags,
-                            BatchId = Guid.NewGuid().ToString()
-                        };
-
-                    await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(creationAndSchedulingDto);
+                { 
+                    await _sandboxResourceCreateService.CreateBasicSandboxResourcesAsync(createdSandbox);
                 }
                 catch (Exception)
                 {

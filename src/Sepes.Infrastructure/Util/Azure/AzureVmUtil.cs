@@ -110,26 +110,35 @@ namespace Sepes.Infrastructure.Util
         public static bool InternetIsOpen(CloudResource vmResource)
         {
             var relevantRule = GetInternetRule(vmResource);
+
+            if(relevantRule == null)
+            {
+                return false;
+            }
+
             return relevantRule.Action == RuleAction.Allow;
         }
 
         public static VmRuleDto GetInternetRule(CloudResource vmResource)
         {
-            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vmResource.ConfigString);
-
-            if (vmSettings.Rules != null)
+            if (!String.IsNullOrWhiteSpace(vmResource.ConfigString))
             {
-                foreach (var curRule in vmSettings.Rules)
+                var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vmResource.ConfigString);
+
+                if (vmSettings != null && vmSettings.Rules != null)
                 {
-                    if (curRule.Direction == RuleDirection.Outbound)
+                    foreach (var curRule in vmSettings.Rules)
                     {
-                        if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+                        if (curRule.Direction == RuleDirection.Outbound)
                         {
-                            return curRule;
+                            if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+                            {
+                                return curRule;
+                            }
                         }
                     }
                 }
-            }
+            }          
 
             return null;
         }
