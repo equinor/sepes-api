@@ -14,19 +14,19 @@ using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineCreateService : VirtualMachineServiceBase, IVirtualMachineCreateService
     {
-
         readonly ISandboxModelService _sandboxModelService;
         readonly ICloudResourceCreateService _cloudResourceCreateService;
         readonly ICloudResourceUpdateService _cloudResourceUpdateService;
         readonly ICloudResourceDeleteService _cloudResourceDeleteService;
 
-        readonly IProvisioningQueueService _workQueue;
+        readonly IProvisioningQueueService _provisioningQueueService;
         readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
 
 
@@ -42,7 +42,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceUpdateService cloudResourceUpdateService,
             ICloudResourceDeleteService cloudResourceDeleteService,
-            IProvisioningQueueService workQueue,
+            IProvisioningQueueService provisioningQueueService,
             IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService
 
           )
@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Service
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceUpdateService = cloudResourceUpdateService;
             _cloudResourceDeleteService = cloudResourceDeleteService;
-            _workQueue = workQueue;
+            _provisioningQueueService = provisioningQueueService;
             _virtualMachineOperatingSystemService = virtualMachineOperatingSystemService;
         }
 
@@ -99,7 +99,7 @@ namespace Sepes.Infrastructure.Service
 
                 queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = vmResourceEntry.Operations.FirstOrDefault().Id });
 
-                await _workQueue.SendMessageAsync(queueParentItem);
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
 
                 var dtoMappedFromResource = _mapper.Map<VmDto>(vmResourceEntry);
 
@@ -121,6 +121,41 @@ namespace Sepes.Infrastructure.Service
                 }
 
                 throw new Exception($"Failed to create VM: {ex.Message}", ex);
+            }
+        }
+
+        public void ValidateVmPasswordOrThrow(string password)
+        {
+            var errorString = "";
+            //Atleast one upper case
+            var upper = new Regex(@"(?=.*[A-Z])");
+            //Atleast one number
+            var number = new Regex(@".*[0-9].*");
+            //Atleast one special character
+            var special = new Regex(@"(?=.*[!@#$%^&*])");
+            //Between 12-123 long
+            var limit = new Regex(@"(?=.{12,123})");
+
+            if (!upper.IsMatch(password))
+            {
+                errorString += "Missing one uppercase character. ";
+            }
+            if (!number.IsMatch(password))
+            {
+                errorString += "Missing one number. ";
+            }
+            if (!special.IsMatch(password))
+            {
+                errorString += "Missing one special character. ";
+            }
+            if (!limit.IsMatch(password))
+            {
+                errorString += "Outside the limit (12-123). ";
+            }
+
+            if (!String.IsNullOrWhiteSpace(errorString))
+            {
+                throw new Exception($"Password is missing following requirements: {errorString}");
             }
         }
 

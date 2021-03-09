@@ -13,36 +13,44 @@ using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup
 {
-    public class VirtualMachineMockFactory
+    public class VirtualMachineMockServiceFactory
     {     
 
-        public static IVirtualMachineService GetVirtualMachineService(ServiceProvider serviceProvider)
+        public static IVirtualMachineCreateService GetVirtualMachineCreateService(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
             var config = serviceProvider.GetService<IConfiguration>();
-            var logger = serviceProvider.GetService<ILogger<VirtualMachineService>>();
+            var logger = serviceProvider.GetService<ILogger<VirtualMachineCreateService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var sandboxModelServiceMock = new Mock<ISandboxModelService>();                
+            var sandboxModelServiceMock = new Mock<ISandboxModelService>();            
 
-            var virtualMachineSizeService = new Mock<IVirtualMachineSizeService>();        
+            var resourceCreateService = new Mock<ICloudResourceCreateService>();
 
-            var sandboxResourceCreateService = new Mock<ICloudResourceCreateService>();
+            var resourceUpdateService = new Mock<ICloudResourceUpdateService>();
 
-            var sandboxResourceUpdateService = new Mock<ICloudResourceUpdateService>();
+            var resourceDeleteService = new Mock<ICloudResourceDeleteService>();
 
-            var sandboxResourceDeleteService = new Mock<ICloudResourceDeleteService>();
-
-            var sandboxResourceService = new Mock<ICloudResourceReadService>();
+            var resourceReadService = new Mock<ICloudResourceReadService>();
 
             var workQueue = new Mock<IProvisioningQueueService>();
 
-            var azureVmService = new Mock<IAzureVirtualMachineExtenedInfoService>();
+            var virtualMachineOperatingSystemService = new Mock<IVirtualMachineOperatingSystemService>();
 
-            return new VirtualMachineService(logger, config, db, mapper, userService.Object, sandboxModelServiceMock.Object, virtualMachineSizeService.Object, 
-                sandboxResourceCreateService.Object, sandboxResourceUpdateService.Object, sandboxResourceDeleteService.Object,
-                sandboxResourceService.Object, workQueue.Object, azureVmService.Object);
+            return new VirtualMachineCreateService(config, db, logger, mapper, userService.Object,
+                sandboxModelServiceMock.Object,            
+                resourceCreateService.Object,
+                  resourceReadService.Object,
+                resourceUpdateService.Object,
+                resourceDeleteService.Object,              
+                workQueue.Object,
+                virtualMachineOperatingSystemService.Object);
+        }
+
+        public static IVirtualMachineValidationService GetVirtualMachineValidationService()
+        { 
+            return new VirtualMachineValidationService();
         }
 
         public static IVirtualMachineSizeService GetVirtualMachineSizeService(ServiceProvider serviceProvider)

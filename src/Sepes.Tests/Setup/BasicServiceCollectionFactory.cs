@@ -36,16 +36,13 @@ namespace Sepes.Tests.Setup
             {    //https://docs.microsoft.com/en-us/azure/azure-monitor/app/worker-service         
                 services.AddApplicationInsightsTelemetryWorkerService(config[ConfigConstants.APPI_KEY]);
             }
-            services.AddLogging();
+            services.AddLogging();            
             
-            //services.AddTransient<ILogger, NullLogger<string>>();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<CloudResourceOperationReadService>();            
-            services.AddTransient<IRequestIdService, HasRequestIdMock>();
-            //services.AddTransient<IStudyParticipantCreateService, StudyParticipantLookupService>();
+            services.AddTransient<IRequestIdService, HasRequestIdMock>();        
 
-            //Sepes Services
-            services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
+            //Sepes Services           
             services.AddTransient<IVariableService, VariableService>();
             services.AddTransient<IStudyReadService, StudyReadService>();
 
@@ -63,7 +60,6 @@ namespace Sepes.Tests.Setup
             services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
             services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-
 
             return services;
         } 

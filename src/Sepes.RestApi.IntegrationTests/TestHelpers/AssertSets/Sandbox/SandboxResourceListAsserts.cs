@@ -16,8 +16,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 
             foreach (var curResource in sandboxResourceResponse)
             {
-                Assert.NotNull(curResource.Name);
-                Assert.Equal(CloudResourceProvisioningStates.SUCCEEDED, curResource.LastKnownProvisioningState);
+                Assert.NotNull(curResource.Name);             
                 Assert.Equal(CloudResourceStatus.OK, curResource.Status);
             }
         }

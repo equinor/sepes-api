@@ -1,10 +1,5 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -12,23 +7,12 @@ using System.Text;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class VirtualMachineValidationService : VirtualMachineServiceBase, IVirtualMachineValidationService
-    {         
+    public class VirtualMachineValidationService : IVirtualMachineValidationService
+    {
 
-        public VirtualMachineValidationService(ILogger<VirtualMachineValidationService> logger,
-            IConfiguration config,
-            SepesDbContext db,
-            IMapper mapper,
-            IUserService userService, 
-            ICloudResourceReadService cloudResourceReadService     
+        public VirtualMachineValidationService() { }
+
         
-          )
-             : base(config, db, logger, mapper, userService, cloudResourceReadService)
-        {
-                
-          
-        }
-          
 
         public string CalculateName(string studyName, string sandboxName, string userPrefix)
         {

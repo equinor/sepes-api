@@ -1,8 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Tests.Setup;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
@@ -20,7 +17,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         public async void CreateVmWithInvalidPassword()
         {
             var invalidPassword = "123";
-            var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineService(_serviceProvider);
+            var virtualMachineLookupService = VirtualMachineMockServiceFactory.GetVirtualMachineCreateService(_serviceProvider);
             var validationOfName = virtualMachineLookupService.CreateAsync(1, new VirtualMachineCreateDto { Password= invalidPassword });
 
             await Assert.ThrowsAsync<System.Exception>(async () => await validationOfName);
@@ -30,7 +27,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         public async void CheckvalidPassword()
         {
             var validPassword = "!1Qwertyuiop";
-            var virtualMachineLookupService = VirtualMachineMockFactory.GetVirtualMachineService(_serviceProvider);
+            var virtualMachineLookupService = VirtualMachineMockServiceFactory.GetVirtualMachineCreateService(_serviceProvider);
             virtualMachineLookupService.ValidateVmPasswordOrThrow(validPassword);
         }
     }

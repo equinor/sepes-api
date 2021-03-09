@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -17,18 +16,15 @@ namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineSizeService : IVirtualMachineSizeService
     {
-        readonly ILogger _logger;
         readonly SepesDbContext _db;
         readonly IMapper _mapper;        
         readonly ISandboxModelService _sandboxModelService;
 
-        public VirtualMachineSizeService(
-            ILogger<VirtualMachineSizeService> logger,
+        public VirtualMachineSizeService(          
             SepesDbContext db,
             IMapper mapper,
             ISandboxModelService sandboxModelService)
         {
-            _logger = logger;
             _db = db;
             _mapper = mapper;
             _sandboxModelService = sandboxModelService;        
