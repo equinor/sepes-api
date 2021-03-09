@@ -13,33 +13,33 @@ namespace Sepes.Infrastructure.Service
     public class VirtualMachineDeleteService : VirtualMachineServiceBase, IVirtualMachineDeleteService
     {
         readonly IProvisioningQueueService _provisioningQueueService;
-        readonly ICloudResourceDeleteService _sandboxResourceDeleteService;
-         
+        readonly ICloudResourceDeleteService _cloudResourceDeleteService;
+
 
         public VirtualMachineDeleteService(
             IConfiguration config,
-            SepesDbContext db, 
-            ILogger<VirtualMachineDeleteService> logger,         
+            SepesDbContext db,
+            ILogger<VirtualMachineDeleteService> logger,
             IMapper mapper,
             IUserService userService,
             IProvisioningQueueService provisioningQueueService,
-            ICloudResourceReadService cloudResourceReadService
-          
-          )
+            ICloudResourceReadService cloudResourceReadService,
+            ICloudResourceDeleteService cloudResourceDeleteService)
              : base(config, db, logger, mapper, userService, cloudResourceReadService)
         {
-            _provisioningQueueService = provisioningQueueService;         
-        }      
+            _provisioningQueueService = provisioningQueueService;
+            _cloudResourceDeleteService = cloudResourceDeleteService;
+        }
 
         public async Task DeleteAsync(int id)
         {
-            var deleteResourceOperation = await _sandboxResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id, UserOperation.Study_Crud_Sandbox);
+            var deleteResourceOperation = await _cloudResourceDeleteService.MarkAsDeletedWithDeleteOperationAsync(id, UserOperation.Study_Crud_Sandbox);
 
             _logger.LogInformation($"Delete VM: Enqueing delete operation");
 
-           var queueParentItem = QueueItemFactory.CreateParent(deleteResourceOperation);           
+            var queueParentItem = QueueItemFactory.CreateParent(deleteResourceOperation);
 
             await _provisioningQueueService.SendMessageAsync(queueParentItem);
-        }       
+        }
     }
 }
