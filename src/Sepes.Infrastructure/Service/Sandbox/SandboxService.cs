@@ -67,7 +67,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Verify that study with that id exists
-            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox);
+            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox, withIncludes: true);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))
