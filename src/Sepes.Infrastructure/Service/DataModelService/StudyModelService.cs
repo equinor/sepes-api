@@ -40,15 +40,28 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 studiesQuery += $" AND ({studiesAccessWherePart})";
             }
 
-            using (var connection = new SqlConnection(GetDbConnectionString()))
-            {
-                if(connection.State != System.Data.ConnectionState.Open)
-                {
-                    await connection.OpenAsync();
-                }
+            studies = await RunDapperQuery<StudyListItemDto>(studiesQuery);
 
-                studies = await connection.QueryAsync<StudyListItemDto>(studiesQuery);
-            }          
+            return studies;
+        }
+
+        public async Task<IEnumerable<StudyListItemDto>> GetStudyResultsAndLearningsAsync(int studyId)
+        {
+            IEnumerable<StudyListItemDto> studies;
+
+            var user = await _userService.GetCurrentUserAsync();
+
+            var resultsAndLearningsQuery = "SELECT DISTINCT [Id], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
+        
+
+            var studiesAccessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(user, UserOperation.Study_Read);
+
+            if (!string.IsNullOrWhiteSpace(studiesAccessWherePart))
+            {
+                resultsAndLearningsQuery += $" AND ({studiesAccessWherePart})";
+            }
+
+            studies = await RunDapperQuery<StudyListItemDto>(resultsAndLearningsQuery);           
 
             return studies;
         }

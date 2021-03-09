@@ -1,8 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -86,6 +87,37 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
         {
             await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);           
+        }
+
+        protected async Task<IEnumerable<T>> RunDapperQuery<T>(string query) {
+
+            using (var connection = new SqlConnection(GetDbConnectionString()))
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                return await connection.QueryAsync<T>(query);
+            } 
+        }
+
+        protected async Task<string> WrapSingleEntityQuery(string dataQuery, UserOperation operation)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+            var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
+       
+            var completeQuery = $"WITH dataCte AS ({dataQuery})";
+            completeQuery += " ,accessCte as (SELECT Id FROM Studies s INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId";
+
+            if (!string.IsNullOrWhiteSpace(accessWherePart))
+            {
+                completeQuery += $" WHERE ({accessWherePart})";
+            }
+
+            completeQuery += " ) SELECT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.Id = a.Id ";
+
+            return completeQuery;
         }
     }
 }
