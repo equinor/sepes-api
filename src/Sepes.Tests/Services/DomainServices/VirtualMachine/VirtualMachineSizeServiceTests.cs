@@ -1,14 +1,7 @@
-﻿using Moq;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Service.Interface;
+﻿using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Tests.Setup;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
-using Sepes.Infrastructure.Constants.Auth;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Constants;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {

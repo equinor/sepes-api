@@ -57,19 +57,12 @@ namespace Sepes.Tests.Setup
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<VirtualMachineSizeService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var sandboxServiceMock = new Mock<ISandboxService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-
-            var costServiceMock = new Mock<IAzureCostManagementService>();
-            sandboxServiceMock.Setup(x => x.CreateAsync(1, It.IsAny<SandboxCreateDto>()));
-            sandboxServiceMock.Setup(x => x.GetAsync(1, UserOperation.Study_Crud_Sandbox, false)).ReturnsAsync(new SandboxDto { Id = 1, Region = "norwayeast" });
-
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
+            sandboxModelServiceMock.Setup(x => x.GetRegionByIdAsync(1, It.IsAny<UserOperation>())).ReturnsAsync("norwayeast");
 
-            return new VirtualMachineSizeService(logger, db, mapper, sandboxModelServiceMock.Object);
+            return new VirtualMachineSizeService(db, mapper, sandboxModelServiceMock.Object);
         }
     }
 }
