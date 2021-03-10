@@ -115,9 +115,13 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("ParentResourceId");
 
-                    b.HasIndex("SandboxId");
+                    b.HasIndex("SandboxId", "ResourceName")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
 
-                    b.HasIndex("StudyId");
+                    b.HasIndex("StudyId", "ResourceName")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
 
                     b.ToTable("CloudResources");
                 });
@@ -515,6 +519,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("StudyId");
 
+                    b.HasIndex("Id", "StudyId")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Region" });
+
                     b.ToTable("Sandboxes");
                 });
 
@@ -640,8 +648,9 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Closed", "Restricted")
-                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Name", "Description", "Vendor", "LogoUrl" });
+                    b.HasIndex("Id", "Restricted")
+                        .HasFilter("[Closed] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Description", "Vendor", "LogoUrl" });
 
                     b.ToTable("Studies");
                 });

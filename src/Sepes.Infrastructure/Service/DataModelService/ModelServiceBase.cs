@@ -136,14 +136,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected async Task<T> RunSingleEntityQuery<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
         {
             var completeQuery = await WrapSingleEntityQuery(currentUser, dataQuery, operation);
-            var single = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
+            var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
 
-            StudyAccessUtil.CheckAccesAndThrowIfMissing(single, currentUser, operation);
+            StudyAccessUtil.CheckAccesAndThrowIfMissing(singleEntity, currentUser, operation);
 
-
-            return single;
-           
-
+            return singleEntity;
         }
     }
 }

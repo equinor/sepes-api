@@ -48,35 +48,43 @@ namespace Sepes.Infrastructure.Model.Context
         }
 
         private void AddIndexing(ModelBuilder modelBuilder)
-        {
+        {           
+
             modelBuilder.Entity<Study>()
-                .HasIndex(s => new { s.Closed, s.Restricted} )
-                .IncludeProperties(s => new
-                {
-                    s.Id,
-                    s.Name,
-                    s.Description,
-                    s.Vendor,
-                    s.LogoUrl
-                });
+              .HasIndex(s => new { s.Id, s.Restricted })
+              .IncludeProperties(s => new
+              {
+                  s.Name,
+                  s.Description,
+                  s.Vendor,
+                  s.LogoUrl
+              }).HasFilter("[Closed] = 0");
 
-         //   modelBuilder.Entity<Sandbox>()
-         //     .HasIndex(s => new { s.Deleted, s.StudyId })
-         //     .IncludeProperties(s => new
-         //     {
-         //         s.Id,
-         //         s.Name,
-         //         s.Region               
-         //     });
+            modelBuilder.Entity<Sandbox>()
+              .HasIndex(s => new { s.Id, s.StudyId })
+              .IncludeProperties(s => new
+              {
+                  s.Name,
+                  s.Region
+              }).HasFilter("[Deleted] = 0");
 
-         //   modelBuilder.Entity<CloudResource>()
-         //     .HasIndex(s => new { s.Deleted, s.ResourceName s.SandboxId })
-         //.IncludeProperties(s => new
-         //{
-         //    s.Id,
-           
-         //    s.Region
-         //});
+
+            modelBuilder.Entity<CloudResource>()
+              .HasIndex(s => new { s.SandboxId, s.ResourceName })
+         .IncludeProperties(s => new
+         {
+             s.Id,
+             s.Region
+         }).HasFilter("[Deleted] = 0");
+
+
+            modelBuilder.Entity<CloudResource>()
+              .HasIndex(s => new { s.StudyId, s.ResourceName })
+         .IncludeProperties(s => new
+         {
+             s.Id,
+             s.Region
+         }).HasFilter("[Deleted] = 0");
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
