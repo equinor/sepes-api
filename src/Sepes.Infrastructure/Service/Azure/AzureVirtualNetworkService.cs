@@ -109,24 +109,7 @@ namespace Sepes.Infrastructure.Service
                 .WithAccessFromService(ServiceEndpointType.MicrosoftStorage)
                 .Parent()
                 .ApplyAsync();
-        }
-
-        //async Task ApplySecurityGroupInternalAsync(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
-        //{
-        //    //Add the security group to a subnet.
-        //    var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
-        //    var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
-
-        //    //Ensure resource is is managed by this instance
-        //    EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, nsg.Tags);
-        //    EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, network.Tags);
-
-        //    await network.Update()
-        //        .UpdateSubnet(subnetName)
-        //        .WithExistingNetworkSecurityGroup(nsg)
-        //        .Parent()
-        //        .ApplyAsync();
-        //}     
+        }    
 
         async Task ApplySecurityGroupInternalAsync(AzureVNetDto vnetDto, string securityGroupName)
         {
