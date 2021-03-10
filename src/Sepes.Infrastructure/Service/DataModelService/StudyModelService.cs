@@ -1,6 +1,4 @@
-﻿using Dapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
@@ -40,30 +38,20 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 studiesQuery += $" AND ({studiesAccessWherePart})";
             }
 
-            studies = await RunDapperQuery<StudyListItemDto>(studiesQuery);
+            studies = await RunDapperQueryMultiple<StudyListItemDto>(studiesQuery);
 
             return studies;
         }
 
-        public async Task<IEnumerable<StudyListItemDto>> GetStudyResultsAndLearningsAsync(int studyId)
-        {
-            IEnumerable<StudyListItemDto> studies;
-
+        public async Task<StudyResultsAndLearningsDto> GetStudyResultsAndLearningsAsync(int studyId)
+        {  
             var user = await _userService.GetCurrentUserAsync();
 
-            var resultsAndLearningsQuery = "SELECT DISTINCT [Id], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
-        
+            var resultsAndLearningsQuery = "SELECT DISTINCT [Id], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";           
 
-            var studiesAccessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(user, UserOperation.Study_Read);
+            var responseFromDbService = await RunSingleEntityQuery<StudyResultsAndLearnings>(user, resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });           
 
-            if (!string.IsNullOrWhiteSpace(studiesAccessWherePart))
-            {
-                resultsAndLearningsQuery += $" AND ({studiesAccessWherePart})";
-            }
-
-            studies = await RunDapperQuery<StudyListItemDto>(resultsAndLearningsQuery);           
-
-            return studies;
+            return new StudyResultsAndLearningsDto() { ResultsAndLearnings = responseFromDbService.ResultsAndLearnings };
         }
 
         public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false)

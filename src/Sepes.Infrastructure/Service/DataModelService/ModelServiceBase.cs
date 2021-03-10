@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -89,7 +90,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);           
         }
 
-        protected async Task<IEnumerable<T>> RunDapperQuery<T>(string query) {
+        protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query) {
 
             using (var connection = new SqlConnection(GetDbConnectionString()))
             {
@@ -102,9 +103,21 @@ namespace Sepes.Infrastructure.Service.DataModelService
             } 
         }
 
-        protected async Task<string> WrapSingleEntityQuery(string dataQuery, UserOperation operation)
+        protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null) where T : SingleEntityDapperResult
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
+            using (var connection = new SqlConnection(GetDbConnectionString()))
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                return await connection.QuerySingleOrDefaultAsync<T>(query, parameters);
+            }
+        }
+
+        protected async Task<string> WrapSingleEntityQuery(UserDto currentUser, string dataQuery, UserOperation operation)
+        {           
             var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
        
             var completeQuery = $"WITH dataCte AS ({dataQuery})";
@@ -118,6 +131,19 @@ namespace Sepes.Infrastructure.Service.DataModelService
             completeQuery += " ) SELECT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.Id = a.Id ";
 
             return completeQuery;
+        }
+
+        protected async Task<T> RunSingleEntityQuery<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
+        {
+            var completeQuery = await WrapSingleEntityQuery(currentUser, dataQuery, operation);
+            var single = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
+
+            StudyAccessUtil.CheckAccesAndThrowIfMissing(single, currentUser, operation);
+
+
+            return single;
+           
+
         }
     }
 }

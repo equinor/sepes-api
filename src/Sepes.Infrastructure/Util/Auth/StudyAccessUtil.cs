@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
-            //First thest this, as it's the most common operation and it requires no db access
+            //First test this, as it's the most common operation and it requires no db access
             if (IsAllowedForEmployeesWithoutAnyRoles(currentUser, onlyRelevantOperations))
             {
                 return true;
@@ -39,18 +39,20 @@ namespace Sepes.Infrastructure.Util.Auth
 
             return false;
         }
-
-        //Userservice
-
-        //User
-
-        //User returns
-
+        
         public static void CheckAccesAndThrowIfMissing(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
         { 
             if (!HasAccessToOperationForStudy(currentUser, study, operation, newRole))
             {
                 throw StudyAccessUtil.CreateForbiddenException(currentUser, study, operation);
+            }
+        }
+
+        public static void CheckAccesAndThrowIfMissing(SingleEntityDapperResult result, UserDto currentUser, UserOperation operation)
+        {
+            if (!result.Authorized)
+            {
+                throw StudyAccessUtil.CreateForbiddenException(currentUser, result.Id, operation);
             }
         }
 
@@ -71,7 +73,18 @@ namespace Sepes.Infrastructure.Util.Auth
 
         public static ForbiddenException CreateForbiddenException(UserDto user, Study study, UserOperation operation)
         {
-            return new ForbiddenException($"User {user.EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+            return CreateForbiddenException(user.EmailAddress, study.Id, operation);          
+        }
+
+        public static ForbiddenException CreateForbiddenException(UserDto user, int studyId, UserOperation operation)
+        {
+            return CreateForbiddenException(user.EmailAddress, studyId, operation);
+        }
+
+
+        public static ForbiddenException CreateForbiddenException(string username, int studyId, UserOperation operation)
+        {
+            return new ForbiddenException($"User {username} does not have permission to perform operation {operation} on study {studyId}");
         }
 
         public static async Task<bool> HasAccessToOperationForStudyAsync(IUserService userService, Study study, UserOperation operation, string newRole = null)

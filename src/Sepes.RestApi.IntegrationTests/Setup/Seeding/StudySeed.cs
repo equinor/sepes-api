@@ -24,7 +24,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             )
         {
             var study = StudyBasic(name, vendor, wbs, restricted);
-
+            study.ResultsAndLearnings = "Results and learnings";
             AddParticipant(study, userId, StudyRoles.StudyOwner);
 
             if (!String.IsNullOrWhiteSpace(currentUserRole))
@@ -48,7 +48,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             bool addDatasets = false)
         {
             var study = StudyBasic(name, vendor, wbs, restricted);
-
+            study.ResultsAndLearnings = "Results and learnings";
             AddParticipant(study, ownerUserId, StudyRoles.StudyOwner);
 
             if (!String.IsNullOrWhiteSpace(currentUserRole))
