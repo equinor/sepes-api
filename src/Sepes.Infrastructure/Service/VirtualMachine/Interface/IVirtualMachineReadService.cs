@@ -5,20 +5,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IVirtualMachineService
+    public interface IVirtualMachineReadService
     {
-        Task<VmDto> CreateAsync(int sandboxId, VirtualMachineCreateDto newSandbox);
-
-        Task<VmDto> UpdateAsync(int sandboxId, VirtualMachineCreateDto newSandbox);
-
-        Task DeleteAsync(int id);
-
         Task<List<VmDto>> VirtualMachinesForSandboxAsync(int sandboxId, CancellationToken cancellationToken = default);
 
         Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default);
 
         Task<VmExternalLink> GetExternalLink(int vmId);
-
-        void ValidateVmPasswordOrThrow(string password);
     }
 }

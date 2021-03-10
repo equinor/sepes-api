@@ -13,22 +13,20 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class SandboxResourceController : ControllerBase
-    {
-        readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ISandboxResourceCreateService _sandboxResourceCreateService;
+    {      
+        readonly ISandboxResourceReadService _sandboxResourceReadService;
         readonly ISandboxResourceRetryService _sandboxResourceRetryService;
 
-        public SandboxResourceController(ICloudResourceReadService sandboxResourceService, ISandboxResourceCreateService sandboxResourceCreateService, ISandboxResourceRetryService sandboxResourceRetryService)
-        {
-            _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceCreateService = sandboxResourceCreateService;
+        public SandboxResourceController(ISandboxResourceReadService sandboxResourceReadService, ISandboxResourceRetryService sandboxResourceRetryService)
+        {         
+            _sandboxResourceReadService = sandboxResourceReadService;
             _sandboxResourceRetryService = sandboxResourceRetryService;
-        }       
+        }
 
         [HttpGet("sandboxes/{sandboxId}/resources")]
         public async Task<IActionResult> GetSandboxResources(int sandboxId)
         {
-            var sandboxes = await _sandboxResourceService.GetSandboxResourcesLight(sandboxId);
+            var sandboxes = await _sandboxResourceReadService.GetSandboxResourcesLight(sandboxId);
             return new JsonResult(sandboxes);
         }
 
@@ -50,7 +48,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("sandboxes/{sandboxId}/costanalysis")]
         public async Task<IActionResult> GetSandboxCostanalysis(int sandboxId)
         {
-            var sandboxes = await _sandboxResourceService.GetSandboxCostanlysis(sandboxId);
+            var sandboxes = await _sandboxResourceReadService.GetSandboxCostanlysis(sandboxId);
             return new JsonResult(sandboxes);
         }
     }

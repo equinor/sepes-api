@@ -28,9 +28,8 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveSandboxesBaseQueryable(db)
                 .Include(s => s.Study)
-                .ThenInclude(s=> s.StudyParticipants)
-                .ThenInclude(s => s.User)
-                .Include(sb=> sb.PhaseHistory);
+                .ThenInclude(s => s.StudyParticipants);
+
         }
 
         public static IQueryable<Sandbox> ActiveSandboxesWithIncludesQueryable(SepesDbContext db)
@@ -41,7 +40,16 @@ namespace Sepes.Infrastructure.Service.Queries
                     .ThenInclude(ds => ds.Resources)
                 .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations)
-               ;
+                .Include(sb => sb.PhaseHistory);
+        }
+
+        public static IQueryable<Sandbox> SandboxWithResources(SepesDbContext db, int sandboxId)
+        {
+            return db.Sandboxes.Where(s => s.Id == sandboxId)
+                    .Include(sb => sb.Study)
+                    .ThenInclude(s => s.StudyParticipants)
+                    .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations);
         }
 
         public static IQueryable<Sandbox> AllSandboxesBaseQueryable(SepesDbContext db)

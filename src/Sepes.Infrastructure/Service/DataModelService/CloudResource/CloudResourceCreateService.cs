@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceCreateService : CloudResourceServiceBase, ICloudResourceCreateService
     {
@@ -51,7 +51,7 @@ namespace Sepes.Infrastructure.Service
             var currentUser = await _userService.GetCurrentUserAsync();
             var sessionId = _requestIdService.GetRequestId();
 
-            var resourceGroupEntry = await GetInternalAsync(resourceGroupEntryId);
+            var resourceGroupEntry = await GetInternalWithoutAccessCheckAsync(resourceGroupEntryId);
 
             if(resourceGroupEntry == null)
             {

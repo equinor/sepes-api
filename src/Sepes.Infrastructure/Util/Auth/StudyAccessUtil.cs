@@ -40,14 +40,38 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
+        //Userservice
+
+        //User
+
+        //User returns
+
+        public static void CheckAccesAndThrowIfMissing(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
+        { 
+            if (!HasAccessToOperationForStudy(currentUser, study, operation, newRole))
+            {
+                throw StudyAccessUtil.CreateForbiddenException(currentUser, study, operation);
+            }
+        }
+
+        public static async Task CheckAccesAndThrowIfMissing(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        {
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            CheckAccesAndThrowIfMissing(currentUser, study, operation, newRole);
+        }
+   
+
         public static Study HasAccessToOperationForStudyOrThrow(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
         {
-            if (HasAccessToOperationForStudy(currentUser, study, operation, newRole))
-            {
-                return study;
-            }
+            CheckAccesAndThrowIfMissing(currentUser, study, operation, newRole);
 
-            throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+            return study;           
+        }
+
+        public static ForbiddenException CreateForbiddenException(UserDto user, Study study, UserOperation operation)
+        {
+            return new ForbiddenException($"User {user.EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
         }
 
         public static async Task<bool> HasAccessToOperationForStudyAsync(IUserService userService, Study study, UserOperation operation, string newRole = null)

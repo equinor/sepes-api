@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,9 +37,22 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return sandbox;
         }
 
+        public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
+        {
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId).AsNoTracking();
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Read);
+
+            if(sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            return sandbox;
+        }
+
         public async Task<string> GetRegionByIdAsync(int sandboxId, UserOperation userOperation)
         {
-            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesBaseQueryable(_db), sandboxId, userOperation);
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db).AsNoTracking(), sandboxId, userOperation);
             return sandbox.Region;
         }
 

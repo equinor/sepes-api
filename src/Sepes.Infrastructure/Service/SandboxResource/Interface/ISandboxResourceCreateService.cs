@@ -1,10 +1,11 @@
 ﻿using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Model;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceCreateService
     {
-        Task<SandboxResourceCreationAndSchedulingDto> CreateBasicSandboxResourcesAsync(SandboxResourceCreationAndSchedulingDto dto);  
+        Task CreateBasicSandboxResourcesAsync(Sandbox sandbox);  
     }   
 }

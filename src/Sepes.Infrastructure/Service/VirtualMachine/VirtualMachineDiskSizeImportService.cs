@@ -16,34 +16,28 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class VirtualMachineDiskService : IVirtualMachineDiskService
+    public class VirtualMachineDiskSizeImportService : IVirtualMachineDiskSizeImportService
     {
         readonly ILogger _logger;
         readonly SepesDbContext _db;
-        readonly IMapper _mapper;
-        readonly IUserService _userService;
-        readonly ISandboxService _sandboxService;
+        readonly IUserService _userService;       
         readonly IAzureDiskPriceService _azureDiskPriceService;
 
 
-        public VirtualMachineDiskService(
-            ILogger<VirtualMachineService> logger,
+        public VirtualMachineDiskSizeImportService(
+            ILogger<VirtualMachineDiskSizeImportService> logger,
             SepesDbContext db,
-            IMapper mapper,
             IUserService userService,
-            ISandboxService sandboxService,
             IAzureDiskPriceService azureDiskPriceService)
         {
             _logger = logger;
-            _db = db;
-            _mapper = mapper;
-            _userService = userService;
-            _sandboxService = sandboxService;
+            _db = db;        
+            _userService = userService;          
             _azureDiskPriceService = azureDiskPriceService;
         }
 
 
-        public async Task UpdateVmDiskSizeCache(CancellationToken cancellationToken = default)
+        public async Task Import(CancellationToken cancellationToken = default)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
             var regionsFromDb = await _db.Regions.Include(r => r.DiskSizeAssociations).ThenInclude(va => va.DiskSize).Where(r => !r.Disabled).ToListAsync();
