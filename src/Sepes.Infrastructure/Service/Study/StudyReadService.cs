@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -33,9 +32,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Read_ResultsAndLearnings, false);
-
-            return new StudyResultsAndLearningsDto() { ResultsAndLearnings = studyFromDb.ResultsAndLearnings };
+            return await _studyModelService.GetStudyResultsAndLearningsAsync(studyId);
         }
     }
 }
