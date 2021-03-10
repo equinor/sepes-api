@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
 
             var networkSettings = CloudResourceConfigStringSerializer.NetworkSettings(parameters.ConfigurationString);
 
-            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name);
+            var vNetDto = await GetResourceWrappedInDtoAsync(parameters.ResourceGroupName, parameters.Name, false);
 
             if (vNetDto == null)
             {
@@ -39,13 +39,12 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Applying NSG to subnet for sandbox: {parameters.SandboxName}");
 
-
             if (!parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName))
             {
                 throw new ArgumentException("AzureVNetService: Missing Network security group name from input");
             }
-
-            await ApplySecurityGroupInternalAsync(parameters.ResourceGroupName, networkSecurityGroupName, vNetDto.SandboxSubnetName, vNetDto.Network.Name);
+            
+            await ApplySecurityGroupInternalAsync(vNetDto, networkSecurityGroupName);
 
             _logger.LogInformation($"Done creating Network and Applying NSG for sandbox with Name: {parameters.SandboxName}! Id: {vNetDto.Id}");
 
@@ -112,22 +111,40 @@ namespace Sepes.Infrastructure.Service
                 .ApplyAsync();
         }
 
-        async Task ApplySecurityGroupInternalAsync(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        //async Task ApplySecurityGroupInternalAsync(string resourceGroupName, string securityGroupName, string subnetName, string networkName)
+        //{
+        //    //Add the security group to a subnet.
+        //    var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
+        //    var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+
+        //    //Ensure resource is is managed by this instance
+        //    EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, nsg.Tags);
+        //    EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, network.Tags);
+
+        //    await network.Update()
+        //        .UpdateSubnet(subnetName)
+        //        .WithExistingNetworkSecurityGroup(nsg)
+        //        .Parent()
+        //        .ApplyAsync();
+        //}     
+
+        async Task ApplySecurityGroupInternalAsync(AzureVNetDto vnetDto, string securityGroupName)
         {
-            //Add the security group to a subnet.
-            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, securityGroupName);
-            var network = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, networkName);
+            var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(vnetDto.Network.ResourceGroupName, securityGroupName);
 
-            //Ensure resource is is managed by this instance
-            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, nsg.Tags);
-            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, network.Tags);
+            if(nsg == null)
+            {
+                throw new Exception($"Network security group {securityGroupName} not found in {vnetDto.Network.ResourceGroupName}");
+            }
 
-            await network.Update()
-                .UpdateSubnet(subnetName)
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(vnetDto.Network.ResourceGroupName, nsg.Tags);
+
+            await vnetDto.Network.Update()
+                .UpdateSubnet(vnetDto.SandboxSubnetName)
                 .WithExistingNetworkSecurityGroup(nsg)
                 .Parent()
                 .ApplyAsync();
-        }     
+        }
 
         async Task<INetwork> GetResourceInternalAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true)
         {
@@ -148,18 +165,16 @@ namespace Sepes.Infrastructure.Service
             return resource;
         }
 
-        async Task<AzureVNetDto> GetResourceWrappedInDtoAsync(string resourceGroupName, string resourceName)
+        async Task<AzureVNetDto> GetResourceWrappedInDtoAsync(string resourceGroupName, string resourceName, bool failIfNotFound = true)
         {
-            var resource = await _azure.Networks.GetByResourceGroupAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName, failIfNotFound);
 
-            if (resource == null)
+            if(resource == null)
             {
                 return null;
             }
 
-            var dto = new AzureVNetDto() { Network = resource, ProvisioningState = resource.Inner.ProvisioningState.Value };
-
-            return dto;
+            return new AzureVNetDto() { Network = resource, ProvisioningState = resource.Inner.ProvisioningState.Value };
         }
 
 
