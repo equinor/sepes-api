@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Util
             }
             else if (resourceType == AzureResourceType.Bastion)
             {
-                return 600;
+                return 900;
             }
             else if (resourceType == AzureResourceType.VirtualMachine)
             {
