@@ -121,14 +121,14 @@ namespace Sepes.Infrastructure.Service.DataModelService
             var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
        
             var completeQuery = $"WITH dataCte AS ({dataQuery})";
-            completeQuery += " ,accessCte as (SELECT sp.StudyId FROM dataCte d INNER JOIN [dbo].[StudyParticipants] sp on d.StudyId = sp.StudyId";
+            completeQuery += " ,accessCte as (SELECT [Id] FROM Studies s INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId WHERE s.Id=@studyId";
 
             if (!string.IsNullOrWhiteSpace(accessWherePart))
             {
-                completeQuery += $" WHERE ({accessWherePart})";
+                completeQuery += $" AND ({accessWherePart})";
             }
 
-            completeQuery += " ) SELECT DISTINCT d.*, (CASE WHEN a.StudyId IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.StudyId = a.StudyId ";
+            completeQuery += " ) SELECT DISTINCT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.StudyId = a.Id ";
 
             return completeQuery;
         }
