@@ -217,17 +217,16 @@ namespace Sepes.Infrastructure.Service
                 {
                     throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
                 }
-                else
-                {
 
-                }
-                
-                else if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
+                var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(curDatasetRelation.Dataset);
+
+                if(study.Id != sandbox.StudyId)
                 {
-                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                    await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
+                    throw new Exception("Dataset appear to belong to other study");
                 }
-               
+
+                var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
             }
         }
 
@@ -301,6 +300,11 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
+                    if (!curDatasetRelation.Dataset.StudySpecific)
+                    {
+                        throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
+                    }
+
                     if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                     {
                         var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
