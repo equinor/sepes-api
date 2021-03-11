@@ -148,9 +148,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return validationErrors;
-
         }
-
 
         async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
         {
@@ -229,7 +227,6 @@ namespace Sepes.Infrastructure.Service
                 await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
             }
         }
-
 
         async Task AttemptRollbackPhase(int sandboxId, SandboxPhaseHistory phaseToRemove)
         {

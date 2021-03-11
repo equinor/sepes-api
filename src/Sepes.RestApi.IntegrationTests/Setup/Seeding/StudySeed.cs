@@ -31,10 +31,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             {
                 AddParticipant(study, userId, currentUserRole);
             }
-
-            await SliceFixture.InsertAsync(study);
-
-            await AddDatasetsIfWanted(addDatasets, study);
+            AddDatasetsIfWanted(addDatasets, study);
+            await SliceFixture.InsertAsync(study);          
 
             return study;
         }
@@ -58,9 +56,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 AddParticipant(study, userId, currentUserRole);
             }
 
-            await SliceFixture.InsertAsync(study);
-
-            await AddDatasetsIfWanted(addDatasets, study);
+            AddDatasetsIfWanted(addDatasets, study);
+            await SliceFixture.InsertAsync(study);          
 
             return study;
         }
@@ -79,7 +76,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         //    }
         //}
 
-        public static async Task AddDatasetsIfWanted(bool addDatasets, Study study)
+        public static void AddDatasetsIfWanted(bool addDatasets, Study study)
         {
             if (addDatasets)
             {
@@ -88,10 +85,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                     var datasetName = $"ds-{counter}";
                     var datasetClassification = (DatasetClassification)counter;
 
-                    var datasetRelation = DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString());
-                    datasetRelation.Dataset.StudyId = study.Id;
-                    study.StudyDatasets.Add(datasetRelation);
-                    await SliceFixture.InsertAsync(study);
+                    var datasetRelation = DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString());                  
+                    study.StudyDatasets.Add(datasetRelation);               
                 }
             }
         }
