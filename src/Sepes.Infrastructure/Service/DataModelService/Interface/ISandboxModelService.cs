@@ -17,5 +17,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
         Task<string> GetRegionByIdAsync(int id, UserOperation userOperation);
 
         Task<Sandbox> GetByIdWithoutPermissionCheckAsync(int id);
+        Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase);
     }
 }

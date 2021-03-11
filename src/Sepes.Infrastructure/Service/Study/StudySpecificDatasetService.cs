@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(dataset, clientIp, cancellationToken);
+                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(studyFromDb, dataset, clientIp, cancellationToken);
             }
             catch (Exception ex)
             {

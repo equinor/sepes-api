@@ -316,8 +316,6 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("StudyId");
-
                     b.ToTable("Datasets");
                 });
 
@@ -648,6 +646,9 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Closed")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Restricted", "Name", "Description", "Vendor", "LogoUrl" });
+
                     b.HasIndex("Id", "Restricted")
                         .HasFilter("[Closed] = 0")
                         .HasAnnotation("SqlServer:Include", new[] { "Name", "Description", "Vendor", "LogoUrl" });
@@ -891,13 +892,6 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
-                {
-                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
-                        .WithMany("StudySpecificDatasets")
-                        .HasForeignKey("StudyId");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>

@@ -68,7 +68,14 @@ namespace Sepes.Infrastructure.Service
 
             if(datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId.Value > 0)
             {
-                await ThrowIfOperationNotAllowed(operation, datasetFromDb.Study);
+                var studyDb = await  _db.Studies.Include(s => s.StudyParticipants).Where(s=> s.Id == datasetFromDb.StudyId.Value).AsNoTracking().SingleOrDefaultAsync();
+
+                if (studyDb == null)
+                {
+                    throw NotFoundException.CreateForEntity("Study", datasetFromDb.StudyId.Value);
+                }
+
+                await ThrowIfOperationNotAllowed(operation, studyDb);
             }
             else
             {
