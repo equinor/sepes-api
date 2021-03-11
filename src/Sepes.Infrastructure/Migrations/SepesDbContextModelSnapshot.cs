@@ -301,6 +301,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<int?>("StudyId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("StudySpecific")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(256)")
                         .HasMaxLength(256);

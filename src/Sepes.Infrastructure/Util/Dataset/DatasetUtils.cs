@@ -8,6 +8,22 @@ namespace Sepes.Infrastructure.Util
 {
     public static class DatasetUtils
     {
+        public static Study GetStudyFromStudySpecificDatasetOrThrow(Dataset dataset)
+        {
+            var studyDatasetRelation = dataset.StudyDatasets.SingleOrDefault();
+
+            if (studyDatasetRelation == null)
+            {
+                throw new Exception("GetStudyFromStudySpecificDatasetOrThrow: Dataset appears to be study specific, but no relation found");
+            }
+
+            if (studyDatasetRelation.Study == null)
+            {
+                throw new Exception("GetStudyFromStudySpecificDatasetOrThrow: Missing include on Study");
+            }
+
+            return studyDatasetRelation.Study;
+        }
 
         public static void UpdateDatasetBasicDetails(Dataset datasetFromDb, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
@@ -46,7 +62,7 @@ namespace Sepes.Infrastructure.Util
 
         public static CloudResource GetStudySpecificStorageAccountResourceEntry(Dataset dataset)
         {
-            if(dataset.StudyId.HasValue && dataset.StudyId.Value > 0)
+            if(dataset.StudySpecific)
             {
                 if(dataset.Resources == null)
                 {

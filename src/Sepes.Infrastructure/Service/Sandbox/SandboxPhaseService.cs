@@ -213,15 +213,21 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDatasetRelation in sandbox.SandboxDatasets)
             {
-                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
+                if (!curDatasetRelation.Dataset.StudySpecific)
+                {
+                    throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
+                }
+                else
+                {
+
+                }
+                
+                else if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
                 {
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
                     await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                 }
-                else
-                {
-                    throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
-                }
+               
             }
         }
 

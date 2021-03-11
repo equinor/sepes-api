@@ -32,9 +32,11 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 AddParticipant(study, userId, currentUserRole);
             }
 
-            AddDatasetsIfWanted(addDatasets, study);
+            await SliceFixture.InsertAsync(study);
 
-            return await SliceFixture.InsertAsync(study);
+            await AddDatasetsIfWanted(addDatasets, study);
+
+            return study;
         }
 
         public static async Task<Study> CreatedByOtherUser(
@@ -53,24 +55,43 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (!String.IsNullOrWhiteSpace(currentUserRole))
             {
-               AddParticipant(study, userId, currentUserRole);
+                AddParticipant(study, userId, currentUserRole);
             }
 
-            AddDatasetsIfWanted(addDatasets, study);
+            await SliceFixture.InsertAsync(study);
 
-            return await SliceFixture.InsertAsync(study);             
+            await AddDatasetsIfWanted(addDatasets, study);
+
+            return study;
         }
 
-        public static void AddDatasetsIfWanted(bool addDatasets, Study study)
+        //public static void AddDatasetsIfWanted(bool addDatasets, Study study)
+        //{
+        //    if (addDatasets)
+        //    {
+        //        for (var counter = 0; counter <= 2; counter++)
+        //        {                  
+        //            var datasetName = $"ds-{counter}";
+        //            var datasetClassification = (DatasetClassification)counter;
+
+        //            study.StudyDatasets.Add(DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString()));
+        //        }
+        //    }
+        //}
+
+        public static async Task AddDatasetsIfWanted(bool addDatasets, Study study)
         {
             if (addDatasets)
             {
                 for (var counter = 0; counter <= 2; counter++)
-                {                  
+                {
                     var datasetName = $"ds-{counter}";
                     var datasetClassification = (DatasetClassification)counter;
 
-                    study.StudyDatasets.Add(DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString()));
+                    var datasetRelation = DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString());
+                    datasetRelation.Dataset.StudyId = study.Id;
+                    study.StudyDatasets.Add(datasetRelation);
+                    await SliceFixture.InsertAsync(study);
                 }
             }
         }
@@ -78,7 +99,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         static Study StudyBasic(string name, string vendor, string wbs, bool restricted)
         {
             return new Study()
-            {             
+            {
                 Name = name,
                 Vendor = vendor,
                 WbsCode = wbs,
@@ -90,15 +111,16 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Sandboxes = new List<Sandbox>(),
                 StudyDatasets = new List<StudyDataset>(),
                 Resources = new List<CloudResource>() { StudySpecificDatasetResourceGroup(name) }
-                
+
             };
         }
 
-        static CloudResource StudySpecificDatasetResourceGroup(string studyName) {
+        static CloudResource StudySpecificDatasetResourceGroup(string studyName)
+        {
             var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(studyName);
 
-           return CloudResourceFactory.CreateResourceGroup(TestConstants.REGION, resourceGroupName, purpose: CloudResourcePurpose.StudySpecificDatasetContainer);     
-       
+            return CloudResourceFactory.CreateResourceGroup(TestConstants.REGION, resourceGroupName, purpose: CloudResourcePurpose.StudySpecificDatasetContainer);
+
         }
 
         public static void AddParticipant(Study study, int userId, string role)
@@ -113,7 +135,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 UserId = userId,
                 RoleName = role,
                 CreatedBy = "seed",
-                Created = DateTime.UtcNow               
+                Created = DateTime.UtcNow
             };
 
             study.StudyParticipants.Add(newParticipant);

@@ -18,8 +18,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
            )
         {
             var parentResourceGroup = study.Resources.FirstOrDefault();
-            var dataset = DatasetBasic(parentResourceGroup, name, location, classification);
-            var relation = new StudyDataset() { Study = study, Dataset = dataset };      
+            var dataset = DatasetBasic(parentResourceGroup, name, location, classification);           
+            var relation = new StudyDataset() { StudyId = study.Id, Dataset = dataset };      
 
             return relation;
         }

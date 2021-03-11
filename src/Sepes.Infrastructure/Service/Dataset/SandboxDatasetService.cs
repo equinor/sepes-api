@@ -81,10 +81,17 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            if (datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId != sandbox.Study.Id)
+            if (datasetFromDb.StudySpecific)
             {
-                throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {sandbox.Study.Id}.");
-            }
+                var studyForDataset = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(datasetFromDb);
+
+
+                if (datasetFromDb.StudySpecific && studyForDataset.Id != sandbox.Study.Id)
+                {
+                    throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {sandbox.Study.Id}.");
+                }
+            }         
+
 
             var sandboxDatasetRelation = await _db.SandboxDatasets.FirstOrDefaultAsync(ds => ds.SandboxId == sandboxId && ds.DatasetId == datasetId);
 
