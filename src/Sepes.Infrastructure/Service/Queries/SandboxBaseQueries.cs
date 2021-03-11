@@ -77,11 +77,17 @@ namespace Sepes.Infrastructure.Service.Queries
 
         public static IQueryable<Sandbox> SandboxForPhaseShift(SepesDbContext db)
         {
-            return ActiveSandboxesBaseQueryable(db)
-                .Include(sb => sb.Study)
-                 .ThenInclude(s => s.StudyDatasets)
-                     .ThenInclude(sd => sd.Dataset)
-                      .ThenInclude(sd => sd.SandboxDatasets)
+            return ActiveSandboxesMinimalIncludesQueryable(db)  
+                .Include(sb=> sb.Resources)
+                  .ThenInclude(r => r.Operations)
+                .Include(sb=> sb.SandboxDatasets)
+                      .ThenInclude(sds => sds.Dataset)
+                       .ThenInclude(ds => ds.StudyDatasets)
+                        .ThenInclude(ds => ds.Study)
+                         .Include(sb => sb.SandboxDatasets)
+                      .ThenInclude(sds => sds.Dataset)
+                       .ThenInclude(ds => ds.Resources)
+                        .ThenInclude(ds => ds.Operations)
             .Include(sb => sb.PhaseHistory);
 
         }

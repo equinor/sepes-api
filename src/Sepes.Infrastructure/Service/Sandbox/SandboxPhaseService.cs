@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserAsync();
 
-                var sandboxFromDb = await GetSandboxForPhaseShift(sandboxId, true);
+                var sandboxFromDb = await GetSandboxForPhaseShift(sandboxId);
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
@@ -69,7 +69,9 @@ namespace Sepes.Infrastructure.Service
 
                 var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
 
-                var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId, cancellation);
+                //var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId, cancellation);
+
+                var resourcesForSandbox = _mapper.Map<List<CloudResourceDto>>(sandboxFromDb.Resources);
 
                 await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
 
@@ -104,6 +106,11 @@ namespace Sepes.Infrastructure.Service
 
                 throw;
             }
+        }
+
+        protected async Task<Sandbox> GetSandboxForPhaseShift(int sandboxId)
+        {
+            return await _sandboxModelService.GetByIdForPhaseShiftAsync(sandboxId, UserOperation.Sandbox_IncreasePhase);
         }
 
         public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
@@ -278,10 +285,7 @@ namespace Sepes.Infrastructure.Service
             await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
         }
 
-        protected async Task<Sandbox> GetSandboxForPhaseShift(int sandboxId, bool disableTracking = false)
-        {
-            return await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, disableTracking);
-        }
+       
 
         async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
         {

@@ -40,8 +40,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
         {
-            var sandboxQueryable =
-               (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(_db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db));
+            var sandboxQueryable = SandboxBaseQueries.SandboxForPhaseShift(_db);
 
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
 
