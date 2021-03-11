@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Service
                 await _db.SaveChangesAsync();
             }
 
-            return await GetStudyDetailsDtoByIdAsync(studyDb.Id, UserOperation.Study_Create);
+            return await GetStudyDetailsAsync(studyDb.Id);
         }        
 
         void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)

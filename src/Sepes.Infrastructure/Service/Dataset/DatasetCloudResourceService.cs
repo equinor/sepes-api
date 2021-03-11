@@ -79,27 +79,27 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task CreateResourcesForStudySpecificDatasetAsync(Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
+        public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
             var parentQueueItem = QueueItemFactory.CreateParent("Create resources for Study Specific Dataset");
-            var resourceGroupDb = await EnsureResourceGroupExists(dataset, parentQueueItem);
+            var resourceGroupDb = await EnsureResourceGroupExists(study, dataset, parentQueueItem);
 
-            await OrderCreationOfStudySpecificDatasetStorageAccount(dataset, resourceGroupDb, clientIp, parentQueueItem, cancellationToken);
+            await OrderCreationOfStudySpecificDatasetStorageAccount(study, dataset, resourceGroupDb, clientIp, parentQueueItem, cancellationToken);
 
             await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
         }
 
-        async Task<CloudResource> EnsureResourceGroupExists(Dataset dataset, ProvisioningQueueParentDto parentQueueItem)
+        async Task<CloudResource> EnsureResourceGroupExists(Study study, Dataset dataset, ProvisioningQueueParentDto parentQueueItem)
         {
             try
             {
-                var resourceGroupDb = GetResourceGroupForStudySpecificDataset(dataset.Study);
+                var resourceGroupDb = GetResourceGroupForStudySpecificDataset(study);
 
                 if (resourceGroupDb == null)
                 {
-                    resourceGroupDb = await CreateResourceGroupForStudySpecificDatasetsInternalAsync(dataset.Study, parentQueueItem);
+                    resourceGroupDb = await CreateResourceGroupForStudySpecificDatasetsInternalAsync(study, parentQueueItem);
                 }
                 else
                 {
@@ -182,7 +182,7 @@ namespace Sepes.Infrastructure.Service
             ProvisioningQueueUtil.CreateChildAndAdd(queueParentItem, roleAssignmentUpdateOperation);
         }
 
-        async Task OrderCreationOfStudySpecificDatasetStorageAccount(Dataset dataset, CloudResource resourceGroup, string clientIp, ProvisioningQueueParentDto queueParent, CancellationToken cancellationToken)
+        async Task OrderCreationOfStudySpecificDatasetStorageAccount(Study study, Dataset dataset, CloudResource resourceGroup, string clientIp, ProvisioningQueueParentDto queueParent, CancellationToken cancellationToken)
         {
             try
             {
@@ -195,7 +195,7 @@ namespace Sepes.Infrastructure.Service
 
                 var currentUser = await _userService.GetCurrentUserAsync();
 
-                var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, dataset.Study, dataset.Name);
+                var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);

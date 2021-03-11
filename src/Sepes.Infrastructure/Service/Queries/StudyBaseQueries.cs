@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Queries
 {
@@ -16,6 +17,18 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveStudiesBaseQueryable(db)
                 .Include(s => s.StudyParticipants);
+        }
+
+        public static IQueryable<Study> StudyDetailsQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesBaseQueryable(db)
+                .Include(s => s.StudyParticipants)
+                .ThenInclude(s => s.User)
+                 .Include(s => s.Sandboxes)
+                .Include(s => s.StudyDatasets)
+                    .ThenInclude(sd=> sd.Dataset)
+                        .ThenInclude(sd => sd.SandboxDatasets)
+                            .ThenInclude(sd => sd.Sandbox);
         }
 
         public static IQueryable<Study> AllStudiesWithParticipantsQueryable(SepesDbContext db)
@@ -36,14 +49,12 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.Resources)
                   .ThenInclude(s => s.ChildResources)
                  .Include(s => s.StudyDatasets)
-                    .ThenInclude(sd => sd.Dataset)
-                    .ThenInclude(sd => sd.SandboxDatasets)
-                     .ThenInclude(sd => sd.Sandbox)
+                    .ThenInclude(sd => sd.Dataset)                   
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                 .Include(s => s.Sandboxes)
                     .ThenInclude(sb => sb.Resources)
                          .ThenInclude(cr => cr.Operations);
-        }
+        } 
     }
 }

@@ -55,13 +55,9 @@ namespace Sepes.Infrastructure.Model
         // ------------------------------
         public ICollection<StudyDataset> StudyDatasets { get; set; }
         public ICollection<DatasetFirewallRule> FirewallRules { get; set; }
-        public ICollection<SandboxDataset> SandboxDatasets { get; set; }
+        public ICollection<SandboxDataset> SandboxDatasets { get; set; }      
 
-        //StudyID is only populated if dataset is StudySpecific.
-        //This is accounted for in API calls.
-        public int? StudyId { get; set; }
-
-        public Study Study { get; set; }
+        public bool StudySpecific { get; set; }
 
         public List<CloudResource> Resources { get; set; }
     }   

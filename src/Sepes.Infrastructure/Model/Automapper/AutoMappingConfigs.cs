@@ -45,6 +45,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Dataset, DatasetLookupItemDto>();
 
             CreateMap<Dataset, DatasetListItemDto>()
+                         .ForMember(dest => dest.StudyId, source => source.MapFrom(ds => ds.StudySpecific ? ds.StudyDatasets.SingleOrDefault().StudyId : default(int?)))
                      .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.SandboxDatasets.Where(sd => !sd.Sandbox.Deleted).Select(sd => sd.Sandbox).ToList()));
 
             CreateMap<StudyDataset, StudyDatasetDto>()

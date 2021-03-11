@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation);
 
-        Task<StudyDetailsDto> GetStudyDetailsDtoByIdAsync(int studyId, UserOperation userOperation);        
+        Task<StudyDetailsDto> GetStudyDetailsAsync(int studyId);        
 
         Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId);    
     }

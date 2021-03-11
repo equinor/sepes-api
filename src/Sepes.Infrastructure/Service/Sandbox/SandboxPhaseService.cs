@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserAsync();
 
-                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+                var sandboxFromDb = await GetSandboxForPhaseShift(sandboxId);
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
@@ -69,7 +69,9 @@ namespace Sepes.Infrastructure.Service
 
                 var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
 
-                var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId, cancellation);
+                //var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId, cancellation);
+
+                var resourcesForSandbox = _mapper.Map<List<CloudResourceDto>>(sandboxFromDb.Resources);
 
                 await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
 
@@ -104,6 +106,11 @@ namespace Sepes.Infrastructure.Service
 
                 throw;
             }
+        }
+
+        protected async Task<Sandbox> GetSandboxForPhaseShift(int sandboxId)
+        {
+            return await _sandboxModelService.GetByIdForPhaseShiftAsync(sandboxId, UserOperation.Sandbox_IncreasePhase);
         }
 
         public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
@@ -148,9 +155,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return validationErrors;
-
         }
-
 
         async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
         {
@@ -213,18 +218,22 @@ namespace Sepes.Infrastructure.Service
 
             foreach (var curDatasetRelation in sandbox.SandboxDatasets)
             {
-                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
-                {
-                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                    await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
-                }
-                else
+                if (!curDatasetRelation.Dataset.StudySpecific)
                 {
                     throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
                 }
+
+                var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(curDatasetRelation.Dataset);
+
+                if(study.Id != sandbox.StudyId)
+                {
+                    throw new Exception("Dataset appear to belong to other study");
+                }
+
+                var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
             }
         }
-
 
         async Task AttemptRollbackPhase(int sandboxId, SandboxPhaseHistory phaseToRemove)
         {
@@ -276,6 +285,8 @@ namespace Sepes.Infrastructure.Service
             await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
         }
 
+       
+
         async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
         {
             var resourceGroupResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
@@ -295,15 +306,21 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
-                    if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
-                    {
-                        var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                        await _azureStorageAccountNetworkRuleService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
-                    }
-                    else
+                    if (!curDatasetRelation.Dataset.StudySpecific)
                     {
                         throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
                     }
+
+
+                    var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(curDatasetRelation.Dataset);
+
+                    if (study.Id != sandbox.StudyId)
+                    {
+                        throw new Exception("Dataset appear to belong to other study");
+                    }
+
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                    await _azureStorageAccountNetworkRuleService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                 }
                 catch (Exception ex)
                 {

@@ -60,7 +60,7 @@ namespace Sepes.Tests.Setup
             studyModelServiceMock.Setup(x => x.GetByIdWithoutPermissionCheckAsync(It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>())).ReturnsAsync(studies.FirstOrDefault());
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
-            dsCloudResourceServiceMock.Setup(x => x.CreateResourcesForStudySpecificDatasetAsync(It.IsAny<Dataset>(), "192.168.1.1", default(CancellationToken))).Returns(default(Task));
+            dsCloudResourceServiceMock.Setup(x => x.CreateResourcesForStudySpecificDatasetAsync(It.IsAny<Study>(), It.IsAny<Dataset>(), "192.168.1.1", default(CancellationToken))).Returns(default(Task));
 
             return new StudySpecificDatasetService(db, mapper, logger, userService.Object, studyModelServiceMock.Object, dsCloudResourceServiceMock.Object);
         }

@@ -43,7 +43,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{studyId}")]
         public async Task<IActionResult> GetStudyAsync(int studyId)
         {
-            var study = await _studyReadService.GetStudyDetailsDtoByIdAsync(studyId, UserOperation.Study_Read);
+            var study = await _studyReadService.GetStudyDetailsAsync(studyId);
             return new JsonResult(study);
         }
 

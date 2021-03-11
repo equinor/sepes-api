@@ -14,6 +14,8 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<Study> GetByIdAsync(int studyId, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false);
 
+        Task<Study> GetStudyForStudyDetailsAsync(int studyId);
+
         Task<Study> GetByIdWithoutPermissionCheckAsync(int studyId, bool withIncludes = false, bool disableTracking = false);
         Task<StudyResultsAndLearningsDto> GetStudyResultsAndLearningsAsync(int studyId);
     }

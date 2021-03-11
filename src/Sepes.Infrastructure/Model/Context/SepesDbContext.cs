@@ -60,6 +60,18 @@ namespace Sepes.Infrastructure.Model.Context
                   s.LogoUrl
               }).HasFilter("[Closed] = 0");
 
+            modelBuilder.Entity<Study>()
+           .HasIndex(s => new { s.Closed })
+           .IncludeProperties(s => new
+           {
+               s.Id,
+               s.Restricted,
+               s.Name,
+               s.Description,
+               s.Vendor,
+               s.LogoUrl
+           });
+
             modelBuilder.Entity<Sandbox>()
               .HasIndex(s => new { s.Id, s.StudyId })
               .IncludeProperties(s => new
@@ -116,11 +128,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(s => s.Sandboxes)
                 .HasForeignKey(s => s.StudyId);
 
-            //STUDY SPECIFIC DATASET
-            modelBuilder.Entity<Dataset>()
-              .HasOne(ds => ds.Study)
-              .WithMany(s => s.StudySpecificDatasets)
-              .HasForeignKey(ds => ds.StudyId);
+            //STUDY SPECIFIC DATASET        
 
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)

@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -31,6 +32,15 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             var sandboxQueryable =
                (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(_db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db));
+
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
+
+            return sandbox;
+        }
+
+        public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
+        {
+            var sandboxQueryable = SandboxBaseQueries.SandboxForPhaseShift(_db);
 
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
 
@@ -78,6 +88,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Sandbox> GetDetailsByIdAsync(int id)
         {
             return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
+        }
+
+        public async Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase)
+        {
+            return await StudyAccessUtil.GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(_userService, SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
         }
     }
 }

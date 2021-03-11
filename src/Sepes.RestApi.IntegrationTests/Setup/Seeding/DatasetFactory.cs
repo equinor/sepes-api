@@ -3,20 +3,26 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 {
     public static class DatasetFactory
-    {
-        public static Dataset Create(
-            CloudResource parentResourceGroup,
-                string name,
-                string location,
-                string classification
-              )
+    {     
+
+        public static StudyDataset CreateStudySpecificRelation(
+            Study study,
+             string name,
+             string location,
+             string classification
+           )
         {
+            var parentResourceGroup = study.Resources.FirstOrDefault();
             var dataset = DatasetBasic(parentResourceGroup, name, location, classification);
-            return dataset;
+            dataset.StudySpecific = true;
+            var relation = new StudyDataset() { StudyId = study.Id, Dataset = dataset };      
+
+            return relation;
         }
 
         static Dataset DatasetBasic(CloudResource parentResourceGroup, string name, string location, string classification)
