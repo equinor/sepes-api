@@ -110,8 +110,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Updated = DateTime.UtcNow,
                 Sandboxes = new List<Sandbox>(),
                 StudyDatasets = new List<StudyDataset>(),
-                Resources = new List<CloudResource>() { StudySpecificDatasetResourceGroup(name) }
-
+                Resources = new List<CloudResource>() { StudySpecificDatasetResourceGroup(name) },
+                
             };
         }
 
