@@ -81,6 +81,8 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
+
+
         public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation(ProvisioningLogUtil.QueueParent(queueParentItem));
@@ -95,6 +97,12 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
+                foreach (var queueChildItem in queueParentItem.Children)
+                {
+                    currentOperation = await _resourceOperationReadService.GetByIdAsync(queueChildItem.ResourceOperationId);
+                    OperationCheckUtils.ThrowIfPossiblyInProgress(currentOperation);
+                }
+
                 foreach (var queueChildItem in queueParentItem.Children)
                 {
                     try
