@@ -70,7 +70,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                     var datasetName = $"ds-{counter}";
                     var datasetClassification = (DatasetClassification)counter;
 
-                    study.StudySpecificDatasets.Add(DatasetFactory.Create(study.Resources.FirstOrDefault(), datasetName, TestConstants.REGION, datasetClassification.ToString()));
+                    study.StudyDatasets.Add(DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString()));
                 }
             }
         }
@@ -88,7 +88,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 UpdatedBy = "seed",
                 Updated = DateTime.UtcNow,
                 Sandboxes = new List<Sandbox>(),
-                StudySpecificDatasets = new List<Dataset>(),
+                StudyDatasets = new List<StudyDataset>(),
                 Resources = new List<CloudResource>() { StudySpecificDatasetResourceGroup(name) }
                 
             };

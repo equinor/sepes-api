@@ -72,13 +72,13 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         {
             if (addDatasets)
             {
-                if (study.StudySpecificDatasets != null)
+                if (study.StudyDatasets != null)
                 {
                     sandbox.SandboxDatasets = new List<SandboxDataset>();
 
-                    foreach (var curDs in study.StudySpecificDatasets)
+                    foreach (var curDs in study.StudyDatasets)
                     {
-                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.Id, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed"  });
+                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed"  });
                     }
                 }
             }
