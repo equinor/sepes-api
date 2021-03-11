@@ -72,10 +72,12 @@ jobs:
 
     - name: Integration Tests - Run and collect coverage
       working-directory: src/Sepes.RestApi.IntegrationTests   
-      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings
+      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings 
 
     # generate coverage report
     - name: Build coverage report
+      env: 
+        SepesIntegrationTestConnectionString: ${{ secrets.CONNECTION_STRING }}
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlSummary
