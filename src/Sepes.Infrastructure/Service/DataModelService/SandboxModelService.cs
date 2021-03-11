@@ -38,6 +38,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return sandbox;
         }
 
+        public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
+        {
+            var sandboxQueryable =
+               (withIncludes ? SandboxBaseQueries.ActiveSandboxesWithIncludesQueryable(_db) : SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db));
+
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
+
+            return sandbox;
+        }
+
         public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
         {
             var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId).AsNoTracking();

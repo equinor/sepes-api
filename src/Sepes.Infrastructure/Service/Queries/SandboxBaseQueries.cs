@@ -74,5 +74,16 @@ namespace Sepes.Infrastructure.Service.Queries
                 .If(includePhase, x=> x.Include(sb=> sb.PhaseHistory));
 
         }
+
+        public static IQueryable<Sandbox> SandboxForPhaseShift(SepesDbContext db)
+        {
+            return ActiveSandboxesBaseQueryable(db)
+                .Include(sb => sb.Study)
+                 .ThenInclude(s => s.StudyDatasets)
+                     .ThenInclude(sd => sd.Dataset)
+                      .ThenInclude(sd => sd.SandboxDatasets)
+            .Include(sb => sb.PhaseHistory);
+
+        }
     }
 }

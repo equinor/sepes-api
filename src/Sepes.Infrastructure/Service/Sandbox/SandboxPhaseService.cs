@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserAsync();
 
-                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+                var sandboxFromDb = await GetSandboxForPhaseShift(sandboxId, true);
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
@@ -276,6 +276,11 @@ namespace Sepes.Infrastructure.Service
             var sandbox = await GetWithoutChecks(sandboxId);
             var resourcesForSandbox = await _sandboxResourceReadService.GetSandboxResources(sandboxId);
             await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
+        }
+
+        protected async Task<Sandbox> GetSandboxForPhaseShift(int sandboxId, bool disableTracking = false)
+        {
+            return await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, disableTracking);
         }
 
         async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
