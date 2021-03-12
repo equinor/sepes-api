@@ -59,13 +59,11 @@ namespace Sepes.Tests.Util
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Internal.ToString(), DatasetId = 2, AddedToSandbox = true });
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Restricted.ToString(), DatasetId = 3, AddedToSandbox = true });
 
-            AvailableDatasets test = new AvailableDatasets(list);
-            test.Datasets = list;
-            //test.Datasets = List;
-            //ar sandboxDetails = new SandboxDetails() { Datasets = list };
-            DatasetClassificationUtils.SetRestrictionProperties(test);
+            AvailableDatasets availableDatasets = new AvailableDatasets(list);
+            availableDatasets.Datasets = list;
+            DatasetClassificationUtils.SetRestrictionProperties(availableDatasets);
 
-            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_RESTRICTED, test.RestrictionDisplayText);
+            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_RESTRICTED, availableDatasets.RestrictionDisplayText);
         }
 
         [Fact]
@@ -77,13 +75,11 @@ namespace Sepes.Tests.Util
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Internal.ToString(), DatasetId = 2, AddedToSandbox = true });
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Internal.ToString(), DatasetId = 3, AddedToSandbox = true });
 
-            AvailableDatasets test = new AvailableDatasets(list);
-            test.Datasets = list;
-            //test.Datasets = List;
-            //ar sandboxDetails = new SandboxDetails() { Datasets = list };
-            DatasetClassificationUtils.SetRestrictionProperties(test);
+            AvailableDatasets availableDatasets = new AvailableDatasets(list);
+            availableDatasets.Datasets = list;
+            DatasetClassificationUtils.SetRestrictionProperties(availableDatasets);
 
-            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_INTERNAL, test.RestrictionDisplayText);
+            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_INTERNAL, availableDatasets.RestrictionDisplayText);
         }
 
         [Fact]
@@ -95,13 +91,12 @@ namespace Sepes.Tests.Util
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Open.ToString(), DatasetId = 2, AddedToSandbox = true });
             list.Add(new AvailableDatasetItem() { Classification = DatasetClassification.Open.ToString(), DatasetId = 3, AddedToSandbox = true });
 
-            AvailableDatasets test = new AvailableDatasets(list);
-            test.Datasets = list;
-            //test.Datasets = List;
-            //ar sandboxDetails = new SandboxDetails() { Datasets = list };
-            DatasetClassificationUtils.SetRestrictionProperties(test);
+            AvailableDatasets availableDatasets = new AvailableDatasets(list);
+            availableDatasets.Datasets = list;
 
-            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_OPEN, test.RestrictionDisplayText);
+            DatasetClassificationUtils.SetRestrictionProperties(availableDatasets);
+
+            Assert.Equal(DatasetConstants.DATASET_RESTRICTION_TEXT_OPEN, availableDatasets.RestrictionDisplayText);
         }
     }
 }
