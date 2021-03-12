@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -22,8 +23,17 @@ namespace Sepes.RestApi
             WebHost.CreateDefaultBuilder(args)
              .ConfigureAppConfiguration((context, configBuilder) =>
              {
+                 foreach(var curSource in configBuilder.Sources)
+                 {
+                     if (curSource.GetType().Name == typeof(JsonConfigurationSource).Name)
+                     {
+                         var fileSource = curSource as JsonConfigurationSource;
+                         fileSource.ReloadOnChange = false;
+                     }
+                 }
+
                  var config = configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX).Build();
-                 
+            
                  var keyVaultUrl = config[ConfigConstants.KEY_VAULT];
 
                  if (string.IsNullOrWhiteSpace(keyVaultUrl))
