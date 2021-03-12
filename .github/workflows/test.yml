@@ -34,7 +34,7 @@ jobs:
 
         # Create new database for PR
         dir
-        Import-Module scripts/createdatabase.ps1 -Force
+        Import-Module ./scripts/createdatabase.ps1 -Force
       
         try {
             Write-Host "Creating database.."
