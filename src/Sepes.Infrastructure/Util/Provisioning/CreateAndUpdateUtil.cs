@@ -81,13 +81,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
         static Task<ResourceProvisioningResult> CreateProvisioningResultTask(CloudResourceOperationDto operation, ResourceProvisioningParameters currentCrudInput, IPerformResourceProvisioning provisioningService, CancellationTokenSource cancellation, ILogger logger)
         {
             if (operation.OperationType == CloudResourceOperationType.CREATE)
-            {
-                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Initial checks succeeded. Proceeding with CREATE operation"));
+            {              
                 return provisioningService.EnsureCreated(currentCrudInput, cancellation.Token);
             }
             else
-            {
-                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Initial checks succeeded. Proceeding with UPDATE operation"));
+            {              
                 return provisioningService.Update(currentCrudInput, cancellation.Token);
             }
         }
