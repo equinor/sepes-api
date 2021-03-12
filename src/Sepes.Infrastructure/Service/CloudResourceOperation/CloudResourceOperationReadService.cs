@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<bool> OperationFailedOrAbortedAsync(int operationId)
         {
             var itemFromDb = await GetResourceOperationOrThrowAsync(operationId, true);
-            return (itemFromDb.Status == CloudResourceOperationState.FAILED && itemFromDb.TryCount >= itemFromDb.MaxTryCount) || itemFromDb.Status == CloudResourceOperationState.ABORTED;
+            return (itemFromDb.Status == CloudResourceOperationState.FAILED && itemFromDb.TryCount >= itemFromDb.MaxTryCount) || itemFromDb.Status == CloudResourceOperationState.ABORTED || itemFromDb.Status == CloudResourceOperationState.ABANDONED;
         }
 
         public async Task<CloudResourceOperation> GetUnfinishedDeleteOperation(int resourceId)

@@ -31,16 +31,17 @@ namespace Sepes.Infrastructure.Util
                 throw new ArgumentNullException("resources");
             }
 
-            foreach(var curResource in resources)
+            return resources.FirstOrDefault(r => r.ResourceType == resourceType && (!mustBeSandboxControlled || (mustBeSandboxControlled && r.SandboxControlled)));         
+        }
+
+        public static CloudResource GetResourceByType(List<CloudResource> resources, string resourceType, bool mustBeSandboxControlled = false)
+        {
+            if (resources == null)
             {
-                if(curResource.ResourceType == resourceType &&
-                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled) ))
-                {
-                    return curResource;
-                }
+                throw new ArgumentNullException("resources");
             }
 
-            return null;
+            return resources.FirstOrDefault(r => r.ResourceType == resourceType && (!mustBeSandboxControlled || (mustBeSandboxControlled && r.SandboxControlled)));
         }
 
         public static CloudResource GetResourceByTypeAndPurpose(List<CloudResource> resources, string resourceType, string purpose)
@@ -50,33 +51,17 @@ namespace Sepes.Infrastructure.Util
                 throw new ArgumentNullException("resources");
             }
 
-            foreach (var curResource in resources)
-            {
-                if (curResource.ResourceType == resourceType && curResource.Purpose == purpose)
-                {
-                    return curResource;
-                }
-            }
-
-            return null;
+            return resources.FirstOrDefault(r => r.ResourceType == resourceType && r.Purpose == purpose);
         }
 
         public static CloudResource GetSandboxResourceGroupEntry(List<CloudResource> resources)
-        {
+        {         
             if (resources == null)
             {
                 throw new ArgumentNullException("resources");
             }
 
-            foreach (var curResource in resources)
-            {
-                if (curResource.ResourceType == AzureResourceType.ResourceGroup && (curResource.SandboxControlled || curResource.Purpose == CloudResourcePurpose.SandboxResourceGroup ))
-                {
-                    return curResource;
-                }
-            }
-
-            return null;
+            return resources.FirstOrDefault(r => r.ResourceType == AzureResourceType.ResourceGroup && (r.SandboxControlled || r.Purpose == CloudResourcePurpose.SandboxResourceGroup));          
         }
 
         public static List<CloudResource> GetSandboxResourceGroupsForStudy(Study study)
@@ -102,18 +87,7 @@ namespace Sepes.Infrastructure.Util
                 throw new ArgumentNullException("resources");
             }
 
-            var result = new List<CloudResourceDto>();
-
-            foreach (var curResource in resources)
-            {
-                if (curResource.ResourceType == resourceType &&
-                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled)))
-                {
-                    result.Add(curResource);
-                }
-            }
-
-            return result;
+            return resources.Where(r => r.ResourceType == resourceType && (!mustBeSandboxControlled || (mustBeSandboxControlled && r.SandboxControlled))).ToList();
         }               
     }
 }

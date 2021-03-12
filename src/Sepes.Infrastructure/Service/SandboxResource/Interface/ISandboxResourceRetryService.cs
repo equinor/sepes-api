@@ -5,7 +5,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceRetryService
     {
-        Task<SandboxResourceLight> RetryLastOperation(int resourceId);
+        Task<SandboxResourceLight> RetryResourceFailedOperation(int resourceId);
         Task ReScheduleSandboxResourceCreation(int sandboxId);
     }   
 }

@@ -33,7 +33,7 @@ namespace Sepes.RestApi.Controller
         [HttpPut("resources/{resourceId}/retry")]
         public async Task<IActionResult> RetryLastOperation(int resourceId)
         {
-            var resource = await _sandboxResourceRetryService.RetryLastOperation(resourceId);
+            var resource = await _sandboxResourceRetryService.RetryResourceFailedOperation(resourceId);
             return new JsonResult(resource);
         }
 
