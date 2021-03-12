@@ -33,7 +33,9 @@ jobs:
         $dbname = "db-sepes-ci-pr$pr"
 
         # Create new database for PR
-        import-module .github/scripts/createdatabase.ps1 -Force
+        dir
+        Import-Module .github/scripts/createdatabase.ps1 -Force
+                      
       
         try {
             Write-Host "Creating database.."
