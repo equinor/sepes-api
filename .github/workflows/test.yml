@@ -7,9 +7,40 @@ jobs:
     runs-on: ubuntu-latest
     env:
       config: 'Release'
+      azureSubscriptionId: 6cfb8f33-6d4b-43bf-9000-91fd6f53ca28
  
     steps:
     - uses: actions/checkout@v2
+
+    # azure login steps
+    - name: azure login
+      shell: pwsh
+      env:
+        clientId: ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}
+        clientSecret:  ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}
+        tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        sqlServerName: ${{ secrets.CI_SQLSERVERNAME }}
+      run: |
+        az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+        az account set -s ${{ env.azureSubscriptionId }}
+        
+        $pr = (Get-Content ${env:GITHUB_EVENT_PATH} | ConvertFrom-Json).number
+        Write-Host "Pull request: $pr"
+        $dbname = "db-sepes-ci-pr$pr"
+
+        # Create new database for PR
+        import-module ${{github.workspace}}/.github/scripts/createdatabase -Force
+      
+        try {
+            Write-Host "Creating database.."
+            New-SqlDatabase -Name $dbname `
+                -ResourceGroup rg-sepes-ci `
+                -Server $Env:sqlServerName `
+                -ElasticPool sqlpool-sepes-ci
+        }
+        catch {
+        }
+
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
