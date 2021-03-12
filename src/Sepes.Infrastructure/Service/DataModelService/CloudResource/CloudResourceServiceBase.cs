@@ -5,10 +5,8 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
@@ -85,16 +83,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             await CheckAccesAndThrowIfMissing(resource.Sandbox.Study, userOperation);
 
             return resource;
-        }
-
-
-        //    public async Task<CloudResourceDto> GetDtoByIdAsync(int id)
-        //{
-        //    var entityFromDb = await GetOrThrowInternalAsync(id);
-        //    var dto = MapEntityToDto(entityFromDb);
-
-        //    return dto;
-        //}
+        }        
 
         protected CloudResourceDto MapEntityToDto(CloudResource entity) => _mapper.Map<CloudResourceDto>(entity);
 
