@@ -27,6 +27,25 @@ jobs:
       run: |
         az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
         az account set -s ${{ env.azureSubscriptionId }}
+
+    - name: CI database
+      shell: pwsh
+      env:
+        sqlServerName: ${{ secrets.CI_SQLSERVERNAME }}
+      run: |
+        # Get the Runners publics IP and add to allow-list on the SQL server
+        $Ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content
+        try {
+          $ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content
+          az sql server firewall-rule create `
+              --name github-runner-ip `
+              --resource-group rg-sepes-ci `
+              --server $Env:sqlServerName `
+              --start-ip-address $ip `
+              --end-ip-address $ip
+        }
+        catch {
+        }
         
         $pr = (Get-Content ${env:GITHUB_EVENT_PATH} | ConvertFrom-Json).number
         Write-Host "Pull request: $pr"
@@ -37,11 +56,16 @@ jobs:
         Import-Module ./scripts/createdatabase.ps1 -Force
       
         try {
-            Write-Host "Creating database.."
-            New-SqlDatabase -Name $dbname `
-                -ResourceGroup rg-sepes-ci `
-                -Server $Env:sqlServerName `
-                -ElasticPool sqlpool-sepes-ci
+            if (!$pr){
+                write-host "No PR number found, skipping creating database"
+            }
+            else{
+                Write-Host "Creating database.."
+                New-SqlDatabase -Name $dbname `
+                    -ResourceGroup rg-sepes-ci `
+                    -Server $Env:sqlServerName `
+                    -ElasticPool sqlpool-sepes-ci
+                }
         }
         catch {
         }
