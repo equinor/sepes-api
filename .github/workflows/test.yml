@@ -33,6 +33,7 @@ jobs:
         $dbname = "db-sepes-ci-pr$pr"
 
         # Create new database for PR
+        dir
         Import-Module scripts/createdatabase.ps1 -Force
       
         try {
