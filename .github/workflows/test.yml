@@ -28,6 +28,7 @@ jobs:
         az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
         az account set -s ${{ env.azureSubscriptionId }}
 
+    # Create CI database
     - name: CI database
       shell: pwsh
       env:
@@ -52,7 +53,6 @@ jobs:
         $dbname = "db-sepes-ci-pr$pr"
 
         # Create new database for PR
-        dir
         Import-Module ./scripts/createdatabase.ps1 -Force
       
         try {
