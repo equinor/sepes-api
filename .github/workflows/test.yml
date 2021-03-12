@@ -1,7 +1,7 @@
 name: Unit Tests
 on:
   pull_request:    
-    branches: [ master, develop ]
+    branches: [ master, develop, test/run-integrationtest-in-github ]
   workflow_dispatch:
 jobs:
   build:
