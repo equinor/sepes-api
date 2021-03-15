@@ -61,6 +61,11 @@ namespace Sepes.Infrastructure.Util
 
             var baseStatusOnThisOperation = DecideWhatOperationToBaseStatusOn(resource);
 
+            if (baseStatusOnThisOperation == null)
+            {
+                return "n/a";
+            }
+
             if (AbleToCreateStatusForOngoingWork(baseStatusOnThisOperation, out string unfinishedWorkStatus))
             {
                 return unfinishedWorkStatus;
