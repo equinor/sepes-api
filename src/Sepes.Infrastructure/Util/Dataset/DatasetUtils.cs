@@ -10,6 +10,11 @@ namespace Sepes.Infrastructure.Util
     {
         public static Study GetStudyFromStudySpecificDatasetOrThrow(Dataset dataset)
         {
+            if (dataset == null)
+            {
+                throw new ArgumentException("Dataset is empty");
+            }
+
             var studyDatasetRelation = dataset.StudyDatasets.SingleOrDefault();
 
             if (studyDatasetRelation == null)
@@ -62,6 +67,11 @@ namespace Sepes.Infrastructure.Util
 
         public static CloudResource GetStudySpecificStorageAccountResourceEntry(Dataset dataset)
         {
+            if (dataset == null)
+            {
+                throw new ArgumentException("Dataset is empty");
+            }
+
             if(dataset.StudySpecific)
             {
                 if(dataset.Resources == null)
