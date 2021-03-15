@@ -90,9 +90,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
         }
 
-        public async Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase)
-        {
-            return await StudyAccessUtil.GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(_userService, SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
-        }
+      
     }
 }
