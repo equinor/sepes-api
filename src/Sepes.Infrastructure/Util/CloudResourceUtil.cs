@@ -1,5 +1,4 @@
 ﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
@@ -22,19 +21,19 @@ namespace Sepes.Infrastructure.Util
             }
 
             return resource.Sandbox.Resources.FirstOrDefault(r => r.ResourceType == resourceType);
-        }
+        }       
 
-        public static CloudResourceDto GetResourceByType(List<CloudResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
+        public static CloudResource GetResourceByType(List<CloudResource> resources, string resourceType, bool mustBeSandboxControlled = false)
         {
-            if(resources == null)
+            if (resources == null)
             {
                 throw new ArgumentNullException("resources");
             }
 
-            foreach(var curResource in resources)
+            foreach (var curResource in resources)
             {
-                if(curResource.ResourceType == resourceType &&
-                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled) ))
+                if (curResource.ResourceType == resourceType &&
+                    (!mustBeSandboxControlled || (mustBeSandboxControlled && curResource.SandboxControlled)))
                 {
                     return curResource;
                 }
@@ -95,14 +94,14 @@ namespace Sepes.Infrastructure.Util
                 .ToList();
         }
 
-        public static List<CloudResourceDto> GetAllResourcesByType(List<CloudResourceDto> resources, string resourceType, bool mustBeSandboxControlled = false)
+        public static List<CloudResource> GetAllResourcesByType(List<CloudResource> resources, string resourceType, bool mustBeSandboxControlled = false)
         {
             if (resources == null)
             {
                 throw new ArgumentNullException("resources");
             }
 
-            var result = new List<CloudResourceDto>();
+            var result = new List<CloudResource>();
 
             foreach (var curResource in resources)
             {

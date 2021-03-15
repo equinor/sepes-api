@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -10,43 +10,26 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class SandboxDatasetService : ServiceBase<Dataset>, ISandboxDatasetService
-    {
-        ISandboxModelService _sandboxModelService;
+    public class SandboxDatasetModelService : ModelServiceBase, ISandboxDatasetModelService
+    {          
 
-        public SandboxDatasetService(SepesDbContext db, IMapper mapper, IUserService userService, ISandboxModelService sandboxModelService)
-            : base(db, mapper, userService)
+        public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService)
+            : base(configuration, db, logger, userService)
         {
-            _sandboxModelService = sandboxModelService;
-        }
-
-        public async Task<IEnumerable<SandboxDatasetDto>> GetAll(int sandboxId)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyBySandboxIdCheckAccessOrThrow(_db, _userService, sandboxId, UserOperation.Study_Read);
-
-            var datasetsFromDb = await _db.SandboxDatasets
-                .Include(sd => sd.Dataset)
-                .Include(s => s.Sandbox)
-                .ThenInclude(sb => sb.Study)
-                .Where(ds => ds.SandboxId == sandboxId)
-                .ToListAsync();
-
-            var datasetDtos = _mapper.Map<IEnumerable<SandboxDatasetDto>>(datasetsFromDb);
-
-            return datasetDtos;
-        }      
+         
+        }           
 
         public async Task<AvailableDatasets> AllAvailable(int sandboxId)
         {
-            var sandbox = await _sandboxModelService.GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Read, true, false);
-
+            var sandbox = await GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Read, true, false);
             return MapToAvailable(sandbox);          
         }
 
@@ -68,9 +51,16 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
+        public async Task<List<SandboxDataset>> GetSandboxDatasetsForPhaseShiftAsync(int sandboxId)
+        {
+            var queryable = SandboxBaseQueries.SandboxDatasetForPhaseShift(_db);
+            queryable = queryable.Where(sds => sds.SandboxId == sandboxId);
+            return await queryable.ToListAsync();
+        }
+
         public async Task<AvailableDatasets> Add(int sandboxId, int datasetId)
         {
-            var sandbox = await _sandboxModelService.GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Crud_Sandbox, false, true);
+            var sandbox = await GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Crud_Sandbox, false, true);
 
             ValidateAddOrRemoveDataset(sandbox);
 
@@ -111,7 +101,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<AvailableDatasets> Remove(int sandboxId, int datasetId)
         {
-            var sandbox = await _sandboxModelService.GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Crud_Sandbox, false, true);
+            var sandbox = await GetSandboxForDatasetOperationsAsync(sandboxId, UserOperation.Study_Crud_Sandbox, false, true);
 
             ValidateAddOrRemoveDataset(sandbox);
 
@@ -141,6 +131,9 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
+        async Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase)
+        {
+            return await StudyAccessUtil.GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(_userService, SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
+        }
     }
 }
