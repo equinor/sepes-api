@@ -134,6 +134,8 @@ jobs:
       env: 
         SepesIntegrationTestConnectionString: ${{ secrets.CONNECTION_STRING }}
         DisableMigrations: "true"
+        CostAllocationTypeTagName: "INTTEST-CostAllocationType"
+        CostAllocationCodeTagName: "INTTEST-CostAllocationCode"
       working-directory: src/Sepes.RestApi.IntegrationTests   
       run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings 
 
