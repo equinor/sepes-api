@@ -40,10 +40,50 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public void GetStudySpecificStorageAccountResourceEntry_ShouldNotReturn2()
+        public void GetStudySpecificStorageAccountResourceEntry_ShouldReturnCorrectErrorMessage()
         {
             var expectedResult = "Dataset is empty";
             var ex = Assert.Throws<ArgumentException>(() => DatasetUtils.GetStudySpecificStorageAccountResourceEntry(null));
+            Assert.Equal(expectedResult, ex.Message);
+        }
+
+        [Fact]
+        public void GetStudyFromStudySpecificDatasetOrThrow_ShouldReturnCorrectErrorMessage()
+        {
+            var expectedResult = "Dataset is empty";
+            var ex = Assert.Throws<ArgumentException>(() => DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(null));
+            Assert.Equal(expectedResult, ex.Message);
+        }
+
+        [Fact]
+        public void GetStudyFromStudySpecificDatasetOrThrow_ShouldReturnCorrectStudy()
+        {
+            var studyDatasets = new List<StudyDataset>();
+            var study = new Study() { Name = "test", Id = 1 };
+            studyDatasets.Add(new StudyDataset { Study = study });
+            var dataset = new Dataset() { StudyDatasets = studyDatasets };
+           var result = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
+            Assert.Equal(study, result);
+        }
+
+        [Fact]
+        public void GetStudyFromStudySpecificDatasetOrThrow_MissingInclude()
+        {
+            var expectedResult = "GetStudyFromStudySpecificDatasetOrThrow: Missing include on Study";
+            var studyDatasets = new List<StudyDataset>();
+            studyDatasets.Add(new StudyDataset { Study = null });
+            var dataset = new Dataset() { StudyDatasets = studyDatasets };
+            var ex = Assert.Throws<Exception>(() => DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset));
+            Assert.Equal(expectedResult, ex.Message);
+        }
+
+        [Fact]
+        public void GetStudyFromStudySpecificDatasetOrThrow_NoReleationErrorMessage()
+        {
+            var expectedResult = "GetStudyFromStudySpecificDatasetOrThrow: Dataset appears to be study specific, but no relation found";
+            var studyDatasets = new List<StudyDataset>();
+            var dataset = new Dataset() { StudyDatasets = studyDatasets };
+            var ex = Assert.Throws<Exception>(() => DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset));
             Assert.Equal(expectedResult, ex.Message);
         }
     }
