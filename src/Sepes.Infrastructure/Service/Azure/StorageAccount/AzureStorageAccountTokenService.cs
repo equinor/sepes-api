@@ -12,7 +12,6 @@ namespace Sepes.Infrastructure.Service.Azure
 {
     public class AzureStorageAccountTokenService : AzureBlobStorageServiceBase, IAzureStorageAccountTokenService
     {
-
         public AzureStorageAccountTokenService(IConfiguration configuration, ILogger<AzureStorageAccountTokenService> logger)
             : base(configuration, logger)
         {
@@ -102,15 +101,7 @@ namespace Sepes.Infrastructure.Service.Azure
             {
                 return null;
             }
-        }
-
-        public async Task<Uri> GetSasKey(string containerName = "files", CancellationToken cancellationToken = default)
-        {
-            var blobServiceClient = await GetBlobServiceClient();
-            var blobContainerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
-            return blobContainerClient.Uri;
-        }
+        }      
 
         protected override async Task<string> GetStorageAccountKey(CancellationToken cancellationToken = default)
         {
