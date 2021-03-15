@@ -133,6 +133,7 @@ jobs:
     - name: Integration Tests - Run and collect coverage
       env: 
         SepesIntegrationTestConnectionString: ${{ secrets.CONNECTION_STRING }}
+        DisableMigrations: "true"
       working-directory: src/Sepes.RestApi.IntegrationTests   
       run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings 
 
