@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
         public string Resolve(Dataset source, DatasetDto destination, string destMember, ResolutionContext context)
         {
-            if (source.StudyId.HasValue && source.StudyId.Value > 0)
+            if (source.StudySpecific)
             {
                 var storageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(source);
 

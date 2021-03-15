@@ -17,7 +17,7 @@ namespace Sepes.Infrastructure.Model.Automapper
         {
             string storageAccountIdToUse = null;
 
-            if (source.StudyId.HasValue && source.StudyId.Value > 0)
+            if (source.StudySpecific)
             {
                 var storageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(source);
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Models;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using System;
@@ -24,7 +25,8 @@ namespace Sepes.Infrastructure.Util
 
         public static string GetSizeCategory(string vmSize)
         {
-            if (!string.IsNullOrEmpty(vmSize)) { 
+            if (!string.IsNullOrEmpty(vmSize))
+            {
                 if (vmSize.ToLower().Contains("standard_e"))
                 {
                     return "memory";
@@ -40,7 +42,7 @@ namespace Sepes.Infrastructure.Util
             }
 
             return "unknowncategory";
-        }       
+        }
 
         public static string GetDisplayTextSizeForDropdown(VmSize vmSizeInfo)
         {
@@ -103,6 +105,42 @@ namespace Sepes.Infrastructure.Util
                 return true;
             }
             return false;
+        }
+
+        public static bool InternetIsOpen(CloudResource vmResource)
+        {
+            var relevantRule = GetInternetRule(vmResource);
+
+            if(relevantRule == null)
+            {
+                return false;
+            }
+
+            return relevantRule.Action == RuleAction.Allow;
+        }
+
+        public static VmRuleDto GetInternetRule(CloudResource vmResource)
+        {
+            if (!String.IsNullOrWhiteSpace(vmResource.ConfigString))
+            {
+                var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vmResource.ConfigString);
+
+                if (vmSettings != null && vmSettings.Rules != null)
+                {
+                    foreach (var curRule in vmSettings.Rules)
+                    {
+                        if (curRule.Direction == RuleDirection.Outbound)
+                        {
+                            if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
+                            {
+                                return curRule;
+                            }
+                        }
+                    }
+                }
+            }          
+
+            return null;
         }
 
         //public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)

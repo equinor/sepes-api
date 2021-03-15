@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -62,8 +63,10 @@ namespace Sepes.Infrastructure.Service
         }
 
         async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
-        { 
+        {
+           var sp = Stopwatch.StartNew();
             return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
+            var elapsed = sp.ElapsedMilliseconds;
         }     
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)

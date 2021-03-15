@@ -59,14 +59,12 @@ namespace Sepes.Infrastructure.Util
                 return "No operations found";
             }
 
-            var baseStatusOnThisOperation = DecideWhatOperationToBaseStatusOn(resource);                      
+            var baseStatusOnThisOperation = DecideWhatOperationToBaseStatusOn(resource);
 
-            string unfinishedWorkStatus = null;
-           
-            if (AbleToCreateStatusForOngoingWork(baseStatusOnThisOperation, out unfinishedWorkStatus))
+            if (AbleToCreateStatusForOngoingWork(baseStatusOnThisOperation, out string unfinishedWorkStatus))
             {
                 return unfinishedWorkStatus;
-            }            
+            }
 
             if (!string.IsNullOrWhiteSpace(baseStatusOnThisOperation.Status))
             {

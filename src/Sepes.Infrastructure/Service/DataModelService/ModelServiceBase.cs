@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -14,7 +16,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class ModelServiceBase<TModel> where TModel : BaseModel
     {
@@ -85,10 +87,60 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
         {
-            if (!await StudyAccessUtil.HasAccessToOperationForStudyAsync(_userService, study, operation))
+            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);           
+        }
+
+        protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query) {
+
+            using (var connection = new SqlConnection(GetDbConnectionString()))
             {
-                throw new ForbiddenException($"User {(await _userService.GetCurrentUserAsync()).EmailAddress} does not have permission to perform operation {operation} on study {study}");
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                return await connection.QueryAsync<T>(query);
+            } 
+        }
+
+        protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null) where T : SingleEntityDapperResult
+        {
+            using (var connection = new SqlConnection(GetDbConnectionString()))
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                return await connection.QuerySingleOrDefaultAsync<T>(query, parameters);
             }
+        }
+
+        protected string WrapSingleEntityQuery(UserDto currentUser, string dataQuery, UserOperation operation)
+        {           
+            var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
+       
+            var completeQuery = $"WITH dataCte AS ({dataQuery})";
+            completeQuery += " ,accessCte as (SELECT [Id] FROM Studies s INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId WHERE s.Id=@studyId";
+
+            if (!string.IsNullOrWhiteSpace(accessWherePart))
+            {
+                completeQuery += $" AND ({accessWherePart})";
+            }
+
+            completeQuery += " ) SELECT DISTINCT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.StudyId = a.Id ";
+
+            return completeQuery;
+        }
+
+        protected async Task<T> RunSingleEntityQuery<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
+        {
+            var completeQuery = WrapSingleEntityQuery(currentUser, dataQuery, operation);
+            var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
+
+            StudyAccessUtil.CheckAccesAndThrowIfMissing(singleEntity, currentUser, operation);
+
+            return singleEntity;
         }
     }
 }

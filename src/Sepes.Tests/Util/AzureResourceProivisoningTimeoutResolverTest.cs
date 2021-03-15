@@ -15,7 +15,7 @@ namespace Sepes.Tests.Util
         [InlineData(AzureResourceType.VirtualNetwork, CloudResourceOperationType.CREATE, 180)]
         [InlineData(AzureResourceType.ResourceGroup, CloudResourceOperationType.CREATE, 60)]
         [InlineData(AzureResourceType.ResourceGroup, CloudResourceOperationType.DELETE, 600)]
-        [InlineData(AzureResourceType.Bastion, CloudResourceOperationType.CREATE, 600)]
+        [InlineData(AzureResourceType.Bastion, CloudResourceOperationType.CREATE, 900)]
         [InlineData(AzureResourceType.VirtualMachine, CloudResourceOperationType.CREATE, 600)]
         [InlineData("", "", 60)]
         [InlineData(null, null, 60)]

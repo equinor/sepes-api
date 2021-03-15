@@ -150,7 +150,8 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
-            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
+            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
+            services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
@@ -177,12 +178,19 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();    
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
-            services.AddTransient<IVirtualMachineService, VirtualMachineService>();
-            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-            services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
+            services.AddTransient<IVirtualMachineCreateService, VirtualMachineCreateService>();
+            services.AddTransient<IVirtualMachineReadService, VirtualMachineReadService>();
+            services.AddTransient<IVirtualMachineDeleteService, VirtualMachineDeleteService>();
+            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();      
+            services.AddTransient<IVirtualMachineDiskSizeService, VirtualMachineDiskSizeService>();        
+            services.AddTransient<IVirtualMachineOperatingSystemService, VirtualMachineOperatingSystemService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
+            services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
+            //Import Services
+            services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
+            services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

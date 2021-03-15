@@ -113,14 +113,14 @@ namespace Sepes.Infrastructure.Service
         }
         public async Task<SandboxResourceLight> RetryLastOperation(int resourceId)
         {
-            var resource = await _cloudResourceService.GetByIdAsync(resourceId);
-
-            var sandboxFromDb = await GetOrThrowAsync(resource.SandboxId.Value, UserOperation.Study_Crud_Sandbox, true);
+            var resource = await _cloudResourceService.GetByIdAsync(resourceId, UserOperation.Study_Crud_Sandbox);       
 
             if (resource.ResourceType != AzureResourceType.VirtualMachine)
             {
                 throw new ArgumentException("Retry is only supported for Virtual Machines");
             }
+
+            var sandboxFromDb = resource.Sandbox;
 
             var relevantOperation = resource.Operations.OrderByDescending(o => o.Created).FirstOrDefault();
 

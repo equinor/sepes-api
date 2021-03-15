@@ -8,6 +8,8 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util.Auth;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -36,9 +38,31 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return sandbox;
         }
 
+        public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
+        {
+            var sandboxQueryable = SandboxBaseQueries.SandboxForPhaseShift(_db);
+
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
+
+            return sandbox;
+        }
+
+        public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
+        {
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId).AsNoTracking();
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Read);
+
+            if(sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            return sandbox;
+        }
+
         public async Task<string> GetRegionByIdAsync(int sandboxId, UserOperation userOperation)
         {
-            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesBaseQueryable(_db), sandboxId, userOperation);
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.ActiveSandboxesMinimalIncludesQueryable(_db).AsNoTracking(), sandboxId, userOperation);
             return sandbox.Region;
         }
 
@@ -64,6 +88,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Sandbox> GetDetailsByIdAsync(int id)
         {
             return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
+        }
+
+        public async Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase)
+        {
+            return await StudyAccessUtil.GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(_userService, SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
         }
     }
 }

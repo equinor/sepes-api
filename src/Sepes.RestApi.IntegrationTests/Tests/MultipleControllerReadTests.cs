@@ -87,6 +87,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
             await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
             //await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
         }
 
@@ -94,7 +95,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
-           // await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
+            // await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
         }       
     }
 }

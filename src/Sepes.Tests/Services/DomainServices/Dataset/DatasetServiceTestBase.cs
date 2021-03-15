@@ -30,8 +30,7 @@ namespace Sepes.Tests.Services
                 LRAId = 1337,
                 DataId = 420,
                 SourceSystem = "SAP",
-                CountryOfOrigin = "Norway",
-                StudyId = null
+                CountryOfOrigin = "Norway"               
             };
 
             db.Datasets.Add(dataset);

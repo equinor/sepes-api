@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
@@ -82,7 +83,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task HandleWork(ProvisioningQueueParentDto queueParentItem)
         {
-            _logger.LogInformation(ProvisioningLogUtil.QueueParent(queueParentItem));
+            _logger.LogInformation(ProvisioningLogUtil.HandlingQueueParent(queueParentItem));
 
             //One per child item in queue item
             CloudResourceOperationDto currentOperation = null;
@@ -94,6 +95,18 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
+                //If more than one child/operation, run basic checks on all operations before starting
+                if(queueParentItem.Children.Count > 1)
+                {
+                    _logger.LogInformation(ProvisioningLogUtil.QueueParentProgress(queueParentItem, "Multiple child item, running pre checks"));
+
+                    foreach (var queueChildItem in queueParentItem.Children)
+                    {
+                        currentOperation = await _resourceOperationReadService.GetByIdAsync(queueChildItem.ResourceOperationId);
+                        OperationCheckUtils.ThrowIfPossiblyInProgress(currentOperation);
+                    }
+                }               
+
                 foreach (var queueChildItem in queueParentItem.Children)
                 {
                     try
@@ -114,8 +127,12 @@ namespace Sepes.Infrastructure.Service
 
                         await ProvisioningQueueUtil.IncreaseInvisibleBasedOnResource(currentOperation, queueParentItem, _workQueue);
 
+                        _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Initial checks passed"));
+
                         if (CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(currentOperation))
                         {
+                            _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is CREATE or UPDATE"));
+
                             var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
 
                             if (await OperationCompletedUtil.HandledAsAllreadyCompletedAsync(currentOperation, _monitoringService))
@@ -137,6 +154,7 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (DeleteOperationUtil.WillBeHandledAsDelete(currentOperation))
                         {
+                            _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is DELETE"));
                             var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
                             currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
@@ -144,6 +162,7 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (EnsureRolesUtil.WillBeHandledAsEnsureRoles(currentOperation))
                         {
+                            _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is ENSURE ROLES"));
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
                             await EnsureRolesUtil.EnsureRoles(currentOperation,
@@ -156,6 +175,7 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (EnsureFirewallRulesUtil.CanHandle(currentOperation))
                         {
+                            _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is ENSURE FIREWALL"));
                             var firewallRuleService = AzureResourceServiceResolver.GetFirewallRuleService(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
@@ -176,6 +196,7 @@ namespace Sepes.Infrastructure.Service
                         }
                         else if (EnsureCorsRulesUtil.CanHandle(currentOperation))
                         {
+                            _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is ENSURE CORS RULES"));
                             var corsRuleService = AzureResourceServiceResolver.GetCorsRuleServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 

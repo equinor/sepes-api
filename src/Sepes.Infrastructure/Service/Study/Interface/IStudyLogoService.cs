@@ -15,7 +15,9 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task DeleteAsync(Study study);
 
-        Task<StudyDetailsDto> AddLogoAsync(int id, IFormFile studyLogo);
+        //Task<StudyDetailsDto> AddLogoAsync(int id, IFormFile studyLogo);
+
+        Task<string> AddLogoAsync(int id, IFormFile studyLogo);
 
         //Task<LogoResponseDto> GetLogoAsync(int id);
     }

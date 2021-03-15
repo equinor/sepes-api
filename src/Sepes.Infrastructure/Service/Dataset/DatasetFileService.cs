@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,7 +41,9 @@ namespace Sepes.Infrastructure.Service
                 if (IsStudySpecific(dataset))
                 {
                     //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
+                    await ThrowIfOperationNotAllowed(UserOperation.Study_AddRemove_Dataset, study);
+                
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
                 
@@ -80,8 +83,9 @@ namespace Sepes.Infrastructure.Service
                         throw new Exception($"Resource entry for Dataset {dataset.Id} not found");
                     }
 
-                    //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_Read, false);
+                    var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
+                    await ThrowIfOperationNotAllowed(UserOperation.Study_Read, study);
+                
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
                     _storageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
@@ -109,8 +113,10 @@ namespace Sepes.Infrastructure.Service
 
                 if (IsStudySpecific(dataset))
                 {
+                    var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
+
                     //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    await ThrowIfOperationNotAllowed(UserOperation.Study_AddRemove_Dataset, study);               
 
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
 
@@ -141,7 +147,9 @@ namespace Sepes.Infrastructure.Service
                 if (IsStudySpecific(dataset))
                 {
                     //Verify access to study
-                    var study = await GetStudyByIdAsync(dataset.StudyId.Value, UserOperation.Study_AddRemove_Dataset, false);
+                    var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
+                    await ThrowIfOperationNotAllowed(UserOperation.Study_AddRemove_Dataset, study);
+                
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
                     _azureStorageAccountTokenService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);

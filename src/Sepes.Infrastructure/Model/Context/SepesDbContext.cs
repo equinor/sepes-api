@@ -48,17 +48,55 @@ namespace Sepes.Infrastructure.Model.Context
         }
 
         private void AddIndexing(ModelBuilder modelBuilder)
-        {
+        {           
+
             modelBuilder.Entity<Study>()
-                .HasIndex(s => new { s.Closed, s.Restricted} )
-                .IncludeProperties(s => new
-                {
-                    s.Id,
-                    s.Name,
-                    s.Description,
-                    s.Vendor,
-                    s.LogoUrl
-                });
+              .HasIndex(s => new { s.Id, s.Restricted })
+              .IncludeProperties(s => new
+              {
+                  s.Name,
+                  s.Description,
+                  s.Vendor,
+                  s.LogoUrl
+              }).HasFilter("[Closed] = 0");
+
+            modelBuilder.Entity<Study>()
+           .HasIndex(s => new { s.Closed })
+           .IncludeProperties(s => new
+           {
+               s.Id,
+               s.Restricted,
+               s.Name,
+               s.Description,
+               s.Vendor,
+               s.LogoUrl
+           });
+
+            modelBuilder.Entity<Sandbox>()
+              .HasIndex(s => new { s.Id, s.StudyId })
+              .IncludeProperties(s => new
+              {
+                  s.Name,
+                  s.Region
+              }).HasFilter("[Deleted] = 0");
+
+
+            modelBuilder.Entity<CloudResource>()
+              .HasIndex(s => new { s.SandboxId, s.ResourceName })
+         .IncludeProperties(s => new
+         {
+             s.Id,
+             s.Region
+         }).HasFilter("[Deleted] = 0");
+
+
+            modelBuilder.Entity<CloudResource>()
+              .HasIndex(s => new { s.StudyId, s.ResourceName })
+         .IncludeProperties(s => new
+         {
+             s.Id,
+             s.Region
+         }).HasFilter("[Deleted] = 0");
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)
@@ -90,11 +128,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .WithMany(s => s.Sandboxes)
                 .HasForeignKey(s => s.StudyId);
 
-            //STUDY SPECIFIC DATASET
-            modelBuilder.Entity<Dataset>()
-              .HasOne(ds => ds.Study)
-              .WithMany(s => s.StudySpecificDatasets)
-              .HasForeignKey(ds => ds.StudyId);
+            //STUDY SPECIFIC DATASET        
 
             modelBuilder.Entity<StudyDataset>()
                 .HasOne(sd => sd.Study)

@@ -1,11 +1,12 @@
-﻿using Sepes.Infrastructure.Dto.Study;
+﻿using Microsoft.AspNetCore.Http;
+using Sepes.Infrastructure.Dto.Study;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyUpdateService
     { 
-        Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyDto newStudy);
+        Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyUpdateDto newStudy, IFormFile logo = null);
         Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings);
     }
 }

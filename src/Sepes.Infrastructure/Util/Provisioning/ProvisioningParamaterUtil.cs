@@ -1,8 +1,7 @@
-﻿
-using Sepes.Infrastructure.Constants;
+﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Util.Provisioning
@@ -29,7 +28,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
             //Only relevant for Sandbox Resource Creation
             if (currentOperation.Resource.SandboxId.HasValue)
             {
-                var nsg = CloudResourceUtil.GetSibilingResource(await resourceReadService.GetByIdAsync(currentOperation.Resource.Id), AzureResourceType.NetworkSecurityGroup);
+                var nsg = CloudResourceUtil.GetSibilingResource(await resourceReadService.GetByIdNoAccessCheckAsync(currentOperation.Resource.Id), AzureResourceType.NetworkSecurityGroup);
                 currentCrudInput.NetworkSecurityGroupName = nsg?.ResourceName;
             }        
         }

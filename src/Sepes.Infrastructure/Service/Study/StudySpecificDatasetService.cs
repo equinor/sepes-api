@@ -52,7 +52,7 @@ namespace Sepes.Infrastructure.Service
             ThrowIfDatasetNameTaken(studyFromDb, newDatasetInput.Name);
 
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
-            dataset.StudyId = studyId;           
+            dataset.StudySpecific = true;           
 
             var currentUser = await _userService.GetCurrentUserAsync();
             dataset.CreatedBy = currentUser.UserName;          
@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(dataset, clientIp, cancellationToken);
+                await _datasetCloudResourceService.CreateResourcesForStudySpecificDatasetAsync(studyFromDb, dataset, clientIp, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -131,7 +131,7 @@ namespace Sepes.Infrastructure.Service
         {
             foreach (var curStudyDataset in study.StudyDatasets)
             {
-                if (curStudyDataset.Dataset.StudyId.HasValue && curStudyDataset.Dataset.StudyId == study.Id && curStudyDataset.Dataset.Name == datasetName)
+                if (curStudyDataset.Dataset.StudySpecific && curStudyDataset.StudyId == study.Id && curStudyDataset.Dataset.Name == datasetName)
                 {
                     throw new Exception($"Dataset with name {datasetName} allready exists");
                 }
@@ -154,7 +154,7 @@ namespace Sepes.Infrastructure.Service
 
             if (study.StudyDatasets.Any())
             {
-                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => sds.Dataset.StudyId.HasValue && sds.Dataset.StudyId == study.Id))
+                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => sds.Dataset.StudySpecific && sds.StudyId == study.Id))
                 {
                     studySpecificDatasetsToDelete.Add(studySpecificDataset.DatasetId);
                 }
@@ -166,7 +166,7 @@ namespace Sepes.Infrastructure.Service
             {
                 foreach (var curStudySpecificDatasetId in studySpecificDatasetsToDelete)
                 {
-                    var datasetToDelete = await _db.Datasets.Include(d => d.StudyDatasets).FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId && d.StudyId.HasValue && d.StudyId == study.Id);
+                    var datasetToDelete = await _db.Datasets.Include(d => d.StudyDatasets).FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId);
 
                     if (datasetToDelete != null)
                     {

@@ -115,9 +115,13 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("ParentResourceId");
 
-                    b.HasIndex("SandboxId");
+                    b.HasIndex("SandboxId", "ResourceName")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
 
-                    b.HasIndex("StudyId");
+                    b.HasIndex("StudyId", "ResourceName")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
 
                     b.ToTable("CloudResources");
                 });
@@ -294,8 +298,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
-                    b.Property<int?>("StudyId")
-                        .HasColumnType("int");
+                    b.Property<bool>("StudySpecific")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Tags")
                         .HasColumnType("nvarchar(256)")
@@ -311,8 +315,6 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.HasKey("Id");
-
-                    b.HasIndex("StudyId");
 
                     b.ToTable("Datasets");
                 });
@@ -515,6 +517,10 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasIndex("StudyId");
 
+                    b.HasIndex("Id", "StudyId")
+                        .HasFilter("[Deleted] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Region" });
+
                     b.ToTable("Sandboxes");
                 });
 
@@ -640,8 +646,12 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Closed", "Restricted")
-                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Name", "Description", "Vendor", "LogoUrl" });
+                    b.HasIndex("Closed")
+                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Restricted", "Name", "Description", "Vendor", "LogoUrl" });
+
+                    b.HasIndex("Id", "Restricted")
+                        .HasFilter("[Closed] = 0")
+                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Description", "Vendor", "LogoUrl" });
 
                     b.ToTable("Studies");
                 });
@@ -882,13 +892,6 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
-                {
-                    b.HasOne("Sepes.Infrastructure.Model.Study", "Study")
-                        .WithMany("StudySpecificDatasets")
-                        .HasForeignKey("StudyId");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>

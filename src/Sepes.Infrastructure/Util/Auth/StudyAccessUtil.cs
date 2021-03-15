@@ -1,8 +1,10 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Microsoft.EntityFrameworkCore;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Auth;
 using Sepes.Infrastructure.Exceptions;
+using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System;
@@ -14,6 +16,34 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class StudyAccessUtil
     {
+        public static async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Study> queryable, int studyId, UserOperation operation)
+        {
+            var study = await queryable.SingleOrDefaultAsync(s => s.Id == studyId);
+
+            if (study == null)
+            {
+                throw NotFoundException.CreateForEntity("Study", studyId);
+            }
+
+            await CheckAccesAndThrowIfMissing(userService, study, operation);
+
+            return study;
+        }
+
+        public static async Task<Sandbox> GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Sandbox> queryable, int sandboxId, UserOperation operation, bool readOnly)
+        {
+            var sandbox = await queryable.Where(sb => sb.Id == sandboxId).If(readOnly, x => x.AsNoTracking()).SingleOrDefaultAsync();
+
+            if (sandbox == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            await CheckAccesAndThrowIfMissing(userService, sandbox.Study, operation);
+
+            return sandbox;
+        }
+
         public static void HasAccessToOperationOrThrow(UserDto currentUser, UserOperation operation)
         {
             if (!HasAccessToOperation(currentUser, operation))
@@ -26,7 +56,7 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var onlyRelevantOperations = AllowedUserOperations.ForOperationQueryable(operation);
 
-            //First thest this, as it's the most common operation and it requires no db access
+            //First test this, as it's the most common operation and it requires no db access
             if (IsAllowedForEmployeesWithoutAnyRoles(currentUser, onlyRelevantOperations))
             {
                 return true;
@@ -40,14 +70,51 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
+        public static void CheckAccesAndThrowIfMissing(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
+        {
+            if (!HasAccessToOperationForStudy(currentUser, study, operation, newRole))
+            {
+                throw StudyAccessUtil.CreateForbiddenException(currentUser, study, operation);
+            }
+        }
+
+        public static void CheckAccesAndThrowIfMissing(SingleEntityDapperResult result, UserDto currentUser, UserOperation operation)
+        {
+            if (!result.Authorized)
+            {
+                throw StudyAccessUtil.CreateForbiddenException(currentUser, result.StudyId, operation);
+            }
+        }
+
+        public static async Task CheckAccesAndThrowIfMissing(IUserService userService, Study study, UserOperation operation, string newRole = null)
+        {
+            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+
+            CheckAccesAndThrowIfMissing(currentUser, study, operation, newRole);
+        }
+
+
         public static Study HasAccessToOperationForStudyOrThrow(UserDto currentUser, Study study, UserOperation operation, string newRole = null)
         {
-            if (HasAccessToOperationForStudy(currentUser, study, operation, newRole))
-            {
-                return study;
-            }
+            CheckAccesAndThrowIfMissing(currentUser, study, operation, newRole);
 
-            throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation} on study {study.Id}");
+            return study;
+        }
+
+        public static ForbiddenException CreateForbiddenException(UserDto user, Study study, UserOperation operation)
+        {
+            return CreateForbiddenException(user.EmailAddress, study.Id, operation);
+        }
+
+        public static ForbiddenException CreateForbiddenException(UserDto user, int studyId, UserOperation operation)
+        {
+            return CreateForbiddenException(user.EmailAddress, studyId, operation);
+        }
+
+
+        public static ForbiddenException CreateForbiddenException(string username, int studyId, UserOperation operation)
+        {
+            return new ForbiddenException($"User {username} does not have permission to perform operation {operation} on study {studyId}");
         }
 
         public static async Task<bool> HasAccessToOperationForStudyAsync(IUserService userService, Study study, UserOperation operation, string newRole = null)

@@ -4,19 +4,19 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Identity.Web;
 using Sepes.CloudResourceWorker.Service;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
-using Sepes.Infrastructure.Dto.Configuration;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Infrastructure.Service.DataModelService;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
-using Microsoft.Identity.Web;
-using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
-using Sepes.Infrastructure.Constants;
 
 [assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
 
@@ -109,8 +109,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
-            builder.Services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-            builder.Services.AddTransient<IVirtualMachineDiskService, VirtualMachineDiskService>();
+            builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
+            builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
 
             //Azure Services
