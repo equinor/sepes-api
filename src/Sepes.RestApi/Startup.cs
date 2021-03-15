@@ -142,6 +142,7 @@ namespace Sepes.RestApi
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
+            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -163,7 +164,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();     
-            services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
+           
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
