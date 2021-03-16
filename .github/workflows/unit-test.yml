@@ -68,7 +68,7 @@ jobs:
     - name: Build unit test coverage report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlSummary
+        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/UnitTests -reporttypes:HtmlSummary -title:Unit Tests
 
     # upload code coverage report as build artifact
     - name: Upload coverage report as build artifact
@@ -76,5 +76,5 @@ jobs:
       if: ${{always()}}
       with:
         name: 'Code Coverage Report'
-        path: ${{github.workspace}}/CodeCoverage/unittests_summary.htm     
+        path: ${{github.workspace}}/CodeCoverage/UnitTests/summary.htm     
    
