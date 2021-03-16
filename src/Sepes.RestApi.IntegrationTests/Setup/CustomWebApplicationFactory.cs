@@ -14,6 +14,7 @@ using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sepes.RestApi.IntegrationTests.Setup
@@ -40,7 +41,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            Environment.SetEnvironmentVariable("SEPES_IS_INTEGRATION_TEST", "true");
+            //Environment.SetEnvironmentVariable("SEPES_IS_INTEGRATION_TEST", "true");
 
             builder.ConfigureTestServices(services =>
             {
@@ -108,6 +109,19 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     dbContext = scopedServices.GetRequiredService<SepesDbContext>();
                     dbContext.Database.Migrate();
                 }
+            });
+
+            builder.ConfigureAppConfiguration((context, configBuilder) => {
+
+                configBuilder.AddInMemoryCollection(
+                           new Dictionary<string, string>
+                           {
+                               ["AllowCorsDomains"] = "http://localhost:80",
+                               ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
+                               ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode"
+                           });
+
+
             });
         }
     }
