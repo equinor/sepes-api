@@ -40,7 +40,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-           
+            Environment.SetEnvironmentVariable("SEPES_IS_INTEGRATION_TEST", "true");
+
             builder.ConfigureTestServices(services =>
             {
                 var descriptor = services.SingleOrDefault(

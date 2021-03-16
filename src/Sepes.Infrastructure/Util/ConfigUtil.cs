@@ -46,5 +46,22 @@ namespace Sepes.Infrastructure.Util
 
             return configValue;
         }
+
+        public static bool GetBoolConfig(IConfiguration config, string configKey)
+        {
+            if (String.IsNullOrWhiteSpace(configKey))
+            {
+                throw new ArgumentNullException("configKey", "The parameter configKey was null or empty");
+            }
+
+            var configValue = config[configKey];
+
+            if (String.IsNullOrWhiteSpace(configValue))
+            {
+                return false;
+            }
+
+            return configValue.ToLower().Equals("true");
+        }
     }
 }

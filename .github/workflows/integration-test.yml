@@ -4,7 +4,7 @@ on:
     branches: [ master, develop ]  
   workflow_dispatch:
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
     env:
       config: 'Release'
@@ -142,7 +142,6 @@ jobs:
 
     - name: Build combined coverage report
       run: |
-        dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
 
     # upload code coverage report as build artifact

@@ -5,8 +5,11 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Util;
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Sepes.RestApi
 {
@@ -23,17 +26,32 @@ namespace Sepes.RestApi
             WebHost.CreateDefaultBuilder(args)
              .ConfigureAppConfiguration((context, configBuilder) =>
              {
-                 foreach(var curSource in configBuilder.Sources)
+                 configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX);
+
+                 var config = configBuilder.Build();
+
+                 var isIntegrationTest = ConfigUtil.GetBoolConfig(config, "IS_INTEGRATION_TEST");
+
+                 foreach (var curSource in configBuilder.Sources.ToList())
                  {
                      if (curSource.GetType().Name == typeof(JsonConfigurationSource).Name)
                      {
                          var fileSource = curSource as JsonConfigurationSource;
-                         fileSource.ReloadOnChange = false;
+
+                         if (isIntegrationTest && fileSource.Path.ToLower().Equals("appsettings.development.json"))
+                         {
+                             configBuilder.Sources.Remove(curSource);
+                             configBuilder.AddJsonFile("appsettings.UnitTest.json", true, false);                       
+                         }
+                         else
+                         {
+                             fileSource.ReloadOnChange = false;
+                         }                       
                      }
                  }
 
-                 var config = configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX).Build();
-            
+                 config = configBuilder.Build();              
+
                  var keyVaultUrl = config[ConfigConstants.KEY_VAULT];
 
                  if (string.IsNullOrWhiteSpace(keyVaultUrl))
