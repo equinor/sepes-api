@@ -211,7 +211,8 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IAzureVirtualNetworkOperatingSystemService, AzureVirtualNetworkOperatingSystemService>();
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>(); 
+            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
         }
 
         void SetFileUploadLimits(IServiceCollection services)

@@ -3,41 +3,43 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using System;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Infrastructure.Service.Azure
 {
-    public static class KeyVaultSecretUtil
+    public class AzureKeyVaultSecretService : IAzureKeyVaultSecretService
     {
-        public static SecretClient GetKeyVaultClient(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting)
-        {
-            var keyVaultUrl = config[nameOfKeyVaultUrlSetting];
-            var tenantId = config[ConfigConstants.AZ_TENANT_ID];
-            var clientId = config[ConfigConstants.AZ_CLIENT_ID];
-            var clientSecret = config[ConfigConstants.AZ_CLIENT_SECRET];
+        readonly ILogger _logger;
+        readonly IConfiguration _configuration;
 
-            return new SecretClient(new Uri(keyVaultUrl), new ClientSecretCredential(tenantId, clientId, clientSecret));
+        public AzureKeyVaultSecretService(ILogger logger, IConfiguration configuration)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        public static async Task<Uri> AddKeyVaultSecret(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName, string secretValue)
+       
+
+        public async Task<Uri> AddKeyVaultSecret(string nameOfKeyVaultUrlSetting, string secretName, string secretValue)
         {
-            var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
+            var client = GetKeyVaultClient(nameOfKeyVaultUrlSetting);
             var setResult = await client.SetSecretAsync(secretName, secretValue);
             return setResult.Value.Id;
         }
 
-        public static async Task<string> GetKeyVaultSecretValue(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName)
+        public async Task<string> GetKeyVaultSecretValue(string nameOfKeyVaultUrlSetting, string secretName)
         {
-            var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
+            var client = GetKeyVaultClient(nameOfKeyVaultUrlSetting);
             var secret = await client.GetSecretAsync(secretName);
 
             return secret.Value.Value;
         }
 
-        public static async Task<string> DeleteKeyVaultSecretValue(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting, string secretName, bool purge = false)
+        public async Task<string> DeleteKeyVaultSecretValue(string nameOfKeyVaultUrlSetting, string secretName, bool purge = false)
         {
-            var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
+            var client = GetKeyVaultClient(nameOfKeyVaultUrlSetting);
             var secret = await client.StartDeleteSecretAsync(secretName);
 
             if (purge)
@@ -48,7 +50,7 @@ namespace Sepes.Infrastructure.Util
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning($"Unable to purge secret {secretName}", ex);
+                    _logger.LogWarning($"Unable to purge secret {secretName}", ex);
                 }
 
             }
@@ -57,13 +59,11 @@ namespace Sepes.Infrastructure.Util
         }
 
         //Key vault sometimes get bloated with vm passwords, use this routine to delete and purge those. Remember not to leave reference to this so it runs in production
-        public static async Task ClearAllVmPasswords(ILogger logger, IConfiguration config, string nameOfKeyVaultUrlSetting)
+        public async Task ClearAllVmPasswords(string nameOfKeyVaultUrlSetting)
         {
-
             try
             {
-                var client = GetKeyVaultClient(logger, config, nameOfKeyVaultUrlSetting);
-
+                var client = GetKeyVaultClient(nameOfKeyVaultUrlSetting);
 
                 foreach (var cur in client.GetPropertiesOfSecrets())
                 {
@@ -74,8 +74,8 @@ namespace Sepes.Infrastructure.Util
                             if (cur.CreatedOn.Value.AddHours(1) < DateTime.UtcNow)
                             {
                                 await client.StartDeleteSecretAsync(cur.Name);
-    
-                        }
+
+                            }
                         }
                     }
                 }
@@ -94,8 +94,18 @@ namespace Sepes.Infrastructure.Util
             catch (Exception ex)
             {
 
-                logger.LogError(ex, "Failed to delete VM passwords from keyvault");
+                _logger.LogError(ex, "Failed to delete VM passwords from keyvault");
             }
+        }
+
+        SecretClient GetKeyVaultClient(string nameOfKeyVaultUrlSetting)
+        {
+            var keyVaultUrl = _configuration[nameOfKeyVaultUrlSetting];
+            var tenantId = _configuration[ConfigConstants.AZ_TENANT_ID];
+            var clientId = _configuration[ConfigConstants.AZ_CLIENT_ID];
+            var clientSecret = _configuration[ConfigConstants.AZ_CLIENT_SECRET];
+
+            return new SecretClient(new Uri(keyVaultUrl), new ClientSecretCredential(tenantId, clientId, clientSecret));
         }
     }
 }

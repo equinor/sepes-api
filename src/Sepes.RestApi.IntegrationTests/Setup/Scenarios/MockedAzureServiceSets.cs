@@ -9,7 +9,9 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
     {
         public void RegisterServices(IServiceCollection serviceCollection)
         {
-            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);       
+            
+            serviceCollection.SwapTransient<IAzureKeyVaultSecretService>(provider => AzureKeyVaultSecretMockServiceFactory.CreateBasicForResourceCreate().Object);
+            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);     
          
             serviceCollection.SwapTransient<IAzureNetworkSecurityGroupService>(provider => AzureNetworkSecurityGroupMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureNetworkSecurityGroupRuleService>(provider => AzureNetworkSecurityGroupRuleMockServiceFactory.CreateWhereRuleSetToReturnsFalse().Object);
