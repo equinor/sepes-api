@@ -94,7 +94,7 @@ jobs:
     - name: Build coverage report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/IntegrationTest -reporttypes:HtmlSummary -title:Integration Tests
+        reportgenerator -reports:src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/IntegrationTest -reporttypes:HtmlSummary -title:"Integration Tests"
 
     # upload code coverage report as build artifact
     - name: Upload coverage report as build artifact
