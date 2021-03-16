@@ -202,8 +202,9 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureVirtualMachineExtenedInfoService, AzureVirtualMachineExtendedInfoService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
-            services.AddTransient<IAzureStorageAccountTokenService, AzureStorageAccountTokenService>();
+            services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
             services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();

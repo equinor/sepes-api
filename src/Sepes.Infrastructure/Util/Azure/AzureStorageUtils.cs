@@ -50,47 +50,10 @@ namespace Sepes.Infrastructure.Util.Azure
             }
 
             return settings[key];
-        }
+        }  
+      
 
-        public static async Task<string> GetStorageAccountKey(
-            IAzureStorageAccountTokenService azureStorageAccountTokenService,
-            AzureStorageAccountConnectionParameters parameters,
-            CancellationToken cancellationToken = default)
-        {
-            string accessKey = null;
-
-            if (!String.IsNullOrWhiteSpace(parameters.StorageAccountId))
-            {
-                accessKey = await azureStorageAccountTokenService.GetStorageAccountKey(parameters.StorageAccountId, cancellationToken);
-            }
-            else if (!String.IsNullOrWhiteSpace(parameters.StorageAccountResourceGroup)
-                && !String.IsNullOrWhiteSpace(parameters.StorageAccountName))
-            {
-                accessKey = await azureStorageAccountTokenService.GetStorageAccountKey(
-                    parameters.StorageAccountResourceGroup,
-                    parameters.StorageAccountName,
-                    cancellationToken);
-            }
-
-            return accessKey;
-        }
-
-        public static BlobSasBuilder CreateBlobSasBuilder(string containerName, string resourceType = "c", BlobContainerSasPermissions permission = BlobContainerSasPermissions.Read, int expiresOnMinutes = 10)
-        {
-            var sasBuilder = new BlobSasBuilder()
-            {
-                BlobContainerName = containerName,
-                Resource = resourceType,
-                StartsOn = DateTimeOffset.UtcNow.AddMinutes(-1),
-                ExpiresOn = DateTimeOffset.UtcNow.AddMinutes(expiresOnMinutes)
-            };
-
-            sasBuilder.SetPermissions(permission);
-
-            return sasBuilder;
-        }
-
-        public static async Task<string> GetStorageAccountKey(IStorageAccount account, string keyName = "key1", CancellationToken cancellationToken = default)
+        public static async Task<string> GetStorageAccountKeyByName(IStorageAccount account, string keyName = "key1", CancellationToken cancellationToken = default)
         {
             var keys = await account.GetKeysAsync(cancellationToken);
 
