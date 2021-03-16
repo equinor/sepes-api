@@ -57,6 +57,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
                         credential = new StorageSharedKeyCredential(_connectionParameters.StorageAccountName, accessKey);
                     }
+
                     var sasToken = sasBuilder.ToSasQueryParameters(credential);
 
                     uriBuilder.Query = sasToken.ToString();
