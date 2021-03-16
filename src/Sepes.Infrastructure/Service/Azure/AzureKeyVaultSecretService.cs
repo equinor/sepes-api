@@ -18,9 +18,7 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-        }
-
-       
+        }       
 
         public async Task<Uri> AddKeyVaultSecret(string nameOfKeyVaultUrlSetting, string secretName, string secretValue)
         {

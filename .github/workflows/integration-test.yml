@@ -103,4 +103,17 @@ jobs:
       with:
         name: 'Interation Test Coverage Report'
         path: ${{github.workspace}}/CodeCoverage/IntegrationTest/summary.htm     
+
+    - name: Build combined coverage report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
+
+    # upload code coverage report as build artifact
+    - name: Upload combined coverage report as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Combined Test Coverage Report'
+        path: ${{github.workspace}}/CodeCoverage/Combined/summary.htm 
    
