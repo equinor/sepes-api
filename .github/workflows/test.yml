@@ -143,12 +143,6 @@ jobs:
       working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet build --configuration $config --no-restore
 
- 
-    - name: Integration Tests - Set PR build number (if pr)
-      id: PRNUMBER
-      if: ${{ github.event_name == 'pull_request' }}
-      uses: kkak10/pr-number-action@v1.3
-
    
     - name: Integration Tests - Set test title
       run: | 
