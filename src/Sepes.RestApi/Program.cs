@@ -86,34 +86,26 @@ namespace Sepes.RestApi
 
         }
 
+       
+
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
+            var shouldAddKeyVault = TryFindingKeyvaultConnectionDetails(out string keyVaultUrl, out string clientId, out string clientSecret);
+
             var configBuilder = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory());         
+            .SetBasePath(Directory.GetCurrentDirectory());
 
             configBuilder.AddJsonFile("appsettings.json", true, false);
-            configBuilder.AddJsonFile("appsettings.Development.json", true, false);         
+            configBuilder.AddJsonFile("appsettings.Development.json", true, false);
 
-            configBuilder.AddUserSecrets<Program>(optional:true, reloadOnChange: false);
+            configBuilder.AddUserSecrets<Program>(optional: true, reloadOnChange: false);
             configBuilder.AddEnvironmentVariables(ConfigConstants.ENV_VARIABLE_PREFIX);
             configBuilder.AddCommandLine(args);
 
-            var configToLookForKeyvaultUrl = configBuilder.Build();
-
-            var keyVaultUrl = configToLookForKeyvaultUrl[ConfigConstants.KEY_VAULT];
-
-            if (string.IsNullOrWhiteSpace(keyVaultUrl))
+            if (shouldAddKeyVault)
             {
-                Trace.WriteLine("Program.cs: Key vault url empty");
-            }
-            else
-            {
-                Trace.WriteLine("Program.cs: Key vault url found. Initializing key vault");
-
-                var clientId = configToLookForKeyvaultUrl[ConfigConstants.AZ_CLIENT_ID];
-                var clientSecret = configToLookForKeyvaultUrl[ConfigConstants.AZ_CLIENT_SECRET];
                 configBuilder.AddAzureKeyVault(keyVaultUrl, clientId, clientSecret);
-            }
+            }            
 
             return WebHost.CreateDefaultBuilder(args)
                      .UseConfiguration(configBuilder.Build())
@@ -167,19 +159,41 @@ namespace Sepes.RestApi
 
                        builder.AddApplicationInsights(applicationInsightsInstrumentationKey);
 
-                  // Adding the filter below to ensure logs of all severity from Program.cs
-                  // is sent to ApplicationInsights.
-                  builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
-                                        (typeof(Program).FullName, LogLevel.Trace);
+                       // Adding the filter below to ensure logs of all severity from Program.cs
+                       // is sent to ApplicationInsights.
+                       builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
+                                             (typeof(Program).FullName, LogLevel.Trace);
 
-                  // Adding the filter below to ensure logs of all severity from Startup.cs
-                  // is sent to ApplicationInsights.
-                  builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
-                                        (typeof(Startup).FullName, LogLevel.Trace);
+                       // Adding the filter below to ensure logs of all severity from Startup.cs
+                       // is sent to ApplicationInsights.
+                       builder.AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>
+                                             (typeof(Startup).FullName, LogLevel.Trace);
 
                    })
                      .UseStartup<Startup>();
 
+        }
+
+        public static bool TryFindingKeyvaultConnectionDetails(out string keyVaultUrl, out string clientId, out string clientSecret)
+        {
+            keyVaultUrl = System.Environment.GetEnvironmentVariable(ConfigConstants.KEY_VAULT, EnvironmentVariableTarget.Process);
+
+            if (string.IsNullOrWhiteSpace(keyVaultUrl))
+            {
+                Trace.WriteLine("Program.cs: Key vault url empty");
+            }
+            else
+            {
+                Trace.WriteLine("Program.cs: Key vault url found. Initializing key vault");
+
+                clientId = System.Environment.GetEnvironmentVariable(ConfigConstants.RADIX_SECRET_AZ_CLIENT_ID, EnvironmentVariableTarget.Process);
+                clientSecret = System.Environment.GetEnvironmentVariable(ConfigConstants.RADIX_SECRET_AZ_CLIENT_SECRET, EnvironmentVariableTarget.Process);
+                return true;
+            }
+
+            clientId = null;
+            clientSecret = null;
+            return false;
         }
     }
 }
