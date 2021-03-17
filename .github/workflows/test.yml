@@ -74,7 +74,7 @@ jobs:
 
       # BEGIN UNIT TESTS
 
-      - name: Unit Tests - Restore
+    - name: Unit Tests - Restore
       working-directory: src/Sepes.Tests
       run: dotnet restore      
 
