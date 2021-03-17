@@ -22,7 +22,6 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
@@ -373,7 +372,7 @@ namespace Sepes.RestApi
         void Log(string message)
         {
             Trace.WriteLine(message);
-            _logger.LogWarning(message);
+            _logger.LogInformation(message);
         }
     }
 }

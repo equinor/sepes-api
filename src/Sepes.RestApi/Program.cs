@@ -15,16 +15,14 @@ namespace Sepes.RestApi
     {
         public static void Main(string[] args)
         {
-          CreateWebHostBuilder(args)
-            .Build().Run();
-         
+          CreateWebHostBuilder(args).Build().Run();         
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
               CustomWebHost.CreateDefaultBuilder(args)
                  .ConfigureAppConfiguration((context, configBuilder) =>
                  {
-                     var shouldAddKeyVault = TryFindingKeyvaultConnectionDetails(out string keyVaultUrl, out string clientId, out string clientSecret);
+                     var shouldAddKeyVault = TryGetKeyvaultConfig(out string keyVaultUrl, out string clientId, out string clientSecret);
 
                      if (shouldAddKeyVault)
                      {
@@ -56,9 +54,9 @@ namespace Sepes.RestApi
                  })
                   .UseStartup<Startup>();
 
-        public static bool TryFindingKeyvaultConnectionDetails(out string keyVaultUrl, out string clientId, out string clientSecret)
+        public static bool TryGetKeyvaultConfig(out string keyVaultUrl, out string clientId, out string clientSecret)
         {
-            keyVaultUrl = System.Environment.GetEnvironmentVariable(ConfigConstants.KEY_VAULT, EnvironmentVariableTarget.Process);
+            keyVaultUrl = Environment.GetEnvironmentVariable(ConfigConstants.KEY_VAULT, EnvironmentVariableTarget.Process);
 
             if (string.IsNullOrWhiteSpace(keyVaultUrl))
             {

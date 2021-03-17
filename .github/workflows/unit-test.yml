@@ -48,6 +48,14 @@ jobs:
       working-directory: src/Sepes.Tests    
       run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings unittests.runsettings --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
 
+ 
+    - name: Upload raw coverage info as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Unit Test Coverage Raw'
+        path: 'src/Sepes.Tests/TestResults/**/coverage.cobertura.xml'  
+
     # add report as PR comment (if PR)
     - name: Unit Tests - Add PR comment
       uses: machine-learning-apps/pr-comment@master
