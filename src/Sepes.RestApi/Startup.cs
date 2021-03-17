@@ -40,15 +40,13 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+        //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
-
-            var logMsg = "Sepes Startup Constructor";
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
-
             _configuration = configuration;
+
+            Log("Sepes Startup Constructor");          
         }     
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -62,7 +60,7 @@ namespace Sepes.RestApi
 
             //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
-            Log("Startup - Cors domains: *");     
+            Log("Startup - ConfigureServices - Cors domains: *");     
 
             services.AddCors(options =>
             {
