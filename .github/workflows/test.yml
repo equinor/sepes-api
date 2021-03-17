@@ -59,11 +59,11 @@ jobs:
       with:
         path: ${{env.file_name}}     
 
-    - name: Unit Tests - Upload test report as artifact
+    - name: Unit Tests - Upload test results as artifact
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Unit Test Run'
+        name: 'Unit Test Results'
         path: ${{github.workspace}}/${{env.file_name}}
 
     - name: Unit Tests - Build coverage report
@@ -176,17 +176,16 @@ jobs:
       with:
         path: ${{env.file_name_int_test}}     
 
-    - name: Integration Tests - Upload test report as artifact
+    - name: Integration Tests - Upload test results as artifact
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Integration Test Run'
+        name: 'Integration Test Results'
         path: ${{github.workspace}}/${{env.file_name_int_test}}
 
 
     - name: Integration Tests - Build coverage report
       run: |
-        dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/IntegrationTest -reporttypes:HtmlSummary -title:"Integration Tests"
 
 
