@@ -29,7 +29,9 @@ namespace Sepes.Tests.Util
             errors.Add("Error1");
             errors.Add("Error2");
             var ex = Assert.Throws<Exception>(() => ValidationUtils.ThrowIfValidationErrors("prefix", errors));
-            Assert.Equal("prefix: Error1\r\nError2\r\n", ex.Message);
+            Assert.Contains("prefix", ex.Message);
+            Assert.Contains("Error1", ex.Message);
+            Assert.Contains("Error2", ex.Message);
         }
     }
 }
