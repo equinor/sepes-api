@@ -18,7 +18,6 @@ namespace Sepes.Tests.Util
         [Fact]
         public void ThrowIfValidationErrors_NoErrorsShouldThrow()
         {
-            var errors = new List<string>();
             ValidationUtils.ThrowIfValidationErrors("prefix", null);
         }
 
