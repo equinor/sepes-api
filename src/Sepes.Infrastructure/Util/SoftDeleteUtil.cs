@@ -11,6 +11,10 @@ namespace Sepes.Infrastructure.Util
     {
         public static void MarkAsDeleted(ISupportSoftDelete itemToDelete, string deletedBy)
         {
+            if (itemToDelete == null)
+            {
+                throw new ArgumentException("Item to delete was null");
+            }
             if(!IsMarkedAsDeleted(itemToDelete))
             {
                 itemToDelete.Deleted = true;

@@ -32,6 +32,7 @@ namespace Sepes.Tests.Util
             Assert.Equal(itemToBeDeleted.DeletedBy, deletedBy.UserName);
             Assert.True(SoftDeleteUtil.IsMarkedAsDeleted(itemToBeDeleted));
         }
+
         [Fact]
         public void MarkAsDeleted_ShouldMarkAsDeletedWithCorrectName3()
         {
@@ -41,6 +42,28 @@ namespace Sepes.Tests.Util
 
             Assert.Equal(itemToBeDeleted.DeletedBy, deletedBy.UserName);
             Assert.True(SoftDeleteUtil.IsMarkedAsDeleted(itemToBeDeleted));
+        }
+
+        [Fact]
+        public void MarkAsDeleted_ShouldMarkAsDeletedWithCorrectName4()
+        {
+            var deletedBy = new UserDto {  };
+            var itemToBeDeleted = new CloudResource { };
+            SoftDeleteUtil.MarkAsDeleted(itemToBeDeleted, deletedBy);
+
+            Assert.Equal(itemToBeDeleted.DeletedBy, deletedBy.UserName);
+            Assert.True(SoftDeleteUtil.IsMarkedAsDeleted(itemToBeDeleted));
+        }
+
+        [Fact]
+        public void MarkAsDeleted_ShouldMarkAsDeletedWithCorrectName5()
+        {
+            var deletedBy = new UserDto { };
+            var itemToBeDeleted = new CloudResource { };
+            var ex = Assert.Throws<ArgumentException>(() => SoftDeleteUtil.MarkAsDeleted(null, ""));
+
+            Assert.Equal("Item to delete was null", ex.Message);
+            Assert.False(SoftDeleteUtil.IsMarkedAsDeleted(itemToBeDeleted));
         }
     }
 }
