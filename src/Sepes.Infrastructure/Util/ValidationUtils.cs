@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Util
     {
         public static void ThrowIfValidationErrors(string messagePrefix, List<string> validationErrors)
         {
-            if (validationErrors.Count > 0)
+            if (validationErrors != null && validationErrors.Count > 0)
             {
                 var validationErrorMessageBuilder = new StringBuilder();
 

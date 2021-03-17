@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Util.Azure
                 return parameters.StorageAccountName;
             }
 
-            throw new Exception("Neither connection string or account name specified");
+            throw new ArgumentException("Neither connection string or account name specified");
         }
 
         public static string GetKeyValueFromConnectionString(string connectionString, string key)
@@ -46,7 +46,15 @@ namespace Sepes.Infrastructure.Util.Azure
             foreach (var nameValue in splitted)
             {
                 var splittedNameValue = nameValue.Split(new char[] { '=' }, 2);
-                settings.Add(splittedNameValue[0], splittedNameValue[1]);
+                if (splittedNameValue.Length > 1)
+                {
+                    settings.Add(splittedNameValue[0], splittedNameValue[1]);
+                }
+                else
+                {
+                    throw new ArgumentException("Connection string in wrong format");
+                }
+                
             }
 
             return settings[key];
