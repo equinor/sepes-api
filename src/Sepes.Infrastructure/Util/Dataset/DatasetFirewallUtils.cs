@@ -61,8 +61,9 @@ namespace Sepes.Infrastructure.Util
                     anyChanges = true;
                 }
             }
+           
 
-            if (IPAddress.TryParse(serverIp, out _))
+            if (ServerIpIsValid(serverIp))
             {
                 var serverRule = DatasetFirewallUtils.CreateServerRule(user, serverIp);
 
@@ -71,7 +72,7 @@ namespace Sepes.Infrastructure.Util
                     newRuleSet.Add(serverRule);
                     anyChanges = true;
                 }
-            }
+            }          
 
             if (anyChanges)
             {
@@ -86,19 +87,36 @@ namespace Sepes.Infrastructure.Util
             return source.Where(r => r.Created.AddMonths(1) >= DateTime.UtcNow).ToList();
         }
 
-        public static bool ClientIpIsValid(string clientIp)
+        public static bool IpIsValid(string ipAddress, string errorMessage)
         {
-            if (String.IsNullOrWhiteSpace(clientIp))
+            if (String.IsNullOrWhiteSpace(ipAddress))
             {
                 return false;
             }
 
-            if (clientIp != "::1" && clientIp != "0.0.0.1")
+            if (ipAddress != "::1" && ipAddress != "0.0.0.1")
             {
-                return IPAddress.TryParse(clientIp, out _);
+                if (IPAddress.TryParse(ipAddress, out _))
+                {
+                    return true;
+                }
+
+                throw new ArgumentException(errorMessage);
             }
 
             return false;
+        }
+
+        public static bool ClientIpIsValid(string clientIp)
+        {
+            //Should be blank, or if not blank, it should be valid
+            return IpIsValid(clientIp, "Client IP is not a valid IP Address");         
+        }
+
+        public static bool ServerIpIsValid(string clientIp)
+        {
+            //Should be blank, or if not blank, it should be valid
+            return IpIsValid(clientIp, "Server IP is not a valid IP Address");
         }
 
         public static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
