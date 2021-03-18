@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
                 .Authenticate(_credentials).WithSubscription(_subscriptionId);  
         }
 
-        protected void CheckIfResourceHasCorrectManagedByTagThrowIfNot(string resourceName, IReadOnlyDictionary<string, string> resourceTags)
+        protected void EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(string resourceName, IReadOnlyDictionary<string, string> resourceTags)
         {
             var convertedTags = AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resourceTags);
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceName, convertedTags);
@@ -70,6 +70,6 @@ namespace Sepes.Infrastructure.Service
             }
 
             return sharedVariableValue;
-        } 
+        }        
     }
 }

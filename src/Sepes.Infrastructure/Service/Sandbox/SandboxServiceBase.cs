@@ -75,8 +75,10 @@ namespace Sepes.Infrastructure.Service
 
         protected void InitiatePhaseHistory(Sandbox sandbox, UserDto currentUser)
         {
-            sandbox.PhaseHistory = new List<SandboxPhaseHistory>();
-            sandbox.PhaseHistory.Add(new SandboxPhaseHistory { Counter = 0, Phase = SandboxPhase.Open, CreatedBy = currentUser.UserName });
+            sandbox.PhaseHistory = new List<SandboxPhaseHistory>
+            {
+                new SandboxPhaseHistory { Counter = 0, Phase = SandboxPhase.Open, CreatedBy = currentUser.UserName }
+            };
         }
     }
 }

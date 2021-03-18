@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Query
             return resourceEntry;
         }
 
-        public static IQueryable<CloudResource> GetResourcesByType(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
+        public static IQueryable<CloudResource> ResourcesByTypeQueryable(SepesDbContext db, int sandboxId, string resourceType, bool includeDeletedIfOperationNotFinished = false)
         {
             var resourceQuerable =
                 WithBasicIncludesQueryable(db)
@@ -72,17 +72,10 @@ namespace Sepes.Infrastructure.Query
             return resourceQuerable;
         }
 
-        public static IQueryable<CloudResource> GetSandboxVirtualMachines(SepesDbContext db, int sandboxId)
+        public static IQueryable<CloudResource> SandboxVirtualMachinesQueryable(SepesDbContext db, int sandboxId)
         {
-            return GetResourcesByType(db, sandboxId, AzureResourceType.VirtualMachine);           
-        }
-
-        public static async Task<List<CloudResource>> GetSandboxVirtualMachinesList(SepesDbContext db, int sandboxId)
-        {
-            var queryable = GetSandboxVirtualMachines(db, sandboxId);
-
-            return await queryable.ToListAsync();
-        }
+            return ResourcesByTypeQueryable(db, sandboxId, AzureResourceType.VirtualMachine);           
+        }       
 
         public static IQueryable<CloudResource> GetSandboxResourcesQueryable(SepesDbContext db, int sandboxId)
         {

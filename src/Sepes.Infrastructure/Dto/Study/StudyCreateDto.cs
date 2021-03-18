@@ -1,8 +1,9 @@
-﻿using Sepes.Infrastructure.Interface;
+﻿using Microsoft.AspNetCore.Http;
+using Sepes.Infrastructure.Interface;
 
 namespace Sepes.Infrastructure.Dto.Study
 {
-    public class StudyCreateDto : IHasLogoUrl
+    public class StudyCreateDto
     {
         public string Name { get; set; }
 
@@ -13,7 +14,5 @@ namespace Sepes.Infrastructure.Dto.Study
         public string Vendor { get; set; }
 
         public bool Restricted { get; set; }
-
-        public string LogoUrl { get; set; }        
     }
 }

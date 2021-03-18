@@ -2,7 +2,6 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Util;
@@ -18,16 +17,16 @@ namespace Sepes.Infrastructure.Service
         public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
             : base(config, logger)
         {
-        
+
         }
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Creating Resource Group for sandbox with Name: {parameters.SandboxName}! Resource Group: {parameters.ResourceGroupName}");
 
-            var resourceGroup = await GetResourceAsync(parameters.ResourceGroupName, false);
+            var resourceGroup = await GetResourceGroupAsync(parameters.ResourceGroupName, false);
 
-            if(resourceGroup == null)
+            if (resourceGroup == null)
             {
                 _logger.LogInformation($"Resource group not found, creating");
                 resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
@@ -37,20 +36,20 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogInformation($"Resource group allready exists");
             }
 
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
 
             _logger.LogInformation($"Done ensuring Resource Group for sandbox with Id: {parameters.SandboxName}! Resource Group Id: {resourceGroup.Id}");
-            return crudResult;   
+            return crudResult;
         }
 
         public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
-            var resourceGroup = await GetResourceAsync(parameters.Name);
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(resourceGroup);
+            var resourceGroup = await GetResourceGroupAsync(parameters.Name);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(resourceGroup);
             crudResult.CurrentProvisioningState = resourceGroup.ProvisioningState.ToString();
             return crudResult;
-        }              
+        }
 
         async Task<IResourceGroup> CreateInternal(string resourceGroupName, Region region, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
@@ -63,41 +62,46 @@ namespace Sepes.Infrastructure.Service
             return resourceGroup;
         }
 
-        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
             await Delete(parameters.ResourceGroupName);
-            
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(CloudResourceProvisioningStates.DELETED);
+            var provisioningState = await GetProvisioningState(parameters.ResourceGroupName);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
             return crudResult;
-        }      
+        }
 
-        public async Task<IResourceGroup> GetResourceAsync(string resourceGroupName, bool failOnError = true)
+        async Task<IResourceGroup> GetResourceGroupAsync(string resourceGroupName, bool failIfNotFound = true)
         {
             try
             {
                 var resource = await _azure.ResourceGroups.GetByNameAsync(resourceGroupName);
                 return resource;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (failOnError)
+                if (ex.Message.ToLower().Contains("could not be found"))
                 {
-                    throw;
+                    if (failIfNotFound)
+                    {
+                        throw;
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
-                else
-                {
-                    return null;
-                }
-            }         
+
+                throw;
+            }
         }
 
         public async Task<string> GetProvisioningState(string resourceGroupName)
         {
-            var resource = await GetResourceAsync(resourceGroupName);
+            var resource = await GetResourceGroupAsync(resourceGroupName, false);
 
             if (resource == null)
             {
-                return CloudResourceProvisioningStates.NOTFOUND;
+                return null;
             }
 
             return resource.ProvisioningState;
@@ -105,27 +109,19 @@ namespace Sepes.Infrastructure.Service
 
         public async Task Delete(string resourceGroupName, CancellationToken cancellation = default)
         {
-            try
-            {
-                var resource = await GetResourceAsync(resourceGroupName);
-                //Ensure resource is is managed by this instance
-                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
+            var resourceGroup = await GetResourceGroupAsync(resourceGroupName, false);
 
-                await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName, cancellation);
-            }
-            catch (Exception ex)
+            if (resourceGroup == null)
             {
-                if(ex.Message.ToLower().Contains("could not be found"))
-                {
-                    //Allready deleted
-                    _logger.LogWarning(ex, $"Deleting resource group {resourceGroupName} failed because it was not found. Assuming allready deleted");
-                }
-                else
-                {
-                    throw;
-                }               
-            }        
-        }      
+                //Allready deleted
+                _logger.LogWarning($"Deleting resource group {resourceGroupName} failed because it was not found. Assuming allready deleted");
+                return;
+            }
+
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resourceGroup.Tags);
+
+            await _azure.ResourceGroups.DeleteByNameAsync(resourceGroupName, cancellation);
+        }
 
         public Task<string> GetProvisioningState(string resourceGroupName, string resourceName)
         {
@@ -134,16 +130,16 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var rg = await GetResourceAsync(resourceGroupName);
+            var rg = await GetResourceGroupAsync(resourceGroupName);
             return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var rg = await GetResourceAsync(resourceGroupName);
+            var rg = await GetResourceGroupAsync(resourceGroupName);
 
             //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, rg.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, rg.Tags);
 
             _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
             _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
@@ -152,6 +148,6 @@ namespace Sepes.Infrastructure.Service
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
-        }      
+        }
     }
 }

@@ -32,18 +32,16 @@ namespace Sepes.Tests.Services.DomainServices
                 Vendor = "Equinor"
             };
 
-            var createdStudy = await studyCreateService.CreateAsync(initialStudy);
-            int studyId = (int)createdStudy.Id;
+            var createdStudy = await studyCreateService.CreateAsync(initialStudy);            
 
-            var studyWithoutReqFields = new StudyDto()
-            {
-                Id = studyId,
+            var studyWithoutReqFields = new StudyUpdateDto()
+            {              
                 Name = name,
                 Vendor = vendor
             };
 
             var studyUpdateService = StudyServiceMockFactory.UpdateService(_serviceProvider);
-            await Assert.ThrowsAsync<ArgumentException>(() => studyUpdateService.UpdateMetadataAsync(studyId, studyWithoutReqFields));
+            await Assert.ThrowsAsync<ArgumentException>(() => studyUpdateService.UpdateMetadataAsync(createdStudy.Id, studyWithoutReqFields));
         }
     }
 }

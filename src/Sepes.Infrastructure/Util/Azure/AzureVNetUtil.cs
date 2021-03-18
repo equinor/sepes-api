@@ -19,6 +19,16 @@ namespace Sepes.Infrastructure.Util
             return null;
         }
 
+        public static ISubnet GetBastionSubnet(INetwork network)
+        {
+            return network.Subnets[AzureVNetConstants.BASTION_SUBNET_NAME];          
+        }
+
+        public static string GetBastionSubnetId(INetwork network)
+        {
+            return GetBastionSubnet(network).Inner.Id;
+        }
+
         public static ISubnet GetSandboxSubnetOrThrow(INetwork network)
         {
             var sandboxSubnet = GetSandboxSubnet(network);

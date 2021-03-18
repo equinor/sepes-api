@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Dto.Interfaces;
+using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Response.Sandbox
 {
@@ -8,15 +9,13 @@ namespace Sepes.Infrastructure.Response.Sandbox
 
         public string Type { get; set; }       
 
-        public string Status { get; set; }
-
-        public bool SandboxControlled { get; set; }
-
-        public string LastKnownProvisioningState { get; set; }
+        public string Status { get; set; }      
 
         public string LinkToExternalSystem { get; set; }
 
         public string RetryLink { get; set; }
 
-    }
+        public Dictionary<string, string> AdditionalProperties { get; set; } = new Dictionary<string, string>();
+
+}
 }

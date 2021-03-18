@@ -6,17 +6,17 @@ namespace Sepes.Infrastructure.Util
 {
     public static class ResourceProvisioningResultUtil
     {
-        public static ResourceProvisioningResult CreateResultFromIResource(IResource resource)
+        public static ResourceProvisioningResult CreateFromIResource(IResource resource)
         {
             return new ResourceProvisioningResult() { IdInTargetSystem = resource.Id, NameInTargetSystem = resource.Name };
         }
 
-        public static ResourceProvisioningResult CreateResultFromIResource(Resource resource)
+        public static ResourceProvisioningResult CreateFromIResource(Resource resource)
         {
             return new ResourceProvisioningResult() { IdInTargetSystem = resource.Id, NameInTargetSystem = resource.Name };
         }
 
-        public static ResourceProvisioningResult CreateResultFromProvisioningState(string provisioningState)
+        public static ResourceProvisioningResult CreateFromProvisioningState(string provisioningState = null)
         {
             return new ResourceProvisioningResult() { CurrentProvisioningState = provisioningState };
         }

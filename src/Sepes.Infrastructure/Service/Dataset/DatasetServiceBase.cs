@@ -28,6 +28,9 @@ namespace Sepes.Infrastructure.Service
         protected IQueryable<Dataset> DatasetBaseQueryable(bool excludeStudySpecific = true)
         {
             var queryable = _db.Datasets
+                   .Include(ds => ds.StudyDatasets)
+                 .ThenInclude(sd => sd.Study)
+                   .ThenInclude(s => s.StudyParticipants)
                  .Include(ds => ds.StudyDatasets)
                  .ThenInclude(sd => sd.Study)
                  .ThenInclude(s=> s.Resources)
@@ -39,7 +42,7 @@ namespace Sepes.Infrastructure.Service
 
             if (excludeStudySpecific)
             {
-                queryable = queryable.Where(ds => !ds.StudyId.HasValue);
+                queryable = queryable.Where(ds => !ds.StudySpecific);
             }
 
             return queryable;
@@ -66,9 +69,16 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            if(datasetFromDb.StudyId.HasValue && datasetFromDb.StudyId.Value > 0)
+            if(datasetFromDb.StudySpecific)
             {
-                await ThrowIfOperationNotAllowed(operation, datasetFromDb.Study);
+                var studyDatasetRelation = datasetFromDb.StudyDatasets.SingleOrDefault();
+
+                if(studyDatasetRelation == null)
+                {
+                    throw new Exception("Get dataset. Dataset appears to be study specific, but no relation found");
+                }               
+
+                await ThrowIfOperationNotAllowed(operation, studyDatasetRelation.Study);
             }
             else
             {
@@ -125,7 +135,7 @@ namespace Sepes.Infrastructure.Service
 
         protected bool IsStudySpecific(Dataset dataset)
         {
-            return dataset.StudyId.HasValue && dataset.StudyId.Value > 0;
+            return dataset.StudySpecific;
         }
     }
 }

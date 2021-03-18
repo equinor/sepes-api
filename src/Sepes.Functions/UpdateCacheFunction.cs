@@ -7,13 +7,13 @@ namespace Sepes.Functions
 {
     public class UpdateCacheFunction
     {
-        readonly IVirtualMachineSizeService _vmSizeService;
-        readonly IVirtualMachineDiskService _virtualMachineDiskService;
+        readonly IVirtualMachineSizeImportService _virtualMachineSizeImportService;
+        readonly IVirtualMachineDiskSizeImportService _virtualMachineDiskSizeImportService;
 
-        public UpdateCacheFunction(IVirtualMachineSizeService vmSizeService, IVirtualMachineDiskService virtualMachineDiskService)
+        public UpdateCacheFunction(IVirtualMachineSizeImportService virtualMachineSizeImportService, IVirtualMachineDiskSizeImportService virtualMachineDiskSizeImportService)
         {
-            _vmSizeService = vmSizeService;
-            _virtualMachineDiskService = virtualMachineDiskService;
+            _virtualMachineSizeImportService = virtualMachineSizeImportService;
+            _virtualMachineDiskSizeImportService = virtualMachineDiskSizeImportService;
         }
 
         //To run every minute (in debug only): "0 */30 * * * *"
@@ -22,8 +22,8 @@ namespace Sepes.Functions
         [FunctionName("UpdateAllCaches")]
         public async Task Run([TimerTrigger("0 */6 * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
         {
-            await _vmSizeService.UpdateVmSizeCache();
-            await _virtualMachineDiskService.UpdateVmDiskSizeCache();
+            await _virtualMachineSizeImportService.UpdateVmSizeCache();
+            await _virtualMachineDiskSizeImportService.Import();
         }
     }
 }

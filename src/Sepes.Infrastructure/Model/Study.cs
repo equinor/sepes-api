@@ -36,9 +36,7 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string ClosedBy { get; set; }
 
-        public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
-
-        public virtual ICollection<Dataset> StudySpecificDatasets { get; set; }
+        public virtual ICollection<StudyDataset> StudyDatasets { get; set; }     
 
         public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
 

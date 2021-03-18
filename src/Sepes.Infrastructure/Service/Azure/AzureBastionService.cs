@@ -44,32 +44,31 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogInformation($"Ensure bastion exist for Sandbox: {parameters.SandboxName}! Bastion allready existed. Bastion Id: {bastionHost.Id}");
             }
-              
+
             var result = CreateResult(bastionHost);
-           
+
             return result;
         }
 
         public async Task<ResourceProvisioningResult> GetSharedVariables(ResourceProvisioningParameters parameters)
         {
-            var bastion = await GetResourceAsync(parameters.ResourceGroupName, parameters.Name);
+            var bastion = await GetResourceInternalAsync(parameters.ResourceGroupName, parameters.Name);
             var result = CreateResult(bastion);
             return result;
         }
 
         ResourceProvisioningResult CreateResult(BastionHost bastion)
         {
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromIResource(bastion);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(bastion);
             crudResult.CurrentProvisioningState = bastion.ProvisioningState.ToString();
             return crudResult;
         }
 
-        public async Task<ResourceProvisioningResult> Delete(ResourceProvisioningParameters parameters)
+        public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
             await DeleteInternal(parameters.ResourceGroupName, parameters.Name);
-
             var provisioningState = await GetProvisioningState(parameters.ResourceGroupName, parameters.Name);
-            var crudResult = ResourceProvisioningResultUtil.CreateResultFromProvisioningState(provisioningState);
+            var crudResult = ResourceProvisioningResultUtil.CreateFromProvisioningState(provisioningState);
             return crudResult;
         }
 
@@ -114,25 +113,24 @@ namespace Sepes.Infrastructure.Service
 
         async Task DeleteInternal(string resourceGroupName, string bastionHostName)
         {
+            var bastion = await GetResourceInternalAsync(resourceGroupName, bastionHostName, false);
+
+            if (bastion == null)
+            {
+                //Allready deleted
+                _logger.LogWarning($"Deleting resource {bastionHostName} failed because it was not found. Assuming allready deleted");
+                return;
+            }
+
             using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
-
-                var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);
-
-                //Ensure resource is is managed by this instance
                 CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
-
                 await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
             }
-        }
+        }      
 
-        public async Task<BastionHost> GetResourceAsync(string resourceGroupName, string bastionHostName)
-        {
-            return await GetResourceInternalAsync(resourceGroupName, bastionHostName);
-        }
-
-        async Task<BastionHost> GetResourceInternalAsync(string resourceGroupName, string bastionHostName, bool failOnNotFound = true)
+        async Task<BastionHost> GetResourceInternalAsync(string resourceGroupName, string bastionHostName, bool failIfNotFound = true)
         {
             try
             {
@@ -143,40 +141,46 @@ namespace Sepes.Infrastructure.Service
                     return bastion;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                if (failOnNotFound)
+                if (ex.Message.ToLower().Contains("could not be found") || ex.Message.ToLower().Contains("was not found"))
                 {
-                    throw;
+                    if (failIfNotFound)
+                    {
+                        throw NotFoundException.CreateForAzureResource(bastionHostName, resourceGroupName, ex);
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
 
-                return null;
-            }           
+                throw;
+            }
         }
 
 
         public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
         {
-            var bastion = await GetResourceAsync(resourceGroupName, bastionHostName);
+            var bastion = await GetResourceInternalAsync(resourceGroupName, bastionHostName, false);
 
             if (bastion == null)
             {
-                throw NotFoundException.CreateForAzureResource(bastionHostName, resourceGroupName);
+                return null;
             }
 
             return bastion.ProvisioningState;
-        }
+        }       
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
-            var rg = await GetResourceAsync(resourceGroupName, resourceName);
+            var rg = await GetResourceInternalAsync(resourceGroupName, resourceName);
             return rg.Tags;
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
         {
-            var resource = await GetResourceAsync(resourceGroupName, resourceName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
             //Ensure resource is is managed by this instance
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
             // TODO: A bit unsure if this actually updates azure resource...

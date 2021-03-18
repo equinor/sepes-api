@@ -1,13 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
@@ -19,44 +20,34 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class VirtualMachineRuleService : IVirtualMachineRuleService
-    {
-        readonly ILogger _logger;
-        readonly SepesDbContext _db;
-        readonly IUserService _userService;
-        readonly ICloudResourceReadService _sandboxResourceService;
+    public class VirtualMachineRuleService : VirtualMachineServiceBase, IVirtualMachineRuleService
+    {       
+      
         readonly ICloudResourceOperationReadService _sandboxResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _sandboxResourceOperationCreateService;
-        readonly IProvisioningQueueService _workQueue;
+        readonly IProvisioningQueueService _provisioningQueueService;
 
-        public VirtualMachineRuleService(ILogger<VirtualMachineService> logger,
+        public VirtualMachineRuleService(
+            IConfiguration configuration,
             SepesDbContext db,
+            ILogger<VirtualMachineRuleService> logger,
+            IMapper mapper,
             IUserService userService,
-            ICloudResourceReadService sandboxResourceService,
+            ICloudResourceReadService cloudResourceReadService,
+            IProvisioningQueueService  provisioningQueueService,
             ICloudResourceOperationReadService sandboxResourceOperationReadService,
-            ICloudResourceOperationCreateService sandboxResourceOperationCreateService,
-            IProvisioningQueueService workQueue)
+            ICloudResourceOperationCreateService sandboxResourceOperationCreateService)
+             : base(configuration, db, logger, mapper, userService, cloudResourceReadService)
         {
-            _logger = logger;
-            _db = db;
-            _userService = userService;
-            _sandboxResourceService = sandboxResourceService;
+            _provisioningQueueService = provisioningQueueService;
             _sandboxResourceOperationReadService = sandboxResourceOperationReadService;
             _sandboxResourceOperationCreateService = sandboxResourceOperationCreateService;
-            _workQueue = workQueue;
-        }
-
-        async Task<CloudResource> GetVmResourceEntry(int vmId, UserOperation operation)
-        {
-            _ = await StudySingularQueries.GetStudyByResourceIdCheckAccessOrThrow(_db, _userService, vmId, operation);
-            var vmResource = await _sandboxResourceService.GetByIdAsync(vmId);
-
-            return vmResource;
-        }
+           
+        }       
 
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -77,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
 
             //Get config string
@@ -239,7 +230,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmRuleDto> GetInternetRule(int vmId)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -263,249 +254,13 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmRuleDto>> GetRules(int vmId, CancellationToken cancellationToken = default)
         {
-            var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
+            var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
-        }
-
-        //TODO: Probably remove
-        //public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        //{
-        //    await ValidateRuleThrowIfInvalid(vmId, input);
-
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get existing rules from VM settings
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    ThrowIfRuleExists(vmSettings, input);
-
-        //    input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
-
-        //    if (vmSettings.Rules == null)
-        //    {
-        //        vmSettings.Rules = new List<VmRuleDto>();
-        //    }
-
-        //    vmSettings.Rules.Add(input);
-
-        //    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //    await _db.SaveChangesAsync();
-
-        //    await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
-
-        //    return input;
-        //}
-
-        //TODO: Probably remove
-        //public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        //{
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get config string
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    if (vmSettings.Rules != null)
-        //    {
-
-        //        VmRuleDto ruleToRemove = null;
-
-        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-        //        if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
-        //        {
-        //            vmSettings.Rules.Remove(ruleToRemove);
-
-        //            ThrowIfRuleExists(vmSettings, input);
-
-        //            vmSettings.Rules.Add(input);
-
-        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //            await _db.SaveChangesAsync();
-
-        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-
-        //            return input;
-        //        }
-        //    }
-
-        //    throw new NotFoundException($"Rule with id {input.Name} does not exist");
-        //}
-
-        //public async Task CloseInternet(int vmId, CancellationToken cancellationToken = default)
-        //{
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get config string
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    if (vmSettings.Rules != null)
-        //    {
-        //        bool ruleIsChanged = false;
-
-        //        foreach (var curRule in vmSettings.Rules)
-        //        {
-        //            if (curRule.Direction == RuleDirection.Outbound)
-        //            {
-        //                if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-        //                {
-        //                    if (curRule.Action == RuleAction.Allow)
-        //                    {
-        //                        ruleIsChanged = true;
-        //                        curRule.Action = RuleAction.Deny;
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        if (ruleIsChanged)
-        //        {
-        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //            await _db.SaveChangesAsync();
-
-        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-        //        }
-        //    }
-        //}
-        //TODO: Probably remove
-        //public async Task<VmRuleDto> AddRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        //{
-        //    await ValidateRuleThrowIfInvalid(vmId, input);
-
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get existing rules from VM settings
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    ThrowIfRuleExists(vmSettings, input);
-
-        //    input.Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId);
-
-        //    if (vmSettings.Rules == null)
-        //    {
-        //        vmSettings.Rules = new List<VmRuleDto>();
-        //    }
-
-        //    vmSettings.Rules.Add(input);
-
-        //    vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //    await _db.SaveChangesAsync();
-
-        //    await CreateUpdateOperationAndAddQueueItem(vm, "Add rule");
-
-        //    return input;
-        //}
-
-        //TODO: Probably remove
-        //public async Task<VmRuleDto> UpdateRule(int vmId, VmRuleDto input, CancellationToken cancellationToken = default)
-        //{
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get config string
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    if (vmSettings.Rules != null)
-        //    {
-
-        //        VmRuleDto ruleToRemove = null;
-
-        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-        //        if (rulesDictionary.TryGetValue(input.Name, out ruleToRemove))
-        //        {
-        //            vmSettings.Rules.Remove(ruleToRemove);
-
-        //            ThrowIfRuleExists(vmSettings, input);
-
-        //            vmSettings.Rules.Add(input);
-
-        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //            await _db.SaveChangesAsync();
-
-        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-
-        //            return input;
-        //        }
-        //    }
-
-        //    throw new NotFoundException($"Rule with id {input.Name} does not exist");
-        //}
-
-        //public async Task CloseInternet(int vmId, CancellationToken cancellationToken = default)
-        //{
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
-        //    //Get config string
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    if (vmSettings.Rules != null)
-        //    {
-        //        bool ruleIsChanged = false;
-
-        //        foreach (var curRule in vmSettings.Rules)
-        //        {
-        //            if (curRule.Direction == RuleDirection.Outbound)
-        //            {
-        //                if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-        //                {
-        //                    if (curRule.Action == RuleAction.Allow)
-        //                    {
-        //                        ruleIsChanged = true;
-        //                        curRule.Action = RuleAction.Deny;
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        if (ruleIsChanged)
-        //        {
-        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //            await _db.SaveChangesAsync();
-
-        //            await CreateUpdateOperationAndAddQueueItem(vm, "Update rule");
-        //        }
-        //    }
-        //}
-        //TODO: Probably remove
-        //public async Task<VmRuleDto> DeleteRule(int vmId, string ruleId, CancellationToken cancellationToken = default)
-        //{
-        //    var vm = await GetVmResourceEntry(vmId, UserOperation.Study_Read);
-
-        //    //Get config string
-        //    var vmSettings = SandboxResourceConfigStringSerializer.VmSettings(vm.ConfigString);
-
-        //    if (vmSettings.Rules != null)
-        //    {
-
-        //        VmRuleDto ruleToRemove = null;
-
-        //        var rulesDictionary = vmSettings.Rules.ToDictionary(r => r.Name, r => r);
-
-        //        if (rulesDictionary.TryGetValue(ruleId, out ruleToRemove))
-        //        {
-        //            vmSettings.Rules.Remove(ruleToRemove);
-
-        //            vm.ConfigString = SandboxResourceConfigStringSerializer.Serialize(vmSettings);
-
-        //            await _db.SaveChangesAsync();
-
-        //            await CreateUpdateOperationAndAddQueueItem(vm, "Delete rule");
-
-        //            return ruleToRemove;
-        //        }
-        //    }
-
-        //    throw new NotFoundException($"Rule with id {ruleId} does not exist");
-        //}        
+        }            
 
         void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
         {
@@ -532,7 +287,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(_workQueue, vmUpdateOperation);
+                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, vmUpdateOperation);
             }
         }
     }

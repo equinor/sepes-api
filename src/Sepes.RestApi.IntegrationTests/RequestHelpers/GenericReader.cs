@@ -51,5 +51,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         public static string VirtualMachineExtendedInfo(int vmId) => $"api/virtualmachines/{vmId}/extended";    
 
         public static string StudyResultsAndLearningsUrl(int studyId) => $"api/studies/{studyId}/resultsandlearnings";
+
+        public static string SandboxResources(int sandboxId) => $"api/sandboxes/{sandboxId}/resources";
     } 
 }

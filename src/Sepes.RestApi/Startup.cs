@@ -142,6 +142,7 @@ namespace Sepes.RestApi
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
+            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -150,7 +151,8 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<ISandboxService, SandboxService>();
-            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();           
+            services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
+            services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
             services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
@@ -162,7 +164,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();     
-            services.AddTransient<ISandboxDatasetService, SandboxDatasetService>();
+           
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
@@ -177,12 +179,19 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();    
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
-            services.AddTransient<IVirtualMachineService, VirtualMachineService>();
-            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
-            services.AddTransient<IVirtualMachineLookupService, VirtualMachineLookupService>();
+            services.AddTransient<IVirtualMachineCreateService, VirtualMachineCreateService>();
+            services.AddTransient<IVirtualMachineReadService, VirtualMachineReadService>();
+            services.AddTransient<IVirtualMachineDeleteService, VirtualMachineDeleteService>();
+            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();      
+            services.AddTransient<IVirtualMachineDiskSizeService, VirtualMachineDiskSizeService>();        
+            services.AddTransient<IVirtualMachineOperatingSystemService, VirtualMachineOperatingSystemService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
-            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();           
+            services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
+            services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
+            //Import Services
+            services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
+            services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
             //Azure Services
             services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
@@ -276,6 +285,7 @@ namespace Sepes.RestApi
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "true")
             {
                 Log("Migrations are disabled and will be skipped!");
+                return;
 
             }
             else

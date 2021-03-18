@@ -45,6 +45,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<Dataset, DatasetLookupItemDto>();
 
             CreateMap<Dataset, DatasetListItemDto>()
+                         .ForMember(dest => dest.StudyId, source => source.MapFrom(ds => ds.StudySpecific ? ds.StudyDatasets.SingleOrDefault().StudyId : default(int?)))
                      .ForMember(dest => dest.Sandboxes, source => source.MapFrom(x => x.SandboxDatasets.Where(sd => !sd.Sandbox.Deleted).Select(sd => sd.Sandbox).ToList()));
 
             CreateMap<StudyDataset, StudyDatasetDto>()
@@ -94,12 +95,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<SandboxCreateDto, Sandbox>();
 
             CreateMap<CloudResource, SandboxResourceLight>()
-            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
-             .ForMember(dest => dest.LastKnownProvisioningState, source => source.MapFrom(x => x.LastKnownProvisioningState))
+            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))           
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
               .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
                 .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
-                .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>());
+                .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>())
+                  .ForMember(dest => dest.AdditionalProperties, source => source.MapFrom<SandboxResourceAdditionalPropertiesResolver>())
+                ;
 
 
             //CLOUD RESOURCE

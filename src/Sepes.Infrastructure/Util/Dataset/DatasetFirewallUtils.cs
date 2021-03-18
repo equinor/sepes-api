@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Sepes.Infrastructure.Util
 {
@@ -36,8 +37,20 @@ namespace Sepes.Infrastructure.Util
 
         public static bool SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp, string serverIp)
         {
-            var clientRule = DatasetFirewallUtils.CreateClientRule(user, clientIp);
-            var serverRule = DatasetFirewallUtils.CreateServerRule(user, serverIp);
+            IPAddress _clientIp;
+            IPAddress _serverIp;
+            bool ValidateClientIP = IPAddress.TryParse(clientIp, out _clientIp);
+            if (!ValidateClientIP)
+            {
+                throw new ArgumentException("ClientIp is not an valid IP Address");
+            }
+            bool ValidateServerIP = IPAddress.TryParse(serverIp, out _serverIp);
+            if (!ValidateServerIP)
+            {
+                throw new ArgumentException("ServerIp is not an valid IP Address");
+            }
+            var clientRule = DatasetFirewallUtils.CreateClientRule(user, _clientIp.ToString());
+            var serverRule = DatasetFirewallUtils.CreateServerRule(user, _serverIp.ToString());
 
             bool anyChanges = false;
 
@@ -78,7 +91,7 @@ namespace Sepes.Infrastructure.Util
             return source.Where(r => r.Created.AddMonths(1) >= DateTime.UtcNow).ToList();
         }
 
-        static bool ClientIpIsValid(string clientIp)
+        public static bool ClientIpIsValid(string clientIp)
         {
             if (String.IsNullOrWhiteSpace(clientIp))
             {

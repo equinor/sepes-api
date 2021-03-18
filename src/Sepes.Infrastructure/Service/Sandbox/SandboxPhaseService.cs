@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -21,27 +20,27 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
     {
-        readonly ICloudResourceReadService _sandboxResourceService;
-        readonly ICloudResourceOperationReadService _sandboxResourceOperationService;
+        readonly ISandboxDatasetModelService _sandboxDatasetModelService;
+
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly IVirtualMachineRuleService _virtualMachineRuleService;
 
-        readonly IAzureVirtualNetworkService _azureVNetService;
+        readonly IAzureVirtualNetworkService _azureVirtualNetworkService;
         readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
-        readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
+        readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ISandboxModelService sandboxModelService, ICloudResourceReadService sandboxResourceService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
+            IUserService userService, ISandboxModelService sandboxModelService, ISandboxDatasetModelService sandboxDatasetModelService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
             : base(config, db, mapper, logger, userService, sandboxModelService)
         {
-
-            _sandboxResourceService = sandboxResourceService;
-            _sandboxResourceOperationService = sandboxResourceOperationService;
+            _sandboxDatasetModelService = sandboxDatasetModelService;          
+            _cloudResourceOperationReadService = sandboxResourceOperationService;
             _virtualMachineRuleService = virtualMachineRuleService;
 
-            _azureVNetService = azureVNetService;
+            _azureVirtualNetworkService = azureVNetService;
             _azureStorageAccountNetworkRuleService = azureStorageAccountNetworkRuleService;
-            _nsgRuleService = nsgRuleService;
+            _azureNetworkSecurityGroupRuleService = nsgRuleService;
         }
 
         public async Task<SandboxDetails> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
@@ -56,7 +55,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var user = await _userService.GetCurrentUserAsync();
 
-                var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+                var sandboxFromDb = await GetSandboxForPhaseShift(sandboxId);
 
                 var currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
 
@@ -66,11 +65,9 @@ namespace Sepes.Infrastructure.Service
                     currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
                 }
 
-                var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);
+                var nextPhase = SandboxPhaseUtil.GetNextPhase(sandboxFromDb);              
 
-                var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId, cancellation);
-
-                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, resourcesForSandbox, currentPhaseItem.Phase, nextPhase, cancellation);
+                await ValidatePhaseMoveThrowIfNot(sandboxFromDb, currentPhaseItem.Phase, nextPhase, cancellation);
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
@@ -83,7 +80,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (nextPhase == SandboxPhase.DataAvailable)
                 {
-                    await MakeDatasetsAvailable(sandboxFromDb, resourcesForSandbox, cancellation);
+                    await MakeDatasetsAvailable(sandboxFromDb, cancellation);
                 }
 
                 _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
@@ -105,15 +102,20 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
+        protected async Task<Sandbox> GetSandboxForPhaseShift(int sandboxId)
+        {
+            return await _sandboxModelService.GetByIdForPhaseShiftAsync(sandboxId, UserOperation.Sandbox_IncreasePhase);
+        }
+
+        public async Task ValidatePhaseMoveThrowIfNot(Sandbox sandbox, SandboxPhase currentPhase, SandboxPhase nextPhase, CancellationToken cancellation = default)
         {
             var validationErrors = new List<string>();
 
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
 
             validationErrors.AddRange(VerifyThatSandboxHasDatasets(sandbox));
-            validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(resourcesForSandbox));
-            validationErrors.AddRange(await VerifyInternetClosed(sandbox, resourcesForSandbox, cancellation));
+            validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(sandbox.Resources));
+            validationErrors.AddRange(await VerifyInternetClosed(sandbox, cancellation));
 
             ValidationUtils.ThrowIfValidationErrors("Phase change not allowed", validationErrors);
         }
@@ -130,7 +132,7 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
         }
 
-        List<string> VerifyBasicResourcesIsFinishedAsync(List<CloudResourceDto> resourcesForSandbox)
+        List<string> VerifyBasicResourcesIsFinishedAsync(List<CloudResource> resourcesForSandbox)
         {
             var validationErrors = new List<string>();
 
@@ -147,19 +149,17 @@ namespace Sepes.Infrastructure.Service
             }
 
             return validationErrors;
-
         }
 
-
-        async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
+        async Task<List<string>> VerifyInternetClosed(Sandbox sandbox, CancellationToken cancellation = default)
         {
             var validationErrors = new List<string>();
 
             _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
 
-            var allVms = CloudResourceUtil.GetAllResourcesByType(resourcesForSandbox, AzureResourceType.VirtualMachine, false);
+            var allVms = CloudResourceUtil.GetAllResourcesByType(sandbox.Resources, AzureResourceType.VirtualMachine, false);
 
-            var networkSecurityGroup = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.NetworkSecurityGroup, true);
+            var networkSecurityGroup = CloudResourceUtil.GetResourceByType(sandbox.Resources, AzureResourceType.NetworkSecurityGroup, true);
 
             bool anyVmsFound = false;
 
@@ -174,12 +174,12 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
-                else if (await _nsgRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
+                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
                 {
                     validationErrors.Add($"Internet is actually open on VM in Azure {curVm.ResourceName}");
                 }
 
-                if (await _sandboxResourceOperationService.HasUnstartedCreateOrUpdateOperation(curVm.Id)) //Other unfinished VM update
+                if (await _cloudResourceOperationReadService.HasUnstartedCreateOrUpdateOperation(curVm.Id)) //Other unfinished VM update
                 {
                     validationErrors.Add($"Unfinished operation exists for VM {curVm.ResourceName}");
                 }
@@ -193,10 +193,10 @@ namespace Sepes.Infrastructure.Service
             return validationErrors;
         }
 
-        async Task MakeDatasetsAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, CancellationToken cancellation = default)
+        async Task MakeDatasetsAvailable(Sandbox sandbox, CancellationToken cancellation = default)
         {
-            var resourceGroupResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
-            var vNetResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+            var resourceGroupResource = CloudResourceUtil.GetResourceByType(sandbox.Resources, AzureResourceType.ResourceGroup, true);
+            var vNetResource = CloudResourceUtil.GetResourceByType(sandbox.Resources, AzureResourceType.VirtualNetwork, true);
 
             if (resourceGroupResource == null)
             {
@@ -208,22 +208,21 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Could not locate VNet entry for Sandbox {sandbox.Id}");
             }
 
-            await _azureVNetService.EnsureSandboxSubnetHasServiceEndpointForStorage(resourceGroupResource.ResourceName, vNetResource.ResourceName);
+            await _azureVirtualNetworkService.EnsureSandboxSubnetHasServiceEndpointForStorage(resourceGroupResource.ResourceName, vNetResource.ResourceName);
 
-            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
+            var sandboxDatasets = await _sandboxDatasetModelService.GetSandboxDatasetsForPhaseShiftAsync(sandbox.Id);
+
+            foreach (var curDatasetRelation in sandboxDatasets)
             {
-                if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
-                {
-                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                    await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
-                }
-                else
+                if (!curDatasetRelation.Dataset.StudySpecific)
                 {
                     throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
-                }
+                }              
+
+                var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                await _azureStorageAccountNetworkRuleService.AddStorageAccountToVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
             }
         }
-
 
         async Task AttemptRollbackPhase(int sandboxId, SandboxPhaseHistory phaseToRemove)
         {
@@ -270,15 +269,14 @@ namespace Sepes.Infrastructure.Service
 
         async Task MakeDatasetsUnAvailable(int sandboxId)
         {
-            var sandbox = await GetWithoutChecks(sandboxId);
-            var resourcesForSandbox = await _sandboxResourceService.GetSandboxResources(sandboxId);
-            await MakeDatasetsUnAvailable(sandbox, resourcesForSandbox, true);
-        }
+            var sandbox = await GetSandboxForPhaseShift(sandboxId);          
+            await MakeDatasetsUnAvailable(sandbox, true);
+        }       
 
-        async Task MakeDatasetsUnAvailable(Sandbox sandbox, List<CloudResourceDto> resourcesForSandbox, bool continueOnError = true, CancellationToken cancellation = default)
+        async Task MakeDatasetsUnAvailable(Sandbox sandbox, bool continueOnError = true, CancellationToken cancellation = default)
         {
-            var resourceGroupResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.ResourceGroup, true);
-            var vNetResource = CloudResourceUtil.GetResourceByType(resourcesForSandbox, AzureResourceType.VirtualNetwork, true);
+            var resourceGroupResource = CloudResourceUtil.GetResourceByType(sandbox.Resources, AzureResourceType.ResourceGroup, true);
+            var vNetResource = CloudResourceUtil.GetResourceByType(sandbox.Resources, AzureResourceType.VirtualNetwork, true);
 
             if (resourceGroupResource == null)
             {
@@ -290,19 +288,19 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception($"Could not locate VNet entry for Sandbox {sandbox.Id}");
             }
 
-            foreach (var curDatasetRelation in sandbox.SandboxDatasets)
+            var sandboxDatasets = await _sandboxDatasetModelService.GetSandboxDatasetsForPhaseShiftAsync(sandbox.Id);
+
+            foreach (var curDatasetRelation in sandboxDatasets)
             {
                 try
                 {
-                    if (curDatasetRelation.Dataset.StudyId.HasValue && curDatasetRelation.Dataset.StudyId == sandbox.StudyId)
-                    {
-                        var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
-                        await _azureStorageAccountNetworkRuleService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
-                    }
-                    else
+                    if (!curDatasetRelation.Dataset.StudySpecific)
                     {
                         throw new Exception($"Only study specific datasets are supported. Please remove dataset {curDatasetRelation.Dataset.Name} from Sandbox");
                     }
+
+                    var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(curDatasetRelation.Dataset);
+                    await _azureStorageAccountNetworkRuleService.RemoveStorageAccountFromVNet(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName, resourceGroupResource.ResourceName, vNetResource.ResourceName, cancellation);
                 }
                 catch (Exception ex)
                 {

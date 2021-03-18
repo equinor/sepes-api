@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading;
@@ -15,6 +16,10 @@ namespace Sepes.Infrastructure.Util.Provisioning
     {
         public static bool WillBeHandledAsCreateOrUpdate(CloudResourceOperationDto operation)
         {
+            if (operation == null)
+            {
+                throw new ArgumentException("Cloud-Resource-Operation was null");
+            }
             if (operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE)
             {
                 return true;
@@ -80,13 +85,11 @@ namespace Sepes.Infrastructure.Util.Provisioning
         static Task<ResourceProvisioningResult> CreateProvisioningResultTask(CloudResourceOperationDto operation, ResourceProvisioningParameters currentCrudInput, IPerformResourceProvisioning provisioningService, CancellationTokenSource cancellation, ILogger logger)
         {
             if (operation.OperationType == CloudResourceOperationType.CREATE)
-            {
-                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Initial checks succeeded. Proceeding with CREATE operation"));
+            {              
                 return provisioningService.EnsureCreated(currentCrudInput, cancellation.Token);
             }
             else
-            {
-                logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Initial checks succeeded. Proceeding with UPDATE operation"));
+            {              
                 return provisioningService.Update(currentCrudInput, cancellation.Token);
             }
         }
