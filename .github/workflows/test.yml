@@ -66,6 +66,20 @@ jobs:
         name: 'Unit Test Results'
         path: ${{github.workspace}}/${{env.file_name}}
 
+
+    - name: Unit Tests - Build coverage report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/UnitTests -reporttypes:HtmlSummary -title:"Unit Tests"
+
+
+    - name: Unit Tests - Upload coverage report as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Unit Test Coverage Report'
+        path: ${{github.workspace}}/CodeCoverage/UnitTests/summary.htm
+
       # BEGIN INTEGRATION TESTS
 
       # azure login steps
@@ -169,12 +183,23 @@ jobs:
       with:
         name: 'Integration Test Results'
         path: ${{github.workspace}}/${{env.file_name_int_test}}
+
+
+    - name: Integration Tests - Build coverage report
+      run: |
+        reportgenerator -reports:src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/IntegrationTest -reporttypes:HtmlSummary -title:"Integration Tests"
+    
+    
+    - name: Integration Tests - Upload coverage report as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Interation Test Coverage Report'
+        path: ${{github.workspace}}/CodeCoverage/IntegrationTest/summary.htm  
    
 
     - name: Combined Tests - Build coverage report
-      run: |
-        dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
+      run: reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
 
 
     - name: Combined Tests - Upload coverage report as build artifact
