@@ -13,7 +13,11 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101    
+        dotnet-version: 3.1.101  
+      
+    - uses: actions/checkout@v1
+    - name: Run Jest
+      uses: stefanoeb/jest-action@1.0.3
       
       # restore dependencies  
     - name: Install dependencies
