@@ -16,6 +16,10 @@ namespace Sepes.Infrastructure.Util.Provisioning
     {
         public static bool WillBeHandledAsCreateOrUpdate(CloudResourceOperationDto operation)
         {
+            if (operation == null)
+            {
+                throw new ArgumentException("Cloud-Resource-Operation was null");
+            }
             if (operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE)
             {
                 return true;

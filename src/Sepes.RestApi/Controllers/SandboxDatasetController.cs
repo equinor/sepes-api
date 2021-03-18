@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
@@ -14,41 +14,32 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class SandboxDatasetController : ControllerBase
     {
-        readonly ISandboxDatasetService _service;
+        readonly ISandboxDatasetModelService _sandboxDatasetModelService;
 
-        public SandboxDatasetController(ISandboxDatasetService service)
+        public SandboxDatasetController(ISandboxDatasetModelService sandboxDatasetModelService)
         {
-            _service = service;
+            _sandboxDatasetModelService = sandboxDatasetModelService;
         }
-
-        [HttpGet("{sandboxId}/datasets")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> GetDatasetsForSandbox(int sandboxId)
-        {
-            var datasets = await _service.GetAll(sandboxId);
-            return new JsonResult(datasets);
-        }
-
 
         [HttpGet("{sandboxId}/availabledatasets")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetAvailableDatasetsForSandbox(int sandboxId)
         {
-            var datasets = await _service.AllAvailable(sandboxId);
+            var datasets = await _sandboxDatasetModelService.AllAvailable(sandboxId);
             return new JsonResult(datasets);
         }
 
         [HttpPut("{sandboxId}/datasets/{datasetId}")]
-        public async Task<IActionResult> AddDataSetAsync(int sandboxId, int datasetId)
+        public async Task<IActionResult> AddDatasetAsync(int sandboxId, int datasetId)
         {
-            var datasets = await _service.Add(sandboxId, datasetId);
+            var datasets = await _sandboxDatasetModelService.Add(sandboxId, datasetId);
             return new JsonResult(datasets);
         }
 
         [HttpDelete("{sandboxId}/datasets/{datasetId}")]
-        public async Task<IActionResult> RemoveDataSetAsync(int sandboxId, int datasetId)
+        public async Task<IActionResult> RemoveDatasetAsync(int sandboxId, int datasetId)
         {
-            var datasets = await _service.Remove(sandboxId, datasetId);
+            var datasets = await _sandboxDatasetModelService.Remove(sandboxId, datasetId);
             return new JsonResult(datasets);
         } 
     }

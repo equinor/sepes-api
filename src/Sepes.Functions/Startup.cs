@@ -17,6 +17,7 @@ using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Diagnostics;
 
 [assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
 
@@ -24,21 +25,11 @@ using System;
 namespace Sepes.CloudResourceWorker
 {
     public class Startup : FunctionsStartup
-    {
-
-        string GetConfigValue(string key, bool throwIfEmpty = false)
-        {
-            var value = System.Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
-
-            if (throwIfEmpty && String.IsNullOrWhiteSpace(value))
-            {
-                throw new NullReferenceException($"Configuration {key} is null or empty");
-            }
-
-            return value;
-        }
+    {       
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            Log("Function - Startup - Configure - Start");
+
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
             var aiOptions = new ApplicationInsightsServiceOptions
             {
@@ -46,9 +37,11 @@ namespace Sepes.CloudResourceWorker
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = appiKey,
                 EnableDebugLogger = true
-            };
+            };         
 
             builder.Services.AddApplicationInsightsTelemetry(aiOptions);
+
+            Log("Function - Startup - Configure - Initializing EF Core");
 
             var readWriteDbConnectionString = GetConfigValue(ConfigConstants.DB_READ_WRITE_CONNECTION_STRING, true);
 
@@ -68,6 +61,7 @@ namespace Sepes.CloudResourceWorker
             // This is configuration from environment variables, settings.json etc.
             var configuration = builder.GetContext().Configuration;
 
+            Log("Function - Startup - Configure - Auth");
             builder.Services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = "Bearer";
@@ -79,7 +73,7 @@ namespace Sepes.CloudResourceWorker
 
             builder.Services.AddHttpContextAccessor();
 
-
+            Log("Function - Startup - Configure - Adding Services");
 
 
             //Plumbing
@@ -130,7 +124,26 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<IAzureDiskPriceService, AzureDiskPriceService>();
             builder.Services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
 
+            Log("Function - Startup - Configure - End");
+        }
 
+        string GetConfigValue(string key, bool throwIfEmpty = false)
+        {
+            var value = System.Environment.GetEnvironmentVariable(key, EnvironmentVariableTarget.Process);
+
+            if (throwIfEmpty && String.IsNullOrWhiteSpace(value))
+            {
+                Log($"Function - Startup - GetConfigValue: Unable to get config: {key}");
+                throw new NullReferenceException($"Configuration {key} is null or empty");
+            }
+
+            return value;
+        }
+
+        void Log(string message)
+        {
+            Trace.WriteLine(message);
+            //_logger.LogWarning(message);
         }
     }
 }
