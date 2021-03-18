@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.14](https://github.com/equinor/sepes-api/compare/0.4.13...0.4.14) (2021-03-18)
+
+
+### Bug Fixes
+
+* **dataset:** better handling of missing resource group edge case ([#601](https://github.com/equinor/sepes-api/issues/601)) ([94fa316](https://github.com/equinor/sepes-api/commit/94fa31623a8904d6473c9394e061abeb1390ccd7))
+* **DatasetUtils:** add nullcheck ([#618](https://github.com/equinor/sepes-api/issues/618)) ([1e64848](https://github.com/equinor/sepes-api/commit/1e6484821d9c17438fe41ed1b96a69cb6273002d))
+* **sandbox:** better null handling and logging in vnet creation ([#610](https://github.com/equinor/sepes-api/issues/610)) ([bbc7238](https://github.com/equinor/sepes-api/commit/bbc723859b8bb19dfcb903397720ce1dd5b26699))
+* **sandbox:** changed when resource retry link is created ([#600](https://github.com/equinor/sepes-api/issues/600)) ([baec250](https://github.com/equinor/sepes-api/commit/baec250c264a77894b51da3ac1d2cae228122281))
+* **sandbox:** timeout when going to next phase ([#621](https://github.com/equinor/sepes-api/issues/621)) ([b4b901a](https://github.com/equinor/sepes-api/commit/b4b901abeac65c2c089f99566c338caaded61ef1))
+* **study:** increase performance for GET resultsandlearnings ([#607](https://github.com/equinor/sepes-api/issues/607)) ([8bdedc5](https://github.com/equinor/sepes-api/commit/8bdedc5d6ef520124cb0e48c62046d9c25de5d10))
+* **study:** prevented details request deadlock ([#611](https://github.com/equinor/sepes-api/issues/611)) ([d2c0859](https://github.com/equinor/sepes-api/commit/d2c085977f8110135995befcecd4ac50384de629))
+* **worker:** added trace logging in startup ([#620](https://github.com/equinor/sepes-api/issues/620)) ([7c86c3b](https://github.com/equinor/sepes-api/commit/7c86c3bbf3402518c78589f8bca2306c74a5269e))
+* standardized how azure services handles non existing resources ([#599](https://github.com/equinor/sepes-api/issues/599)) ([13d565f](https://github.com/equinor/sepes-api/commit/13d565f4c8eb204ef6b656a43d6c37253c014113))
+* Validate firewall IP rules ([1866644](https://github.com/equinor/sepes-api/commit/18666447832bbb0c0d8fcd514af345a9448a8349))
+* **study:** streamlined create and add logo ([#603](https://github.com/equinor/sepes-api/issues/603)) ([77efc2b](https://github.com/equinor/sepes-api/commit/77efc2bb02e7181f3cb779eefb16b386c1790e3c))
+* **worker:** sandbox creation queue timeout and better in prog protection ([#613](https://github.com/equinor/sepes-api/issues/613)) ([1a0500e](https://github.com/equinor/sepes-api/commit/1a0500e06df9ba71358a0995b6ef44c8c8cabe00))
+
 ### [0.4.13](https://github.com/equinor/sepes-api/compare/0.4.12...0.4.13) (2021-03-04)
 
 
