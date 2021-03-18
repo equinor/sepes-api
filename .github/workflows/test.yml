@@ -199,7 +199,7 @@ jobs:
    
 
     - name: Combined Tests - Build coverage report
-      run: reportgenerator -reports:'src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml' -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
+      run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
 
 
     - name: Combined Tests - Upload coverage report as build artifact
