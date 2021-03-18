@@ -13,7 +13,7 @@ namespace Sepes.Infrastructure.Util
         {
             if (itemToDelete == null)
             {
-                throw new ArgumentException("Item to delete was null");
+                throw new ArgumentNullException("Item to delete was null");
             }
             if(!IsMarkedAsDeleted(itemToDelete))
             {

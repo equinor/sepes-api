@@ -60,9 +60,9 @@ namespace Sepes.Tests.Util
         {
             var deletedBy = new UserDto { };
             var itemToBeDeleted = new CloudResource { };
-            var ex = Assert.Throws<ArgumentException>(() => SoftDeleteUtil.MarkAsDeleted(null, ""));
+            var ex = Assert.Throws<ArgumentNullException>(() => SoftDeleteUtil.MarkAsDeleted(null, ""));
 
-            Assert.Equal("Item to delete was null", ex.Message);
+            Assert.Contains("Item to delete was null", ex.Message);
             Assert.False(SoftDeleteUtil.IsMarkedAsDeleted(itemToBeDeleted));
         }
     }
