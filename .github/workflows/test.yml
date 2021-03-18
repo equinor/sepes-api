@@ -9,7 +9,9 @@ jobs:
     env:
       config: 'Release'
       azureSubscriptionId: 6cfb8f33-6d4b-43bf-9000-91fd6f53ca28
- 
+      dbCiResourceGroup: rg-sepes-ci
+      elasticPool: sqlpool-sepes-ci
+
     steps:
     - uses: actions/checkout@v2
 
@@ -106,7 +108,7 @@ jobs:
           $ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content
           az sql server firewall-rule create `
               --name github-runner-ip `
-              --resource-group rg-sepes-ci `
+              --resource-group ${{ env.dbCiResourceGroup }} `
               --server $Env:sqlServerName `
               --start-ip-address $ip `
               --end-ip-address $ip
@@ -117,6 +119,7 @@ jobs:
         $pr = (Get-Content ${env:GITHUB_EVENT_PATH} | ConvertFrom-Json).number
         Write-Host "Pull request: $pr"
         $dbname = "db-sepes-ci-pr$pr"
+        echo "dbName=$dbname" | Out-File -FilePath $ENV:GITHUB_ENV -Encoding utf8 -Append
 
         # Create new database for PR
         Import-Module ./scripts/createdatabase.ps1 -Force
@@ -125,12 +128,20 @@ jobs:
             if (!$pr){
                 write-host "No PR number found, skipping creating database"
             }
-            else{
-                Write-Host "Creating database.."
-                New-SqlDatabase -Name $dbname `
-                    -ResourceGroup rg-sepes-ci `
-                    -Server $Env:sqlServerName `
-                    -ElasticPool sqlpool-sepes-ci
+            else {
+                $prDb = az sql db show --name $dbname `
+                  --resource-group ${{ env.dbCiResourceGroup }} `
+                  --server $Env:sqlServerName | convertfrom-json
+                if (!$prDb) {
+                  Write-Host "Creating database.."
+                  az sql db create `
+                    --name $dbname `
+                    --resource-group ${{ env.dbCiResourceGroup }} `
+                    --server $Env:sqlServerName `
+                    --elastic-pool ${{ env.elasticPool }}
+                  }
+                else {
+                  Write-Host "Database already exist"
                 }
         }
         catch {
@@ -144,7 +155,6 @@ jobs:
       working-directory: src/Sepes.RestApi.IntegrationTests
       run: dotnet build --configuration $config --no-restore
 
-   
     - name: Integration Tests - Set test title
       run: | 
             if ${{ github.event_name == 'pull_request' }}
@@ -160,7 +170,7 @@ jobs:
 
     - name: Integration Tests - Run and collect coverage
       env: 
-        SepesIntegrationTestConnectionString: ${{ secrets.CONNECTION_STRING }}
+        SepesIntegrationTestConnectionString: "Data Source=${{ secrets.CI_SQLSERVERNAME }}.database.windows.net;Initial Catalog=${{ env.dbName }};User ID=${{ secrets.CI_SQLUSERNAME }};Password=${{ secrets.CI_SQLSECRET }};Persist Security Info=True;MultipleActiveResultSets=True;"
         DisableMigrations: "true"
         CostAllocationTypeTagName: "INTTEST-CostAllocationType"
         CostAllocationCodeTagName: "INTTEST-CostAllocationCode"
