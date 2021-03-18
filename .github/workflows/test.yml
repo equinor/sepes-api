@@ -122,7 +122,7 @@ jobs:
         echo "dbName=$dbname" | Out-File -FilePath $ENV:GITHUB_ENV -Encoding utf8 -Append
 
         # Create new database for PR
-        Import-Module ./scripts/createdatabase.ps1 -Force
+        Import-Module ${{github.workspace}}/scripts/createdatabase.ps1 -Force
       
         try {
             if (!$pr){
