@@ -79,7 +79,7 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Unit Test Coverage Report'
+        name: 'Unit Test Coverage'
         path: ${{github.workspace}}/CodeCoverage/UnitTests/summary.htm
 
       # BEGIN INTEGRATION TESTS
@@ -203,7 +203,7 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Interation Test Coverage Report'
+        name: 'Interation Test Coverage'
         path: ${{github.workspace}}/CodeCoverage/IntegrationTest/summary.htm  
    
 
@@ -215,6 +215,6 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Combined Test Coverage Report'
+        name: 'Combined Test Coverage'
         path: ${{github.workspace}}/CodeCoverage/Combined/summary.htm 
    
