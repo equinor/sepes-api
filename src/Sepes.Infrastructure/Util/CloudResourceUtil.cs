@@ -33,14 +33,14 @@ namespace Sepes.Infrastructure.Util
             return resources.FirstOrDefault(r => r.ResourceType == resourceType && (!mustBeSandboxControlled || (mustBeSandboxControlled && r.SandboxControlled)));         
         }
 
-        public static CloudResource GetResourceByType(List<CloudResource> resources, string resourceType, bool mustBeSandboxControlled = false)
+        public static List<CloudResource> GetSandboxControlledResources(List<CloudResource> resources)
         {
             if (resources == null)
             {
                 throw new ArgumentNullException("resources");
             }
 
-            return resources.FirstOrDefault(r => r.ResourceType == resourceType && (!mustBeSandboxControlled || (mustBeSandboxControlled && r.SandboxControlled)));
+            return resources.Where(r => r.SandboxControlled).ToList();
         }
 
         public static CloudResource GetResourceByTypeAndPurpose(List<CloudResource> resources, string resourceType, string purpose)

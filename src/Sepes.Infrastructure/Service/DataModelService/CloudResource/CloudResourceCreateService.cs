@@ -123,7 +123,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
                     sandboxId, region, AzureResourceType.VirtualMachine,
                     resourceGroup.Id, resourceName: vmName, tags: tags, configString: configString,
                     dependsOn: operationDependsOn,
-                    resourceGroupName: resourceGroup.ResourceGroupName
+                    resourceGroupName: resourceGroup.ResourceGroupName,
+                    sandboxControlled: false
                    );
 
                 await SaveToDb(resourceEntry);

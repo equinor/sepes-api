@@ -38,6 +38,11 @@ namespace Sepes.Infrastructure.Util
         {
             var createOperation = GetCreateOperation(resource);
 
+            if(createOperation == null)
+            {
+                return false;
+            }
+
             return createOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
            
         }

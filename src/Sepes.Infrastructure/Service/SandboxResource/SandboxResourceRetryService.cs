@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
 
             var queueParentItem = QueueItemFactory.CreateParent($"Create basic resources for Sandbox (re-scheduled): {sandbox.Id}");
 
-            foreach (var currentSandboxResource in sandbox.Resources.Where(r => r.SandboxControlled))
+            foreach (var currentSandboxResource in sandbox.Resources.Where(r => r.SandboxControlled).OrderBy(r=> r.Id))
             {
                 var resourceCreateOperation = CloudResourceOperationUtil.GetCreateOperation(currentSandboxResource);
 
@@ -53,10 +53,7 @@ namespace Sepes.Infrastructure.Service
                     throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Create operation for resource {currentSandboxResource.Id} - {currentSandboxResource.ResourceName} was abandoned. Cannot proceed"));
                 }
 
-                if (resourceCreateOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL)
-                {
-                    await PrepareOperationForRetryAndAddToQueueItem(currentSandboxResource, resourceCreateOperation, queueParentItem);
-                }
+                await EnsureOperationIsReadyForRetryAndAddToQueueItem(currentSandboxResource, resourceCreateOperation, queueParentItem);
             }
 
             if (queueParentItem.Children.Count == 0)
@@ -102,12 +99,13 @@ namespace Sepes.Infrastructure.Service
 
             if (resource.ResourceType == AzureResourceType.VirtualMachine)
             {
+              
                 if (!AllSandboxResourcesOkay(resource))
                 {
                     throw new NullReferenceException(ReScheduleResourceLogPrefix(resource, $"Cannot retry VM creation for {resource.ResourceName} when Sandbox is not setup properly", operationToRetry));
                 }
 
-                await PrepareOperationForRetryAndEnqueue(resource, operationToRetry);
+                await EnsureOperationIsReadyForRetryAndEnqueue(resource, operationToRetry);
             }
             else if (resource.SandboxControlled)
             {
@@ -119,7 +117,7 @@ namespace Sepes.Infrastructure.Service
 
                 else
                 {
-                    await PrepareOperationForRetryAndEnqueue(resource, operationToRetry);
+                    await EnsureOperationIsReadyForRetryAndEnqueue(resource, operationToRetry);
                 }
 
             }
@@ -147,7 +145,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            return null;
+            return lastOperation;
         }
 
         bool AllSandboxResourcesOkay(CloudResource resource)
@@ -157,7 +155,7 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception("Missing include for Resource.Sandbox");
             }
 
-            foreach (var currentSandboxResource in resource.Sandbox.Resources)
+            foreach (var currentSandboxResource in CloudResourceUtil.GetSandboxControlledResources(resource.Sandbox.Resources))
             {
                 //If create operation failed
 
@@ -172,16 +170,16 @@ namespace Sepes.Infrastructure.Service
 
 
 
-        async Task PrepareOperationForRetryAndEnqueue(CloudResource resource, CloudResourceOperation operationToRetry)
+        async Task EnsureOperationIsReadyForRetryAndEnqueue(CloudResource resource, CloudResourceOperation operationToRetry)
         {
             var queueParentItem = QueueItemFactory.CreateParent(operationToRetry.Id, $"{operationToRetry.Description} (re-scheduled)");
-            await PrepareOperationForRetryAndAddToQueueItem(resource, operationToRetry, queueParentItem);
+            await EnsureOperationIsReadyForRetryAndAddToQueueItem(resource, operationToRetry, queueParentItem);
             await _provisioningQueueService.SendMessageAsync(queueParentItem);
         }
 
-        async Task PrepareOperationForRetryAndAddToQueueItem(CloudResource resource, CloudResourceOperation operationToRetry, ProvisioningQueueParentDto queueParentItem)
+        async Task EnsureOperationIsReadyForRetryAndAddToQueueItem(CloudResource resource, CloudResourceOperation operationToRetry, ProvisioningQueueParentDto queueParentItem)
         {
-            await PrepareOperationForRetry(resource, operationToRetry);
+            await EnsureOperationIsReadyForRetry(resource, operationToRetry);
 
             _logger.LogInformation(ReScheduleResourceLogPrefix(resource, $"Re-queing item", operationToRetry));
 
@@ -190,13 +188,16 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation(ReScheduleResourceLogPrefix(resource, $"Item re-queued", operationToRetry));
         }
 
-        async Task PrepareOperationForRetry(CloudResource resource, CloudResourceOperation operationToRetry)
+        async Task EnsureOperationIsReadyForRetry(CloudResource resource, CloudResourceOperation operationToRetry)
         {
             _logger.LogInformation(ReScheduleResourceLogPrefix(resource, $"Increasing MAX try count"), operationToRetry);
 
-            operationToRetry.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count                                           
-
-            await _db.SaveChangesAsync();
+            if (operationToRetry.TryCount >= operationToRetry.MaxTryCount)
+            {
+                operationToRetry.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count 
+                operationToRetry.Status = CloudResourceOperationState.IN_PROGRESS;
+                await _db.SaveChangesAsync();
+            }          
         }
 
         string ReScheduleResourceLogPrefix(CloudResource resource, string logText, CloudResourceOperation operation = null)

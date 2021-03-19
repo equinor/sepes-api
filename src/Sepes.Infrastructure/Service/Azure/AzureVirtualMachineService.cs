@@ -33,6 +33,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
+
+            throw new Exception("blabla");
             _logger.LogInformation($"Ensuring VM exists: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
