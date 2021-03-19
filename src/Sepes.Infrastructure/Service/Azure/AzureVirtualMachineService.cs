@@ -22,13 +22,19 @@ namespace Sepes.Infrastructure.Service
     public class AzureVirtualMachineService : AzureVirtualMachineServiceBase, IAzureVirtualMachineService
     {
         readonly IMapper _mapper;
-        readonly IAzureNetworkSecurityGroupRuleService _nsgRuleService;
+        readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
+        readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
+   
 
-        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger, IAzureNetworkSecurityGroupRuleService nsgRuleService)
+        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger,
+            IAzureKeyVaultSecretService azureKeyVaultSecretService, 
+            IAzureNetworkSecurityGroupRuleService azureNetworkSecurityGroupRuleService
+           )
             : base(config, logger)
         {
-            _mapper = mapper;
-            _nsgRuleService = nsgRuleService;
+            _mapper = mapper;          
+            _azureKeyVaultSecretService = azureKeyVaultSecretService;
+            _azureNetworkSecurityGroupRuleService = azureNetworkSecurityGroupRuleService;
         }
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
@@ -121,7 +127,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation($"Setting desired VM rules for {parameters.Name}");
 
-            var existingRules = await _nsgRuleService.GetNsgRulesContainingName(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, $"{AzureResourceNameUtil.NSG_RULE_FOR_VM_PREFIX}{parameters.DatabaseId}", cancellationToken);
+            var existingRules = await _azureNetworkSecurityGroupRuleService.GetNsgRulesContainingName(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, $"{AzureResourceNameUtil.NSG_RULE_FOR_VM_PREFIX}{parameters.DatabaseId}", cancellationToken);
             var existingRulesThatStillExists = new HashSet<string>();
 
             if (vmSettings.Rules == null)
@@ -148,12 +154,12 @@ namespace Sepes.Infrastructure.Service
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
                                 ruleMapped.Priority = existingRule.Priority;
-                                await _nsgRuleService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                                await _azureNetworkSecurityGroupRuleService.UpdateInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
                             {
                                 ruleMapped.Priority = await FindNextPriority(parameters, existingRules, AzureVmConstants.MIN_RULE_PRIORITY, 10, AzureVmConstants.MAX_RULE_PRIORITY, curRule.Direction.ToString());
-                                await _nsgRuleService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                                await _azureNetworkSecurityGroupRuleService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
 
                         }
@@ -177,13 +183,13 @@ namespace Sepes.Infrastructure.Service
                             {
                                 existingRulesThatStillExists.Add(curRule.Name);
                                 ruleMapped.Priority = existingRule.Priority; //Ensure same priority is re-used
-                                await _nsgRuleService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                                await _azureNetworkSecurityGroupRuleService.UpdateOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                             else
                             {
 
                                 ruleMapped.Priority = await FindNextPriority(parameters, existingRules, AzureVmConstants.MIN_RULE_PRIORITY, 10, AzureVmConstants.MAX_RULE_PRIORITY, curRule.Direction.ToString());
-                                await _nsgRuleService.AddOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
+                                await _azureNetworkSecurityGroupRuleService.AddOutboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
                         }
                     }
@@ -200,7 +206,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     if (!existingRulesThatStillExists.Contains(curExistingKvp.Key))
                     {
-                        await _nsgRuleService.DeleteRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, curExistingKvp.Key, cancellationToken);
+                        await _azureNetworkSecurityGroupRuleService.DeleteRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, curExistingKvp.Key, cancellationToken);
                     }
                 }
             }
@@ -223,7 +229,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<int> FindNextPriority(ResourceProvisioningParameters parameters, int startingAt, int increaseBy, int highestAllowed, string direction, CancellationToken cancellationToken = default)
         {
-            var allExistingRulesInNsg = await _nsgRuleService.GetNsgRulesForDirection(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, direction, cancellationToken);
+            var allExistingRulesInNsg = await _azureNetworkSecurityGroupRuleService.GetNsgRulesForDirection(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, direction, cancellationToken);
 
             var relevantExistingRulesInNsg = allExistingRulesInNsg.Where(r => r.Value.Priority >= startingAt && r.Value.Priority <= highestAllowed).OrderBy(r => r.Value.Priority);
 
@@ -283,7 +289,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                return await KeyVaultSecretUtil.GetKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
+                return await _azureKeyVaultSecretService.GetKeyVaultSecretValue(ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId);
             }
             catch (Exception ex)
             {
@@ -297,7 +303,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                await KeyVaultSecretUtil.DeleteKeyVaultSecretValue(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId, true);
+                await _azureKeyVaultSecretService.DeleteKeyVaultSecretValue(ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, passwordId, true);
             }
             catch (Exception ex)
             {
@@ -480,7 +486,7 @@ namespace Sepes.Infrastructure.Service
             {
                 try
                 {
-                    await _nsgRuleService.DeleteRule(resourceGroupName, networkSecurityGroupName, curRule.Name);
+                    await _azureNetworkSecurityGroupRuleService.DeleteRule(resourceGroupName, networkSecurityGroupName, curRule.Name);
                 }
                 catch (Exception)
                 {

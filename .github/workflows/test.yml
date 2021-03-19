@@ -1,82 +1,220 @@
-name: Unit Tests
+name: Unit Test and Integration Tests
 on:
   pull_request:    
-    branches: [ master, develop ]
+    branches: [ master, develop ]  
+  workflow_dispatch:
 jobs:
-  build:
+  run:
     runs-on: ubuntu-latest
     env:
       config: 'Release'
-      
+      azureSubscriptionId: 6cfb8f33-6d4b-43bf-9000-91fd6f53ca28
+      dbCiResourceGroup: rg-sepes-ci
+      elasticPool: sqlpool-sepes-ci
+
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
+
+    - name: Common - Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 3.1.101    
-      
-      # restore dependencies  
-    - name: Install dependencies
-      working-directory: src/Sepes.Tests
-      run: dotnet restore
-      
-      # build project
-    - name: Build
-      working-directory: src/Sepes.Tests
-      run: dotnet build --configuration $config --no-restore
-      
-    - name: set pr build number (if pr)
+        dotnet-version: 3.1.101
+
+    - name: Common - Set PR build number (if PR)
       id: PRNUMBER
       if: ${{ github.event_name == 'pull_request' }}
       uses: kkak10/pr-number-action@v1.3
-      
-      # set report file and title 
-    - name: Set Test Title
+
+      # BEGIN UNIT TESTS
+
+    - name: Unit Tests - Restore
+      working-directory: src/Sepes.Tests
+      run: dotnet restore      
+
+    - name: Unit Tests - Build
+      working-directory: src/Sepes.Tests
+      run: dotnet build --configuration $config --no-restore
+
+    - name: Unit Tests - Set test title
       run: | 
             if ${{ github.event_name == 'pull_request' }}
             then
-              echo "title=Test Run for PR #${{steps.PRNUMBER.outputs.pr}} (${{github.run_number}})" >> $GITHUB_ENV
+              echo "title=Unit Test Run for PR #${{steps.PRNUMBER.outputs.pr}} (${{github.run_number}})" >> $GITHUB_ENV
               echo "file_name=TestReport.${{steps.PRNUMBER.outputs.pr}}.${{github.run_number}}.md" >> $GITHUB_ENV
             else
-              echo "title=Test Run ${{github.run_number}}" >> $GITHUB_ENV
+              echo "title=Unit Test Run ${{github.run_number}}" >> $GITHUB_ENV
               echo "file_name=TestReport.${{github.run_number}}.md" >> $GITHUB_ENV
 
             fi
-      
-      # run tests with built project
-    - name: Test PR
+
+
+    - name: Unit Tests - Run and collect coverage
       working-directory: src/Sepes.Tests    
       run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings unittests.runsettings --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name}};Title=${{env.title}};" 
-      
-    # add report as PR comment (if PR)
-    - name: Add PR comment
+
+
+    - name: Unit Tests - Add PR comment
       uses: machine-learning-apps/pr-comment@master
       if: ${{always() && github.event_name == 'pull_request'}}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        path: ${{env.file_name}}      
+        path: ${{env.file_name}}     
 
-      # upload report as build artifact
-    - name: Upload a Build Artifact
+    - name: Unit Tests - Upload test results as artifact
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Test Run'
+        name: 'Unit Test Results'
         path: ${{github.workspace}}/${{env.file_name}}
 
-    # generate coverage report
-    - name: Build Coverage Report
+
+    - name: Unit Tests - Build coverage report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
-        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage -reporttypes:HtmlSummary
+        reportgenerator -reports:src/Sepes.Tests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/UnitTests -reporttypes:HtmlSummary -title:"Unit Tests"
 
-    # upload code coverage report as build artifact
-    - name: Upload a Build Artifact
+
+    - name: Unit Tests - Upload coverage report as build artifact
       uses: actions/upload-artifact@v2
       if: ${{always()}}
       with:
-        name: 'Code Coverage Report'
-        path: ${{github.workspace}}/CodeCoverage/summary.htm
-      
+        name: 'Unit Test Coverage'
+        path: ${{github.workspace}}/CodeCoverage/UnitTests/summary.htm
+
+      # BEGIN INTEGRATION TESTS
+
+      # azure login steps
+    - name: Integration Tests - Azure login
+      shell: pwsh
+      env:
+        clientId: ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}
+        clientSecret:  ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}
+        tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        sqlServerName: ${{ secrets.CI_SQLSERVERNAME }}
+      run: |
+        az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+        az account set -s ${{ env.azureSubscriptionId }}
+
+    # Create CI database
+    - name: Integration Tests - Create CI Database
+      shell: pwsh
+      env:
+        sqlServerName: ${{ secrets.CI_SQLSERVERNAME }}
+      run: |
+        # Get the Runners publics IP and add to allow-list on the SQL server
+        $Ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content
+        try {
+          $ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content
+          az sql server firewall-rule create `
+              --name github-runner-ip `
+              --resource-group ${{ env.dbCiResourceGroup }} `
+              --server $Env:sqlServerName `
+              --start-ip-address $ip `
+              --end-ip-address $ip
+        }
+        catch {
+        }
+        
+        $pr = (Get-Content ${env:GITHUB_EVENT_PATH} | ConvertFrom-Json).number
+        Write-Host "Pull request: $pr"
+        $dbname = "db-sepes-ci-pr$pr"
+        echo "dbName=$dbname" | Out-File -FilePath $ENV:GITHUB_ENV -Encoding utf8 -Append
+
+        # Create new database for PR
+        try {
+            if (!$pr){
+                write-host "No PR number found, skipping creating database"
+            }
+            else {
+                $prDb = az sql db show --name $dbname `
+                  --resource-group ${{ env.dbCiResourceGroup }} `
+                  --server $Env:sqlServerName | convertfrom-json
+                if (!$prDb) {
+                  Write-Host "Creating database.."
+                  az sql db create `
+                    --name $dbname `
+                    --resource-group ${{ env.dbCiResourceGroup }} `
+                    --server $Env:sqlServerName `
+                    --elastic-pool ${{ env.elasticPool }}
+                  }
+                else {
+                  Write-Host "Database already exist"
+                }
+            }
+        }
+        catch {
+        }
+
+    - name: Integration Tests - Restore project
+      working-directory: src/Sepes.RestApi.IntegrationTests
+      run: dotnet restore   
+
+    - name: Integration Tests - Build
+      working-directory: src/Sepes.RestApi.IntegrationTests
+      run: dotnet build --configuration $config --no-restore
+
+    - name: Integration Tests - Set test title
+      run: | 
+            if ${{ github.event_name == 'pull_request' }}
+            then
+              echo "title=Integration Test Run for PR #${{steps.PRNUMBER.outputs.pr}} (${{github.run_number}})" >> $GITHUB_ENV
+              echo "file_name_int_test=IntegrationTestReport.${{steps.PRNUMBER.outputs.pr}}.${{github.run_number}}.md" >> $GITHUB_ENV
+            else
+              echo "title=Integration Test Run ${{github.run_number}}" >> $GITHUB_ENV
+              echo "file_name_int_test=IntegrationTestReport.${{github.run_number}}.md" >> $GITHUB_ENV
+
+            fi
+
+
+    - name: Integration Tests - Run and collect coverage
+      env: 
+        SepesIntegrationTestConnectionString: "Data Source=${{ secrets.CI_SQLSERVERNAME }}.database.windows.net;Initial Catalog=${{ env.dbName }};User ID=${{ secrets.CI_SQLUSERNAME }};Password=${{ secrets.CI_SQLSECRET }};Persist Security Info=True;MultipleActiveResultSets=True;"
+        DisableMigrations: "true"
+        CostAllocationTypeTagName: "INTTEST-CostAllocationType"
+        CostAllocationCodeTagName: "INTTEST-CostAllocationCode"
+        AllowCorsDomains: "https://182.168.1.1"
+      working-directory: src/Sepes.RestApi.IntegrationTests   
+      run: dotnet test --no-restore --no-build --configuration $config --collect:"XPlat Code Coverage" --settings integrationtests.runsettings --logger:"liquid.md;LogFileName=${{github.workspace}}/${{env.file_name_int_test}};Title=${{env.title}};" 
+
+
+    - name: Integration Tests - Add PR comment
+      uses: machine-learning-apps/pr-comment@master
+      if: ${{always() && github.event_name == 'pull_request'}}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        path: ${{env.file_name_int_test}}     
+
+    - name: Integration Tests - Upload test results as artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Integration Test Results'
+        path: ${{github.workspace}}/${{env.file_name_int_test}}
+
+
+    - name: Integration Tests - Build coverage report
+      run: |
+        reportgenerator -reports:src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:${{github.workspace}}/CodeCoverage/IntegrationTest -reporttypes:HtmlSummary -title:"Integration Tests"
+    
+    
+    - name: Integration Tests - Upload coverage report as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Interation Test Coverage'
+        path: ${{github.workspace}}/CodeCoverage/IntegrationTest/summary.htm  
+   
+
+    - name: Combined Tests - Build coverage report
+      run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:${{github.workspace}}/CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
+
+
+    - name: Combined Tests - Upload coverage report as build artifact
+      uses: actions/upload-artifact@v2
+      if: ${{always()}}
+      with:
+        name: 'Combined Test Coverage'
+        path: ${{github.workspace}}/CodeCoverage/Combined/summary.htm 
    

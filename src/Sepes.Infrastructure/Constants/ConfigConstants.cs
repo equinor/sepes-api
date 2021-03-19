@@ -11,6 +11,9 @@
         public const string AZ_CLIENT_ID = "AzureAd:ClientId";
         public const string AZ_CLIENT_SECRET = "AzureAd:ClientSecret";
 
+        public const string RADIX_SECRET_AZ_CLIENT_ID = "AzureAd__ClientId";
+        public const string RADIX_SECRET_AZ_CLIENT_SECRET = "AzureAd__ClientSecret";
+
         public const string AZ_SWAGGER_CLIENT_ID = "Swagger:ClientId";
         public const string AZ_SWAGGER_CLIENT_SECRET = "Swagger:ClientSecret";       
         public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";

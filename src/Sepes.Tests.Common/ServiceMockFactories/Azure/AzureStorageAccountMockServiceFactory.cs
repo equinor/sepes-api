@@ -9,7 +9,8 @@ namespace Sepes.Test.Common.ServiceMockFactories
 {
     public static class AzureStorageAccountMockServiceFactory
     {
-        public static Mock<IAzureStorageAccountService> CreateBasicForCreate() {
+        public static Mock<IAzureStorageAccountService> CreateBasicForCreate()
+        {
 
             var mock = new Mock<IAzureStorageAccountService>();
 
@@ -17,7 +18,8 @@ namespace Sepes.Test.Common.ServiceMockFactories
                  .ReturnsAsync((ResourceProvisioningParameters ipt, CancellationToken cancellation) => ProvisioningResultFactory.Create(ipt, AzureResourceType.StorageAccount));
 
             return mock;
-
         }
+
+       
     }
 }
