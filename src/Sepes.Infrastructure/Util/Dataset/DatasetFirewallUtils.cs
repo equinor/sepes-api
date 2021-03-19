@@ -37,21 +37,6 @@ namespace Sepes.Infrastructure.Util
 
         public static bool SetDatasetFirewallRules(UserDto user, Dataset dataset, string clientIp, string serverIp)
         {
-            IPAddress _clientIp;
-            IPAddress _serverIp;
-            bool ValidateClientIP = IPAddress.TryParse(clientIp, out _clientIp);
-            if (!ValidateClientIP)
-            {
-                throw new ArgumentException("ClientIp is not an valid IP Address");
-            }
-            bool ValidateServerIP = IPAddress.TryParse(serverIp, out _serverIp);
-            if (!ValidateServerIP)
-            {
-                throw new ArgumentException("ServerIp is not an valid IP Address");
-            }
-            var clientRule = DatasetFirewallUtils.CreateClientRule(user, _clientIp.ToString());
-            var serverRule = DatasetFirewallUtils.CreateServerRule(user, _serverIp.ToString());
-
             bool anyChanges = false;
 
             if (dataset.FirewallRules == null)
@@ -66,17 +51,28 @@ namespace Sepes.Infrastructure.Util
                 anyChanges = true;
             }
 
-            if (ClientIpIsValid(clientIp) && !newRuleSet.Where(r => r.RuleType == clientRule.RuleType && r.Address == clientRule.Address).Any())
+            if (ClientIpIsValid(clientIp))
             {
-                newRuleSet.Add(clientRule);
-                anyChanges = true;
-            }
+                var clientRule = DatasetFirewallUtils.CreateClientRule(user, clientIp);
 
-            if ((String.IsNullOrWhiteSpace(clientIp) || !clientIp.Equals(serverIp)) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
-            {
-                newRuleSet.Add(serverRule);
-                anyChanges = true;
+                if (!newRuleSet.Where(r => r.RuleType == clientRule.RuleType && r.Address == clientRule.Address).Any())
+                {
+                    newRuleSet.Add(clientRule);
+                    anyChanges = true;
+                }
             }
+           
+
+            if (ServerIpIsValid(serverIp))
+            {
+                var serverRule = DatasetFirewallUtils.CreateServerRule(user, serverIp);
+
+                if (serverRule != null && (String.IsNullOrWhiteSpace(clientIp) || !clientIp.Equals(serverIp)) && !newRuleSet.Where(r => r.RuleType == serverRule.RuleType && r.Address == serverRule.Address).Any())
+                {
+                    newRuleSet.Add(serverRule);
+                    anyChanges = true;
+                }
+            }          
 
             if (anyChanges)
             {
@@ -91,25 +87,42 @@ namespace Sepes.Infrastructure.Util
             return source.Where(r => r.Created.AddMonths(1) >= DateTime.UtcNow).ToList();
         }
 
-        public static bool ClientIpIsValid(string clientIp)
+        public static bool IpIsValid(string ipAddress, string errorMessage)
         {
-            if (String.IsNullOrWhiteSpace(clientIp))
+            if (String.IsNullOrWhiteSpace(ipAddress))
             {
                 return false;
             }
 
-            if (clientIp != "::1" && clientIp != "0.0.0.1")
+            if (ipAddress != "::1" && ipAddress != "0.0.0.1")
             {
-                return true;
+                if (IPAddress.TryParse(ipAddress, out _))
+                {
+                    return true;
+                }
+
+                throw new ArgumentException(errorMessage);
             }
 
             return false;
         }
 
+        public static bool ClientIpIsValid(string clientIp)
+        {
+            //Should be blank, or if not blank, it should be valid
+            return IpIsValid(clientIp, "Client IP is not a valid IP Address");         
+        }
+
+        public static bool ServerIpIsValid(string clientIp)
+        {
+            //Should be blank, or if not blank, it should be valid
+            return IpIsValid(clientIp, "Server IP is not a valid IP Address");
+        }
+
         public static DatasetFirewallRule CreateClientRule(UserDto user, string clientIp)
         {
             return CreateRule(user, DatasetFirewallRuleType.Client, clientIp);
-        }      
+        }
 
         public static DatasetFirewallRule CreateServerRule(UserDto user, string ip)
         {
