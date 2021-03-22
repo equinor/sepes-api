@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -28,6 +29,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 
 namespace Sepes.RestApi
 {
@@ -84,11 +86,22 @@ namespace Sepes.RestApi
               .EnableSensitiveDataLogging(enableSensitiveDataLogging)
               );
 
+            /*
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
-        
+            */
+
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(o =>
+                {
+                    _configuration.Bind("AzureAd", o);
+                    var defaultBackChannel = new HttpClient();
+                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "afterhours");
+                    o.Backchannel = defaultBackChannel;
+                });
+
             DoMigration();
 
             services.AddHttpClient();
