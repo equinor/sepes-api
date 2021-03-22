@@ -61,7 +61,7 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<Sandbox> WithFailedSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false, int resourcesSucceeded = 0, string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
             var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
-            var sandbox = await SandboxSeed.Create(study, phase: SandboxPhase.Open, addDatasets: addDatasets);
+            var sandbox = await SandboxSeed.CreateFailing(study, phase: SandboxPhase.Open, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount, addDatasets: addDatasets);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;

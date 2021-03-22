@@ -57,6 +57,15 @@ namespace Sepes.RestApi.Middelware
 
                 await HandleExceptionAsync(context, result.Content, result.StatusCode);
             }
+            catch (BadRequestException ex)
+            {
+                LogHelper.LogError(log, ex, path, method);
+
+                var result = JsonExceptionResultFactory.CreateExceptionMessageResult(
+                   requestId, ex, HttpStatusCode.BadRequest);
+
+                await HandleExceptionAsync(context, result.Content, result.StatusCode);
+            }
             catch (TaskCanceledException ex)
             {
                 log.LogInformation($"Task was cancelled: {method} {path}, requestId: {requestId}");

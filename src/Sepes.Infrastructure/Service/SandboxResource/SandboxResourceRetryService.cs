@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
@@ -34,18 +35,17 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxResourceLight> RetryResourceFailedOperation(int resourceId)
         {
-            var resource = await _cloudResourceService.GetByIdAsync(resourceId, UserOperation.Study_Crud_Sandbox);
+            var resource = await _cloudResourceService.GetByIdAsync(resourceId, UserOperation.Study_Crud_Sandbox);          
 
             var operationToRetry = FindOperationToRetry(resource);
 
             if (operationToRetry == null)
             {
-                throw new NullReferenceException(ReScheduleResourceLogPrefix(resource, "Could not locate any relevant operation to retry"));
+                throw new BadRequestException(ReScheduleResourceLogPrefix(resource, "Could not locate any relevant operation to retry"));
             }
 
             if (resource.ResourceType == AzureResourceType.VirtualMachine)
-            {
-              
+            {              
                 if (!AllSandboxResourcesOkay(resource))
                 {
                     throw new NullReferenceException(ReScheduleResourceLogPrefix(resource, $"Cannot retry VM creation for {resource.ResourceName} when Sandbox is not setup properly", operationToRetry));

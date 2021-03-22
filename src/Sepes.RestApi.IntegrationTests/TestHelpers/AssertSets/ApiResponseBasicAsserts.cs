@@ -1,7 +1,5 @@
 ﻿using Sepes.RestApi.IntegrationTests.Dto;
-using System;
 using System.Net;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets

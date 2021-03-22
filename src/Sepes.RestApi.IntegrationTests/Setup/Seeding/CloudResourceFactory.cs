@@ -30,6 +30,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
             var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
+            cloudResource.LastKnownProvisioningState = null;
             cloudResource.Operations.Add(CloudResourceOperationFactory.FailedOperation("create" + resourceName, batchId: batchId, status: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount));
             return cloudResource;
         }
