@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Model;
+﻿using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Model;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
@@ -52,6 +53,15 @@ namespace Sepes.RestApi.IntegrationTests
         {
             var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
             var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasets);
+            sandbox.Study = study;
+            study.Sandboxes.Add(sandbox);
+            return sandbox;
+        }
+
+        protected async Task<Sandbox> WithFailedSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false, int resourcesSucceeded = 0, string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        {
+            var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
+            var sandbox = await SandboxSeed.Create(study, phase: SandboxPhase.Open, addDatasets: addDatasets);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;

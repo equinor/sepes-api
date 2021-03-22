@@ -1,4 +1,5 @@
 ﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
@@ -18,14 +19,33 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 SandboxPhase phase = SandboxPhase.Open,
              bool addDatasets = false)
         {
-            var sandbox = SandboxBasic(study.Id, study.Name, sandboxName, region, phase);
+            var sandbox = SandboxBasic(study.Id, study.Name, sandboxName, region, SandboxResources(region, study.Name, sandboxName), phase);
 
             AddDatasets(addDatasets, study, sandbox);
 
             return await SliceFixture.InsertAsync(sandbox);
         }
 
-        static Sandbox SandboxBasic(int studyId, string studyName, string sandboxName, string region, SandboxPhase phase = SandboxPhase.Open)
+        public static async Task<Sandbox> CreateFailing(
+              Study study,
+              string sandboxName = SandboxConstants.NAME,
+              string region = TestConstants.REGION,
+              SandboxPhase phase = SandboxPhase.Open,
+              int failAfterResource = 0,
+              string statusOfFailedResource = CloudResourceOperationState.FAILED,
+              int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+              int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+                bool addDatasets = false)
+        {
+            var resources = SandboxResourcesFailing(region, study.Name, sandboxName, failAfterResource, statusOfFailedResource, tryCount, maxTryCount);
+            var sandbox = SandboxBasic(study.Id, study.Name, sandboxName, region, resources, phase);
+
+            AddDatasets(addDatasets, study, sandbox);
+
+            return await SliceFixture.InsertAsync(sandbox);
+        }
+
+        static Sandbox SandboxBasic(int studyId, string studyName, string sandboxName, string region, List<CloudResource> cloudResources, SandboxPhase phase = SandboxPhase.Open)
         {
             var sb = new Sandbox()
             {
@@ -39,8 +59,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Updated = DateTime.UtcNow,
                 TechnicalContactEmail = "seedcreator@somesystem.com",
                 TechnicalContactName = "Seed",
-                Resources = SandboxResources(region, studyName, sandboxName)
-
+                Resources = cloudResources
             };
 
             int counter = 0;
@@ -68,6 +87,45 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             return result;
         }
 
+        static List<CloudResource> SandboxResourcesFailing(string region, string studyName, string sandboxName,
+                int failAfterResource = 0,
+              string statusOfFailedResource = CloudResourceOperationState.FAILED,
+              int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+              int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        {
+            var resourceCreationIndex = 0;//number of resources created
+
+            var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(studyName, sandboxName);
+            var resourceGroup = resourceCreationIndex++ >= failAfterResource ?               
+                CloudResourceFactory.CreateResourceGroupFailing(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true) :
+                 CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true);
+
+            var result = new List<CloudResource>() { resourceGroup };
+            result.Add(CreateSucceedingOrFailing(failAfterResource, resourceCreationIndex, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.StorageAccount, resourceGroupName, AzureResourceNameUtil.DiagnosticsStorageAccount(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CreateSucceedingOrFailing(failAfterResource, resourceCreationIndex, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.NetworkSecurityGroup, resourceGroupName, AzureResourceNameUtil.NetworkSecGroup(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CreateSucceedingOrFailing(failAfterResource, resourceCreationIndex, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.VirtualNetwork, resourceGroupName, AzureResourceNameUtil.VNet(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+            result.Add(CreateSucceedingOrFailing(failAfterResource, resourceCreationIndex, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.Bastion, resourceGroupName, AzureResourceNameUtil.Bastion(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
+
+            return result;
+        }
+
+        public static CloudResource CreateSucceedingOrFailing(int failAfterResource, int resourceCreationIndex,string statusOfFailedResource, int tryCount,int maxTryCount,
+              string region,
+              string resourceType,
+              string resourceGroup,
+              string resourceName,
+              string resourceId = null,
+              string resourceKey = null,
+              string purpose = null,
+              bool sandboxControlled = false,
+              string batchId = null,
+              CloudResource parentResource = null)
+        {
+            return resourceCreationIndex >= failAfterResource ?
+                CloudResourceFactory.CreateFailing(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, batchId, parentResource, statusOfFailedResource, tryCount, maxTryCount) :
+                CloudResourceFactory.Create(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, batchId, parentResource, true);
+        }
+
         static void AddDatasets(bool addDatasets, Study study, Sandbox sandbox)
         {
             if (addDatasets)
@@ -78,7 +136,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
                     foreach (var curDs in study.StudyDatasets)
                     {
-                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed"  });
+                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed" });
                     }
                 }
             }

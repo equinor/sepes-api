@@ -29,62 +29,8 @@ namespace Sepes.Infrastructure.Service
         {
             _cloudResourceService = cloudResourceService;
             _provisioningQueueService = provisioningQueueService;
-        }      
-
-        public async Task ReScheduleSandboxResourceCreation(int sandboxId)
-        {
-            var sandbox = await _sandboxModelService.GetByIdForReScheduleCreateAsync(sandboxId);
-
-            EnsureHasAllRequiredResourcesThrowIfNot(sandbox);
-
-            var queueParentItem = QueueItemFactory.CreateParent($"Create basic resources for Sandbox (re-scheduled): {sandbox.Id}");
-
-            foreach (var currentSandboxResource in sandbox.Resources.Where(r => r.SandboxControlled).OrderBy(r=> r.Id))
-            {
-                var resourceCreateOperation = CloudResourceOperationUtil.GetCreateOperation(currentSandboxResource);
-
-                if (resourceCreateOperation == null)
-                {
-                    throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Could not locate create operation for resource {currentSandboxResource.Id} - {currentSandboxResource.ResourceName}"));
-                }
-
-                if (resourceCreateOperation.Status == CloudResourceOperationState.ABANDONED)
-                {
-                    throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Create operation for resource {currentSandboxResource.Id} - {currentSandboxResource.ResourceName} was abandoned. Cannot proceed"));
-                }
-
-                await EnsureOperationIsReadyForRetryAndAddToQueueItem(currentSandboxResource, resourceCreateOperation, queueParentItem);
-            }
-
-            if (queueParentItem.Children.Count == 0)
-            {
-                throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Could not re-shedule creation. No relevant resource items found"));
-            }
-            else
-            {
-                await _provisioningQueueService.SendMessageAsync(queueParentItem);
-            }
         }
 
-        void EnsureHasResourceTypeThrowIfNot(Sandbox sandbox, string resourceType)
-        {
-            var resource = CloudResourceUtil.GetResourceByType(sandbox.Resources, resourceType, true);
-
-            if (resource == null)
-            {
-                throw new Exception($"Unable to find sandbox resource of type {resourceType}");
-            }
-
-        }
-
-        void EnsureHasAllRequiredResourcesThrowIfNot(Sandbox sandbox)
-        {
-            EnsureHasResourceTypeThrowIfNot(sandbox, AzureResourceType.ResourceGroup);
-            EnsureHasResourceTypeThrowIfNot(sandbox, AzureResourceType.StorageAccount);
-            EnsureHasResourceTypeThrowIfNot(sandbox, AzureResourceType.NetworkSecurityGroup);
-            EnsureHasResourceTypeThrowIfNot(sandbox, AzureResourceType.VirtualNetwork);
-            EnsureHasResourceTypeThrowIfNot(sandbox, AzureResourceType.Bastion);
-        }
 
         public async Task<SandboxResourceLight> RetryResourceFailedOperation(int resourceId)
         {
@@ -119,7 +65,6 @@ namespace Sepes.Infrastructure.Service
                 {
                     await EnsureOperationIsReadyForRetryAndEnqueue(resource, operationToRetry);
                 }
-
             }
             else
             {
@@ -127,6 +72,60 @@ namespace Sepes.Infrastructure.Service
             }
 
             return _mapper.Map<SandboxResourceLight>(resource);
+        }
+
+        async Task ReScheduleSandboxResourceCreation(int sandboxId)
+        {
+            var sandbox = await _sandboxModelService.GetByIdForReScheduleCreateAsync(sandboxId);
+
+            EnsureHasAllRequiredResourcesThrowIfNot(sandbox);
+
+            var queueParentItem = QueueItemFactory.CreateParent($"Create basic resources for Sandbox (re-scheduled): {sandbox.Id}");
+
+            foreach (var currentSandboxResource in sandbox.Resources.Where(r => r.SandboxControlled).OrderBy(r => r.Id))
+            {
+                var resourceCreateOperation = CloudResourceOperationUtil.GetCreateOperation(currentSandboxResource);
+
+                if (resourceCreateOperation == null)
+                {
+                    throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Could not locate create operation for resource {currentSandboxResource.Id} - {currentSandboxResource.ResourceName}"));
+                }
+
+                if (resourceCreateOperation.Status == CloudResourceOperationState.ABANDONED)
+                {
+                    throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Create operation for resource {currentSandboxResource.Id} - {currentSandboxResource.ResourceName} was abandoned. Cannot proceed"));
+                }
+
+                await EnsureOperationIsReadyForRetryAndAddToQueueItem(currentSandboxResource, resourceCreateOperation, queueParentItem);
+            }
+
+            if (queueParentItem.Children.Count == 0)
+            {
+                throw new Exception(ReScheduleLogPrefix(sandbox.StudyId, sandbox.Id, $"Could not re-shedule creation. No relevant resource items found"));
+            }
+            else
+            {
+                await _provisioningQueueService.SendMessageAsync(queueParentItem);
+            }
+        }
+
+        void EnsureHasAllRequiredResourcesThrowIfNot(Sandbox sandbox)
+        {
+            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.ResourceGroup);
+            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.StorageAccount);
+            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.NetworkSecurityGroup);
+            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.VirtualNetwork);
+            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.Bastion);
+        }
+
+        void EnsureSandboxHasResourceTypeThrowIfNot(Sandbox sandbox, string resourceType)
+        {
+            var resource = CloudResourceUtil.GetResourceByType(sandbox.Resources, resourceType, true);
+
+            if (resource == null)
+            {
+                throw new Exception($"Unable to find sandbox resource of type {resourceType}");
+            }
         }
 
         CloudResourceOperation FindOperationToRetry(CloudResource resource)
@@ -167,8 +166,6 @@ namespace Sepes.Infrastructure.Service
 
             return true;
         }
-
-
 
         async Task EnsureOperationIsReadyForRetryAndEnqueue(CloudResource resource, CloudResourceOperation operationToRetry)
         {

@@ -8,35 +8,63 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 {
     public static class CloudResourceFactory
     {
-        public static CloudResource CreateResourceGroup(string region, string name, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false)
+        public static CloudResource CreateResourceGroup(string region, string name, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null, bool createOperationFinished = true)
         {
-            return Create(region, AzureResourceType.ResourceGroup, name, name, resourceId, resourceKey, purpose, sandboxControlled: sandboxControlled);
+            return Create(region, AzureResourceType.ResourceGroup, name, name, resourceId, resourceKey, purpose, sandboxControlled: sandboxControlled, batchId: batchId, createOperationFinished: createOperationFinished);
         }
 
-            public static CloudResource Create(string region, string resourceType, string resourceGroup, string resourceName, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, CloudResource parentResource = null)
+        public static CloudResource CreateResourceGroupFailing(string region, string name, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null,
+               string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        {
+            return CreateFailing(region, AzureResourceType.ResourceGroup, name, name, resourceId, resourceKey, purpose, sandboxControlled: sandboxControlled, batchId: batchId, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
+        }
+
+        public static CloudResource Create(string region, string resourceType, string resourceGroup, string resourceName, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null, CloudResource parentResource = null, bool createOperationFinished = true)
+        {
+            var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
+            cloudResource.Operations.Add(createOperationFinished ? CloudResourceOperationFactory.SucceededOperation("create" + resourceName, batchId: batchId) : CloudResourceOperationFactory.NewOperation("create" + resourceName, batchId: batchId));
+            return cloudResource;
+        }
+
+        public static CloudResource CreateFailing(string region, string resourceType, string resourceGroup, string resourceName, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null, CloudResource parentResource = null,
+            string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        {
+            var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
+            cloudResource.Operations.Add(CloudResourceOperationFactory.FailedOperation("create" + resourceName, batchId: batchId, status: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount));
+            return cloudResource;
+        }
+
+        static CloudResource CreateBasic(string region,
+            string resourceType,
+            string resourceGroup,
+            string resourceName,
+            string resourceId = null,
+            string resourceKey = null,
+            string purpose = null,
+            bool sandboxControlled = false,
+            CloudResource parentResource = null)
         {
             var cloudResource = new CloudResource
             {
                 Region = region,
                 ResourceType = resourceType,
-                ResourceGroupName = resourceGroup,             
+                ResourceGroupName = resourceGroup,
                 Purpose = purpose,
                 SandboxControlled = sandboxControlled,
                 ResourceId = String.IsNullOrWhiteSpace(resourceId) ? resourceName + "-id" : resourceId,
                 ResourceKey = String.IsNullOrWhiteSpace(resourceKey) ? resourceName + "-id" : resourceKey,
                 ResourceName = resourceName,
-                Operations = new List<CloudResourceOperation>() { CreateOperationSucceeded("create" + resourceName) },
-               LastKnownProvisioningState =  CloudResourceProvisioningStates.SUCCEEDED,
+                Operations = new List<CloudResourceOperation>(),
+                LastKnownProvisioningState = CloudResourceProvisioningStates.SUCCEEDED,
                 CreatedBy = "seed",
                 Created = DateTime.UtcNow,
                 UpdatedBy = "seed",
                 Updated = DateTime.UtcNow
-
             };
 
-            if(parentResource != null)
+            if (parentResource != null)
             {
-                if(parentResource.Id > 0)
+                if (parentResource.Id > 0)
                 {
                     cloudResource.ParentResourceId = parentResource.Id;
                 }
@@ -47,37 +75,6 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             }
 
             return cloudResource;
-        }
-
-        public static CloudResourceOperation CreateOperationNew(string description, string operationType = CloudResourceOperationType.CREATE, string batchId = null)
-        {
-            var operation = CreateOpeartionBasic(description, operationType, batchId: batchId);
-
-            return operation;
-        }
-
-        public static CloudResourceOperation CreateOperationSucceeded(string description, string operationType = CloudResourceOperationType.CREATE, string batchId = null)
-        {
-            var operation = CreateOpeartionBasic(description, operationType, status: CloudResourceOperationState.DONE_SUCCESSFUL, batchId: batchId);
-            return operation;
-        }
-
-        public static CloudResourceOperation CreateOpeartionBasic(string description, string operationType, string status = CloudResourceOperationState.NEW, string batchId = null)
-        {
-            return new CloudResourceOperation()
-            {
-                CreatedBySessionId = Guid.NewGuid().ToString(),
-                Description = description,
-                MaxTryCount = 5,
-                OperationType = operationType,
-                Status = status,
-                BatchId = batchId,
-                CreatedBy = "seed",
-                Created = DateTime.UtcNow,
-                UpdatedBy = "seed",
-                Updated = DateTime.UtcNow
-
-            };
         }
 
     }
