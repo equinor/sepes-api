@@ -133,10 +133,19 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await AttemptRetryOfSucceededSandbox(sandbox);
         }
 
-        //protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
-        //{
-        //    return await base.WithVirtualMachine(createdByCurrentUser, restricted, studyRole, addDatasets: true);
-        //}
+        [Fact]
+        public async Task Retry_SuceededVm_ShouldFail()
+        {
+            await WithBasicSeeds();
+            var vm = await WithVirtualMachine(true, true, addDatasets: false);
+            SetScenario(isAdmin: true);
+            await AttemptRetryOfSucceededResource(vm.Id);
+        }
+
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
+        {
+            return await base.WithVirtualMachine(createdByCurrentUser, restricted, studyRole, addDatasets: true);
+        }
 
         async Task PerformTestsExpectSuccess(int sandboxId, int resourcesSucceeded, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
