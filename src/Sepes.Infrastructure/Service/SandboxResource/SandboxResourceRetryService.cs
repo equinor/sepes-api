@@ -20,22 +20,22 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxResourceRetryService : SandboxServiceBase, ISandboxResourceRetryService
     {
-        readonly ICloudResourceReadService _cloudResourceService;
+        readonly ICloudResourceReadService _cloudResourceReadService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
-        public SandboxResourceRetryService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService, ISandboxModelService sandboxModelService,
-            ICloudResourceReadService cloudResourceService,
+        public SandboxResourceRetryService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceRetryService> logger, IUserService userService, ISandboxModelService sandboxModelService,
+            ICloudResourceReadService cloudResourceReadService,
             IProvisioningQueueService provisioningQueueService)
               : base(config, db, mapper, logger, userService, sandboxModelService)
         {
-            _cloudResourceService = cloudResourceService;
+            _cloudResourceReadService = cloudResourceReadService;
             _provisioningQueueService = provisioningQueueService;
         }
 
 
         public async Task<SandboxResourceLight> RetryResourceFailedOperation(int resourceId)
         {
-            var resource = await _cloudResourceService.GetByIdAsync(resourceId, UserOperation.Study_Crud_Sandbox);          
+            var resource = await _cloudResourceReadService.GetByIdAsync(resourceId, UserOperation.Study_Crud_Sandbox);          
 
             var operationToRetry = FindOperationToRetry(resource);
 
@@ -45,8 +45,10 @@ namespace Sepes.Infrastructure.Service
             }
 
             if (resource.ResourceType == AzureResourceType.VirtualMachine)
-            {              
-                if (!AllSandboxResourcesOkay(resource))
+            {
+                var sandbox = await _sandboxModelService.GetByIdForResourcesAsync(resource.SandboxId.Value);
+
+                if (!AllSandboxResourcesOkay(sandbox))
                 {
                     throw new NullReferenceException(ReScheduleResourceLogPrefix(resource, $"Cannot retry VM creation for {resource.ResourceName} when Sandbox is not setup properly", operationToRetry));
                 }
@@ -147,14 +149,14 @@ namespace Sepes.Infrastructure.Service
             return lastOperation;
         }
 
-        bool AllSandboxResourcesOkay(CloudResource resource)
+        bool AllSandboxResourcesOkay(Sandbox sandbox)
         {
-            if (resource.Sandbox == null)
+            if (sandbox.Resources == null)
             {
-                throw new Exception("Missing include for Resource.Sandbox");
+                throw new Exception("Missing include for Sandbox.Resources");
             }
 
-            foreach (var currentSandboxResource in CloudResourceUtil.GetSandboxControlledResources(resource.Sandbox.Resources))
+            foreach (var currentSandboxResource in CloudResourceUtil.GetSandboxControlledResources(sandbox.Resources))
             {
                 //If create operation failed
 

@@ -70,11 +70,20 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
             var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
-            var vm = await VirtualMachineSeed.Create(sandbox, sandbox.Study.Name);
+            var vm = await VirtualMachineSeed.Create(sandbox);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
-        }       
+        }
+
+        protected async Task<CloudResource> WithFailedVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        {
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
+            var vm = await VirtualMachineSeed.CreateFailed(sandbox);
+            sandbox.Resources.Add(vm);
+            vm.Sandbox = sandbox;
+            return vm;
+        }
 
         protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
         {

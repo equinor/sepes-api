@@ -20,12 +20,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         }
 
-        //Test that one cannot retry a fully functional sandbox
-        //Test that one cannot retry a fully functional resource
-        //Remember to consider roles, separate test for that
-
-
-
         [Theory]
         [InlineData(false, false, 0)]
         [InlineData(false, true, 0)]
@@ -134,18 +128,24 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task Retry_SuceededVm_ShouldFail()
+        public async Task Retry_FailedVm_ShouldSucceed()
+        {
+            var RESOURCES_SUCCEEDED = 5;
+
+            await WithBasicSeeds();
+            var vm = await WithFailedVirtualMachine(true, true, addDatasets: false);
+            SetScenario(isAdmin: true);
+            await PerformTestsExpectSuccess(vm.SandboxId.Value, RESOURCES_SUCCEEDED);          
+        }
+
+        [Fact]
+        public async Task Retry_FinishedVm_ShouldFail()
         {
             await WithBasicSeeds();
             var vm = await WithVirtualMachine(true, true, addDatasets: false);
             SetScenario(isAdmin: true);
             await AttemptRetryOfSucceededResource(vm.Id);
-        }
-
-        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
-        {
-            return await base.WithVirtualMachine(createdByCurrentUser, restricted, studyRole, addDatasets: true);
-        }
+        }      
 
         async Task PerformTestsExpectSuccess(int sandboxId, int resourcesSucceeded, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
@@ -154,14 +154,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //Retry the resource that failed
             var resourceRetryConversation = await GenericPutter.PutAndExpectSuccess<SandboxResourceLight>(_restHelper, resourceRetryLink);
             Assert.Contains(CloudResourceStatus.CREATING, resourceRetryConversation.Response.Content.Status);
-        }
-
-        async Task PerformTestsExpectFailure(int sandboxId, int resourcesSucceeded, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
-        {
-            var resourceRetryLink = await GetResourceListAndAssert(sandboxId, resourcesSucceeded, tryCount, maxTryCount);
-            var resourceRetryConversation = await GenericPutter.PutAndExpectFailure(_restHelper, resourceRetryLink);
-            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(resourceRetryConversation.Response);
-        }
+        }        
 
         async Task AttemptRetryOfSucceededSandbox(Sandbox sandbox)
         {
