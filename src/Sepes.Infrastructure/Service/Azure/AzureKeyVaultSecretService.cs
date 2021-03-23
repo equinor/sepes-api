@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Service.Azure
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
 
-        public AzureKeyVaultSecretService(ILogger logger, IConfiguration configuration)
+        public AzureKeyVaultSecretService(ILogger<AzureKeyVaultSecretService> logger, IConfiguration configuration)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
