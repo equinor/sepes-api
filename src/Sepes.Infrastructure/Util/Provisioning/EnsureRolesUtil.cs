@@ -50,7 +50,7 @@ namespace Sepes.Infrastructure.Util.Provisioning
                 {
                     operation = await operationUpdateService.TouchAsync(operation.Id);
 
-                    if (await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED)
+                    if (await resourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
                         logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
                         cancellation.Cancel();

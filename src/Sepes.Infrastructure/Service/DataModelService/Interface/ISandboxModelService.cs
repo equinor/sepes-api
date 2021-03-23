@@ -18,5 +18,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<Sandbox> GetByIdWithoutPermissionCheckAsync(int id);
         Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation);
+        Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId);
     }
 }

@@ -65,13 +65,13 @@ namespace Sepes.Infrastructure.Model.Factory
             string configString = null,
             string batchId = null,
             int dependsOn = 0,
-            string resourceGroupName = null
+            string resourceGroupName = null, bool sandboxControlled = true
         )
         {
             var newResource = CreateBasicResource(currentUser, sessionId, region, resourceType, resourceName, tags, resourceGroupName);
 
             newResource.SandboxId = sandboxId;
-            newResource.SandboxControlled = true;
+            newResource.SandboxControlled = sandboxControlled;
             newResource.ParentResourceId = resourceGroupId;
             newResource.Purpose = CloudResourcePurpose.SandboxResource;
             newResource.ConfigString = configString;

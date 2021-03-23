@@ -59,7 +59,7 @@ namespace Sepes.Tests.Util
             cloudResourceOperationList.Add(cloudOperation2);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
             var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
-            Assert.Equal(cloudOperation2, result);
+            Assert.Equal(cloudOperation1, result);
         }
 
         [Fact]
