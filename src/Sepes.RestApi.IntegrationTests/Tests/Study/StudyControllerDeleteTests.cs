@@ -75,18 +75,18 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         //ADMIN
-        //[InlineData(false, false, true, false)]
-        //[InlineData(false, true, true, false)]
-        //[InlineData(true, false, true, false)]
-        //[InlineData(true, true, true, false)]
+        [InlineData(false, false, true, false)]
+        [InlineData(false, true, true, false)]
+        [InlineData(true, false, true, false)]
+        [InlineData(true, true, true, false)]
 
         ////SPONSOR      
-        //[InlineData(true, false, false, true)]
-        //[InlineData(true, true, false, true)]
+        [InlineData(true, false, false, true)]
+        [InlineData(true, true, false, true)]
 
         ////STUDY SPECIFIC ROLES
-        //[InlineData(false, false, false, false, StudyRoles.SponsorRep)]
-        //[InlineData(false, true, false, false, StudyRoles.SponsorRep)]
+        [InlineData(false, false, false, false, StudyRoles.SponsorRep)]
+        [InlineData(false, true, false, false, StudyRoles.SponsorRep)]
         [InlineData(true, false, false, false, StudyRoles.SponsorRep)]
         [InlineData(true, true, false, false, StudyRoles.SponsorRep)]
 
