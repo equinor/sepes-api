@@ -15,27 +15,22 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class VirtualMachineDiskSizeService : ModelServiceBase, IVirtualMachineDiskSizeService
     { 
-        readonly ISandboxModelService _sandboxModelService;
-
-        public VirtualMachineDiskSizeService(IConfiguration configuration, SepesDbContext db, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService, ISandboxModelService sandboxModelService)
+        public VirtualMachineDiskSizeService(IConfiguration configuration, SepesDbContext db, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService)
             :base(configuration, db, logger, userService)
         {  
-            _sandboxModelService = sandboxModelService;
+          
         }
 
         public async Task<IEnumerable<VmDiskLookupDto>> AvailableDisks(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
+            var disksQuery = "WITH sandboxRegionCte AS (SELECT [Region] from dbo.[Sandboxes] where Id = @SandboxId)";
+            disksQuery += " ,diskSizesCte AS (SELECT [Key], [DisplayText] as [DisplayValue], [Size] FROM [dbo].[RegionDiskSize] rd";
+            disksQuery += " LEFT JOIN [dbo].[DiskSizes] d on rd.[VmDiskKey] = d.[Key]";
+            disksQuery += " WHERE rd.[RegionKey] = (SELECT [Region] from sandboxRegionCte)";
+            disksQuery += " ) SELECT [Key], [DisplayValue] FROM diskSizesCte ORDER BY [Size]";
 
-            var disksQuery = "SELECT DISTINCT [Id] as [StudyId], [Name], [Description], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s";
-            disksQuery += " INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId";
-            disksQuery += " WHERE s.Closed = 0";     
-
-
-            var disks = await RunDapperQueryMultiple<VmDiskLookupDto>(disksQuery);
-            return disks;
-
-            //return await _db.Regions.Include(r=> r.DiskSizeAssociations).Where(r=> r.Key == sandboxRegion).Select(r=> r.VmSizeAssociations).Select(r => new VmDiskLookupDto() { Key = r..Key, DisplayValue = r.DisplayText }).AsNoTracking().ToListAsync();
+            var disks = await RunDapperQueryMultiple<VmDiskLookupDto>(disksQuery, new { SandboxId = sandboxId } );
+            return disks;            
         }       
     }
 }
