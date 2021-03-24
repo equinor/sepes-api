@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -13,14 +11,15 @@ namespace Sepes.Infrastructure.Service
     public class VirtualMachineOperatingSystemService : IVirtualMachineOperatingSystemService
     {
         readonly ILogger _logger;    
-        readonly ISandboxModelService _sandboxModelService;
+        //readonly ISandboxModelService _sandboxModelService;
 
         public VirtualMachineOperatingSystemService(
-            ILogger<VirtualMachineOperatingSystemService> logger,     
-            ISandboxModelService sandboxModelService)
+            ILogger<VirtualMachineOperatingSystemService> logger     
+            //ISandboxModelService sandboxModelService
+            )
         {     
             _logger = logger;     
-            _sandboxModelService = sandboxModelService;            
+            //_sandboxModelService = sandboxModelService;            
         }
 
         public async Task<List<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
@@ -29,9 +28,10 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
+                //Don't need this now, but will in the near future
+                //var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
 
-                result = await AvailableOperatingSystems(sandboxRegion, cancellationToken);
+                result = await AvailableOperatingSystems(region: null, cancellationToken);
 
                 return result;
             }
@@ -44,7 +44,7 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        public async Task<List<VmOsDto>> AvailableOperatingSystems(string region, CancellationToken cancellationToken = default)
+        public async Task<List<VmOsDto>> AvailableOperatingSystems(string region = null, CancellationToken cancellationToken = default)
 
         {
             //var result = await  _azureOsService.GetAvailableOperatingSystemsAsync(region, cancellationToken); 

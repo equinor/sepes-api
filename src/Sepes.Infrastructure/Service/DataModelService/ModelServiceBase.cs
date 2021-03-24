@@ -48,9 +48,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
             await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);
         }
 
-        protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query)
+        protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query, object parameters = null)
         {
-
             using (var connection = new SqlConnection(GetDbConnectionString()))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
@@ -58,7 +57,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
                     await connection.OpenAsync();
                 }
 
-                return await connection.QueryAsync<T>(query);
+                return await connection.QueryAsync<T>(query, parameters);
             }
         }
 

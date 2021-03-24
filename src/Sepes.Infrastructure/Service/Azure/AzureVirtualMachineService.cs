@@ -24,27 +24,27 @@ namespace Sepes.Infrastructure.Service
         readonly IMapper _mapper;
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
-   
+
 
         public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger,
-            IAzureKeyVaultSecretService azureKeyVaultSecretService, 
+            IAzureKeyVaultSecretService azureKeyVaultSecretService,
             IAzureNetworkSecurityGroupRuleService azureNetworkSecurityGroupRuleService
            )
             : base(config, logger)
         {
-            _mapper = mapper;          
+            _mapper = mapper;
             _azureKeyVaultSecretService = azureKeyVaultSecretService;
             _azureNetworkSecurityGroupRuleService = azureNetworkSecurityGroupRuleService;
         }
 
         public async Task<ResourceProvisioningResult> EnsureCreated(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
-        {           
+        {
             _logger.LogInformation($"Ensuring VM exists: {parameters.Name} in resource Group: {parameters.ResourceGroupName}");
 
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(parameters.ConfigurationString);
-                       
+
             var virtualMachine = await GetInternalAsync(parameters.ResourceGroupName, parameters.Name, false);
-                       
+
             if (virtualMachine == null)
             {
                 _logger.LogInformation($"VM {parameters.Name} did not exist in resource Group: {parameters.ResourceGroupName}, creating!");
@@ -77,7 +77,7 @@ namespace Sepes.Infrastructure.Service
 
                         await ApplyVmDataDisksInternalAsync(parameters.ResourceGroupName, parameters.Name, sizeAsInt, parameters.Tags);
                     }
-                }              
+                }
 
                 _logger.LogInformation($"Done creating Virtual Machine for sandbox with Id: {parameters.SandboxId}! Id: {virtualMachine.Id}");
             }
@@ -90,15 +90,15 @@ namespace Sepes.Infrastructure.Service
                     {
                         throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks}, saw {vmSettings.DataDisks.Count} on VM");
                     }
-                }                   
-            }            
+                }
+            }
 
             var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(virtualMachine.PrimaryNetworkInterfaceId, cancellationToken);
 
             //Add tags to NIC
             await primaryNic.UpdateTags().WithTags(parameters.Tags).ApplyTagsAsync();
 
-            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);          
+            await UpdateVmRules(parameters, vmSettings, primaryNic.PrimaryPrivateIP, cancellationToken);
 
             var result = CreateCRUDResult(virtualMachine);
 
@@ -430,6 +430,7 @@ namespace Sepes.Infrastructure.Service
             var newDataDisk = await _azure.Disks
                 .Define($"hdd-{virtualMachineName}-data-{Guid.NewGuid().ToString().Substring(0, 5)}")
                 .WithRegion(vm.RegionName)
+
                 .WithExistingResourceGroup(resourceGroupName)
                 .WithData()
                 .WithSizeInGB(sizeInGB)
@@ -437,8 +438,14 @@ namespace Sepes.Infrastructure.Service
                 .WithTags(tags)
                 .CreateAsync();
 
-            await vm.Update()
-                  .WithExistingDataDisk(newDataDisk).ApplyAsync();
+            var diskUpdateRequest = vm.Update().WithExistingDataDisk(newDataDisk);
+
+            if (sizeInGB > 4095)
+            {
+                diskUpdateRequest = diskUpdateRequest.WithDataDiskDefaultCachingType(CachingTypes.None);
+            }
+
+            await diskUpdateRequest.ApplyAsync();
         }
 
         public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
@@ -501,7 +508,7 @@ namespace Sepes.Infrastructure.Service
         public async Task DeleteDiskById(string id)
         {
             await _azure.Disks.DeleteByIdAsync(id);
-        }       
+        }
 
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
