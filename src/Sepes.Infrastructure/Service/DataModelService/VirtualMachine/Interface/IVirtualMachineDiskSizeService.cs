@@ -7,6 +7,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
     public interface IVirtualMachineDiskSizeService
     {        
-        Task<List<VmDiskLookupDto>> AvailableDisks(int sandboxId, CancellationToken cancellationToken = default);     
+        Task<IEnumerable<VmDiskLookupDto>> AvailableDisks(int sandboxId, CancellationToken cancellationToken = default);     
     }
 }
