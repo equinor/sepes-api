@@ -30,8 +30,7 @@ namespace Sepes.Infrastructure.Service
                 var responseText = await skus.Response.Content.ReadAsStringAsync();
                 var responseDeserialized = JsonConvert.DeserializeObject<AzureSkuResponse>(responseText);
 
-                return ApplyRelevantFilters(region, responseDeserialized.Value, resourceType, filterBasedOnResponseRestrictions);   
-               
+                return ApplyRelevantFilters(region, responseDeserialized.Value, resourceType, filterBasedOnResponseRestrictions);               
             }
         }
 

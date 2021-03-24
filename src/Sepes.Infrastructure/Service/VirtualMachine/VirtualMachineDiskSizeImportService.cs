@@ -60,7 +60,7 @@ namespace Sepes.Infrastructure.Service
 
                 try
                 {
-                    if (diskEntriesFromAzure.TryGetValue(curRegionFromDb.Key, out AzureDiskPriceForRegion diskSizesForRegion))
+                    if (diskEntriesFromAzure.TryGetValue(curRegionFromDb.KeyInPriceApi, out AzureDiskPriceForRegion diskSizesForRegion))
                     {
                         _logger.LogInformation($"Updating VM Size Cache for Region: {curRegionFromDb.Key}. Found {diskSizesForRegion.Types.Count} Disk sizes for region");
 
@@ -75,7 +75,7 @@ namespace Sepes.Infrastructure.Service
                             if (existingDbItemsForRegion.TryGetValue(curDiskSizeForRegion.Key, out curDiskSizeInDb))
                             {
                                 //Get updated price for VM Size
-                                var regionAssociation = curDiskSizeInDb.RegionAssociations.Where(ra => ra.VmDiskKey == curDiskSizeForRegion.Key).SingleOrDefault();
+                                var regionAssociation = curDiskSizeInDb.RegionAssociations.Where(ra => ra.RegionKey == curRegionFromDb.Key).SingleOrDefault();
                                 regionAssociation.Price = curDiskSizeForRegion.Value.price;
 
                                 await _db.SaveChangesAsync();
