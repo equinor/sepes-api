@@ -406,9 +406,16 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<bool>("Disabled")
                         .HasColumnType("bit");
 
+                    b.Property<string>("KeyInPriceApi")
+                        .HasColumnType("nvarchar(32)")
+                        .HasMaxLength(32);
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(32)")
                         .HasMaxLength(32);
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
 
                     b.HasKey("Key");
 
