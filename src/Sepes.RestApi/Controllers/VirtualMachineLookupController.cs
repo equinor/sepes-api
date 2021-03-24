@@ -53,10 +53,10 @@ namespace Sepes.RestApi.Controllers
             return new NoContentResult();
         }
 
-        [HttpGet("disks/")]
-        public async Task<IActionResult> GetAvailableDisks()
+        [HttpGet("{sandboxId}/disks")]
+        public async Task<IActionResult> GetAvailableDisks(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _virtualMachineDiskSizeService.AvailableDisks();
+            var availableSizes = await _virtualMachineDiskSizeService.AvailableDisks(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
 

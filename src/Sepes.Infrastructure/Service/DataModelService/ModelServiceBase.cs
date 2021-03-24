@@ -50,7 +50,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query)
         {
-
             using (var connection = new SqlConnection(GetDbConnectionString()))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
