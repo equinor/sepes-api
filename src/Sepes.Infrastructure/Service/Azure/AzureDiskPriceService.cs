@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
             foreach (var curOffer in diskPrices.offers)
             {
-                if (curOffer.Key.StartsWith("standardssd-e") && !curOffer.Key.EndsWith("-disk-mount") && !curOffer.Key.EndsWith("-one-year"))
+                if (curOffer.Key.StartsWith("standardssd-e") && !curOffer.Key.EndsWith("-disk-mount") && !curOffer.Key.EndsWith("-one-year") && !curOffer.Key.Contains("-zrs"))
                 {
                     foreach (var curSize in curOffer.Value.prices)
                     {
