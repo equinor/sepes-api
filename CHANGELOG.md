@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.15](https://github.com/equinor/sepes-api/compare/0.4.14...0.4.15) (2021-03-26)
+
+
+### Features
+
+* enabled norwaywest, europenorth and europewest ([#631](https://github.com/equinor/sepes-api/issues/631)) ([10eab76](https://github.com/equinor/sepes-api/commit/10eab76dcd99791061e6bf9cc5b544bfba302580))
+
+
+### Bug Fixes
+
+* **vm:** filtered away zrs disks ([#634](https://github.com/equinor/sepes-api/issues/634)) ([08e3ca3](https://github.com/equinor/sepes-api/commit/08e3ca331b08ba0da503bf0e00f6f5fd1fd69a10))
+* **vm:** now disables disk cache from 4tb ([#632](https://github.com/equinor/sepes-api/issues/632)) ([9047a14](https://github.com/equinor/sepes-api/commit/9047a140d4bedeb029dcc1f0a8d6ab72e9fcea1f))
+* azurekeyvaultservice logger injection ([51222c9](https://github.com/equinor/sepes-api/commit/51222c92534789362ad53b9e6364f942f10c57f4))
+
 ### [0.4.14](https://github.com/equinor/sepes-api/compare/0.4.13...0.4.14) (2021-03-18)
 
 
