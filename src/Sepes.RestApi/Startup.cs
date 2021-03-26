@@ -22,7 +22,6 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
@@ -40,18 +39,14 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+        //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
-
-            var logMsg = "Sepes Startup Constructor";
-            Trace.WriteLine(logMsg);
-            _logger.LogWarning(logMsg);
-
             _configuration = configuration;
-        }
 
-     
+            Log("Sepes Startup Constructor");          
+        }     
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -62,9 +57,9 @@ namespace Sepes.RestApi
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
+            //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
-            Log("Startup - Cors domains: *");     
+            Log("Startup - ConfigureServices - Cors domains: *");     
 
             services.AddCors(options =>
             {
@@ -202,15 +197,17 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureVirtualMachineExtenedInfoService, AzureVirtualMachineExtendedInfoService>();
             services.AddTransient<IAzureQueueService, AzureQueueService>();
             services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
-            services.AddTransient<IAzureStorageAccountTokenService, AzureStorageAccountTokenService>();
+            services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
             services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+            services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
             services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
             services.AddTransient<IAzureVirtualNetworkOperatingSystemService, AzureVirtualNetworkOperatingSystemService>();
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>(); 
+            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
         }
 
         void SetFileUploadLimits(IServiceCollection services)
@@ -286,7 +283,6 @@ namespace Sepes.RestApi
             {
                 Log("Migrations are disabled and will be skipped!");
                 return;
-
             }
             else
             {
@@ -376,7 +372,7 @@ namespace Sepes.RestApi
         void Log(string message)
         {
             Trace.WriteLine(message);
-            _logger.LogWarning(message);
+            _logger.LogInformation(message);
         }
     }
 }

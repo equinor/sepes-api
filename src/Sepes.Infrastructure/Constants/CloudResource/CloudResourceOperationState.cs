@@ -7,5 +7,6 @@
         public const string DONE_SUCCESSFUL = "success";
         public const string FAILED = "failed";
         public const string ABORTED = "aborted";
+        public const string ABANDONED = "abandoned";
     }
 }

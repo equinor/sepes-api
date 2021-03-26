@@ -142,7 +142,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<CloudResourceOperationDto> AbortAndAllowDependentOperationsToRun(int id, string errorMessage = null)
         {
             var operationFromDb = await GetExistingOperationReadyForUpdate(id);
-            operationFromDb.Status = CloudResourceOperationState.ABORTED;
+            operationFromDb.Status = CloudResourceOperationState.ABANDONED;
 
             foreach(var curDependent in operationFromDb.DependantOnThisOperation)
             {
@@ -167,7 +167,7 @@ namespace Sepes.Infrastructure.Service
 
                 foreach (var curOps in unfinishedOps)
                 {
-                    curOps.Status = CloudResourceOperationState.ABORTED;
+                    curOps.Status = CloudResourceOperationState.ABANDONED;
                     curOps.Updated = DateTime.UtcNow;
                     curOps.UpdatedBy = currentUser.UserName;
                 }

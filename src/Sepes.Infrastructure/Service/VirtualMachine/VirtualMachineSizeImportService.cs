@@ -95,8 +95,8 @@ namespace Sepes.Infrastructure.Service
                                 PopulateVmSizeProps(curAzureSku, curVmSizeInDb);
                                 curVmSizeInDb.DisplayText = AzureVmUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
 
-                                //Get updated price for VM Size
-                                var regionAssociation = curVmSizeInDb.RegionAssociations.Where(ra => ra.VmSizeKey == curAzureSku.Name).SingleOrDefault();
+                                //Get updated price for VM Size and set on db entry
+                                var regionAssociation = curVmSizeInDb.RegionAssociations.Where(ra => ra.RegionKey == curRegionFromDb.Key).SingleOrDefault();
                                 regionAssociation.Price = await _azureCostManagementService.GetVmPrice(curRegionFromDb.Key, curVmSizeInDb.Key);
 
                                 await _db.SaveChangesAsync();

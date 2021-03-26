@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,10 +54,10 @@ namespace Sepes.RestApi.Controllers
             return new NoContentResult();
         }
 
-        [HttpGet("disks/")]
-        public async Task<IActionResult> GetAvailableDisks()
+        [HttpGet("{sandboxId}/disks")]
+        public async Task<IActionResult> GetAvailableDisks(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var availableSizes = await _virtualMachineDiskSizeService.AvailableDisks();
+            var availableSizes = await _virtualMachineDiskSizeService.AvailableDisks(sandboxId, cancellationToken);
             return new JsonResult(availableSizes);
         }
 

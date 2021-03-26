@@ -41,7 +41,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
         {
             var sandboxQueryable = SandboxBaseQueries.SandboxForPhaseShift(_db);
-
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
 
             return sandbox;
@@ -49,13 +48,21 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
         {
-            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db, sandboxId).AsNoTracking();
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithResourceAndOperations(_db).AsNoTracking();
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Read);
 
             if(sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
+
+            return sandbox;
+        }
+
+        public async Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId)
+        {
+            var sandboxQueryable = SandboxBaseQueries.ActiveSandboxWithResourceAndOperations(_db);
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Crud_Sandbox);           
 
             return sandbox;
         }

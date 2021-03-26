@@ -17,7 +17,9 @@ namespace Sepes.Infrastructure.Util
                 throw new ArgumentNullException($"AzureResourceStatusUtil - DecideWhatOperationToBaseStatusOn: Missing include on operations");
             }
 
-            foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
+            var resourceListOrdered = resource.Operations.OrderByDescending(o => o.Created);           
+
+            foreach (var curOperation in resourceListOrdered)
             {               
                 if (curOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
                 {
@@ -35,6 +37,7 @@ namespace Sepes.Infrastructure.Util
                 }
                 else if (curOperation.Status == CloudResourceOperationState.ABORTED)
                 {
+                    baseStatusOnThisOperation = curOperation;
                     continue;
                 }
                 else if (curOperation.OperationType == CloudResourceOperationType.DELETE)
@@ -60,6 +63,11 @@ namespace Sepes.Infrastructure.Util
             }
 
             var baseStatusOnThisOperation = DecideWhatOperationToBaseStatusOn(resource);
+
+            if (baseStatusOnThisOperation == null)
+            {
+                return "n/a";
+            }
 
             if (AbleToCreateStatusForOngoingWork(baseStatusOnThisOperation, out string unfinishedWorkStatus))
             {
@@ -122,7 +130,7 @@ namespace Sepes.Infrastructure.Util
                     return true;
                 }
             }
-            else if (operation.Status == CloudResourceOperationState.FAILED)
+            else if (operation.Status == CloudResourceOperationState.FAILED || operation.Status == CloudResourceOperationState.ABORTED)
             {
                 if (operation.OperationType == CloudResourceOperationType.CREATE)
                 {

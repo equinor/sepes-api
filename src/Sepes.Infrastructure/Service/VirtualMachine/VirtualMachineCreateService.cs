@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
+using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -27,7 +28,9 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceDeleteService _cloudResourceDeleteService;
 
         readonly IProvisioningQueueService _provisioningQueueService;
+        readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
         readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
+      
 
 
         public VirtualMachineCreateService(
@@ -43,6 +46,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceUpdateService cloudResourceUpdateService,
             ICloudResourceDeleteService cloudResourceDeleteService,
             IProvisioningQueueService provisioningQueueService,
+            IAzureKeyVaultSecretService azureKeyVaultSecretService,
             IVirtualMachineOperatingSystemService virtualMachineOperatingSystemService
 
           )
@@ -53,6 +57,7 @@ namespace Sepes.Infrastructure.Service
             _cloudResourceUpdateService = cloudResourceUpdateService;
             _cloudResourceDeleteService = cloudResourceDeleteService;
             _provisioningQueueService = provisioningQueueService;
+            _azureKeyVaultSecretService = azureKeyVaultSecretService;
             _virtualMachineOperatingSystemService = virtualMachineOperatingSystemService;
         }
 
@@ -187,7 +192,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var keyVaultSecretName = $"newvmpassword-{studyId}-{sandboxId}-{Guid.NewGuid().ToString().Replace("-", "")}";
 
-                await KeyVaultSecretUtil.AddKeyVaultSecret(_logger, _config, ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, keyVaultSecretName, password);
+                await _azureKeyVaultSecretService.AddKeyVaultSecret(ConfigConstants.AZURE_VM_TEMP_PASSWORD_KEY_VAULT, keyVaultSecretName, password);
 
                 return keyVaultSecretName;
             }

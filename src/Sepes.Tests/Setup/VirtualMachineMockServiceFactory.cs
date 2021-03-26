@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure.Interface;
@@ -34,7 +33,9 @@ namespace Sepes.Tests.Setup
 
             var resourceReadService = new Mock<ICloudResourceReadService>();
 
-            var workQueue = new Mock<IProvisioningQueueService>();
+            var provisioningQueueServiceMock = new Mock<IProvisioningQueueService>();
+
+            var azureKeyVaultSecretServiceMock = new Mock<IAzureKeyVaultSecretService>();
 
             var virtualMachineOperatingSystemService = new Mock<IVirtualMachineOperatingSystemService>();
 
@@ -44,7 +45,8 @@ namespace Sepes.Tests.Setup
                   resourceReadService.Object,
                 resourceUpdateService.Object,
                 resourceDeleteService.Object,              
-                workQueue.Object,
+                provisioningQueueServiceMock.Object,
+                azureKeyVaultSecretServiceMock.Object,
                 virtualMachineOperatingSystemService.Object);
         }
 

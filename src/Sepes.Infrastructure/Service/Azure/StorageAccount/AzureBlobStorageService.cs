@@ -1,10 +1,11 @@
-﻿using Azure.Storage.Blobs.Models;
+﻿using Azure.Storage;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Storage;
 using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util.Azure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,13 +16,11 @@ namespace Sepes.Infrastructure.Service.Azure
 {
 
     public class AzureBlobStorageService : AzureBlobStorageServiceBase, IAzureBlobStorageService
-    {
-        IAzureStorageAccountTokenService _azureStorageAccountTokenService;
-
-        public AzureBlobStorageService(IConfiguration configuration, ILogger<AzureBlobStorageService> logger, IAzureStorageAccountTokenService azureStorageAccountTokenService)
-            : base(configuration, logger)
+    {  
+        public AzureBlobStorageService(IConfiguration configuration, ILogger<AzureBlobStorageService> logger, IAzureStorageAccountAccessKeyService azureStorageAccountAccessKeyService)
+            : base(configuration, logger, azureStorageAccountAccessKeyService)
         {
-            _azureStorageAccountTokenService = azureStorageAccountTokenService;
+           
         }              
 
         public async Task<List<BlobStorageItemDto>> GetFileList(string containerName, CancellationToken cancellationToken = default)
@@ -90,19 +89,29 @@ namespace Sepes.Infrastructure.Service.Azure
             return result.Status;
         }
 
-        protected override async Task<string> GetStorageAccountKey(CancellationToken cancellationToken = default)
+        async Task<BlobServiceClient> GetBlobServiceClient(CancellationToken cancellationToken = default)
         {
             try
             {
-                return await AzureStorageUtils.GetStorageAccountKey(_azureStorageAccountTokenService, _connectionParameters, cancellationToken);
+                if (!String.IsNullOrWhiteSpace(_connectionParameters.ConnectionString))
+                {
+                    return new BlobServiceClient(_connectionParameters.ConnectionString);
+                }
+                else
+                {
+                    string accessKey = await GetStorageAccountKey(cancellationToken);
+
+                    var credential = new StorageSharedKeyCredential(_connectionParameters.StorageAccountName, accessKey);
+                  
+                    return new BlobServiceClient(new Uri($"https://{_connectionParameters.StorageAccountName}.blob.core.windows.net"), credential);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get Storage Account Key");
-                throw;
+                _logger.LogError(ex, "Something went wrong when creating BlobServiceClient");
+                throw new Exception($"Unable to connect to Azure Storage Account", ex);
             }
-
-        }
+        }     
 
         public async Task EnsureContainerExist(string containerName, CancellationToken cancellationToken = default)
         {

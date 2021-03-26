@@ -108,12 +108,12 @@ namespace Sepes.Infrastructure.Service
 
                 if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
                 {
-                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED && curOperation.Status != CloudResourceOperationState.ABANDONED)
                     {
                         //If very old, set to aborted and continue the search
                         if (curOperation.Updated.AddMinutes(1) < DateTime.UtcNow)
                         {
-                            curOperation.Status = CloudResourceOperationState.ABORTED;
+                            curOperation.Status = CloudResourceOperationState.ABANDONED;
                             curOperation.Updated = DateTime.UtcNow;
                             curOperation.UpdatedBy = currentUser.UserName;
                             await _db.SaveChangesAsync();
@@ -127,7 +127,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (curOperation.OperationType == CloudResourceOperationType.CREATE)
                 {
-                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED)
+                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED && curOperation.Status != CloudResourceOperationState.ABANDONED)
                     {
                         return curOperation;
                     }

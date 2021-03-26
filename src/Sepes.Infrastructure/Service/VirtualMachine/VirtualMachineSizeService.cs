@@ -58,15 +58,15 @@ namespace Sepes.Infrastructure.Service
             var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
             var priceOfVm = await _db.RegionVmSize.Where(x => x.Region.Key == sandboxRegion && x.VmSizeKey == input.Size).AsNoTracking().SingleOrDefaultAsync();
 
-            var priceOfDisks = 0.0;
+            var diskPriceSummarized = 0.0;
 
             foreach (var disk in input.DataDisks)
             {           
                 var priceOfDisk = await _db.RegionDiskSize.Where(x => x.Region.Key == sandboxRegion && x.VmDiskKey == disk).AsNoTracking().SingleOrDefaultAsync();
-                priceOfDisks += priceOfDisk.Price;
+                diskPriceSummarized += priceOfDisk != null ? priceOfDisk.Price : 0;
             }
             
-            return priceOfVm.Price + priceOfDisks;
+            return priceOfVm.Price + diskPriceSummarized;
         }      
     }
 }

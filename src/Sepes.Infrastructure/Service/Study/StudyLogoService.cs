@@ -12,6 +12,7 @@ using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -25,12 +26,12 @@ namespace Sepes.Infrastructure.Service
         readonly IMapper _mapper;
         readonly IUserService _userService;
         readonly IAzureBlobStorageService _azureBlobStorageService;
-        readonly IAzureStorageAccountTokenService _azureStorageAccountTokenService;
+        readonly IAzureBlobStorageUriBuilderService _azureStorageAccountTokenService;
 
         public StudyLogoService(ILogger<StudyLogoService> logger, SepesDbContext db, IMapper mapper,
             IUserService userService,
             IAzureBlobStorageService blobService,
-            IAzureStorageAccountTokenService azureStorageAccountTokenService)
+            IAzureBlobStorageUriBuilderService azureStorageAccountTokenService)
         {
             _logger = logger;
             _db = db;
@@ -47,7 +48,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var uriBuilder = await _azureStorageAccountTokenService.CreateFileDownloadUriBuilder(_containerName);
+                var uriBuilder = await CreateFileDownloadUriBuilder(_containerName);
 
                 if (uriBuilder == null)
                 {
@@ -68,7 +69,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                var uriBuilder = await _azureStorageAccountTokenService.CreateFileDownloadUriBuilder(_containerName);
+                var uriBuilder = await CreateFileDownloadUriBuilder(_containerName);
 
                 if (uriBuilder == null)
                 {
@@ -86,6 +87,12 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogError(ex, $"Unable to decorate list of Studies with logo urls. Se exception info");
             }
+        }
+
+
+        async Task<UriBuilder> CreateFileDownloadUriBuilder(string containerName, CancellationToken cancellationToken = default)
+        {
+            return await _azureStorageAccountTokenService.CreateUriBuilder(containerName, cancellationToken: cancellationToken);
         }
 
         void DecorateLogoUrlWithSAS(UriBuilder uriBuilder, IHasLogoUrl hasLogo)

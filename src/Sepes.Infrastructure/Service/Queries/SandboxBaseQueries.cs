@@ -44,11 +44,17 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(sb => sb.PhaseHistory);
         }
 
-        public static IQueryable<Sandbox> SandboxWithResources(SepesDbContext db, int sandboxId)
+        public static IQueryable<Sandbox> ActiveSandboxWithResourceAndOperations(SepesDbContext db)
         {
-            return db.Sandboxes.Where(s => s.Id == sandboxId)
-                    .Include(sb => sb.Study)
-                    .ThenInclude(s => s.StudyParticipants)
+            return ActiveSandboxesMinimalIncludesQueryable(db)                   
+                    .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations);
+        }
+
+        public static IQueryable<Sandbox> SandboxWithResourceAndOperations(SepesDbContext db)
+        {
+            return    db.Sandboxes.Include(s => s.Study)
+                .ThenInclude(s => s.StudyParticipants)
                     .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations);
         }

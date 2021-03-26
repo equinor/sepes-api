@@ -19,6 +19,11 @@ namespace Sepes.Infrastructure.Util
             return !IsAborted(operation);          
         }
 
+        public static bool HasValidStateForRetry(CloudResourceOperation operation) 
+        {
+            return (operation.Status == CloudResourceOperationState.FAILED || operation.Status == CloudResourceOperationState.ABORTED) && operation.TryCount >= operation.MaxTryCount;
+        }
+
         public static CloudResourceOperation GetCreateOperation(CloudResource resource)
         {
             if(resource.Operations == null)
@@ -27,6 +32,19 @@ namespace Sepes.Infrastructure.Util
             }
 
             return resource.Operations.Where(o => o.OperationType == CloudResourceOperationType.CREATE).SingleOrDefault();
+        }
+
+        public static bool HasSuccessfulCreateOperation(CloudResource resource)
+        {
+            var createOperation = GetCreateOperation(resource);
+
+            if(createOperation == null)
+            {
+                return false;
+            }
+
+            return createOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL;
+           
         }
     }
 }
