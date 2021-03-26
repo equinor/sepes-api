@@ -1,15 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
@@ -20,17 +18,19 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyDatasetService : DatasetServiceBase, IStudyDatasetService
     {
+       readonly IStudyModelService _studyModelService;
+        readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
 
-        public StudyDatasetService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService
-)
+        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService, IStudyModelService studyModelService, IStudySpecificDatasetModelService studySpecificDatasetModelService)
             : base(db, mapper, logger, userService)
         {
-
+            _studyModelService = studyModelService;
+            _studySpecificDatasetModelService = studySpecificDatasetModelService;
         }
 
         public async Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
+        {           
+            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
@@ -47,12 +47,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<DatasetDto>> GetDatasetsForStudyAsync(int studyId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
-
-            if (studyFromDb == null)
-            {
-                throw NotFoundException.CreateForEntity("Study", studyId);
-            }
+            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId);           
 
             if (studyFromDb.StudyDatasets == null)
             {
@@ -61,22 +56,21 @@ namespace Sepes.Infrastructure.Service
 
             var datasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(studyFromDb.StudyDatasets);
 
-
             return datasetDtos;
         }
 
         public async Task<DatasetDto> AddPreApprovedDatasetToStudyAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset);
-            var datasetFromDb = await _db.Datasets.FirstOrDefaultAsync(ds => ds.Id == datasetId);
+            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+            var datasetFromDb = await _studySpecificDatasetModelService.GetByIdWithoutPermissionCheckAsync(datasetId);
 
             if (datasetFromDb == null)
             {
                 throw NotFoundException.CreateForEntity("Dataset", datasetId);
             }
 
-            if (IsStudySpecific(datasetFromDb))
+            if (datasetFromDb.StudySpecific)
             {
                 throw new ArgumentException($"Dataset {datasetId} is Study specific, and cannot be linked using this method.");
             }
@@ -91,10 +85,9 @@ namespace Sepes.Infrastructure.Service
 
         public async Task RemovePreApprovedDatasetFromStudyAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Dataset, true);
-            var datasetFromDb = await GetDatasetOrThrowNoAccessCheckAsync(datasetId);           
+            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);                  
           
-            if (IsStudySpecific(datasetFromDb))
+            if (await _studySpecificDatasetModelService.IsStudySpecific(datasetId))
             {
                 throw new Exception("Study specific datasets cannot be deleted using this method");              
             }

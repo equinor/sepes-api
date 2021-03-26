@@ -28,14 +28,7 @@ namespace Sepes.RestApi.Controller
         {
             var updatedStudy = await _sandboxService.CreateAsync(studyId, newSandbox);
             return new JsonResult(updatedStudy);
-        }
-
-        [HttpGet("studies/{studyId}/sandboxes")]
-        public async Task<IActionResult> GetSandboxesByStudyIdAsync(int studyId)
-        {
-            var sandboxes = await _sandboxService.GetAllForStudy(studyId);
-            return new JsonResult(sandboxes);
-        }     
+        }          
 
         [HttpGet("sandboxes/{sandboxId}")]
         public async Task<IActionResult> GetSandboxAsync(int sandboxId)

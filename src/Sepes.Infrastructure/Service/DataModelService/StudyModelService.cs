@@ -1,9 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -57,9 +55,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return new StudyResultsAndLearningsDto() { ResultsAndLearnings = responseFromDbService.ResultsAndLearnings };
         }
 
-        public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false)
+        public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation)
         {
-            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes, disableTracking);
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.ActiveStudiesWithParticipantsQueryable(_db), studyId, userOperation);          
         }
 
         public async Task<Study> GetByIdWithoutPermissionCheckAsync(int studyId, bool withIncludes = false, bool disableTracking = false)
@@ -73,12 +71,34 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyDetailsQueryable(_db), studyId, UserOperation.Study_Read);
         }
 
-
-        async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation)
+        public async Task<Study> GetStudyForDatasetsAsync(int studyId, UserOperation operation = UserOperation.Study_Read)
         {
-            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation);
-        }     
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyDatasetsQueryable(_db), studyId, operation);
+        }
 
-       
+        public async Task<Study> GetStudyForParticpantOperationsAsync(int studyId, UserOperation operation, string newRole = null)
+        {
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyParticipantOperationsQueryable(_db), studyId, operation, newRole);
+        }
+
+        public async Task<Study> GetStudyForSandboxCreationAsync(int studyId, UserOperation operation)
+        {
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudySandboxCreationQueryable(_db), studyId, operation);
+        }
+
+        public async Task<Study> GetStudyForDatasetCreationAsync(int studyId, UserOperation operation)
+        {
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId, operation);
+        }
+
+        public async Task<Study> GetStudyForDatasetCreationNoAccessCheckAsync(int studyId)
+        {
+            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId);
+        }
+
+        async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation, string newRole = null)
+        {
+            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation, newRole);
+        }         
     }
 }

@@ -20,15 +20,15 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxService : SandboxServiceBase, ISandboxService
     {
-        readonly IStudyReadService _studyService;
+        readonly IStudyModelService _studyModelService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
 
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, IStudyReadService studyService, ISandboxModelService sandboxModelService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            IUserService userService, IStudyModelService studyModelService, ISandboxModelService sandboxModelService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             : base(config, db, mapper, logger, userService, sandboxModelService)
         {
-            _studyService = studyService;
+            _studyModelService = studyModelService;
             _sandboxResourceCreateService = sandboxCloudResourceService;
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
         }
@@ -41,17 +41,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<SandboxDetails> GetSandboxDetailsAsync(int sandboxId)
         {
             return await GetSandboxDetailsInternalAsync(sandboxId);
-        }
-
-        public async Task<IEnumerable<SandboxDto>> GetAllForStudy(int studyId)
-        {
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Read, true);
-
-            var sandboxesFromDb = await _db.Sandboxes.Where(s => s.StudyId == studyId && !s.Deleted).ToListAsync();
-            var sandboxDTOs = _mapper.Map<IEnumerable<SandboxDto>>(sandboxesFromDb);
-
-            return sandboxDTOs;
-        }      
+        }             
 
         public async Task<SandboxDetails> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
@@ -67,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Verify that study with that id exists
-            var study = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_Crud_Sandbox, withIncludes: true);
+            var study = await _studyModelService.GetStudyForSandboxCreationAsync(studyId, UserOperation.Study_Crud_Sandbox);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))

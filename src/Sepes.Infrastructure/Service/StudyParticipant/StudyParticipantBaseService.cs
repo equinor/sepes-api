@@ -7,9 +7,8 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
 using Sepes.Infrastructure.Util.Provisioning;
@@ -35,7 +34,8 @@ namespace Sepes.Infrastructure.Service
         protected readonly IMapper _mapper;
         protected readonly ILogger _logger;
         protected readonly TelemetryClient _telemetry;
-        protected readonly IUserService _userService;     
+        protected readonly IUserService _userService;
+        protected readonly IStudyModelService _studyModelService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
         protected readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         protected readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
@@ -45,6 +45,7 @@ namespace Sepes.Infrastructure.Service
             ILogger logger,
              TelemetryClient telemetry,
             IUserService userService,
+            IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
@@ -54,6 +55,7 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;
             _telemetry = telemetry;
             _userService = userService;
+            _studyModelService = studyModelService;
             _provisioningQueueService = provisioningQueueService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
@@ -94,7 +96,7 @@ namespace Sepes.Infrastructure.Service
         protected async Task<Study> GetStudyForParticipantOperation(TelemetrySession telemetrySession, int studyId, string newRole = null)
         {
             telemetrySession.StartPartialOperation(SUBOPERATION_GETSTUDY);
-            var studyFromDb = await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, UserOperation.Study_AddRemove_Participant, true, newRole: newRole);
+            var studyFromDb = await _studyModelService.GetStudyForParticpantOperationsAsync(studyId, UserOperation.Study_AddRemove_Participant, newRole);
             telemetrySession.StopPartialOperation(SUBOPERATION_GETSTUDY);
 
             return studyFromDb;

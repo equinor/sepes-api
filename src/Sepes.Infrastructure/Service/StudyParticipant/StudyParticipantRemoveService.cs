@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Telemetry;
 using System;
@@ -22,11 +23,12 @@ namespace Sepes.Infrastructure.Service
             ILogger<StudyParticipantRemoveService> logger,
             TelemetryClient telemetry,
             IUserService userService,
+            IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-            : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, telemetry, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
 
         }

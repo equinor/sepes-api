@@ -16,16 +16,25 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class StudyAccessUtil
     {
-        public static async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Study> queryable, int studyId, UserOperation operation)
+
+        public static async Task<Study> GetStudyFromQueryableThrowIfNotFound(IQueryable<Study> queryable, int studyId)
         {
             var study = await queryable.SingleOrDefaultAsync(s => s.Id == studyId);
 
             if (study == null)
             {
                 throw NotFoundException.CreateForEntity("Study", studyId);
-            }
+            }          
 
-            await CheckAccesAndThrowIfMissing(userService, study, operation);
+            return study;
+        }
+
+
+        public static async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Study> queryable, int studyId, UserOperation operation, string newRole = null)
+        {
+            var study = await GetStudyFromQueryableThrowIfNotFound(queryable, studyId);          
+
+            await CheckAccesAndThrowIfMissing(userService, study, operation, newRole);
 
             return study;
         }

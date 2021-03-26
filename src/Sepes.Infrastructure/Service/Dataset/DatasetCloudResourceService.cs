@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
         {
-            var studyForCreation = await _studyModelService.GetByIdWithoutPermissionCheckAsync(study.Id, true, false);
+            var studyForCreation = await _studyModelService.GetStudyForDatasetCreationAsync(study.Id);
             var resourceGroupForDatasets = GetResourceGroupForStudySpecificDataset(studyForCreation);
 
             var parentQueueItem = QueueItemFactory.CreateParent("Create resource group for Study specific datasets");
