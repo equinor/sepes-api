@@ -22,6 +22,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
@@ -46,6 +47,25 @@ namespace Sepes.RestApi
             _configuration = configuration;
 
             Log("Sepes Startup Constructor");
+        }
+
+        string GetConnectionString(string name, bool enableSensitiveDataLogging)
+        {
+            var connectionStringFromConfig = _configuration[name];
+
+            if (string.IsNullOrWhiteSpace(connectionStringFromConfig))
+            {
+                throw new Exception($"Could not obtain database connection string with name: {name}.");
+            }
+
+            //Clean and print connection string (password will be removed)
+            if (enableSensitiveDataLogging)
+            {
+                var cleanConnectionString = ConfigUtil.RemovePasswordFromConnectionString(connectionStringFromConfig);              
+                Log($"Connection string named {name}: {cleanConnectionString}");              
+            }
+
+            return connectionStringFromConfig;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -73,16 +93,11 @@ namespace Sepes.RestApi
                 });
             });
 
-            var enableSensitiveDataLogging = true;
+            var enableSensitiveDataLogging = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
 
-            DoMigration();
+            DoMigration(enableSensitiveDataLogging);
 
-            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
-
-            if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
-            {
-                throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
-            }
+            var readWriteDbConnectionString = GetConnectionString(ConfigConstants.DB_READ_WRITE_CONNECTION_STRING, enableSensitiveDataLogging); //  _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];                       
 
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
@@ -95,8 +110,6 @@ namespace Sepes.RestApi
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
-
-
 
             services.AddHttpClient();
 
@@ -282,7 +295,7 @@ namespace Sepes.RestApi
             });
         }
 
-        void DoMigration()
+        void DoMigration(bool enableSensitiveDataLogging)
         {
             var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
@@ -296,15 +309,11 @@ namespace Sepes.RestApi
                 Log("Performing database migrations");
             }
 
-            string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
-
-            if (string.IsNullOrWhiteSpace(sqlConnectionStringOwner))
-            {
-                throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
-            }
-
+            string sqlConnectionStringOwner = GetConnectionString(ConfigConstants.DB_OWNER_CONNECTION_STRING, enableSensitiveDataLogging); // _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
+            
             var createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
+            createDbOptions.EnableSensitiveDataLogging(enableSensitiveDataLogging);
 
             using (var ctx = new SepesDbContext(createDbOptions.Options))
             {
