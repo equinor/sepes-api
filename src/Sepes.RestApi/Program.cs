@@ -18,11 +18,16 @@ namespace Sepes.RestApi
             CreateWebHostBuilder(args).Build().Run();
         }
 
+        static void Log(string message)
+        {
+            Trace.WriteLine($"Program.cs: {message}");          
+        }
+
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
               CustomWebHost.CreateDefaultBuilder(args)
                  .ConfigureAppConfiguration((context, configBuilder) =>
                  {
-                     Trace.WriteLine("Program.cs: ConfigureAppConfiguration");
+                     Log("ConfigureAppConfiguration");
 
                      var shouldAddKeyVault = TryGetKeyvaultConfig(out string keyVaultUrl, out string clientId, out string clientSecret);
 
@@ -33,7 +38,7 @@ namespace Sepes.RestApi
                  })
                  .ConfigureLogging((hostingContext, builder) =>
                  {
-                     Trace.WriteLine("Program.cs: ConfigureLogging");
+                     Log("ConfigureLogging");
 
                      var applicationInsightsInstrumentationKey = hostingContext.Configuration[ConfigConstants.APPI_KEY];
 
@@ -52,17 +57,18 @@ namespace Sepes.RestApi
                  })
                   .UseStartup<Startup>();
 
+
         public static bool TryGetKeyvaultConfig(out string keyVaultUrl, out string clientId, out string clientSecret)
         {
             keyVaultUrl = Environment.GetEnvironmentVariable(ConfigConstants.KEY_VAULT, EnvironmentVariableTarget.Process);
 
             if (string.IsNullOrWhiteSpace(keyVaultUrl))
             {
-                Trace.WriteLine("Program.cs: Key vault url empty");
+                Log("Key vault url empty");
             }
             else
             {
-                Trace.WriteLine("Program.cs: Key vault url found. Initializing key vault");
+                Log("Key vault url found. Initializing key vault");
 
                 clientId = Environment.GetEnvironmentVariable(ConfigConstants.RADIX_SECRET_AZ_CLIENT_ID, EnvironmentVariableTarget.Process);
                 clientSecret = Environment.GetEnvironmentVariable(ConfigConstants.RADIX_SECRET_AZ_CLIENT_SECRET, EnvironmentVariableTarget.Process);
