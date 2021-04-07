@@ -45,21 +45,21 @@ namespace Sepes.RestApi
             _logger = logger;
             _configuration = configuration;
 
-            Log("Sepes Startup Constructor");          
-        }     
+            Log("Sepes Startup Constructor");
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            Log("ConfigureServices starting");           
+            Log("ConfigureServices starting");
 
-            AddApplicationInsights(services);          
+            AddApplicationInsights(services);
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
             //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
-            Log("Startup - ConfigureServices - Cors domains: *");     
+            Log("Startup - ConfigureServices - Cors domains: *");
 
             services.AddCors(options =>
             {
@@ -75,7 +75,14 @@ namespace Sepes.RestApi
 
             var enableSensitiveDataLogging = true;
 
-            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];          
+            DoMigration();
+
+            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+
+            if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
+            {
+                throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
+            }
 
             services.AddDbContext<SepesDbContext>(
               options => options.UseSqlServer(
@@ -88,8 +95,8 @@ namespace Sepes.RestApi
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
-        
-            DoMigration();
+
+
 
             services.AddHttpClient();
 
@@ -101,21 +108,21 @@ namespace Sepes.RestApi
             SetFileUploadLimits(services);
 
             AddSwagger(services);
-         
+
             Log("Configuring services done");
         }
 
         void AddApplicationInsights(IServiceCollection services)
-        {          
+        {
             Trace.WriteLine("Configuring Application Insights");
-        
+
             var aiOptions = new ApplicationInsightsServiceOptions
-                {
-                    // Disables adaptive sampling.
-                    EnableAdaptiveSampling = false,
-                    InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
-                    EnableDebugLogger = true
-                };
+            {
+                // Disables adaptive sampling.
+                EnableAdaptiveSampling = false,
+                InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
+                EnableDebugLogger = true
+            };
 
             services.AddApplicationInsightsTelemetry(aiOptions);
         }
@@ -123,7 +130,7 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services)
         {
             //Plumbing
-            
+
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
@@ -158,27 +165,27 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();     
-           
+            services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
 
             //Ext System Facade Services
-            services.AddTransient<IDatasetFileService, DatasetFileService>();          
+            services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoService, StudyLogoService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
-            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();            
+            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
-            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();    
+            services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IVirtualMachineCreateService, VirtualMachineCreateService>();
             services.AddTransient<IVirtualMachineReadService, VirtualMachineReadService>();
             services.AddTransient<IVirtualMachineDeleteService, VirtualMachineDeleteService>();
-            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();      
-            services.AddTransient<IVirtualMachineDiskSizeService, VirtualMachineDiskSizeService>();        
+            services.AddTransient<IVirtualMachineSizeService, VirtualMachineSizeService>();
+            services.AddTransient<IVirtualMachineDiskSizeService, VirtualMachineDiskSizeService>();
             services.AddTransient<IVirtualMachineOperatingSystemService, VirtualMachineOperatingSystemService>();
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
@@ -248,7 +255,7 @@ namespace Sepes.RestApi
                     {
                         Implicit = new OpenApiOAuthFlow
                         {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),                          
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
                         }
                     }
                 });
@@ -277,7 +284,7 @@ namespace Sepes.RestApi
 
         void DoMigration()
         {
-            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];         
+            var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
 
             if (!String.IsNullOrWhiteSpace(disableMigrations) && disableMigrations.ToLower() == "true")
             {
@@ -287,16 +294,16 @@ namespace Sepes.RestApi
             else
             {
                 Log("Performing database migrations");
-            }          
+            }
 
             string sqlConnectionStringOwner = _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
 
-            if (string.IsNullOrEmpty(sqlConnectionStringOwner))
+            if (string.IsNullOrWhiteSpace(sqlConnectionStringOwner))
             {
                 throw new Exception("Could not obtain database OWNER connection string. Unable to run migrations");
             }
 
-            DbContextOptionsBuilder<SepesDbContext> createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
+            var createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
 
             using (var ctx = new SepesDbContext(createDbOptions.Options))
@@ -304,8 +311,8 @@ namespace Sepes.RestApi
                 ctx.Database.SetCommandTimeout(300);
                 ctx.Database.Migrate();
             }
-           
-            Log("Do migration done");          
+
+            Log("Do migration done");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -366,8 +373,8 @@ namespace Sepes.RestApi
             {
                 endpoints.MapControllers();
             });
-            
-            Log("Configure done");          
+
+            Log("Configure done");
         }
         void Log(string message)
         {
