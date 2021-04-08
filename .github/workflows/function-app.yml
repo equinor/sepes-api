@@ -19,6 +19,7 @@ env:
   acr: ${{ secrets.ACR_URL }}/
 
 jobs:
+  ### CI stage ###
   dockerbuild:
     runs-on: ubuntu-latest
     env:
@@ -41,6 +42,78 @@ jobs:
           docker push ${{ env.ciTag }}
           # removed  -t ${{ env.ciTag }}:$GITHUB_RUN_ID
 
+  ### Dev stage ###
+  dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    env:
+        environment: dev
+        azureSubscriptionId: 6cfb8f33-6d4b-43bf-9000-91fd6f53ca28
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
+          docker push ${{ env.acr }}${{ env.environment }} -a
+
+      # Install required modules for the jobs
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+
+      # Azure login for CLI and Powershell AZ
+      - name: Azure login
+        shell: pwsh
+        env:
+          clientId: ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}
+          clientSecret:  ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}
+          tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+          az account set -s ${{ env.azureSubscriptionId }}
+        
+      # Replace tokens in appsettings file
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["src/Sepes.Functions/appsettings.dev.txt"]'
+        env:
+          KeyvaultName: ${{ secrets.DEV_KEYVAULT_NAME }}
+
+      - name: Deploy Function
+        shell: pwsh
+        env:
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
+          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
+          $functionName = "func-sepes-dev"
+          $rg = "rg-sepes-dev"
+          $appSettings = ".\src\Sepes.Functions\appsettings.dev.txt"
+
+          # Sets application settings from file
+          Set-FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
+
+          # Updates the function with new image
+          Update-FunctionAppContainerSettings -FunctionName $functionName `
+            -RgName $rg `
+            -ImageName "$container" `
+            -RegistryUsername "$Env:username" `
+            -RegistryPassord "$Env:password" `
+            -RegistryUrl "${{ env.acr }}"
+
+  ### Production stage ###
   prod:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
