@@ -21,14 +21,13 @@ namespace Sepes.Infrastructure.Service
         public StudyParticipantRemoveService(SepesDbContext db,
             IMapper mapper,
             ILogger<StudyParticipantRemoveService> logger,
-            TelemetryClient telemetry,
             IUserService userService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-            : base(db, mapper, logger, telemetry, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
 
         }
@@ -39,16 +38,14 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var telemetrySession = new TelemetrySession(SepesEventId.StudyParticipantRemove);
-              
-                var studyFromDb = await GetStudyForParticipantOperation(telemetrySession, studyId);            
+                var studyFromDb = await GetStudyForParticipantOperation(studyId);            
 
                 if (roleName == StudyRoles.StudyOwner)
                 {
                     throw new ArgumentException($"The Study Owner role cannot be deleted");
                 }
 
-                updateOperations = await CreateDraftRoleUpdateOperationsAsync(telemetrySession, studyFromDb);
+                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
 
                 var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
@@ -61,9 +58,7 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(telemetrySession, studyId, updateOperations);
-
-                telemetrySession.StopSessionAndLog(_telemetry);
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);
 
                 return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
             }

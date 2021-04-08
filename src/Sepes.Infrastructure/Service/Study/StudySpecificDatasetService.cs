@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
-        IStudySpecificDatasetModelService studySpecificDatasetModelService,
+            IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
             )
             : base(db, mapper, logger, userService)
@@ -42,9 +42,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {
-            var studyFromDb = await _studyModelService.GetStudyForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
-
-            // Check that study has WbsCode.
+            var studyFromDb = await _studyModelService.GetForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+                        
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
             {
                 throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
@@ -94,7 +93,7 @@ namespace Sepes.Infrastructure.Service
         {
             DatasetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
 
-            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
 
             var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
 
@@ -150,24 +149,17 @@ namespace Sepes.Infrastructure.Service
 
             if (study.StudyDatasets.Any())
             {
-                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => sds.Dataset.StudySpecific && sds.StudyId == study.Id))
+                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => !sds.Dataset.Deleted && sds.Dataset.StudySpecific && sds.StudyId == study.Id))
                 {
                     studySpecificDatasetsToDelete.Add(studySpecificDataset.DatasetId);
                 }
-            }
-
-            await _db.SaveChangesAsync();
+            }          
 
             if (studySpecificDatasetsToDelete.Any())
             {
                 foreach (var curStudySpecificDatasetId in studySpecificDatasetsToDelete)
                 {
-                    var datasetToDelete = await _db.Datasets.Include(d => d.StudyDatasets).FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId);
-
-                    if (datasetToDelete != null)
-                    {
-                        await deleteHandler(study, datasetToDelete.Id, cancellationToken);
-                    }
+                    await deleteHandler(study, curStudySpecificDatasetId, cancellationToken);
                 }
             }
         }

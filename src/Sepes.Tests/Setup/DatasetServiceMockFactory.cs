@@ -67,7 +67,7 @@ namespace Sepes.Tests.Setup
             var userService = UserFactory.GetUserServiceMockForAdmin(1);            
 
             var studyModelServiceMock = new Mock<IStudyModelService>();
-            studyModelServiceMock.Setup(x => x.GetStudyForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
+            studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
 
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
 
@@ -88,8 +88,8 @@ namespace Sepes.Tests.Setup
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var studyModelServiceMock = new Mock<IStudyModelService>();
-            studyModelServiceMock.Setup(x => x.GetStudyForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
-            studyModelServiceMock.Setup(x => x.GetStudyForDatasetCreationAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
+            studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
+            studyModelServiceMock.Setup(x => x.GetForDatasetCreationAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();

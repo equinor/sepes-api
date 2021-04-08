@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
         {           
-            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId);
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId);
 
             var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
@@ -47,7 +47,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<DatasetDto>> GetDatasetsForStudyAsync(int studyId)
         {
-            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId);           
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId);           
 
             if (studyFromDb.StudyDatasets == null)
             {
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<DatasetDto> AddPreApprovedDatasetToStudyAsync(int studyId, int datasetId)
         {
             // Run validations: (Check if both id's are valid)
-            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
             var datasetFromDb = await _studySpecificDatasetModelService.GetByIdWithoutPermissionCheckAsync(datasetId);
 
             if (datasetFromDb == null)
@@ -85,7 +85,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task RemovePreApprovedDatasetFromStudyAsync(int studyId, int datasetId)
         {
-            var studyFromDb = await _studyModelService.GetStudyForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);                  
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);                  
           
             if (await _studySpecificDatasetModelService.IsStudySpecific(datasetId))
             {

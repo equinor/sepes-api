@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
             GenericNameValidation.ValidateName(updatedStudy.Name);
 
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_Metadata, false);         
+            var studyFromDb = await GetStudyForUpdateAsync(studyId, UserOperation.Study_Update_Metadata);         
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -83,7 +83,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, UserOperation.Study_Update_ResultsAndLearnings, false);
+            var studyFromDb = await GetStudyForUpdateAsync(studyId, UserOperation.Study_Update_ResultsAndLearnings);
 
             if (resultsAndLearnings.ResultsAndLearnings != studyFromDb.ResultsAndLearnings)
             {
@@ -97,6 +97,11 @@ namespace Sepes.Infrastructure.Service
             await _db.SaveChangesAsync();
 
             return new StudyResultsAndLearningsDto() { ResultsAndLearnings = studyFromDb.ResultsAndLearnings };
-        }       
+        }
+
+        public async Task<Study> GetStudyForUpdateAsync(int studyId, UserOperation userOperation)
+        {
+           return await _studyModelService.GetByIdAsync(studyId, userOperation);
+        }
     }
 }

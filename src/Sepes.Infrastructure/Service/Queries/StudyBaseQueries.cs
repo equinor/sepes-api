@@ -21,12 +21,14 @@ namespace Sepes.Infrastructure.Service.Queries
         public static IQueryable<Study> StudyDetailsQueryable(SepesDbContext db)
         {
             return ActiveStudiesBaseQueryable(db)
-                .Include(s => s.StudyParticipants)              
+                .Include(s => s.StudyParticipants)
+                .ThenInclude(sp=> sp.User)
                  .Include(s => s.Sandboxes)
                 .Include(s => s.StudyDatasets)
                     .ThenInclude(sd=> sd.Dataset)
                         .ThenInclude(sd => sd.SandboxDatasets)
-                            .ThenInclude(sd => sd.Sandbox);
+                            .ThenInclude(sd => sd.Sandbox)
+                            .AsNoTracking();
         }
 
         public static IQueryable<Study> StudyParticipantOperationsQueryable(SepesDbContext db)
@@ -51,14 +53,27 @@ namespace Sepes.Infrastructure.Service.Queries
 
         public static IQueryable<Study> StudySandboxCreationQueryable(SepesDbContext db)
         {
-            return ActiveStudiesWithParticipantsQueryable(db)
+            return ActiveStudiesBaseQueryable(db)
+                .Include(s => s.StudyParticipants)
+                    .ThenInclude(sp=> sp.User)
                 .Include(s => s.Sandboxes);
+        }
+
+        public static IQueryable<Study> StudyDeleteQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesWithParticipantsQueryable(db)
+                .Include(s => s.Sandboxes)
+                .Include(s=> s.Resources)
+                    .ThenInclude(r=> r.ChildResources)
+                .Include(s => s.StudyDatasets)
+                    .ThenInclude(sds=> sds.Dataset);
         }
 
         public static IQueryable<Study> StudyDatasetCreationQueryable(SepesDbContext db)
         {
             return StudyDatasetsQueryable(db)
-                .Include(s => s.Resources);
+                .Include(s => s.Resources)
+                .ThenInclude(r=> r.Operations);
         }
 
         public static IQueryable<Study> ActiveStudiesMinimalIncludesQueryable(SepesDbContext db)

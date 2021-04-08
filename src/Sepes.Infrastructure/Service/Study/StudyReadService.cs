@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync()
         {
-            var studies = await _studyModelService.GetStudyListAsync();
+            var studies = await _studyModelService.GetListAsync();
 
             if (studies.Any())
             {
@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
         {
-            return await _studyModelService.GetStudyResultsAndLearningsAsync(studyId);
+            return await _studyModelService.GetResultsAndLearningsAsync(studyId);
         }
     }
 }

@@ -20,14 +20,13 @@ namespace Sepes.Infrastructure.Service
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
             IMapper mapper,          
-            TelemetryClient telemetry,
             IUserService userService,
             IAzureUserService azureUserService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
-            : base(db, mapper, logger, telemetry, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {          
             _azureUserService = azureUserService;     
         }

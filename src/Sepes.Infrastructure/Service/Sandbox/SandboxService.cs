@@ -57,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             // Verify that study with that id exists
-            var study = await _studyModelService.GetStudyForSandboxCreationAsync(studyId, UserOperation.Study_Crud_Sandbox);
+            var study = await _studyModelService.GetForSandboxCreateAndDeleteAsync(studyId, UserOperation.Study_Crud_Sandbox);
 
             // Check that study has WbsCode.
             if (String.IsNullOrWhiteSpace(study.WbsCode))

@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -12,7 +11,6 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
 using Sepes.Infrastructure.Util.Provisioning;
-using Sepes.Infrastructure.Util.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,19 +19,10 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantBaseService
-    {
-        protected const string SUBOPERATION_GETSTUDY = "getstudy";       
-
-        protected const string SUBOPERATION_ADDPARTICIPANTFROMDB = "addfromdb";
-        protected const string SUBOPERATION_ADDPARTICIPANTFROMAZURE = "addfromazure";
-
-        protected const string SUBOPERATION_CREATEDRAFTOPERATIONS = "draftops";
-        protected const string SUBOPERATION_FINALIZEOPERATIONS = "finalizeops";   
-
+    { 
         protected readonly SepesDbContext _db;
         protected readonly IMapper _mapper;
         protected readonly ILogger _logger;
-        protected readonly TelemetryClient _telemetry;
         protected readonly IUserService _userService;
         protected readonly IStudyModelService _studyModelService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
@@ -43,7 +32,6 @@ namespace Sepes.Infrastructure.Service
         public StudyParticipantBaseService(SepesDbContext db,
             IMapper mapper,
             ILogger logger,
-             TelemetryClient telemetry,
             IUserService userService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
@@ -53,7 +41,6 @@ namespace Sepes.Infrastructure.Service
             _db = db;
             _mapper = mapper;
             _logger = logger;
-            _telemetry = telemetry;
             _userService = userService;
             _studyModelService = studyModelService;
             _provisioningQueueService = provisioningQueueService;
@@ -93,27 +80,20 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        protected async Task<Study> GetStudyForParticipantOperation(TelemetrySession telemetrySession, int studyId, string newRole = null)
-        {
-            telemetrySession.StartPartialOperation(SUBOPERATION_GETSTUDY);
-            var studyFromDb = await _studyModelService.GetStudyForParticpantOperationsAsync(studyId, UserOperation.Study_AddRemove_Participant, newRole);
-            telemetrySession.StopPartialOperation(SUBOPERATION_GETSTUDY);
-
+        protected async Task<Study> GetStudyForParticipantOperation(int studyId, string newRole = null)
+        {         
+            var studyFromDb = await _studyModelService.GetForParticpantOperationsAsync(studyId, UserOperation.Study_AddRemove_Participant, newRole);
             return studyFromDb;
         }
 
-        protected async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync(TelemetrySession telemetrySession, Study study)
-        {
-            telemetrySession.StartPartialOperation(SUBOPERATION_CREATEDRAFTOPERATIONS);
-            var operations = await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync(study, _cloudResourceOperationCreateService);
-            telemetrySession.StopPartialOperation(SUBOPERATION_CREATEDRAFTOPERATIONS);
+        protected async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync(Study study)
+        {           
+            var operations = await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync(study, _cloudResourceOperationCreateService);           
             return operations;
         }
 
-        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(TelemetrySession telemetrySession, int studyId, List<CloudResourceOperationDto> existingUpdateOperation)
+        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(int studyId, List<CloudResourceOperationDto> existingUpdateOperation)
         {
-            telemetrySession.StartPartialOperation(SUBOPERATION_FINALIZEOPERATIONS);
-
             var study = await GetStudyAsync(studyId, true);
 
             var desiredRolesPerPurposeLookup = new Dictionary<string, string>
@@ -145,9 +125,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     throw new Exception($"Desired roles not specificed for purpose {currentOperation.Resource.Purpose} for resource {currentOperation.Resource.Id}, operation {currentOperation.Id}");
                 }
-            }
-
-            telemetrySession.StopPartialOperation(SUBOPERATION_FINALIZEOPERATIONS);
+            }           
         }      
 
         async Task<Study> GetStudyAsync(int studyId, bool allIncludes)

@@ -28,15 +28,14 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)
         {
-            var studyFromDb = await GetStudyByIdAsync(studyId, userOperation, false);
+            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, userOperation);
             var studyDto = _mapper.Map<StudyDto>(studyFromDb);
-
             return studyDto;
         }
 
         public async Task<StudyDetailsDto> GetStudyDetailsAsync(int studyId)
         {
-            var studyFromDb = await _studyModelService.GetStudyForStudyDetailsAsync(studyId);
+            var studyFromDb = await _studyModelService.GetForStudyDetailsAsync(studyId);
 
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
             await _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);
