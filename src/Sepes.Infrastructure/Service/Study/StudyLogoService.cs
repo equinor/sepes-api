@@ -1,8 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -63,7 +61,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        public async Task DecorateLogoUrlsWithSAS(IEnumerable<StudyListItemDto> studyDtos)
+        public async Task DecorateLogoUrlsWithSAS(IEnumerable<IHasLogoUrl> studyDtos)
         {
             try
             {
@@ -86,7 +84,6 @@ namespace Sepes.Infrastructure.Service
                 _logger.LogError(ex, $"Unable to decorate list of Studies with logo urls. Se exception info");
             }
         }
-
 
         async Task<UriBuilder> CreateFileDownloadUriBuilder(string containerName, CancellationToken cancellationToken = default)
         {

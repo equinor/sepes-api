@@ -20,11 +20,11 @@ namespace Sepes.Tests.Setup
         {
             var config = serviceProvider.GetService<IConfiguration>();
             var db = serviceProvider.GetService<SepesDbContext>();
-            var logger = serviceProvider.GetService<ILogger<StudyModelService>>();       
-     
+            var logger = serviceProvider.GetService<ILogger<StudyModelService>>();
+            var mapper = serviceProvider.GetService<IMapper>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);     
 
-            return new StudyModelService(config, db, logger, userService.Object);
+            return new StudyModelService(config, db, logger, userService.Object, mapper);
         }
 
 

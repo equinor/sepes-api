@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using AutoMapper;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
@@ -16,13 +18,15 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyModelService : ModelServiceBase<Study>, IStudyModelService
     {
-        public StudyModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyModelService> logger, IUserService userService)
+        readonly IMapper _mapper;
+
+        public StudyModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyModelService> logger, IUserService userService, IMapper mapper)
             : base(configuration, db, logger, userService)
-        {           
-           
+        {
+            _mapper = mapper;
         }      
 
-        public async Task<IEnumerable<StudyListItemDto>> GetListAsync()
+        public async Task<IEnumerable<StudyListItemResponse>> GetListAsync()
         {
             IEnumerable<StudyListItemDto> studies;
 
@@ -41,7 +45,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             studies = await RunDapperQueryMultiple<StudyListItemDto>(studiesQuery);
 
-            return studies;
+            return _mapper.Map<List<StudyListItemResponse>>(studies);
         }
 
         public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)

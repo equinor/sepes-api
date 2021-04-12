@@ -8,7 +8,6 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;

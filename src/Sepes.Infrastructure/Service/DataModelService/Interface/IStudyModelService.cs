@@ -1,6 +1,7 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Response;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,7 +11,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
     {
         Task<Study> AddAsync(Study study);
 
-        Task<IEnumerable<StudyListItemDto>> GetListAsync();
+        Task<IEnumerable<StudyListItemResponse>> GetListAsync();
 
         Task<Study> GetByIdAsync(int studyId, UserOperation userOperation);        
 

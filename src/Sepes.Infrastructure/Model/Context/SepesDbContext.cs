@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 
 //Use the command below to create a new migration. 
 //Replace <migration name> with a good migration name and run this in Package Manager Console
