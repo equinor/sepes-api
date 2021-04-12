@@ -97,7 +97,7 @@ namespace Sepes.Infrastructure.Util.Auth
 
         public static async Task CheckAccesAndThrowIfMissing(IUserService userService, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
-            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await userService.GetCurrentUserAsync();
 
             CheckAccesAndThrowIfMissing(currentUser, study, operation, roleBeingAddedOrRemoved);
         }

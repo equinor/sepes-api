@@ -20,12 +20,6 @@ namespace Sepes.Infrastructure.Service
             return _cachedUser;
         }
 
-
-        public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
-        {
-            return await GetCurrentUserAsync();
-        }
-
         public Task<UserDto> GetUserByIdAsync(int userId)
         {
             throw new System.NotImplementedException();

@@ -15,36 +15,33 @@ namespace Sepes.Infrastructure.Util.Auth
         static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public static async Task<User> EnsureDbUserExistsAsync(SepesDbContext dbContext,
-            ICurrentUserService currentUserService, IAzureUserService azureUserService,
-            bool includeParticipantInfo = false)
+            ICurrentUserService currentUserService, IAzureUserService azureUserService)
         {
             try
             {
-                await _semaphore.WaitAsync();
-
-                var userQueryable = dbContext.Users.AsQueryable();
-
-                if (includeParticipantInfo)
-                {
-                    userQueryable = userQueryable.Include(u => u.StudyParticipants).ThenInclude(sp => sp.Study);
-                }
-
                 var loggedInUserObjectId = currentUserService.GetUserId();
-                var userFromDb = await userQueryable.SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
+                var userFromDb = await dbContext.Users.SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
 
                 if(userFromDb == null)
                 {
-                    var userFromAzure = await azureUserService.GetUserAsync(loggedInUserObjectId);
+                    await _semaphore.WaitAsync();
 
-                    if (userFromAzure == null)
+                    userFromDb = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
+
+                    if(userFromDb == null)
                     {
-                        throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserObjectId}");
-                    }
+                        var userFromAzure = await azureUserService.GetUserAsync(loggedInUserObjectId);
 
-                    userFromDb = UserUtil.CreateDbUserFromAzureUser(loggedInUserObjectId, userFromAzure);
+                        if (userFromAzure == null)
+                        {
+                            throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserObjectId}");
+                        }
 
-                    dbContext.Users.Add(userFromDb);
-                    await dbContext.SaveChangesAsync();
+                        userFromDb = UserUtil.CreateDbUserFromAzureUser(loggedInUserObjectId, userFromAzure);
+
+                        dbContext.Users.Add(userFromDb);
+                        await dbContext.SaveChangesAsync();
+                    }                  
 
                     if(userFromDb.StudyParticipants == null)
                     {

@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
-            var currentUser = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             if (!StudyAccessUtil.HasAccessToOperation(currentUser, operation))
             {

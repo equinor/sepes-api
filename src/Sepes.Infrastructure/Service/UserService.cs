@@ -37,23 +37,12 @@ namespace Sepes.Infrastructure.Service
         {
             if (_cachedUser == null)
             {
-                var userFromDb = await EnsureDbUserExists(false);
+                var userFromDb = await EnsureDbUserExists();
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
             }
 
             return _cachedUser;
-        }     
-
-        public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
-        {
-            if (_cachedUser == null || (_cachedUser != null && _cachedUser.StudyParticipants == null))
-            {
-                var userFromDb = await EnsureDbUserExists(true);
-                _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
-            }
-
-            return _cachedUser;
-        }
+        }        
 
         public async Task<UserDto> GetUserByIdAsync(int userId)
         {
@@ -62,10 +51,10 @@ namespace Sepes.Infrastructure.Service
             return userDto;
         }
 
-        async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
+        async Task<User> EnsureDbUserExists()
         {
            var sp = Stopwatch.StartNew();
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService);
             var elapsed = sp.ElapsedMilliseconds;
         }     
 

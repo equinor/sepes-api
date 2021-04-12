@@ -117,7 +117,7 @@ namespace Sepes.Tests.Setup
         {
             var mock = new Mock<IUserService>();
             mock.Setup(us => us.GetCurrentUserAsync()).ReturnsAsync(user);
-            mock.Setup(us => us.GetCurrentUserWithStudyParticipantsAsync()).ReturnsAsync(user);
+            mock.Setup(us => us.GetCurrentUserAsync()).ReturnsAsync(user);
 
             return mock;
         }       
