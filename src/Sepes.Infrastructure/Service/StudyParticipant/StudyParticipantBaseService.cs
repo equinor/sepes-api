@@ -80,9 +80,9 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        protected async Task<Study> GetStudyForParticipantOperation(int studyId, string newRole = null)
+        protected async Task<Study> GetStudyForParticipantOperation(int studyId, string roleBeingAddedOrRemoved = null)
         {         
-            var studyFromDb = await _studyModelService.GetForParticpantOperationsAsync(studyId, UserOperation.Study_AddRemove_Participant, newRole);
+            var studyFromDb = await _studyModelService.GetForParticpantOperationsAsync(studyId, UserOperation.Study_AddRemove_Participant, roleBeingAddedOrRemoved);
             return studyFromDb;
         }
 

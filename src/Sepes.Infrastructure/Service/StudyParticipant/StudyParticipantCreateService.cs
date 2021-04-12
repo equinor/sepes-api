@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
@@ -10,7 +9,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,9 +62,7 @@ namespace Sepes.Infrastructure.Service
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
                 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);             
-
-                
+                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);                   
 
                 return participantDto;
             }
@@ -78,6 +74,11 @@ namespace Sepes.Infrastructure.Service
                     {
                         await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
+                }
+
+                if(ex is ForbiddenException)
+                {
+                    throw;
                 }
 
                 throw new Exception($"Add participant failed: {ex.Message}", ex);               

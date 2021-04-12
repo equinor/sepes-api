@@ -77,7 +77,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await WithBasicSeeds();
 
-            var sandbox = await WithFailedSandbox(false, restrictedStudy, studyRole, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
+            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
 
             SetScenario();
 
@@ -111,7 +111,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await WithBasicSeeds();
 
-            var sandbox = await WithFailedSandbox(false, restrictedStudy, studyRole, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
+            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
 
             SetScenario();
 

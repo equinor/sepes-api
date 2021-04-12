@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Model.Context
         }
 
         private void AddIndexing(ModelBuilder modelBuilder)
-        {           
+        {
 
             modelBuilder.Entity<Study>()
               .HasIndex(s => new { s.Id, s.Restricted })
@@ -97,6 +97,9 @@ namespace Sepes.Infrastructure.Model.Context
              s.Id,
              s.Region
          }).HasFilter("[Deleted] = 0");
+
+            modelBuilder.Entity<User>()
+        .HasIndex(s => new { s.ObjectId });
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)

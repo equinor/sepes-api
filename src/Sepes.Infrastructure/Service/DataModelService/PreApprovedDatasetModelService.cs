@@ -63,6 +63,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
             var currentUser = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+
             if (!StudyAccessUtil.HasAccessToOperation(currentUser, operation))
             {
                 throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation}");

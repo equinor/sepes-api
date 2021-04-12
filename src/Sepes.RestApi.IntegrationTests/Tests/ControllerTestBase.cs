@@ -5,6 +5,7 @@ using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -44,55 +45,70 @@ namespace Sepes.RestApi.IntegrationTests
             await UserSeed.Seed();
         }
 
-        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false)
+        protected async Task<Study> WithStudy(bool createdByCurrentUser, bool restricted = false, List<string> additionalRolesForCurrentUser = null, List<string> rolesForOtherUser = null, bool addDatasets = false)
         {
-            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets) : await StudySeed.CreatedByOtherUser(restricted: restricted, currentUserRole: studyRole, addDatasets: addDatasets);
+            return createdByCurrentUser ? await StudySeed.CreatedByCurrentUser(restricted: restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, addDatasets: addDatasets) : await StudySeed.CreatedByOtherUser(restricted: restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, addDatasets: addDatasets);
         }
 
-        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
-            var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
+            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasets);
             var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasets);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
         }
 
-        protected async Task<Sandbox> WithFailedSandbox(bool createdByCurrentUser, bool restricted = false, string studyRole = null, bool addDatasets = false, int resourcesSucceeded = 0, string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        protected async Task<Sandbox> WithFailedSandbox(bool createdByCurrentUser, bool restricted = false,
+            List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null,
+            bool addDatasets = false, int resourcesSucceeded = 0,
+            string statusOfFailedResource = CloudResourceOperationState.FAILED,
+            int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+            int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
-            var study = await WithStudy(createdByCurrentUser, restricted, studyRole, addDatasets: addDatasets);
+            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasets);
             var sandbox = await SandboxSeed.CreateFailing(study, phase: SandboxPhase.Open, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount, addDatasets: addDatasets);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
         }
 
-        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false,
+            List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null,
+            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
-            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
             var vm = await VirtualMachineSeed.Create(sandbox);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
         }
 
-        protected async Task<CloudResource> WithFailedVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+        protected async Task<CloudResource> WithFailedVirtualMachine(bool createdByCurrentUser, bool restricted = false,
+            List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null,
+            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
         {
-            var sandbox = await WithSandbox(createdByCurrentUser, restricted, studyRole, phase, addDatasets: addDatasets);
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
             var vm = await VirtualMachineSeed.CreateFailed(sandbox);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
         }
 
-        protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, string studyRole = null)
+        protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null)
         {
-            return await WithStudy(true, restricted, studyRole);
+            return await WithStudy(true, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser);
         }
 
-        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, string studyRole = null)
+        protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null)
         {
-            return await WithStudy(false, restricted, studyRole);
+            return await WithStudy(false, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser);
         }
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue()

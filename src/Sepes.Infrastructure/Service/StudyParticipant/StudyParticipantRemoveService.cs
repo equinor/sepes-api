@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto;
@@ -8,7 +7,6 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Telemetry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +36,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var studyFromDb = await GetStudyForParticipantOperation(studyId);            
+                var studyFromDb = await GetStudyForParticipantOperation(studyId, roleName);            
 
                 if (roleName == StudyRoles.StudyOwner)
                 {
@@ -70,6 +68,12 @@ namespace Sepes.Infrastructure.Service
                     {
                         await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
+                }
+
+
+                if (ex is ForbiddenException)
+                {
+                    throw;
                 }
 
                 throw new Exception($"Remove participant failed: {ex.Message}", ex);

@@ -144,12 +144,15 @@ namespace Sepes.Infrastructure.Service
             var operationFromDb = await GetExistingOperationReadyForUpdate(id);
             operationFromDb.Status = CloudResourceOperationState.ABANDONED;
 
-            foreach(var curDependent in operationFromDb.DependantOnThisOperation)
+            if(operationFromDb.DependantOnThisOperation != null)
             {
-                curDependent.DependsOnOperationId = null;
-                curDependent.Updated = operationFromDb.Updated;
-                curDependent.UpdatedBy = operationFromDb.UpdatedBy;
-            }
+                foreach (var curDependent in operationFromDb.DependantOnThisOperation)
+                {
+                    curDependent.DependsOnOperationId = null;
+                    curDependent.Updated = operationFromDb.Updated;
+                    curDependent.UpdatedBy = operationFromDb.UpdatedBy;
+                }
+            }          
 
             await _db.SaveChangesAsync();
 

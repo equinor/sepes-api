@@ -75,7 +75,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT
 
-
+            //TODO: Add some participants
 
             //TODO: OPEN INTERNET
 

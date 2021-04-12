@@ -750,6 +750,8 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ObjectId");
+
                     b.ToTable("Users");
                 });
 
