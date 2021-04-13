@@ -19,31 +19,26 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             try
             {
+                await _semaphore.WaitAsync();
+
                 var loggedInUserObjectId = currentUserService.GetUserId();
                 var userFromDb = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
 
                 if(userFromDb == null)
                 {
-                    await _semaphore.WaitAsync();
+                    var userFromAzure = await azureUserService.GetUserAsync(loggedInUserObjectId);
 
-                    userFromDb = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
-
-                    if(userFromDb == null)
+                    if (userFromAzure == null)
                     {
-                        var userFromAzure = await azureUserService.GetUserAsync(loggedInUserObjectId);
+                        throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserObjectId}");
+                    }
 
-                        if (userFromAzure == null)
-                        {
-                            throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserObjectId}");
-                        }
+                    userFromDb = UserUtil.CreateDbUserFromAzureUser(loggedInUserObjectId, userFromAzure);
 
-                        userFromDb = UserUtil.CreateDbUserFromAzureUser(loggedInUserObjectId, userFromAzure);
+                    dbContext.Users.Add(userFromDb);
+                    await dbContext.SaveChangesAsync();
 
-                        dbContext.Users.Add(userFromDb);
-                        await dbContext.SaveChangesAsync();
-                    }                  
-
-                    if(userFromDb.StudyParticipants == null)
+                    if (userFromDb.StudyParticipants == null)
                     {
                         userFromDb.StudyParticipants = new List<StudyParticipant>();
                     }
