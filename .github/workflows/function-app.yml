@@ -11,11 +11,15 @@ on:
   push:
     paths:
       - src/Sepes.Functions/*
+      - .github/scripts/powershell-modules/FunctionApp/FunctionApp.psm1
       - .github/workflows/function-app.yml
 env:
   ciTag: ${{ secrets.ACR_URL }}/function-app/ci
+  prodTag: ${{ secrets.ACR_URL }}/function-app/prod
+  acr: ${{ secrets.ACR_URL }}/
 
 jobs:
+  ### CI stage ###
   dockerbuild:
     runs-on: ubuntu-latest
     env:
@@ -34,5 +38,152 @@ jobs:
       # Builds the function app
       - name: docker build
         run: |
-          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:$GITHUB_RUN_ID -t ${{ env.ciTag }}:latest
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.ciTag }}:latest
           docker push ${{ env.ciTag }}
+          # removed  -t ${{ env.ciTag }}:$GITHUB_RUN_ID
+
+  ### Dev stage ###
+  dev:
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    env:
+        environment: dev
+        azureSubscriptionId: 6cfb8f33-6d4b-43bf-9000-91fd6f53ca28
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
+          docker push ${{ env.acr }}${{ env.environment }} -a
+
+      # Install required modules for the jobs
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+
+      # Azure login for CLI and Powershell AZ
+      - name: Azure login
+        shell: pwsh
+        env:
+          clientId: ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_ID }}
+          clientSecret:  ${{ secrets.DEV_AZURE_CREDENTIALS_CLIENT_SECRET }}
+          tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+          az account set -s ${{ env.azureSubscriptionId }}
+        
+      # Replace tokens in appsettings file
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["src/Sepes.Functions/appsettings.dev.txt"]'
+        env:
+          KeyvaultName: ${{ secrets.DEV_KEYVAULT_NAME }}
+
+      - name: Deploy Function
+        shell: pwsh
+        env:
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
+          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
+          $functionName = "func-sepes-dev"
+          $rg = "rg-sepes-dev"
+          $appSettings = ".\src\Sepes.Functions\appsettings.dev.txt"
+
+          # Sets application settings from file
+          Set-FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
+
+          # Updates the function with new image
+          Update-FunctionAppContainerSettings -FunctionName $functionName `
+            -RgName $rg `
+            -ImageName "$container" `
+            -RegistryUsername "$Env:username" `
+            -RegistryPassord "$Env:password" `
+            -RegistryUrl "${{ env.acr }}"
+
+  ### Production stage ###
+  prod:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    env:
+        environment: prod
+        azureSubscriptionId: 87f8c7ae-703b-4975-8a05-be359583c563
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      # Docker login
+      - uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.ACR_URL }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      # Builds the function app
+      - name: docker build
+        run: |
+          docker build src -f src/Sepes.Functions/Dockerfile -t ${{ env.acr }}${{ env.environment }}:$GITHUB_RUN_ID -t ${{ env.acr }}${{ env.environment }}:latest
+          docker push ${{ env.acr }}${{ env.environment }} -a
+
+      # Install required modules for the jobs
+      - name: Install modules
+        shell: pwsh
+        run: |
+          Install-Module -Name Az -AllowClobber -Scope CurrentUser -Force
+
+      # Azure login for CLI and Powershell AZ
+      - name: Azure login
+        shell: pwsh
+        env:
+          clientId: ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_ID }}
+          clientSecret:  ${{ secrets.PROD_AZURE_CREDENTIALS_CLIENT_SECRET }}
+          tenantId: ${{ secrets.AZURE_TENANT_ID }}
+        run: |
+          $azurePassword = ConvertTo-SecureString "$Env:clientSecret" -AsPlainText -Force
+          $psCred = New-Object System.Management.Automation.PSCredential($Env:clientId , $azurePassword)
+          Add-azAccount -Credential $psCred -TenantId $Env:tenantId -ServicePrincipal
+          az login --service-principal -u $Env:clientId --password "$Env:clientSecret" --tenant $Env:tenantId
+          az account set -s ${{ env.azureSubscriptionId }}
+          Set-AzContext -SubscriptionId ${{ env.azureSubscriptionId }}
+        
+      # Replace tokens in appsettings file
+      - uses: cschleiden/replace-tokens@v1
+        with:
+          files: '["src/Sepes.Functions/appsettings.prod.txt"]'
+        env:
+          KeyvaultName: ${{ secrets.PROD_KEYVAULT_NAME }}
+
+      - name: Deploy Function
+        shell: pwsh
+        env:
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+        run: |
+          Import-Module .\.github\scripts\powershell-modules\FunctionApp\FunctionApp.psm1
+          $container = [System.String]::Concat("${{ env.acr }}", "${{ env.environment }}", ":", "${env:GITHUB_RUN_ID}")
+          $functionName = "func-sepes-prod"
+          $rg = "rg-sepes-prod"
+          $appSettings = ".\src\Sepes.Functions\appsettings.prod.txt"
+
+          # Sets application settings from file
+          Set-FunctionAppSettings -FunctionName $functionName -RgName $rg -AppSettings $appSettings
+
+          # Updates the function with new image
+          Update-FunctionAppContainerSettings -FunctionName $functionName `
+            -RgName $rg `
+            -ImageName "$container" `
+            -RegistryUsername "$Env:username" `
+            -RegistryPassord "$Env:password" `
+            -RegistryUrl "${{ env.acr }}"
