@@ -45,6 +45,7 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveStudiesBaseQueryable(db)
                 .Include(s => s.StudyParticipants)
+                      .ThenInclude(sp => sp.User)
                 .Include(s => s.StudyDatasets)
                     .ThenInclude(sd => sd.Dataset)
                      .ThenInclude(sd => sd.Resources);

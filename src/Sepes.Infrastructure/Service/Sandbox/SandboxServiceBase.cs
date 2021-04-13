@@ -64,14 +64,7 @@ namespace Sepes.Infrastructure.Service
         protected async Task<Sandbox> GetOrThrowAsync(int sandboxId, UserOperation userOperation, bool withIncludes, bool disableTracking = false)
         {
            return await _sandboxModelService.GetByIdAsync(sandboxId, userOperation, withIncludes, disableTracking);         
-        }
-
-        protected async Task<SandboxDto> GetDtoAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)
-        {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, userOperation, withIncludes);
-            var sandboxDto = _mapper.Map<SandboxDto>(sandboxFromDb);
-            return sandboxDto;
-        }
+        }       
 
         protected void InitiatePhaseHistory(Sandbox sandbox, UserDto currentUser)
         {

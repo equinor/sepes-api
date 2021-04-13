@@ -12,6 +12,8 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<Sandbox> GetByIdForResourcesAsync(int id);
 
+        Task<Sandbox> GetByIdForCostAnalysisLinkAsync(int id, UserOperation userOperation);
+
         Task<Sandbox> GetDetailsByIdAsync(int id);
 
         Task<string> GetRegionByIdAsync(int id, UserOperation userOperation);
@@ -19,5 +21,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
         Task<Sandbox> GetByIdWithoutPermissionCheckAsync(int id);
         Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation);
         Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId);
+        Task<Sandbox> GetByIdForResourceCreationAsync(int id, UserOperation userOperation);
     }
 }

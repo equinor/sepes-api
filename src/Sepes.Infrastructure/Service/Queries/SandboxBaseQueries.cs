@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveSandboxesBaseQueryable(db)
                 .Include(s => s.Study)
-                .ThenInclude(s => s.StudyParticipants);
+                    .ThenInclude(s => s.StudyParticipants);
 
         }
 
@@ -44,16 +44,34 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(sb => sb.PhaseHistory);
         }
 
+        public static IQueryable<Sandbox> ForResourceCreation(SepesDbContext db)
+        {
+            return ActiveSandboxesBaseQueryable(db)
+               .Include(s => s.Study)
+                   .ThenInclude(s => s.StudyParticipants)
+                     .ThenInclude(sp => sp.User)
+                      .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations)
+                .Include(sb => sb.PhaseHistory);
+        }
+
         public static IQueryable<Sandbox> ActiveSandboxWithResourceAndOperations(SepesDbContext db)
         {
-            return ActiveSandboxesMinimalIncludesQueryable(db)                   
+            return ActiveSandboxesMinimalIncludesQueryable(db)
                     .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations);
         }
 
+        public static IQueryable<Sandbox> SandboxWithResources(SepesDbContext db)
+        {
+            return db.Sandboxes.Include(s => s.Study)
+                .ThenInclude(s => s.StudyParticipants)
+                    .Include(sb => sb.Resources);
+        }
+
         public static IQueryable<Sandbox> SandboxWithResourceAndOperations(SepesDbContext db)
         {
-            return    db.Sandboxes.Include(s => s.Study)
+            return db.Sandboxes.Include(s => s.Study)
                 .ThenInclude(s => s.StudyParticipants)
                     .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations);
@@ -73,11 +91,11 @@ namespace Sepes.Infrastructure.Service.Queries
         public static IQueryable<Sandbox> SandboxForDatasetOperations(SepesDbContext db, bool includePhase = false)
         {
             return ActiveSandboxesBaseQueryable(db)
-                .Include(sb=> sb.Study)
+                .Include(sb => sb.Study)
                  .ThenInclude(s => s.StudyDatasets)
                      .ThenInclude(sd => sd.Dataset)
                       .ThenInclude(sd => sd.SandboxDatasets)
-                .If(includePhase, x=> x.Include(sb=> sb.PhaseHistory));
+                .If(includePhase, x => x.Include(sb => sb.PhaseHistory));
 
         }
 

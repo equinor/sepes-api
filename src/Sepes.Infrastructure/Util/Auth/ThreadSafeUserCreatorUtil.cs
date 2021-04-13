@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Util.Auth
             try
             {
                 var loggedInUserObjectId = currentUserService.GetUserId();
-                var userFromDb = await dbContext.Users.SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
+                var userFromDb = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
 
                 if(userFromDb == null)
                 {

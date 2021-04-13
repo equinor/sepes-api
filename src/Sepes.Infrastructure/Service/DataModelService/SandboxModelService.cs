@@ -38,6 +38,15 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return sandbox;
         }
 
+        public async Task<Sandbox> GetByIdForResourceCreationAsync(int id, UserOperation userOperation)
+        {
+            var sandboxQueryable = SandboxBaseQueries.ForResourceCreation(_db);              
+
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
+
+            return sandbox;
+        }
+
         public async Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation)
         {
             var sandboxQueryable = SandboxBaseQueries.SandboxForPhaseShift(_db);
@@ -58,6 +67,14 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             return sandbox;
         }
+
+        public async Task<Sandbox> GetByIdForCostAnalysisLinkAsync(int id, UserOperation userOperation)
+        {
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithResources(_db).AsNoTracking();
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
+            return sandbox;
+
+        }        
 
         public async Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId)
         {
@@ -97,6 +114,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
         }
 
-      
+       
     }
 }

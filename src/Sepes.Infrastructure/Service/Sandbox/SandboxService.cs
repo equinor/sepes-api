@@ -31,12 +31,7 @@ namespace Sepes.Infrastructure.Service
             _studyModelService = studyModelService;
             _sandboxResourceCreateService = sandboxCloudResourceService;
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
-        }
-
-        public async Task<SandboxDto> GetAsync(int sandboxId, UserOperation userOperation, bool withIncludes = false)
-        {
-            return await GetDtoAsync(sandboxId, userOperation);
-        }
+        }       
 
         public async Task<SandboxDetails> GetSandboxDetailsAsync(int sandboxId)
         {
