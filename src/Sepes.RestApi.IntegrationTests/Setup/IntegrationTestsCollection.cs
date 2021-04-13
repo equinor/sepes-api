@@ -2,7 +2,7 @@
 
 namespace Sepes.RestApi.IntegrationTests.Setup
 {
-    [CollectionDefinition("Integration tests collection")]
+    [CollectionDefinition("Integration tests collection", DisableParallelization = true)]
     public class IntegrationTestsCollection : ICollectionFixture<TestHostFixture>
     {
         // This class has no code, and is never created. Its purpose is simply
