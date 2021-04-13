@@ -35,31 +35,19 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<StudyDetailsDto> GetStudyDetailsAsync(int studyId)
-        {
-            var spElapsed = Stopwatch.StartNew();
-            var studyFromDb = await _studyModelService.GetForStudyDetailsAsync(studyId);
-            var elapsedDb = spElapsed.ElapsedMilliseconds;
-            spElapsed.Restart();
+        {         
+            var studyFromDb = await _studyModelService.GetForStudyDetailsAsync(studyId);         
 
-            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);
-            var elapsedDto = spElapsed.ElapsedMilliseconds;
-            spElapsed.Restart();
+            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);          
 
-            await _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);
-            var elapsedUrl1 = spElapsed.ElapsedMilliseconds;
-            spElapsed.Restart();
+            await _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);    
 
-
-            await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);
-            var elapsedUrl2 = spElapsed.ElapsedMilliseconds;
-            spElapsed.Restart();
+            await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);            
 
             foreach (var curDs in studyDetailsDto.Datasets)
             {
                 curDs.Sandboxes = curDs.Sandboxes.Where(sd => sd.StudyId == studyId).ToList();
-            }
-            var elapsedFiltered = spElapsed.ElapsedMilliseconds;
-            spElapsed.Restart();
+            }       
 
             return studyDetailsDto;
         }

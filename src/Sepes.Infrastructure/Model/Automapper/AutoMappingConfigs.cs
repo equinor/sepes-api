@@ -30,9 +30,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
-            CreateMap<Study, StudyListItemDto>();
-            CreateMap<StudyListItemDto, StudyListItemResponse>()
-             .ForMember(dest => dest.Id, source => source.MapFrom(x => x.StudyId));
+            CreateMap<Study, StudyListItemDto>();         
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
 

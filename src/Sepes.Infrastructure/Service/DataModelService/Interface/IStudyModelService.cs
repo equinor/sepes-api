@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
     {
         Task<Study> AddAsync(Study study);
 
-        Task<IEnumerable<StudyListItemResponse>> GetListAsync();
+        Task<IEnumerable<StudyListItemDto>> GetListAsync();
 
         Task<Study> GetByIdAsync(int studyId, UserOperation userOperation);        
 

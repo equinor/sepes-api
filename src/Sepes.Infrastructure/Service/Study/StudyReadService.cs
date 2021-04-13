@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
@@ -19,7 +18,7 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        public async Task<IEnumerable<StudyListItemResponse>> GetStudyListAsync()
+        public async Task<IEnumerable<StudyListItemDto>> GetStudyListAsync()
         {
             var studies = await _studyModelService.GetListAsync();
 

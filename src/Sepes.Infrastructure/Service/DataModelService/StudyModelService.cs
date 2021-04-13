@@ -26,13 +26,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
             _mapper = mapper;
         }      
 
-        public async Task<IEnumerable<StudyListItemResponse>> GetListAsync()
+        public async Task<IEnumerable<StudyListItemDto>> GetListAsync()
         {
             IEnumerable<StudyListItemDto> studies;
 
             var user = await _userService.GetCurrentUserAsync();
 
-            var studiesQuery = "SELECT DISTINCT [Id] as [StudyId], [Name], [Description], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s";
+            var studiesQuery = "SELECT DISTINCT [Id], [Name], [Description], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s";
                 studiesQuery += " INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId";
                 studiesQuery += " WHERE s.Closed = 0";
 
@@ -44,8 +44,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             studies = await RunDapperQueryMultiple<StudyListItemDto>(studiesQuery);
-
-            return _mapper.Map<List<StudyListItemResponse>>(studies);
+            return studies;
         }
 
         public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
