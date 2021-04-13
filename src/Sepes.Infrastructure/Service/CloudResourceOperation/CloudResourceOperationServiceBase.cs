@@ -70,6 +70,7 @@ namespace Sepes.Infrastructure.Service
         {
             var entityFromDb = await _db.CloudResourceOperations
                 .If(asNoTracking, x=> x.AsNoTracking())
+                .Include(o => o.DependantOnThisOperation)
                 .Include(o => o.DependsOnOperation)
                 .ThenInclude(o => o.Resource)
                 .Include(o => o.Resource)

@@ -3,6 +3,7 @@ using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -71,7 +72,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             SetScenario();
 
-            var study = await WithStudyCreatedByOtherUser(restrictedStudy, studyRole);
+            var study = await WithStudyCreatedByOtherUser(restrictedStudy, new List<string> { studyRole });
 
             await PerformTestsExpectSuccess(study.Id);
         }
@@ -87,7 +88,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             SetScenario();
 
-            var study = await WithStudyCreatedByOtherUser(restrictedStudy, studyRole);
+            var study = await WithStudyCreatedByOtherUser(restrictedStudy, new List<string> { studyRole });
 
             await PerformTestsExpectFailure(study.Id);
         }

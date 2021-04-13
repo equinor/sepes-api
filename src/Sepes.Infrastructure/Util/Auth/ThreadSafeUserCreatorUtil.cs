@@ -15,22 +15,14 @@ namespace Sepes.Infrastructure.Util.Auth
         static readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
         public static async Task<User> EnsureDbUserExistsAsync(SepesDbContext dbContext,
-            ICurrentUserService currentUserService, IAzureUserService azureUserService,
-            bool includeParticipantInfo = false)
+            ICurrentUserService currentUserService, IAzureUserService azureUserService)
         {
             try
             {
                 await _semaphore.WaitAsync();
 
-                var userQueryable = dbContext.Users.AsQueryable();
-
-                if (includeParticipantInfo)
-                {
-                    userQueryable = userQueryable.Include(u => u.StudyParticipants).ThenInclude(sp => sp.Study);
-                }
-
                 var loggedInUserObjectId = currentUserService.GetUserId();
-                var userFromDb = await userQueryable.SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
+                var userFromDb = await dbContext.Users.AsNoTracking().SingleOrDefaultAsync(u => u.ObjectId == loggedInUserObjectId);
 
                 if(userFromDb == null)
                 {
@@ -46,7 +38,7 @@ namespace Sepes.Infrastructure.Util.Auth
                     dbContext.Users.Add(userFromDb);
                     await dbContext.SaveChangesAsync();
 
-                    if(userFromDb.StudyParticipants == null)
+                    if (userFromDb.StudyParticipants == null)
                     {
                         userFromDb.StudyParticipants = new List<StudyParticipant>();
                     }

@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Util;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Sepes.Infrastructure.Model.Automapper
                 .ForMember(dest => dest.Participants, source => source.MapFrom(x => x.StudyParticipants));
 
 
-            CreateMap<Study, StudyListItemDto>();
+            CreateMap<Study, StudyListItemDto>();         
             CreateMap<StudyDto, Study>();
             CreateMap<StudyCreateDto, Study>();
 

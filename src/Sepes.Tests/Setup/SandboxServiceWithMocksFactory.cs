@@ -25,16 +25,17 @@ namespace Sepes.Tests.Setup
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<SandboxService>>();
 
-            var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);       
+            var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);
 
-            var studyServiceMock = StudyServiceMockFactory.ReadService(serviceProvider);
+            //Study model service
+            var studyModelService = StudyServiceMockFactory.StudyModelService(serviceProvider);
 
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
 
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(config, db, mapper, logger, userService.Object,  studyServiceMock, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
+            return new SandboxService(config, db, mapper, logger, userService.Object, studyModelService, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

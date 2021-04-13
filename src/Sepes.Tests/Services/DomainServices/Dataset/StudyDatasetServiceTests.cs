@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Dto.Study;
-using Sepes.Infrastructure.Exceptions;
+﻿using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Tests.Setup;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -19,38 +16,29 @@ namespace Sepes.Tests.Services
           
         }    
 
-        async Task<StudyDetailsDto> RefreshAndAddStudyToTestDb(int studyId, int datasetId)
+        async Task<Study> RefreshAndAddStudyToTestDb(int studyId, int datasetId)
         {
             var db = await RefreshAndSeedTestDatabase(datasetId);
 
-            var study = new Study()
-            {   
-                Id= studyId,
-                Name = "TestStudy",
-                Vendor = "Bouvet",
-                WbsCode = "1234.1345afg"
-            };
+            var study = CreateTestStudy(studyId);
             db.Studies.Add(study);
 
             await db.SaveChangesAsync();
-
-            var mapper = _serviceProvider.GetService<IMapper>();
-            return mapper.Map<StudyDetailsDto>(study);
+            
+            return study;
         }
 
-           
 
         [Theory]
         [InlineData(1337, 1)]
         [InlineData(1, 1337)]
         [InlineData(1337, 1337)]
         public async void AddDatasetToStudyAsync_ShouldThrow_IfDatasetOrStudyDoesNotExist(int providedStudyId, int providedDatasetId)
-        {           
-            int studyId = 1;
-            int datasetId = 1;
-            await RefreshAndAddStudyToTestDb(studyId, datasetId);
-          
-            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+        {
+            var studies = CreateTestStudyList(1);          
+           _ = await ClearTestDatabase();          
+
+            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider, studies);
 
             await Assert.ThrowsAsync<NotFoundException>(() => studyDatasetService.AddPreApprovedDatasetToStudyAsync(providedStudyId, providedDatasetId));
         }
@@ -58,14 +46,18 @@ namespace Sepes.Tests.Services
         [Fact]
         public async void AddDatasetFromStudyAsync_ShouldAddDataset()
         {
-            int studyId = 1;
-            int datasetId = 1;
-            await RefreshAndAddStudyToTestDb(studyId, datasetId);
+            var studyId = 1;
+            var studies = CreateTestStudyList(studyId);
 
-            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+            var datasetId = 1;
+            var datasets = CreateTestDatasetList(datasetId);
+            _ = await ClearTestDatabase();
+
+            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider, studies, datasets);
 
             await studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             var dataset = await studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
+
             Assert.NotNull(dataset);
         }
 
@@ -74,23 +66,26 @@ namespace Sepes.Tests.Services
         [InlineData(1, 1337)]
         [InlineData(1337, 1337)]
         public async void RemoveDatasetFromStudyAsync_ShouldThrow_IfDatasetOrStudyDoesNotExist(int providedStudyId, int providedDatasetId)
-        {
-            int studyId = 1;
-            int datasetId = 1;
-            await RefreshAndAddStudyToTestDb(studyId, datasetId);
-            var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+        {           
+            _ = await ClearTestDatabase();
 
-            await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
+            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+            var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+           
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.RemovePreApprovedDatasetFromStudyAsync(providedStudyId, providedDatasetId));
         }
 
         [Fact]
         public async void RemoveDatasetFromStudyAsync_ShouldRemoveDataset()
         {
-            int studyId = 1;
-            int datasetId = 1;
-            await RefreshAndAddStudyToTestDb(studyId, datasetId);
-            var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
+            var studyId = 1;
+            var studies = CreateTestStudyList(studyId);
+
+            var datasetId = 1;
+            var datasets = CreateTestDatasetList(datasetId);
+            _ = await ClearTestDatabase();
+
+            var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider, studies, datasets);
 
             await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             await datasetService.RemovePreApprovedDatasetFromStudyAsync(studyId, datasetId);

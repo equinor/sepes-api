@@ -48,20 +48,20 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         [InlineData(false)]
-        [InlineData(false, StudyRoles.SponsorRep)]
-        [InlineData(false, StudyRoles.VendorAdmin)]
-        [InlineData(false, StudyRoles.VendorContributor)]
-        [InlineData(false, StudyRoles.StudyViewer)]
-        [InlineData(true, StudyRoles.SponsorRep)]
-        [InlineData(true, StudyRoles.VendorAdmin)]
-        [InlineData(true, StudyRoles.VendorContributor)]
-        [InlineData(true, StudyRoles.StudyViewer)]
+        //[InlineData(false, StudyRoles.SponsorRep)]
+        //[InlineData(false, StudyRoles.VendorAdmin)]
+        //[InlineData(false, StudyRoles.VendorContributor)]
+        //[InlineData(false, StudyRoles.StudyViewer)]
+        //[InlineData(true, StudyRoles.SponsorRep)]
+        //[InlineData(true, StudyRoles.VendorAdmin)]
+        //[InlineData(true, StudyRoles.VendorContributor)]
+        //[InlineData(true, StudyRoles.StudyViewer)]
 
         public async Task Read_AnyStudyRelatedEntity_WithCorrectStudyRole_ShouldSucceed(bool restrictedStudy, string studyRole = null)
         {
             SetScenario(isEmployee: true);
             await WithUserSeeds();
-            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, studyRole);
+            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, new List<string> { studyRole });
             await ReadAllAndAssertExpectSuccess(virtualMachine);                  
         }     
 

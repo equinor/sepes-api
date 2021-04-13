@@ -2,6 +2,7 @@
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -63,7 +64,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestExpectFailure(bool createdByCurrentUser, bool restricted, string studyRole = null)
         {
-            var study = createdByCurrentUser? await WithStudyCreatedByCurrentUser(restricted, studyRole) : await WithStudyCreatedByOtherUser(restricted, studyRole);
+            var study = createdByCurrentUser? await WithStudyCreatedByCurrentUser(restricted, new List<string> { studyRole }) : await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
             await PerformTestExpectFailure(study.Id);
         }
 
@@ -100,7 +101,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestExpectSuccess(bool createdByCurrentUser, bool restricted, string studyRole = null)
         {
-            var study = createdByCurrentUser ? await WithStudyCreatedByCurrentUser(restricted, studyRole) : await WithStudyCreatedByOtherUser(restricted, studyRole);
+            var study = createdByCurrentUser ? await WithStudyCreatedByCurrentUser(restricted, new List<string> { studyRole }) : await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
             await PerformTestExpectSuccess(study.Id);
         }
 

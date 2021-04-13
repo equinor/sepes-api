@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<LookupDto>> StudyRolesUserCanGive(int studyId)
         {
             var user = await _userService.GetCurrentUserAsync();
-            var studyFromDb = await _studyModelService.GetByIdWithoutPermissionCheckAsync(studyId, true, true);
+            var studyFromDb = await _studyModelService.GetWitParticipantsNoAccessCheck(studyId);
                     
             var existingParticipantRoles = studyFromDb.StudyParticipants.Where(x => x.UserId == user.Id).ToList();
             var result = new Dictionary<string, LookupDto>();

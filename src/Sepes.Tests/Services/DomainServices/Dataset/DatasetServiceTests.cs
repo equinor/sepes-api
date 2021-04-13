@@ -6,8 +6,7 @@ using Xunit;
 namespace Sepes.Tests.Services
 {
     public class DatasetServiceTests : DatasetServiceTestBase
-    {
-     
+    {   
 
         public DatasetServiceTests()
             :base()
@@ -22,7 +21,7 @@ namespace Sepes.Tests.Services
            await  RefreshAndSeedTestDatabase(5);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
-            IEnumerable<DatasetLookupItemDto> result = await datasetService.GetDatasetsLookupAsync();
+            IEnumerable<DatasetLookupItemDto> result = await datasetService.GetLookupAsync();
             Assert.NotNull(result);
         }
 
@@ -32,32 +31,23 @@ namespace Sepes.Tests.Services
             await RefreshAndSeedTestDatabase(5);
             var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
 
-            IEnumerable<DatasetDto> result = await datasetService.GetDatasetsAsync();
+            IEnumerable<DatasetDto> result = await datasetService.GetAllAsync();
             Assert.NotNull(result);
         }
 
         [Fact]
         public async void GetDatasetByIdAsync_ShouldReturnDataset_IfExists()
         {
-            await RefreshAndSeedTestDatabase(10);
-            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
+            var datasetId = 10;
+            _ = await ClearTestDatabase();
+            var datasets = CreateTestDatasetList(datasetId);
+       
+            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider, datasets);
 
-            DatasetDto result = await datasetService.GetDatasetByDatasetIdAsync(10);
+            DatasetDto result = await datasetService.GetByIdAsync(datasetId);
             Assert.NotNull(result);
         }
 
-        [Theory]
-        [InlineData(2)]
-        [InlineData(5)]
-        [InlineData(10)]
-        [InlineData(1337)]
-        public async void GetDatasetByIdAsync_ShouldThrow_IfDoesNotExist(int id)
-        {
-            await RefreshAndSeedTestDatabase(1);
-            var datasetService = DatasetServiceMockFactory.GetDatasetService(_serviceProvider);
-
-            System.Threading.Tasks.Task<DatasetDto> result = datasetService.GetDatasetByDatasetIdAsync(id);
-            await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(async () => await result);
-        }      
+            
     }
 }

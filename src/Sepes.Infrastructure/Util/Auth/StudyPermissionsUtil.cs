@@ -1,5 +1,4 @@
 ﻿using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response.Sandbox;
@@ -13,7 +12,7 @@ namespace Sepes.Infrastructure.Util
     {
       public static async Task DecorateDto(IUserService userService, Study studyDb, StudyPermissionsDto dto)
         {
-            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await userService.GetCurrentUserAsync();
 
             dto.UpdateMetadata = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Update_Metadata);
             dto.CloseStudy = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Close);
@@ -29,7 +28,7 @@ namespace Sepes.Infrastructure.Util
 
         public static async Task DecorateDto(IUserService userService, Study studyDb, SandboxPermissions sandboxPermissions, SandboxPhase phase)
         {
-            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await userService.GetCurrentUserAsync();
 
             sandboxPermissions.Delete = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
             sandboxPermissions.Update = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_Crud_Sandbox);
@@ -40,7 +39,7 @@ namespace Sepes.Infrastructure.Util
 
         public static async Task DecorateDtoStudySpecific(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
         {
-            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await userService.GetCurrentUserAsync();
 
             dto.EditDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);
             dto.DeleteDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.Study_AddRemove_Dataset);          
@@ -48,7 +47,7 @@ namespace Sepes.Infrastructure.Util
 
         public static async Task DecorateDtoPreApproved(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
         {
-            var currentUser = await userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await userService.GetCurrentUserAsync();
 
             dto.EditDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
             dto.DeleteDataset = StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyDb, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);

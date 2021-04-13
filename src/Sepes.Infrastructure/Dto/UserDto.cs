@@ -1,5 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Study;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Dto
 {
@@ -20,10 +19,7 @@ namespace Sepes.Infrastructure.Dto
 
         public bool Sponsor { get; set; }
 
-        public bool DatasetAdmin { get; set; }
-
-
-        public List<StudyParticipantDto> StudyParticipants { get; set; } = new List<StudyParticipantDto>();
+        public bool DatasetAdmin { get; set; }      
 
         public UserDto()
         {

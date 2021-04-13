@@ -22,6 +22,7 @@ using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
@@ -75,28 +76,31 @@ namespace Sepes.RestApi
 
             var enableSensitiveDataLogging = true;
 
-            DoMigration();
+            var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
-            var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
-
-            if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
+            if (!isIntegrationTest)
             {
-                throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
-            }
+                DoMigration();
 
-            services.AddDbContext<SepesDbContext>(
-              options => options.UseSqlServer(
-                  readWriteDbConnectionString,
-                  assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
-              .EnableSensitiveDataLogging(enableSensitiveDataLogging)
-              );
+                var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+
+                if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
+                {
+                    throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
+                }
+
+                services.AddDbContext<SepesDbContext>(
+                  options => options.UseSqlServer(
+                      readWriteDbConnectionString,
+                      assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
+                  .EnableSensitiveDataLogging(enableSensitiveDataLogging)
+                  );
+            }           
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
-
-
 
             services.AddHttpClient();
 
@@ -143,8 +147,10 @@ namespace Sepes.RestApi
 
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
+            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
+            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
-            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
+            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();            
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();

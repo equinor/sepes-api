@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
@@ -77,17 +78,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     var scopedServices = scope.ServiceProvider;
                     configuration = scopedServices.GetRequiredService<IConfiguration>();
                 }
+
                 var dbConnectionString = ConnectionStringUtil.GetDatabaseConnectionString(configuration);
-
-                if (services.Any(x => x.ServiceType == typeof(SepesDbContext)))
-                {
-                    var serviceDescriptors = services.Where(x => x.ServiceType == typeof(SepesDbContext)).ToList();
-
-                    foreach (var serviceDescriptor in serviceDescriptors)
-                    {
-                        services.Remove(serviceDescriptor);
-                    }
-                }
 
                 services.AddDbContext<SepesDbContext>(options =>
                     options.UseSqlServer(
@@ -116,6 +108,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 configBuilder.AddInMemoryCollection(
                            new Dictionary<string, string>
                            {
+                               [ConfigConstants.IS_INTEGRATION_TEST] = "true",
                                ["AllowCorsDomains"] = "http://localhost:80",
                                ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
                                ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode"
