@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service.Azure
             return secret.Value.Value;
         }
 
-        //Key vault sometimes get bloated with vm passwords, use this routine to delete and purge those. Remember not to leave reference to this so it runs in production
+        //  Key vault sometimes get bloated with vm passwords, use this routine to delete and purge those. Remember not to leave reference to this so it runs in production
         public async Task ClearAllVmPasswords(string nameOfKeyVaultUrlSetting)
         {
             try
@@ -69,7 +69,7 @@ namespace Sepes.Infrastructure.Service.Azure
                     {
                         if (cur.CreatedOn.HasValue)
                         {
-                            if (cur.CreatedOn.Value.AddHours(1) < DateTime.UtcNow)
+                            if (cur.CreatedOn.Value.UtcDateTime.AddHours(1) < DateTime.UtcNow)
                             {
                                 await client.StartDeleteSecretAsync(cur.Name);
 
@@ -91,7 +91,6 @@ namespace Sepes.Infrastructure.Service.Azure
             }
             catch (Exception ex)
             {
-
                 _logger.LogError(ex, "Failed to delete VM passwords from keyvault");
             }
         }
