@@ -1,7 +1,9 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.Tests.Common.Constants;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.RequestHelpers
@@ -39,6 +41,19 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         public static async Task<ApiConversation<ErrorResponse>> RemoveAndExpectFailure(RestHelper restHelper, int studyId, int userId, string role)
         {
             return await Remove<ErrorResponse>(restHelper, studyId, userId, role);
+        }
+
+        public static ParticipantLookupDto CreateParticipantLookupDto()
+        {
+            return new ParticipantLookupDto()
+            {
+                Source = ParticipantSource.Db,
+                DatabaseId = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID,
+                EmailAddress = TestUserConstants.COMMON_NEW_PARTICIPANT_EMAIL,
+                FullName = TestUserConstants.COMMON_NEW_PARTICIPANT_FULL_NAME,
+                ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID,
+                UserName = TestUserConstants.COMMON_NEW_PARTICIPANT_UPN
+            };
         }
     } 
 }

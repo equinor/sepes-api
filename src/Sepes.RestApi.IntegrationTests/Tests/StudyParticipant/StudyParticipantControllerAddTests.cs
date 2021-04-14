@@ -84,22 +84,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await PerformTestsExpectFailure(study.Id, rolesToAdd);
         }
 
-        ParticipantLookupDto CreateAddRequest()
-        {
-            return new ParticipantLookupDto()
-            {
-                Source = ParticipantSource.Db,
-                DatabaseId = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID,
-                EmailAddress = TestUserConstants.COMMON_NEW_PARTICIPANT_EMAIL,
-                FullName = TestUserConstants.COMMON_NEW_PARTICIPANT_FULL_NAME,
-                ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID,
-                UserName = TestUserConstants.COMMON_NEW_PARTICIPANT_UPN
-            };
-        }
+     
 
         async Task PerformTestsExpectSuccess(int studyId, params string[] rolesToAdd)
         {
-            var responseDto = CreateAddRequest();
+            var responseDto = StudyParticipantAdderAndRemover.CreateParticipantLookupDto();
 
             foreach (var curRole in rolesToAdd)
             {
@@ -110,7 +99,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestsExpectFailure(int studyId, params string[] rolesToAdd)
         {
-            var responseDto = CreateAddRequest();
+            var responseDto = StudyParticipantAdderAndRemover.CreateParticipantLookupDto();
 
             foreach (var curRole in rolesToAdd)
             {
