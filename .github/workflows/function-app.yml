@@ -7,10 +7,12 @@ on:
       - develop
     paths:
       - src/Sepes.Functions/*
+      - src/Sepes.Infrastructure/*
       - .github/workflows/function-app.yml
   push:
     paths:
       - src/Sepes.Functions/*
+      - src/Sepes.Infrastructure/*
       - .github/scripts/powershell-modules/FunctionApp/FunctionApp.psm1
       - .github/workflows/function-app.yml
 env:
