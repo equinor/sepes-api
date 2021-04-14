@@ -111,15 +111,21 @@ namespace Sepes.RestApi.IntegrationTests
             return await WithStudy(false, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser);
         }
 
-        protected async Task<ApiResponseWrapper> ProcessWorkQueue()
+        protected async Task<ApiResponseWrapper> ProcessWorkQueue(int timesToRun = 1)
         {
-            //SetUserType(isAdmin: true); //If this test will be ran as non-admins, must find a way to set admin before running this
 
-            var responseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
+            ApiResponseWrapper apiResponseWrapper = null;
 
-            Assert.Equal(System.Net.HttpStatusCode.OK, responseWrapper.StatusCode);
+            for (var counter = 0; counter < timesToRun; counter++)
+            {
+                apiResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
 
-            return responseWrapper;
+                Assert.Equal(System.Net.HttpStatusCode.OK, apiResponseWrapper.StatusCode);
+
+                
+            }
+
+            return apiResponseWrapper;
         }
     }
 }

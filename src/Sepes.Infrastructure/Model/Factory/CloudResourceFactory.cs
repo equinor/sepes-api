@@ -2,6 +2,7 @@
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -19,7 +20,7 @@ namespace Sepes.Infrastructure.Model.Factory
             newResource.StudyId = studyId;
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetContainer;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE, studyId);
+            var createOperationDescription = ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(resourceType, CloudResourceOperationType.CREATE, studyId: studyId);
             SetOperationProperties(newResource, createOperationDescription);
 
             return newResource;
@@ -37,7 +38,7 @@ namespace Sepes.Infrastructure.Model.Factory
 
             newResource.Purpose = CloudResourcePurpose.StudySpecificDatasetStorageAccount;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForStudyResourceOperation(resourceType, CloudResourceOperationType.CREATE);
+            var createOperationDescription = ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(resourceType, CloudResourceOperationType.CREATE);
             SetOperationProperties(newResource, createOperationDescription, operationDependsOn: dependsOnId);
 
             return newResource;
@@ -55,7 +56,7 @@ namespace Sepes.Infrastructure.Model.Factory
             newResource.SandboxControlled = true;
             newResource.Purpose = CloudResourcePurpose.SandboxResourceGroup;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(resourceType, CloudResourceOperationType.CREATE, sandboxId);
+            var createOperationDescription = ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(resourceType, CloudResourceOperationType.CREATE, sandboxId: sandboxId);
             SetOperationProperties(newResource, createOperationDescription, batchId);
 
             return newResource;
@@ -76,7 +77,7 @@ namespace Sepes.Infrastructure.Model.Factory
             newResource.Purpose = CloudResourcePurpose.SandboxResource;
             newResource.ConfigString = configString;
 
-            var createOperationDescription = AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(resourceType, CloudResourceOperationType.CREATE, sandboxId);
+            var createOperationDescription = ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(resourceType, CloudResourceOperationType.CREATE, sandboxId: sandboxId);
             SetOperationProperties(newResource, createOperationDescription, batchId, dependsOn);
 
             return newResource;
