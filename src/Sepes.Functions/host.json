@@ -2,9 +2,9 @@
     "version": "2.0",
   "logging": {
     "logLevel": {
-      "default": "Information",
-      "System": "Warning",
-      "Microsoft": "Warning"
+      "default": "Debug",
+      "System": "Debug",
+      "Microsoft": "Debug"
     },
     "applicationInsights": { 
       "samplingSettings": {
