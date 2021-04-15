@@ -15,14 +15,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
         {
             ApiResponseBasicAsserts.ExpectSuccess<List<VmDto>>(responseWrapper);
 
-            var sandboxResourceResponse = responseWrapper.Content;
+            var sandboxVmResponse = responseWrapper.Content;
 
             var index = 0;
 
-            foreach (var curResource in sandboxResourceResponse)
+            foreach (var curResource in sandboxVmResponse)
             {
                 Assert.NotNull(curResource.Name);
-                IsRequiredType(index, curResource, expectedVmNames);
                 Assert.Contains(CloudResourceStatus.CREATING, curResource.Status);
                 Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
 
@@ -40,24 +39,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 
             foreach (var curResource in sandboxResourceResponse)
             {
-                Assert.NotNull(curResource.Name);
-                IsRequiredType(index, curResource, expectedVmNames);
+                Assert.NotNull(curResource.Name);             
                 Assert.Equal(CloudResourceStatus.OK, curResource.Status);
                 index++;
             }
         }
 
-        static void IsRequiredType(int index, VmDto resource, string[] expectedVms = null)
-        {
-            if (index < SandboxExpectedResources.Length)
-            {
-                Assert.Equal(SandboxExpectedResources[index], resource.Type);
-            }
-            else if (expectedVms != null && expectedVms.Length > 0)
-            {
-                Assert.Equal(AzureResourceTypeFriendlyName.VirtualMachine, resource.Type);
-                Assert.Equal(expectedVms[index - SandboxExpectedResources.Length], resource.Name);
-            }
-        }
+     
     }
 }

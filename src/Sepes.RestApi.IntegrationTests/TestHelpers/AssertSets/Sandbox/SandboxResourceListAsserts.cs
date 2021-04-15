@@ -16,45 +16,89 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
             AzureResourceTypeFriendlyName.NetworkSecurityGroup,
             AzureResourceTypeFriendlyName.VirtualNetwork,
             AzureResourceTypeFriendlyName.Bastion
-        };
-
-     
+        };     
 
         public static void BeforeProvisioning(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, params string[] expectedVmNames )
         {
-            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);
-
-            var sandboxResourceResponse = responseWrapper.Content;
-
-            var index = 0;
-
-            foreach (var curResource in sandboxResourceResponse)
-            {
-                Assert.NotNull(curResource.Name);
-                IsRequiredType(index, curResource, expectedVmNames);
-                Assert.Contains(CloudResourceStatus.CREATING, curResource.Status);
-                Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
-
-                index++;
-            }
+            SandboxResourceAsserts(responseWrapper, false);
+            VmAsserts(responseWrapper, false, false, expectedVmNames);            
         }
 
         public static void AfterProvisioning(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, params string[] expectedVmNames)
         {
-            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);          
+            SandboxResourceAsserts(responseWrapper, true);
+            VmAsserts(responseWrapper, false, false, expectedVmNames);
+        }
 
-            var sandboxResourceResponse = responseWrapper.Content;
+        public static void AfterProvisioning_VmDeleted(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, bool vmDeleteFinished, params string[] expectedVmNames)
+        {
+            SandboxResourceAsserts(responseWrapper, true);
+            VmAsserts(responseWrapper, true, vmDeleteFinished, expectedVmNames); 
+        }
 
+        public static void SandboxResourceAsserts(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, bool createFinished)
+        {
+            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);
+                 
             var index = 0;
 
-            foreach (var curResource in sandboxResourceResponse)
+            foreach (var curResource in responseWrapper.Content)
             {
+                if (index > 4)
+                    break;
+
                 Assert.NotNull(curResource.Name);
-                IsRequiredType(index, curResource, expectedVmNames);
-                Assert.Equal(CloudResourceStatus.OK, curResource.Status);
+                IsRequiredType(index, curResource);
+
+                if (createFinished)
+                {
+                    Assert.Equal(CloudResourceStatus.OK, curResource.Status);
+                }
+                else
+                {
+                    Assert.Contains(CloudResourceStatus.CREATING, curResource.Status);
+                    Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
+                }
+                
                 index++;
             }
         }
+
+        public static void VmAsserts(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, bool vmDeleted, bool vmDeleteFinished, params string[] expectedVmNames)
+        {
+            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);
+
+            var index = 0;
+
+            foreach (var curResource in responseWrapper.Content)
+            {
+                if (index < 4)
+                    continue;
+
+                Assert.NotNull(curResource.Name);
+                IsRequiredType(index, curResource, expectedVmNames);
+
+                 if(!vmDeleted)
+                {
+                    Assert.Contains(CloudResourceStatus.CREATING, curResource.Status);
+                    Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
+                }
+                 else if (vmDeleted && !vmDeleteFinished)
+                {
+                    Assert.Contains(CloudResourceStatus.DELETING, curResource.Status);
+                    Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
+                }
+                 else if (vmDeleteFinished)
+                {
+                    Assert.Contains(CloudResourceStatus.DELETING, curResource.Status);
+                    Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
+                }
+                
+                index++;
+            }
+        }
+
+       
 
         static void IsRequiredType(int index, SandboxResourceLight resource, string[] expectedVms = null)
         {

@@ -63,13 +63,13 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             CreateVirtualMachineAsserts.ExpectSuccess(virtualMachineCreateRequest, sandboxResponse.Region, virtualMachineResponseWrapper);
 
-            //TODO: GET SANDBOX RESOURCE LIST AND ASSERT RESULT BEFORE CREATION
+            //GET SANDBOX RESOURCE LIST AND ASSERT RESULT BEFORE CREATION
             var sandboxResourcesPreProvisioningResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
             SandboxResourceListAsserts.BeforeProvisioning(sandboxResourcesPreProvisioningResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
-            //TODO: GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
-            var virtualMachinesResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
-            ApiResponseBasicAsserts.ExpectSuccess<List<VmDto>>(virtualMachinesResponseWrapper.Response);
+            //GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
+            var virtualMachinesPreProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            SandboxVirtualMachineAsserts.BeforeProvisioning(virtualMachinesPreProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
             var processWorkQueueResponse = await ProcessWorkQueue();
@@ -79,6 +79,9 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT
+            var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
+
 
             //TODO: Add some participants
 
