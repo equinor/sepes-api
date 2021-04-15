@@ -58,7 +58,7 @@ namespace Sepes.RestApi
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
+            var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
             Log("Startup - ConfigureServices - Cors domains: *");
 
@@ -67,10 +67,11 @@ namespace Sepes.RestApi
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder =>
                 {
-                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
-                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                    var domainsAsArray = new string[corsDomainsFromConfig.Count];
+                    corsDomainsFromConfig.CopyTo(domainsAsArray);
+
+                    builder.WithOrigins(domainsAsArray);                    
+                    builder.AllowAnyHeader().AllowAnyMethod();
                 });
             });
 
