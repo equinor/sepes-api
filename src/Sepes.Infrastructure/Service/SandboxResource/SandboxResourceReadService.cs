@@ -42,9 +42,7 @@ namespace Sepes.Infrastructure.Service
 
                 ).ToList();
 
-            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);
-
-            
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);            
 
             return resourcesMapped;
         }      

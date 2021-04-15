@@ -12,17 +12,17 @@ namespace Sepes.Infrastructure.Util
             switch (resourceType)
             {
                 case AzureResourceType.ResourceGroup:
-                    return "Resource Group";
+                    return AzureResourceTypeFriendlyName.ResourceGroup;
                 case AzureResourceType.StorageAccount:
-                    return "Storage Account";
+                    return AzureResourceTypeFriendlyName.StorageAccount;
                 case AzureResourceType.VirtualNetwork:
-                    return "Virtual Network";
+                    return AzureResourceTypeFriendlyName.VirtualNetwork;
                 case AzureResourceType.NetworkSecurityGroup:
-                    return "Network Security Group";
+                    return AzureResourceTypeFriendlyName.NetworkSecurityGroup;
                 case AzureResourceType.Bastion:
-                    return "Bastion";
+                    return AzureResourceTypeFriendlyName.Bastion;
                 case AzureResourceType.VirtualMachine:
-                    return "Virtual Machine";
+                    return AzureResourceTypeFriendlyName.VirtualMachine;
                 default:
                     return "n/a";
             }

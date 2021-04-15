@@ -5,6 +5,7 @@ using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -78,10 +79,13 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false,
             List<string> additionalRolesForCurrentUser = null,
             List<string> rolesForOtherUser = null,
-            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+            SandboxPhase phase = SandboxPhase.Open,
+            bool addDatasets = false,
+            bool deleted = false,
+            bool deleteSucceeded = false)
         {
             var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
-            var vm = await VirtualMachineSeed.Create(sandbox);
+            var vm = await VirtualMachineSeed.Create(sandbox, deleted: deleted, deleteSucceeded: deleteSucceeded);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;
@@ -90,10 +94,12 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithFailedVirtualMachine(bool createdByCurrentUser, bool restricted = false,
             List<string> additionalRolesForCurrentUser = null,
             List<string> rolesForOtherUser = null,
-            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false,
+            bool deleted = false,
+            bool deleteSucceeded = false)
         {
             var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
-            var vm = await VirtualMachineSeed.CreateFailed(sandbox);
+            var vm = await VirtualMachineSeed.CreateFailed(sandbox, deleted: deleted, deleteSucceeded: deleteSucceeded);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
             return vm;

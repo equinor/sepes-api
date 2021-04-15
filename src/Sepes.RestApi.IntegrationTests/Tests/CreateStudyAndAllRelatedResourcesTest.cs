@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
@@ -62,24 +63,37 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             CreateVirtualMachineAsserts.ExpectSuccess(virtualMachineCreateRequest, sandboxResponse.Region, virtualMachineResponseWrapper);
 
-            //TODO: GET SANDBOX RESOURCE LIST AND ASSERT RESULT BEFORE CREATION
+            //GET SANDBOX RESOURCE LIST AND ASSERT RESULT BEFORE CREATION
+            var sandboxResourcesPreProvisioningResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
+            SandboxResourceListAsserts.BeforeProvisioning(sandboxResourcesPreProvisioningResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
-            //TODO: GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
+            //GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
+            var virtualMachinesPreProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            SandboxVirtualMachineAsserts.BeforeProvisioning(virtualMachinesPreProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
             var processWorkQueueResponse = await ProcessWorkQueue();
 
             //GET SANDBOX RESOURCE LIST AND ASSERT RESULT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
-            SandboxResourceListAsserts.ExpectSuccess(sandboxResourcesResponseWrapper);
+            SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT
+            var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
+
 
             //TODO: Add some participants
 
             //TODO: OPEN INTERNET
 
             //TODO: MOVE TO NEXT PHASE
+
+            //TODO: DELETE VM
+
+            //TODO: RUN WORKER
+
+            //TODO: ASSERT THAT VM DISSAPEARS
 
             //TRY TO DELETE STUDY, GET ERROR
 

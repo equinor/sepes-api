@@ -92,6 +92,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
+            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();            
+
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      

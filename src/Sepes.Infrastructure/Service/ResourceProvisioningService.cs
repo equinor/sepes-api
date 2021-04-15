@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Dto.Provisioning;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Azure;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -24,6 +25,7 @@ namespace Sepes.Infrastructure.Service
         readonly IRequestIdService _requestIdService;
         readonly IProvisioningQueueService _workQueue;
         readonly ICloudResourceReadService _resourceReadService;
+        readonly IResourceOperationModelService _resourceOperationModelService;
         readonly ICloudResourceUpdateService _resourceUpdateService;
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
@@ -38,8 +40,9 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IRequestIdService requestIdService,
             IProvisioningQueueService workQueue,
-            ICloudResourceReadService resourceService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceUpdateService resourceUpdateService,
+            IResourceOperationModelService resourceOperationModelService,
             ICloudResourceOperationReadService resourceOperationReadService,
             ICloudResourceOperationUpdateService resourceOperationUpdateService,
             IAzureRoleAssignmentService azureRoleAssignmentService,
@@ -52,10 +55,11 @@ namespace Sepes.Infrastructure.Service
             _workQueue = workQueue ?? throw new ArgumentNullException(nameof(workQueue));
 
             //Resource services
-            _resourceReadService = resourceService ?? throw new ArgumentNullException(nameof(resourceService));
+            _resourceReadService = cloudResourceReadService ?? throw new ArgumentNullException(nameof(cloudResourceReadService));
             _resourceUpdateService = resourceUpdateService ?? throw new ArgumentNullException(nameof(resourceUpdateService));
 
             //Resource operation services
+            _resourceOperationModelService = resourceOperationModelService ?? throw new ArgumentNullException(nameof(resourceOperationModelService)); ;
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService ?? throw new ArgumentNullException(nameof(resourceOperationUpdateService));
 
@@ -311,11 +315,11 @@ namespace Sepes.Infrastructure.Service
             {
                 int movedUpCount = 0;
 
-                CloudResourceOperationDto currentOperation = null;
+                CloudResourceOperation currentOperation = null;
 
                 foreach (var queueChildItem in queueParentItem.Children)
                 {
-                    currentOperation = await _resourceOperationReadService.GetByIdAsync(queueChildItem.ResourceOperationId);
+                    currentOperation = await _resourceOperationModelService.GetForOperationPromotion(queueChildItem.ResourceOperationId);
 
                     if (currentOperation.DependantOnThisOperation != null && currentOperation.DependantOnThisOperation.Count > 0)
                     {
@@ -356,7 +360,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task AddNewQueueMessageForOperation(CloudResourceOperationDto operation)
+        async Task AddNewQueueMessageForOperation(CloudResourceOperation operation)
         {
             var queueParentItem = new ProvisioningQueueParentDto
             {
