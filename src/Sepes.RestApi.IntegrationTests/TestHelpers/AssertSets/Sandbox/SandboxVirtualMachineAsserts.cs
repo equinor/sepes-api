@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;
 using System.Collections.Generic;
@@ -7,22 +8,12 @@ using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 {
-    public static class SandboxResourceListAsserts
-    {
-        static string[] SandboxExpectedResources = {
+    public static class SandboxVirtualMachineAsserts
+    {    
 
-            AzureResourceTypeFriendlyName.ResourceGroup,
-            AzureResourceTypeFriendlyName.StorageAccount,
-            AzureResourceTypeFriendlyName.NetworkSecurityGroup,
-            AzureResourceTypeFriendlyName.VirtualNetwork,
-            AzureResourceTypeFriendlyName.Bastion
-        };
-
-     
-
-        public static void BeforeProvisioning(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, params string[] expectedVmNames )
+        public static void BeforeProvisioning(ApiResponseWrapper<List<VmDto>> responseWrapper, params string[] expectedVmNames)
         {
-            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);
+            ApiResponseBasicAsserts.ExpectSuccess<List<VmDto>>(responseWrapper);
 
             var sandboxResourceResponse = responseWrapper.Content;
 
@@ -39,9 +30,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
             }
         }
 
-        public static void AfterProvisioning(ApiResponseWrapper<List<SandboxResourceLight>> responseWrapper, params string[] expectedVmNames)
+        public static void AfterProvisioning(ApiResponseWrapper<List<VmDto>> responseWrapper, params string[] expectedVmNames)
         {
-            ApiResponseBasicAsserts.ExpectSuccess<List<SandboxResourceLight>>(responseWrapper);          
+            ApiResponseBasicAsserts.ExpectSuccess<List<VmDto>>(responseWrapper);          
 
             var sandboxResourceResponse = responseWrapper.Content;
 
@@ -56,7 +47,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
             }
         }
 
-        static void IsRequiredType(int index, SandboxResourceLight resource, string[] expectedVms = null)
+        static void IsRequiredType(int index, VmDto resource, string[] expectedVms = null)
         {
             if (index < SandboxExpectedResources.Length)
             {

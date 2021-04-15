@@ -169,6 +169,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
             services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
+            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
