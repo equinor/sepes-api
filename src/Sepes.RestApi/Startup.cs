@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -29,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
 
 namespace Sepes.RestApi
 {
@@ -102,6 +104,28 @@ namespace Sepes.RestApi
           .AddMicrosoftIdentityWebApi(_configuration)
             .EnableTokenAcquisitionToCallDownstreamApi()
             .AddInMemoryTokenCaches();
+
+
+
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApp(o =>
+                {
+                    _configuration.Bind("AzureAd", o);
+                    var defaultBackChannel = new HttpClient();
+                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "afterhours");
+                    o.Backchannel = defaultBackChannel;
+
+                });           
+             //.EnableTokenAcquisitionToCallDownstreamApi(confidentialClientApplicationOptions =>
+             //{
+             //    confidentialClientApplicationOptions.RedirectUri = clusterLoadBalancedUri;
+
+             //    confidentialClientApplicationOptions.ClientId = myWebAppClientId;
+             //    confidentialClientApplicationOptions.Instance = Instance;
+             //    confidentialClientApplicationOptions.TenantId = TenantId;
+             //}),
+             // new string[]{ "" })  //For graph api "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email","https://graph.microsoft.com/profile"
+             // .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
 
@@ -261,9 +285,15 @@ namespace Sepes.RestApi
                     Scheme = "Bearer",
                     Flows = new OpenApiOAuthFlows
                     {
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
+
+                        AuthorizationCode = new OpenApiOAuthFlow{
+
+                            
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize")
+                            //Implicit = new OpenApiOAuthFlow
+                            //{
+                            //    AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
+                            //}
                         }
                     }
                 });
