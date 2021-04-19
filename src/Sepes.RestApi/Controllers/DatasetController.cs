@@ -23,6 +23,7 @@ namespace Sepes.RestApi.Controller
         {
             _datasetService = datasetService;
             _studySpecificDatasetService = studySpecificDatasetService;
+            _preApprovedDatasetModelService = preApprovedDatasetModelService;
         }
 
         [HttpGet]
