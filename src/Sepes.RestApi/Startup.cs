@@ -108,24 +108,20 @@ namespace Sepes.RestApi
 
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApp(o =>
-                {
-                    _configuration.Bind("AzureAd", o);
-                    var defaultBackChannel = new HttpClient();
-                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "afterhours");
-                    o.Backchannel = defaultBackChannel;
+                .AddMicrosoftIdentityWebApi(_configuration)
+                //{
+                //    _configuration.Bind("AzureAd", o);
+                //    //var defaultBackChannel = new HttpClient();
+                //    //defaultBackChannel.DefaultRequestHeaders.Add("Origin", "afterhours");
+                //    //o.Backchannel = defaultBackChannel;
 
-                });           
-             //.EnableTokenAcquisitionToCallDownstreamApi(confidentialClientApplicationOptions =>
+                //})           
+             .EnableTokenAcquisitionToCallDownstreamApi()
              //{
-             //    confidentialClientApplicationOptions.RedirectUri = clusterLoadBalancedUri;
-
-             //    confidentialClientApplicationOptions.ClientId = myWebAppClientId;
-             //    confidentialClientApplicationOptions.Instance = Instance;
-             //    confidentialClientApplicationOptions.TenantId = TenantId;
-             //}),
-             // new string[]{ "" })  //For graph api "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email","https://graph.microsoft.com/profile"
-             // .AddInMemoryTokenCaches();
+             //    _configuration.Bind("AzureAd", confidentialClientApplicationOptions);                 
+             //},
+              //new string[] { "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email", "https://graph.microsoft.com/profile" })  //For graph api "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email","https://graph.microsoft.com/profile"
+              .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
 
