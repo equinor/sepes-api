@@ -49,8 +49,8 @@ namespace Sepes.Infrastructure.Constants.Auth
             //Right now, "delete study" actually performs a "close study" operation, hard delete is not enabled/exposed.
             //Is therefore adding these two additional permissions for sponsor and sponsor rep, so that they temporarely can close studies
             //TODO: To Remove these two lines, if one is to differentiate between the two (not implemented yet)
-             OperationPermission.CreateForAppRole(UserOperation.Study_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
-            OperationPermission.CreateForStudyRole(UserOperation.Study_Delete, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
+            // OperationPermission.CreateForAppRole(UserOperation.Study_Delete, appliesOnlyToNonHiddenStudies: false, appliesOnlyIfUserIsStudyOwner:true, AppRoles.Sponsor),
+            //OperationPermission.CreateForStudyRole(UserOperation.Study_Delete, appliesOnlyToNonHiddenStudies: false, StudyRoles.SponsorRep),
 
 
 
