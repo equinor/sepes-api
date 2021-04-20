@@ -30,6 +30,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Net.Http;
 
 namespace Sepes.RestApi
@@ -42,7 +43,7 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-        readonly Dictionary<string, string> Scopes = new Dictionary<string, string>() { { "api://e90cbb61-896e-4ec7-aa37-23511700e1ed/User.Impersonation", "Access SEPES" } };
+        readonly Dictionary<string, string> _scopes = new Dictionary<string, string>() { { "api://e90cbb61-896e-4ec7-aa37-23511700e1ed/User.Impersonation", "Access SEPES" } };
 
         //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
@@ -107,18 +108,35 @@ namespace Sepes.RestApi
             //  .EnableTokenAcquisitionToCallDownstreamApi()
             //  .AddInMemoryTokenCaches();
 
+            //services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+            //  .AddMicrosoftIdentityWebApp(o =>
+            //  {
+            //      _configuration.Bind("AzureAd", o);
+            //      //o.UsePkce = true;
+            //      //o.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
+            //      //o.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
+            //      //o.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
+            //      //o.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
+            //      //o.CallbackPath = "/signin-oidc";
+            //      //o.ResponseType = "code";
 
-            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(a => { }, b =>
-                 {
-                    //_configuration.Bind("AzureAd", o);
-                    b.UsePkce = true;
-                     b.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
-                    b.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
-                    b.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
-                    b.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
-                    b.CallbackPath = "/signin-oidc";
-                     b.ResponseType = "code";
+            //      var defaultBackChannel = new HttpClient();
+            //      defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
+            //      o.Backchannel = defaultBackChannel;
+            //  });
+
+
+            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme).AddJwtBearer
+                .AddMicrosoftIdentityWebApi(a => {  }, b =>
+                 {                     
+                     _configuration.Bind("AzureAd", b);
+                     //b.UsePkce = true;
+                     //b.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
+                     //b.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
+                     //b.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
+                     //b.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
+                     //b.CallbackPath = "/signin-oidc";
+                     //b.ResponseType = "code";
 
                      var defaultBackChannel = new HttpClient();
                      defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
@@ -269,54 +287,54 @@ namespace Sepes.RestApi
 
         void AddSwagger(IServiceCollection services)
         {
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
-                c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
-                {
-                    //Description =
-                    //    "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    //Name = "Authorization",
-                    //In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.OAuth2,
-                    //Scheme = "Bearer",
-                    Flows = new OpenApiOAuthFlows
-                    {
+            SwaggerSetup.Configure(_configuration, _scopes, services);
+          
+            //// Register the Swagger generator, defining 1 or more Swagger documents
+            //services.AddSwaggerGen(c =>
+            //{
+            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
+            //    c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
+            //    {
+            //        //Description =
+            //        //    "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+            //        //Name = "Authorization",
+            //        //In = ParameterLocation.Header,
+            //        Type = SecuritySchemeType.OAuth2,
+            //        //Scheme = "Bearer",
+            //        Flows = new OpenApiOAuthFlows
+            //        {
 
-                        AuthorizationCode = new OpenApiOAuthFlow
-                        {
-                            Scopes = Scopes,
-                            TokenUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/token"),
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/authorize")
-                            //Implicit = new OpenApiOAuthFlow
-                            //{
-                            //    AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                            //}
-                        }
-                    }
-                });
+            //            AuthorizationCode = new OpenApiOAuthFlow
+            //            {
+            //                Scopes = Scopes,
+            //                TokenUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/token"),
+            //                AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/authorize")
+            //                //Implicit = new OpenApiOAuthFlow
+            //                //{
+            //                //    AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
+            //                //}
+            //            }
+            //        }
+            //    });
 
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
+            //    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            //    {
+            //        {
+            //            new OpenApiSecurityScheme
+            //            {
+            //                Reference = new OpenApiReference
+            //                {
+            //                    Type = ReferenceType.SecurityScheme,
+            //                    Id = "Bearer"
+            //                },
+            //                Scheme = "oauth2",
+            //                Name = "Bearer",
+            //                In = ParameterLocation.Header, 
+            //            }, new List<string>()
 
-
-                        },
-                        new List<string>()
-                    }
-                });
-            });
+            //        }
+            //    });
+            //});
         }
 
         void DoMigration()
@@ -397,14 +415,15 @@ namespace Sepes.RestApi
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
                 c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
                 c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
-                c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthUsePkce();
+                //c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);             
                 c.OAuthAppName("Sepes Development");
                 c.OAuthScopeSeparator(" ");
-                c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
+                c.OAuthUsePkce();
+                //c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
+              
             });
 
             app.UseEndpoints(endpoints =>
