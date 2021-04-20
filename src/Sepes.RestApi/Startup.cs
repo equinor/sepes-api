@@ -126,10 +126,10 @@ namespace Sepes.RestApi
             //  });
 
 
-            services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme).AddJwtBearer
-                .AddMicrosoftIdentityWebApi(a => {  }, b =>
-                 {                     
-                     _configuration.Bind("AzureAd", b);
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddMicrosoftIdentityWebApi(a => { }, b =>
+                {
+                    _configuration.Bind("AzureAd", b);
                      //b.UsePkce = true;
                      //b.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
                      //b.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
@@ -139,9 +139,12 @@ namespace Sepes.RestApi
                      //b.ResponseType = "code";
 
                      var defaultBackChannel = new HttpClient();
-                     defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
-                     b.Backchannel = defaultBackChannel;
-                 });
+                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
+                    b.Backchannel = defaultBackChannel;
+                }).EnableTokenAcquisitionToCallDownstreamApi(e => { _configuration.Bind("GraphApi", e); }).AddInMemoryTokenCaches();
+                
+                
+               
 
             services.AddHttpClient();
 
