@@ -42,6 +42,8 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
+        readonly Dictionary<string, string> Scopes = new Dictionary<string, string>() { { "api://e90cbb61-896e-4ec7-aa37-23511700e1ed/User.Impersonation", "Access SEPES" } };
+
         //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
@@ -72,7 +74,7 @@ namespace Sepes.RestApi
                     var domainsAsArray = new string[corsDomainsFromConfig.Count];
                     corsDomainsFromConfig.CopyTo(domainsAsArray);
 
-                    builder.WithOrigins(domainsAsArray);                    
+                    builder.WithOrigins(domainsAsArray);
                     builder.AllowAnyHeader().AllowAnyMethod();
                 });
             });
@@ -98,30 +100,30 @@ namespace Sepes.RestApi
                       assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
                   .EnableSensitiveDataLogging(enableSensitiveDataLogging)
                   );
-            }           
+            }
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-          .AddMicrosoftIdentityWebApi(_configuration)
-            .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddInMemoryTokenCaches();
-
+            //  services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            //.AddMicrosoftIdentityWebApi(_configuration)
+            //  .EnableTokenAcquisitionToCallDownstreamApi()
+            //  .AddInMemoryTokenCaches();
 
 
             services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-                .AddMicrosoftIdentityWebApi(_configuration)
-                //{
-                //    _configuration.Bind("AzureAd", o);
-                //    //var defaultBackChannel = new HttpClient();
-                //    //defaultBackChannel.DefaultRequestHeaders.Add("Origin", "afterhours");
-                //    //o.Backchannel = defaultBackChannel;
+                .AddMicrosoftIdentityWebApi(a => { }, b =>
+                 {
+                    //_configuration.Bind("AzureAd", o);
+                    b.UsePkce = true;
+                     b.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
+                    b.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
+                    b.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
+                    b.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
+                    b.CallbackPath = "/signin-oidc";
+                     b.ResponseType = "code";
 
-                //})           
-             .EnableTokenAcquisitionToCallDownstreamApi()
-             //{
-             //    _configuration.Bind("AzureAd", confidentialClientApplicationOptions);                 
-             //},
-              //new string[] { "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email", "https://graph.microsoft.com/profile" })  //For graph api "https://graph.microsoft.com/User.Read", "https://graph.microsoft.com/User.Read.All", "https://graph.microsoft.com/email","https://graph.microsoft.com/profile"
-              .AddInMemoryTokenCaches();
+                     var defaultBackChannel = new HttpClient();
+                     defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
+                     b.Backchannel = defaultBackChannel;
+                 });
 
             services.AddHttpClient();
 
@@ -171,7 +173,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
             services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
-            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();            
+            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -271,21 +273,22 @@ namespace Sepes.RestApi
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
                 {
-                    Description =
-                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
+                    //Description =
+                    //    "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+                    //Name = "Authorization",
+                    //In = ParameterLocation.Header,
                     Type = SecuritySchemeType.OAuth2,
-                    Scheme = "Bearer",
+                    //Scheme = "Bearer",
                     Flows = new OpenApiOAuthFlows
                     {
 
-                        AuthorizationCode = new OpenApiOAuthFlow{
-
-                            
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize")
+                        AuthorizationCode = new OpenApiOAuthFlow
+                        {
+                            Scopes = Scopes,
+                            TokenUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/token"),
+                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/authorize")
                             //Implicit = new OpenApiOAuthFlow
                             //{
                             //    AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
@@ -397,6 +400,7 @@ namespace Sepes.RestApi
                 c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
                 c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
                 c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
+                c.OAuthUsePkce();
                 c.OAuthAppName("Sepes Development");
                 c.OAuthScopeSeparator(" ");
                 c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
