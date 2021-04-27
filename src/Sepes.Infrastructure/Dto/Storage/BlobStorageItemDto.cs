@@ -11,5 +11,9 @@ namespace Sepes.Infrastructure.Dto.Storage
         public string ContentType { get; set; }
 
         public long Size { get; set; }
+
+        public long? Modified { get; set; }
+
+        public string Key { get; set; }
     }
 }
