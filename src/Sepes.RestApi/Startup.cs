@@ -43,9 +43,6 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-        readonly Dictionary<string, string> _scopes = new Dictionary<string, string>() { { "api://e90cbb61-896e-4ec7-aa37-23511700e1ed/User.Impersonation", "Access SEPES" } };
-
-        //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -103,48 +100,18 @@ namespace Sepes.RestApi
                   );
             }
 
-            //  services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            //.AddMicrosoftIdentityWebApi(_configuration)
-            //  .EnableTokenAcquisitionToCallDownstreamApi()
-            //  .AddInMemoryTokenCaches();
-
-            //services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-            //  .AddMicrosoftIdentityWebApp(o =>
-            //  {
-            //      _configuration.Bind("AzureAd", o);
-            //      //o.UsePkce = true;
-            //      //o.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
-            //      //o.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
-            //      //o.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
-            //      //o.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
-            //      //o.CallbackPath = "/signin-oidc";
-            //      //o.ResponseType = "code";
-
-            //      var defaultBackChannel = new HttpClient();
-            //      defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
-            //      o.Backchannel = defaultBackChannel;
-            //  });
-
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(a => { }, b =>
                 {
                     _configuration.Bind("AzureAd", b);
-                     //b.UsePkce = true;
-                     //b.ClientId = _configuration[ConfigConstants.AZ_CLIENT_ID]; // "<client_id>";
-                     //b.TenantId = _configuration[ConfigConstants.AZ_TENANT_ID]; //"<tenant_id>";
-                     //b.Domain = _configuration[ConfigConstants.AZ_DOMAIN]; //"yourdomain.com";
-                     //b.Instance = _configuration[ConfigConstants.AZ_INSTANCE]; //"https://login.microsoftonline.com";
-                     //b.CallbackPath = "/signin-oidc";
-                     //b.ResponseType = "code";
 
-                     var defaultBackChannel = new HttpClient();
+                    var defaultBackChannel = new HttpClient();
                     defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
                     b.Backchannel = defaultBackChannel;
-                }).EnableTokenAcquisitionToCallDownstreamApi(e => { _configuration.Bind("GraphApi", e); }).AddInMemoryTokenCaches();
-                
-                
-               
+
+                }).EnableTokenAcquisitionToCallDownstreamApi(e =>
+                    { _configuration.Bind("GraphApi", e); })
+                .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
 
@@ -155,7 +122,7 @@ namespace Sepes.RestApi
 
             SetFileUploadLimits(services);
 
-            AddSwagger(services);
+            SwaggerSetup.ConfigureServices(_configuration, services);          
 
             Log("Configuring services done");
         }
@@ -165,8 +132,7 @@ namespace Sepes.RestApi
             Trace.WriteLine("Configuring Application Insights");
 
             var aiOptions = new ApplicationInsightsServiceOptions
-            {
-                // Disables adaptive sampling.
+            {                
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
                 EnableDebugLogger = true
@@ -178,7 +144,6 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services)
         {
             //Plumbing
-
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
@@ -191,10 +156,11 @@ namespace Sepes.RestApi
 
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
-            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
-            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
+            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
+            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
             services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
+            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -212,8 +178,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
-            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
+            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();            
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
@@ -286,59 +251,7 @@ namespace Sepes.RestApi
                 options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
                 options.MultipartHeadersLengthLimit = int.MaxValue;
             });
-        }
-
-        void AddSwagger(IServiceCollection services)
-        {
-            SwaggerSetup.Configure(_configuration, _scopes, services);
-          
-            //// Register the Swagger generator, defining 1 or more Swagger documents
-            //services.AddSwaggerGen(c =>
-            //{
-            //    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
-            //    c.AddSecurityDefinition("OAuth2", new OpenApiSecurityScheme
-            //    {
-            //        //Description =
-            //        //    "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-            //        //Name = "Authorization",
-            //        //In = ParameterLocation.Header,
-            //        Type = SecuritySchemeType.OAuth2,
-            //        //Scheme = "Bearer",
-            //        Flows = new OpenApiOAuthFlows
-            //        {
-
-            //            AuthorizationCode = new OpenApiOAuthFlow
-            //            {
-            //                Scopes = Scopes,
-            //                TokenUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/token"),
-            //                AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/v2.0/authorize")
-            //                //Implicit = new OpenApiOAuthFlow
-            //                //{
-            //                //    AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-            //                //}
-            //            }
-            //        }
-            //    });
-
-            //    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-            //    {
-            //        {
-            //            new OpenApiSecurityScheme
-            //            {
-            //                Reference = new OpenApiReference
-            //                {
-            //                    Type = ReferenceType.SecurityScheme,
-            //                    Id = "Bearer"
-            //                },
-            //                Scheme = "oauth2",
-            //                Name = "Bearer",
-            //                In = ParameterLocation.Header, 
-            //            }, new List<string>()
-
-            //        }
-            //    });
-            //});
-        }
+        }        
 
         void DoMigration()
         {
@@ -415,19 +328,7 @@ namespace Sepes.RestApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
-                //c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);             
-                c.OAuthAppName("Sepes Development");
-                c.OAuthScopeSeparator(" ");
-                c.OAuthUsePkce();
-                //c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
-              
-            });
+            SwaggerSetup.Configure(_configuration, app);           
 
             app.UseEndpoints(endpoints =>
             {
