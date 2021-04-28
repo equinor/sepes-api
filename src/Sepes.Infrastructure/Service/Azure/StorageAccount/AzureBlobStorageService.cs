@@ -39,7 +39,10 @@ namespace Sepes.Infrastructure.Service.Azure
                 while (await enumerator.MoveNextAsync())
                 {
                     var curBlob = enumerator.Current;
-                    result.Add(new BlobStorageItemDto() { Name = curBlob.Name, ContentType = curBlob.Properties.ContentType, Size = curBlob.Properties.ContentLength.HasValue ? curBlob.Properties.ContentLength.Value : 0 });
+                    if (curBlob.Properties.LastModified.HasValue)
+                    {
+                        result.Add(new BlobStorageItemDto() { Key = curBlob.Name, Name = curBlob.Name, ContentType = curBlob.Properties.ContentType, Size = curBlob.Properties.ContentLength.HasValue ? curBlob.Properties.ContentLength.Value : 0, Modified = curBlob.Properties.LastModified.Value.ToUnixTimeMilliseconds() });
+                    }
                 }
             }
             finally
