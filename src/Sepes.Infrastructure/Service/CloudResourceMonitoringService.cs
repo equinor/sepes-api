@@ -304,10 +304,10 @@ namespace Sepes.Infrastructure.Service
         void LogMonitoringError(CloudResource resource, string eventId, string messageSuffix, Exception ex = null, bool critical = false)
         {
             var fullErrorMessage = $"Resource {resource.Id} ({resource.ResourceName}): {messageSuffix}";
-            LogMonitoringErrorInner(resource, eventId, fullErrorMessage, ex, critical);
+            LogMonitoringErrorInner(eventId, fullErrorMessage, ex, critical);
         }       
 
-        void LogMonitoringErrorInner(CloudResource resource, string eventId, string message, Exception ex = null, bool critical = false)
+        void LogMonitoringErrorInner(string eventId, string message, Exception ex = null, bool critical = false)
         {
             if (ex == null)
             {

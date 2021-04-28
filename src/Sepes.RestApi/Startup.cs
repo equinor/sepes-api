@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -29,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Net.Http;
 
 namespace Sepes.RestApi
 {
@@ -40,7 +43,6 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-        //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
@@ -70,7 +72,7 @@ namespace Sepes.RestApi
                     var domainsAsArray = new string[corsDomainsFromConfig.Count];
                     corsDomainsFromConfig.CopyTo(domainsAsArray);
 
-                    builder.WithOrigins(domainsAsArray);                    
+                    builder.WithOrigins(domainsAsArray);
                     builder.AllowAnyHeader().AllowAnyMethod();
                 });
             });
@@ -96,12 +98,20 @@ namespace Sepes.RestApi
                       assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
                   .EnableSensitiveDataLogging(enableSensitiveDataLogging)
                   );
-            }           
+            }
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-          .AddMicrosoftIdentityWebApi(_configuration)
-            .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddInMemoryTokenCaches();
+                .AddMicrosoftIdentityWebApi(a => { }, b =>
+                {
+                    _configuration.Bind("AzureAd", b);
+
+                    var defaultBackChannel = new HttpClient();
+                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
+                    b.Backchannel = defaultBackChannel;
+
+                }).EnableTokenAcquisitionToCallDownstreamApi(e =>
+                    { _configuration.Bind("GraphApi", e); })
+                .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
 
@@ -112,7 +122,7 @@ namespace Sepes.RestApi
 
             SetFileUploadLimits(services);
 
-            AddSwagger(services);
+            SwaggerSetup.ConfigureServices(_configuration, services);          
 
             Log("Configuring services done");
         }
@@ -122,8 +132,7 @@ namespace Sepes.RestApi
             Trace.WriteLine("Configuring Application Insights");
 
             var aiOptions = new ApplicationInsightsServiceOptions
-            {
-                // Disables adaptive sampling.
+            {                
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
                 EnableDebugLogger = true
@@ -135,7 +144,6 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services)
         {
             //Plumbing
-
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
@@ -148,10 +156,11 @@ namespace Sepes.RestApi
 
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
-            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
-            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
-            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();            
+            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
+            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
+            services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
+            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -169,8 +178,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
-            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
+            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();            
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
@@ -243,52 +251,7 @@ namespace Sepes.RestApi
                 options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
                 options.MultipartHeadersLengthLimit = int.MaxValue;
             });
-        }
-
-        void AddSwagger(IServiceCollection services)
-        {
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description =
-                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.OAuth2,
-                    Scheme = "Bearer",
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                        }
-                    }
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-
-
-                        },
-                        new List<string>()
-                    }
-                });
-            });
-        }
+        }        
 
         void DoMigration()
         {
@@ -365,17 +328,7 @@ namespace Sepes.RestApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
-                c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthAppName("Sepes Development");
-                c.OAuthScopeSeparator(" ");
-                c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
-            });
+            SwaggerSetup.Configure(_configuration, app);           
 
             app.UseEndpoints(endpoints =>
             {

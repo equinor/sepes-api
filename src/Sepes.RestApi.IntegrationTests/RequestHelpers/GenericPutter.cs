@@ -26,8 +26,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> PutAndExpectFailure(RestHelper restHelper, string url)
         {
             return await Put<Infrastructure.Dto.ErrorResponse>(restHelper, url);
-        }       
+        }
 
+        public static string StudyClose(int studyId) => $"api/studies/{studyId}/close";
         public static string SandboxResourceRetry(int resourceId) => $"api/resources/{resourceId}/retry";
     
     } 

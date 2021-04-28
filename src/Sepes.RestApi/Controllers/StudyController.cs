@@ -69,20 +69,17 @@ namespace Sepes.RestApi.Controller
         [HttpDelete("{studyId}")]
         public async Task<IActionResult> DeleteStudyAsync(int studyId)
         {
-            await _studyDeleteService.CloseStudyAsync(studyId); //Todo: Switch to correct method
+            await _studyDeleteService.DeleteStudyAsync(studyId);
             return new NoContentResult();
         }
 
-        //[HttpDelete("{studyId}")]
-        //[Authorize]
-        //public async Task<IActionResult> CloseStudyAsync(int studyId)
-        //{
-        //    await _studyService.CloseStudyAsync(studyId);
-        //    return new NoContentResult();
-        //}
-
-
-       
+        [HttpPut("{studyId}/close")]
+        [Authorize]
+        public async Task<IActionResult> CloseStudyAsync(int studyId)
+        {
+            await _studyDeleteService.CloseStudyAsync(studyId);
+            return new NoContentResult();
+        }
 
         [HttpGet("{studyId}/resultsandlearnings")]
         [Consumes(MediaTypeNames.Application.Json)]
