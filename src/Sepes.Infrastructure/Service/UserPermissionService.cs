@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
             result.Sponsor = userFromDb.Sponsor;
             result.DatasetAdmin = userFromDb.DatasetAdmin;
 
-            var currentUser = await _userService.GetCurrentUserWithStudyParticipantsAsync();
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.Study_Create);
             result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.PreApprovedDataset_Read);

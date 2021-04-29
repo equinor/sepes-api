@@ -19,19 +19,62 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             return CreateFailing(region, AzureResourceType.ResourceGroup, name, name, resourceId, resourceKey, purpose, sandboxControlled: sandboxControlled, batchId: batchId, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
         }
 
-        public static CloudResource Create(string region, string resourceType, string resourceGroup, string resourceName, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null, CloudResource parentResource = null, bool createOperationFinished = true)
+        public static CloudResource Create(string region,
+            string resourceType,
+            string resourceGroup,
+            string resourceName,
+            string resourceId = null,
+            string resourceKey = null,
+            string purpose = null,
+            bool sandboxControlled = false,
+            string batchId = null,
+            CloudResource parentResource = null,
+            bool createOperationFinished = true,
+            bool deleted = false,
+            bool deleteSucceeded = false)
         {
             var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
             cloudResource.Operations.Add(createOperationFinished ? CloudResourceOperationFactory.SucceededOperation("create" + resourceName, batchId: batchId) : CloudResourceOperationFactory.NewOperation("create" + resourceName, batchId: batchId));
+            
+            if(deleted)
+            {
+                cloudResource.Operations.Add(deleteSucceeded ?
+                    CloudResourceOperationFactory.SucceededOperation("delete" + resourceName, operationType: CloudResourceOperationType.DELETE)
+                    : CloudResourceOperationFactory.NewOperation("delete" + resourceName, operationType: CloudResourceOperationType.DELETE));
+            }
+            
             return cloudResource;
         }
 
-        public static CloudResource CreateFailing(string region, string resourceType, string resourceGroup, string resourceName, string resourceId = null, string resourceKey = null, string purpose = null, bool sandboxControlled = false, string batchId = null, CloudResource parentResource = null,
-            string statusOfFailedResource = CloudResourceOperationState.FAILED, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
+        public static CloudResource CreateFailing(string region,
+            string resourceType,
+            string resourceGroup,
+            string resourceName,
+            string resourceId = null,
+            string resourceKey = null,
+            string purpose = null,
+            bool sandboxControlled = false,
+            string batchId = null,
+            CloudResource parentResource = null,
+            string statusOfFailedResource = CloudResourceOperationState.FAILED,
+            int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+            int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
+            bool deleted = false,
+            bool deleteSucceeded = false
+
+            )
         {
             var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
             cloudResource.LastKnownProvisioningState = null;
             cloudResource.Operations.Add(CloudResourceOperationFactory.FailedOperation("create" + resourceName, batchId: batchId, status: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount));
+
+            if (deleted)
+            {
+                cloudResource.Operations.Add(deleteSucceeded ?
+                    CloudResourceOperationFactory.SucceededOperation("delete" + resourceName, operationType: CloudResourceOperationType.DELETE)
+                    : CloudResourceOperationFactory.NewOperation("delete" + resourceName, operationType: CloudResourceOperationType.DELETE));
+            }
+
             return cloudResource;
         }
 

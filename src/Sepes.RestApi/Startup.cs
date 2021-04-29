@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -29,6 +30,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Net.Http;
 
 namespace Sepes.RestApi
 {
@@ -40,33 +43,13 @@ namespace Sepes.RestApi
 
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
-        //public Startup(ILogger<Startup> logger, IConfiguration configuration)
         public Startup(ILogger<Startup> logger, IConfiguration configuration)
         {
             _logger = logger;
             _configuration = configuration;
 
             Log("Sepes Startup Constructor");
-        }
-
-        string GetConnectionString(string name, bool enableSensitiveDataLogging)
-        {
-            var connectionStringFromConfig = _configuration[name];
-
-            if (string.IsNullOrWhiteSpace(connectionStringFromConfig))
-            {
-                throw new Exception($"Could not obtain database connection string with name: {name}.");
-            }
-
-            //Clean and print connection string (password will be removed)
-            if (enableSensitiveDataLogging)
-            {
-                var cleanConnectionString = ConfigUtil.RemovePasswordFromConnectionString(connectionStringFromConfig);              
-                Log($"Connection string named {name}: {cleanConnectionString}");              
-            }
-
-            return connectionStringFromConfig;
-        }
+        }       
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -77,7 +60,7 @@ namespace Sepes.RestApi
 
             services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
-            //var corsSettings = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
+            var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
             Log("Startup - ConfigureServices - Cors domains: *");
 
@@ -86,30 +69,48 @@ namespace Sepes.RestApi
                 options.AddPolicy(MyAllowSpecificOrigins,
                 builder =>
                 {
-                    //builder.WithOrigins("http://example.com", "http://www.contoso.com");
-                    // Issue: 39  replace with above commented code. Preferably add config support for the URLs. 
-                    // Perhaps an if to check if environment is running in development so we can still easily debug without changing code
-                    builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                    var domainsAsArray = new string[corsDomainsFromConfig.Count];
+                    corsDomainsFromConfig.CopyTo(domainsAsArray);
+
+                    builder.WithOrigins(domainsAsArray);
+                    builder.AllowAnyHeader().AllowAnyMethod();
                 });
             });
 
-            var enableSensitiveDataLogging = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
+            var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
-            DoMigration(enableSensitiveDataLogging);
+            if (!isIntegrationTest)
+            {
+                var enableSensitiveDataLoggingFromConfig = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
 
-            var readWriteDbConnectionString = GetConnectionString(ConfigConstants.DB_READ_WRITE_CONNECTION_STRING, enableSensitiveDataLogging); //  _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];                       
+                var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+                DoMigration(enableSensitiveDataLoggingFromConfig);
 
-            services.AddDbContext<SepesDbContext>(
-              options => options.UseSqlServer(
-                  readWriteDbConnectionString,
-                  assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
-              .EnableSensitiveDataLogging(enableSensitiveDataLogging)
-              );
+                if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
+                {
+                    throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
+                }
+
+                services.AddDbContext<SepesDbContext>(
+                  options => options.UseSqlServer(
+                      readWriteDbConnectionString,
+                      assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
+                  .EnableSensitiveDataLogging(enableSensitiveDataLoggingFromConfig)
+                  );
+            }
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-          .AddMicrosoftIdentityWebApi(_configuration)
-            .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddInMemoryTokenCaches();
+                .AddMicrosoftIdentityWebApi(a => { }, b =>
+                {
+                    _configuration.Bind("AzureAd", b);
+
+                    var defaultBackChannel = new HttpClient();
+                    defaultBackChannel.DefaultRequestHeaders.Add("Origin", "sepes");
+                    b.Backchannel = defaultBackChannel;
+
+                }).EnableTokenAcquisitionToCallDownstreamApi(e =>
+                    { _configuration.Bind("GraphApi", e); })
+                .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
 
@@ -120,7 +121,7 @@ namespace Sepes.RestApi
 
             SetFileUploadLimits(services);
 
-            AddSwagger(services);
+            SwaggerSetup.ConfigureServices(_configuration, services);
 
             Log("Configuring services done");
         }
@@ -131,7 +132,6 @@ namespace Sepes.RestApi
 
             var aiOptions = new ApplicationInsightsServiceOptions
             {
-                // Disables adaptive sampling.
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
                 EnableDebugLogger = true
@@ -143,7 +143,6 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services)
         {
             //Plumbing
-
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
@@ -157,7 +156,10 @@ namespace Sepes.RestApi
             //Data model services v2
             services.AddTransient<IStudyModelService, StudyModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
+            services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
+            services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
             services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
+            services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -250,51 +252,6 @@ namespace Sepes.RestApi
             });
         }
 
-        void AddSwagger(IServiceCollection services)
-        {
-            // Register the Swagger generator, defining 1 or more Swagger documents
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Sepes API", Version = "v1" });
-                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-                {
-                    Description =
-                        "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                    Name = "Authorization",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.OAuth2,
-                    Scheme = "Bearer",
-                    Flows = new OpenApiOAuthFlows
-                    {
-                        Implicit = new OpenApiOAuthFlow
-                        {
-                            AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{_configuration[ConfigConstants.AZ_TENANT_ID]}/oauth2/authorize"),
-                        }
-                    }
-                });
-
-                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-                {
-                    {
-                        new OpenApiSecurityScheme
-                        {
-                            Reference = new OpenApiReference
-                            {
-                                Type = ReferenceType.SecurityScheme,
-                                Id = "Bearer"
-                            },
-                            Scheme = "oauth2",
-                            Name = "Bearer",
-                            In = ParameterLocation.Header,
-
-
-                        },
-                        new List<string>()
-                    }
-                });
-            });
-        }
-
         void DoMigration(bool enableSensitiveDataLogging)
         {
             var disableMigrations = _configuration[ConfigConstants.DISABLE_MIGRATIONS];
@@ -310,7 +267,7 @@ namespace Sepes.RestApi
             }
 
             string sqlConnectionStringOwner = GetConnectionString(ConfigConstants.DB_OWNER_CONNECTION_STRING, enableSensitiveDataLogging); // _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
-            
+
             var createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
             createDbOptions.EnableSensitiveDataLogging(enableSensitiveDataLogging);
@@ -322,6 +279,25 @@ namespace Sepes.RestApi
             }
 
             Log("Do migration done");
+        }
+
+        string GetConnectionString(string name, bool enableSensitiveDataLogging)
+        {
+            var connectionStringFromConfig = _configuration[name];
+
+            if (string.IsNullOrWhiteSpace(connectionStringFromConfig))
+            {
+                throw new Exception($"Could not obtain database connection string with name: {name}.");
+            }
+
+            //Clean and print connection string (password will be removed)
+            if (enableSensitiveDataLogging)
+            {
+                var cleanConnectionString = ConfigUtil.RemovePasswordFromConnectionString(connectionStringFromConfig);
+                Log($"Connection string named {name}: {cleanConnectionString}");
+            }
+
+            return connectionStringFromConfig;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -366,17 +342,7 @@ namespace Sepes.RestApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSwagger();
-            app.UseSwaggerUI(c =>
-            {
-                c.OAuthClientId(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthClientSecret(_configuration[ConfigConstants.AZ_CLIENT_SECRET]);
-                c.OAuthRealm(_configuration[ConfigConstants.AZ_CLIENT_ID]);
-                c.OAuthAppName("Sepes Development");
-                c.OAuthScopeSeparator(" ");
-                c.OAuthAdditionalQueryStringParams(new Dictionary<string, string> { ["resource"] = _configuration[ConfigConstants.AZ_CLIENT_ID] });
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Sepes API V1");
-            });
+            SwaggerSetup.Configure(_configuration, app);
 
             app.UseEndpoints(endpoints =>
             {

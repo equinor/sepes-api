@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
         {           
-            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserWithStudyParticipantsAsync(), UserOperation.Study_Create);
+            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserAsync(), UserOperation.Study_Create);
             GenericNameValidation.ValidateName(newStudyDto.Name);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);

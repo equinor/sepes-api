@@ -50,7 +50,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SetScenario(isEmployee: employee);
             await WithUserSeeds();
 
-            var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, myRole);
+            var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, new List<string> { myRole });
             var studyThisUserShouldNotSee = await WithStudyCreatedByOtherUser(true);
 
             var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
@@ -99,7 +99,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SetScenario(isEmployee: employee, isAdmin, isSponsor);
             await WithUserSeeds();
 
-            var createdStudy = await WithStudy(studyCreatedByCurrentUser, restricted, studyRole);
+            var createdStudy = await WithStudy(studyCreatedByCurrentUser, restricted, new List<string> { studyRole });
 
             var studyReadConversation = await GenericReader.ReadAndAssertExpectSuccess<StudyResultsAndLearningsDto>(_restHelper, GenericReader.StudyResultsAndLearningsUrl(createdStudy.Id));
 
@@ -123,7 +123,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SetScenario(isEmployee: employee, isDatasetAdmin: datasetAdmin);
             await WithUserSeeds();
 
-            var createdStudy = await WithStudyCreatedByOtherUser(restricted, studyRole);
+            var createdStudy = await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
 
             var studyReadConversation = await GenericReader.ReadExpectFailure(_restHelper, GenericReader.StudyResultsAndLearningsUrl(createdStudy.Id));
 

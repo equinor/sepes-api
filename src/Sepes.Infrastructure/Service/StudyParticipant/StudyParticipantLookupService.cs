@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,13 +20,13 @@ namespace Sepes.Infrastructure.Service
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
             IMapper mapper,          
-            TelemetryClient telemetry,
             IUserService userService,
             IAzureUserService azureUserService,
+            IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
-            : base(db, mapper, logger, telemetry, userService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {          
             _azureUserService = azureUserService;     
         }

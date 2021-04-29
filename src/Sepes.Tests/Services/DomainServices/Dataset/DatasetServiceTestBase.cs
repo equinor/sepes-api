@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services
@@ -7,19 +8,43 @@ namespace Sepes.Tests.Services
     public class DatasetServiceTestBase : ServiceTestBase
     {
 
-
         public DatasetServiceTestBase()
             : base()
         {
-          
-        }   
+         
+        }
+
+        protected Study CreateTestStudy(int id)
+        {
+            return new Study()
+            {
+                Id = id,
+                Name = "TestStudy",
+                Vendor = "Bouvet",
+                WbsCode = "1234.1345afg"
+            };
+        }
+
+        protected List<Study> CreateTestStudyList(int id)
+        {
+            return new List<Study>() { CreateTestStudy(id) };
+        }
 
 
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase(int datasetId)
         {
             var db = await ClearTestDatabase();           
 
-            var dataset = new Dataset()
+            var dataset = CreateTestDataset(datasetId);
+
+            db.Datasets.Add(dataset);
+            await db.SaveChangesAsync();
+            return db;
+        }
+
+        protected Dataset CreateTestDataset(int datasetId)
+        {
+           return new Dataset()
             {
                 Id = datasetId,
                 Name = "TestDataset",
@@ -30,12 +55,13 @@ namespace Sepes.Tests.Services
                 LRAId = 1337,
                 DataId = 420,
                 SourceSystem = "SAP",
-                CountryOfOrigin = "Norway"               
+                CountryOfOrigin = "Norway"
             };
+        }
 
-            db.Datasets.Add(dataset);
-            await db.SaveChangesAsync();
-            return db;
-        }           
-    }
+        protected List<Dataset> CreateTestDatasetList(int datasetId)
+        {
+            return new List<Dataset>() { CreateTestDataset(datasetId) };
+        }
+        }
 }

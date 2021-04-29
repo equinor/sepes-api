@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -21,23 +19,7 @@ namespace Sepes.RestApi.Controller
         public DatasetFileController(IDatasetFileService datasetFileService)
         {
             _datasetFileService = datasetFileService;
-        }      
-
-        [HttpPost("file")]
-        public async Task<IActionResult> AddFile(int datasetId, [FromForm] IFormFile files, CancellationToken cancellationToken = default)
-        {
-            var clientIp = IpAddressUtil.GetClientIp(HttpContext);
-            var fileAddResult = await _datasetFileService.AddFiles(datasetId, new List<IFormFile> { files }, clientIp, cancellationToken);
-            return new JsonResult(fileAddResult);
-        }
-
-        [HttpPost("files")]
-        public async Task<IActionResult> AddFiles(int datasetId, [FromForm] List<IFormFile> files, CancellationToken cancellationToken = default)
-        {
-            var clientIp = IpAddressUtil.GetClientIp(HttpContext);
-            var fileAddResult = await _datasetFileService.AddFiles(datasetId, files, clientIp, cancellationToken);
-            return new JsonResult(fileAddResult);
-        }
+        }        
 
         [HttpGet("files")]
         public async Task<IActionResult> GetFileList(int datasetId, CancellationToken cancellationToken = default)

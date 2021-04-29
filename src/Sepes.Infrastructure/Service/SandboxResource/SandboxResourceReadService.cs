@@ -42,9 +42,7 @@ namespace Sepes.Infrastructure.Service
 
                 ).ToList();
 
-            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);
-
-            
+            var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);            
 
             return resourcesMapped;
         }      
@@ -60,7 +58,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default)
         {
-            var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Read, true);
+            var sandboxFromDb = await _sandboxModelService.GetByIdForCostAnalysisLinkAsync(sandboxId, UserOperation.Study_Read);
             return AzureResourceUtil.CreateResourceCostLink(_configuration, sandboxFromDb);
         }
     }

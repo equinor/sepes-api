@@ -19,7 +19,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             string wbs = StudyConstants.CREATED_BY_ME_WBS,
             bool restricted = false,
             int userId = TestUserConstants.COMMON_CUR_USER_DB_ID,
-            string currentUserRole = null,
+            List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null,
             bool addDatasets = false
             )
         {
@@ -27,12 +28,26 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             study.ResultsAndLearnings = "Results and learnings";
             AddParticipant(study, userId, StudyRoles.StudyOwner);
 
-            if (!String.IsNullOrWhiteSpace(currentUserRole))
+            if (additionalRolesForCurrentUser != null)
             {
-                AddParticipant(study, userId, currentUserRole);
+                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser)
+                {
+                    if (!String.IsNullOrWhiteSpace(curRoleCurrentUser))
+                        AddParticipant(study, userId, curRoleCurrentUser);
+                }
             }
+
+            if (rolesForOtherUser != null)
+            {
+                foreach (var curRoleOtherUser in rolesForOtherUser)
+                {
+                    if (!String.IsNullOrWhiteSpace(curRoleOtherUser))
+                        AddParticipant(study, TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
+                }
+            }
+
             AddDatasetsIfWanted(addDatasets, study);
-            await SliceFixture.InsertAsync(study);          
+            await SliceFixture.InsertAsync(study);
 
             return study;
         }
@@ -44,20 +59,34 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             bool restricted = false,
             int ownerUserId = TestUserConstants.COMMON_ALTERNATIVE_STUDY_OWNER_DB_ID,
             int userId = TestUserConstants.COMMON_CUR_USER_DB_ID,
-            string currentUserRole = null,
+            List<string> additionalRolesForCurrentUser = null,
+            List<string> rolesForOtherUser = null,
             bool addDatasets = false)
         {
             var study = StudyBasic(name, vendor, wbs, restricted);
             study.ResultsAndLearnings = "Results and learnings";
             AddParticipant(study, ownerUserId, StudyRoles.StudyOwner);
 
-            if (!String.IsNullOrWhiteSpace(currentUserRole))
+            if (additionalRolesForCurrentUser != null)
             {
-                AddParticipant(study, userId, currentUserRole);
+                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser)
+                {
+                    if (!String.IsNullOrWhiteSpace(curRoleCurrentUser))
+                        AddParticipant(study, userId, curRoleCurrentUser);
+                }
+            }
+
+            if (rolesForOtherUser != null)
+            {
+                foreach (var curRoleOtherUser in rolesForOtherUser)
+                {
+                    if (!String.IsNullOrWhiteSpace(curRoleOtherUser))
+                        AddParticipant(study, TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
+                }
             }
 
             AddDatasetsIfWanted(addDatasets, study);
-            await SliceFixture.InsertAsync(study);          
+            await SliceFixture.InsertAsync(study);
 
             return study;
         }
@@ -85,8 +114,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                     var datasetName = $"ds-{counter}";
                     var datasetClassification = (DatasetClassification)counter;
 
-                    var datasetRelation = DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString());                  
-                    study.StudyDatasets.Add(datasetRelation);               
+                    var datasetRelation = DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString());
+                    study.StudyDatasets.Add(datasetRelation);
                 }
             }
         }
@@ -106,7 +135,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Sandboxes = new List<Sandbox>(),
                 StudyDatasets = new List<StudyDataset>(),
                 Resources = new List<CloudResource>() { StudySpecificDatasetResourceGroup(name) },
-                
+
             };
         }
 

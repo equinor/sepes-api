@@ -73,7 +73,7 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation($"Creating Virtual Machine for sandbox: {sandboxId}");
 
-                var sandbox = await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
+                var sandbox = await _sandboxModelService.GetByIdForResourceCreationAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
 
                 var virtualMachineName = AzureResourceNameUtil.VirtualMachine(sandbox.Study.Name, sandbox.Name, userInput.Name);
 

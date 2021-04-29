@@ -57,11 +57,6 @@ namespace Sepes.Infrastructure.Service
             }
 
             return true;          
-        }
-
-        protected async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
-        {
-            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
-        }       
+        }              
     }
 }

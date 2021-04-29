@@ -5,7 +5,7 @@ using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var newOperation = await CreateUpdateOperationAsync(
-                AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
+                ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(sandboxResourceFromDb.ResourceType, operationType, sandboxResourceId),
                operationType,
                dependsOn,
                batchId,
@@ -91,7 +91,6 @@ namespace Sepes.Infrastructure.Service
 
         async Task<CloudResourceOperation> CheckAnyIfOperationsToWaitFor(CloudResource resource, UserDto currentUser)
         {
-
             bool mostRecentOperation = true;
 
             foreach (var curOperation in resource.Operations.OrderByDescending(o => o.Created))
@@ -106,13 +105,14 @@ namespace Sepes.Infrastructure.Service
                     return null;
                 }
 
-                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES)
+                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES || curOperation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES || curOperation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
                 {
                     if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED && curOperation.Status != CloudResourceOperationState.ABANDONED)
                     {
                         //If very old, set to aborted and continue the search
-                        if (curOperation.Updated.AddMinutes(1) < DateTime.UtcNow)
+                        if (curOperation.Updated.AddMinutes(2) < DateTime.UtcNow)
                         {
+                            curOperation.Description += " (appeared to be failing)";
                             curOperation.Status = CloudResourceOperationState.ABANDONED;
                             curOperation.Updated = DateTime.UtcNow;
                             curOperation.UpdatedBy = currentUser.UserName;

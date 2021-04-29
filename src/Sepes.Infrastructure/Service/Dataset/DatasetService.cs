@@ -1,72 +1,62 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class DatasetService : DatasetServiceBase, IDatasetService
-    {       
+    {
+        IPreApprovedDatasetModelService _preApprovedDatasetModelService;
 
-        public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService)
+        public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService, IPreApprovedDatasetModelService preApprovedDatasetModelService)
             : base(db, mapper, logger, userService)
         {
-          
+            _preApprovedDatasetModelService = preApprovedDatasetModelService;
         }
 
-        public async Task<IEnumerable<DatasetLookupItemDto>> GetDatasetsLookupAsync()
+        public async Task<DatasetDto> GetByIdAsync(int datasetId)
         {
-            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
-
-            var datasetsFromDb = await _db.Datasets
-                .Where(ds => !ds.StudySpecific && !ds.Deleted)
-                .ToListAsync();
-            var dataasetsDtos = _mapper.Map<IEnumerable<DatasetLookupItemDto>>(datasetsFromDb);
-
-            return dataasetsDtos;
-        }
-
-        public async Task<IEnumerable<DatasetDto>> GetDatasetsAsync()
-        {
-            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Read);
-
-            var datasetsFromDb = await _db.Datasets
-                .Where(ds => !ds.StudySpecific)
-                .ToListAsync();
-            var dataasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(datasetsFromDb);
-
-            return dataasetDtos;
-        }
-
-        public async Task<DatasetDto> GetDatasetByDatasetIdAsync(int datasetId)
-        {
-            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Read);
+            var datasetFromDb = await _preApprovedDatasetModelService.GetByIdAsync(datasetId, UserOperation.PreApprovedDataset_Read);         
 
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
             return datasetDto;
-       }     
-
-        public async Task<DatasetDto> CreateDatasetAsync(PreApprovedDatasetCreateUpdateDto newDataset)
-        {
-            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
-
-            var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
-            var newDatasetId = await Add(newDatasetDbModel);
-            return await GetDatasetByDatasetIdAsync(newDatasetId);
         }
 
-        public async Task<DatasetDto> UpdateDatasetAsync(int datasetId, DatasetDto updatedDataset)
+        public async Task<IEnumerable<DatasetLookupItemDto>> GetLookupAsync()
         {
-            var datasetFromDb = await GetDatasetOrThrowAsync(datasetId, UserOperation.PreApprovedDataset_Create_Update_Delete);
+            var datasetsFromDb = await _preApprovedDatasetModelService.GetAllAsync(UserOperation.PreApprovedDataset_Read);
+            var datasetDtos = _mapper.Map<IEnumerable<DatasetLookupItemDto>>(datasetsFromDb);
+
+            return datasetDtos;
+        }
+
+        public async Task<IEnumerable<DatasetDto>> GetAllAsync()
+        {
+            var datasetsFromDb = await _preApprovedDatasetModelService.GetAllAsync(UserOperation.PreApprovedDataset_Read);
+            var datasetDtos = _mapper.Map<IEnumerable<DatasetDto>>(datasetsFromDb);
+            return datasetDtos;
+        }        
+
+        public async Task<DatasetDto> CreateAsync(PreApprovedDatasetCreateUpdateDto newDataset)
+        {
+            var newDatasetDbModel = _mapper.Map<Dataset>(newDataset);
+            var dataset = await _preApprovedDatasetModelService.CreateAsync(newDatasetDbModel);        
+
+            return _mapper.Map<DatasetDto>(dataset);
+        }
+
+        public async Task<DatasetDto> UpdateAsync(int datasetId, DatasetDto updatedDataset)
+        {
+            var datasetFromDb = await _preApprovedDatasetModelService.GetByIdAsync(datasetId, UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             PerformUsualTestForPostedDatasets(updatedDataset);
 
@@ -129,17 +119,11 @@ namespace Sepes.Infrastructure.Service
             datasetFromDb.Updated = DateTime.UtcNow;
             Validate(datasetFromDb);
             await _db.SaveChangesAsync();
-            return await GetDatasetByDatasetIdAsync(datasetFromDb.Id);
-        }
-
-        public async Task<bool> IsStudySpecific(int datasetId)
-        {
-            var dataset = await GetDatasetOrThrowNoAccessCheckAsync(datasetId);
-            return IsStudySpecific(dataset);
-        }
+            return await GetByIdAsync(datasetFromDb.Id);
+        }       
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task DeleteDatasetAsync(int datasetId)
+        public async Task DeleteAsync(int datasetId)
 #pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
         {
             throw new NotImplementedException("Delete of Pre-Approved datasets not implemented yet");

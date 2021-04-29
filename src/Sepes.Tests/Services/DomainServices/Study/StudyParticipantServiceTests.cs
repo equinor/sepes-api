@@ -80,18 +80,18 @@ namespace Sepes.Tests.Services.DomainServices
             //GET REQUIRED SERVICES
             var db = _serviceProvider.GetService<SepesDbContext>();
             var mapper = _serviceProvider.GetService<IMapper>();
-            var logger = _serviceProvider.GetService<ILogger<StudyParticipantCreateService>>();
-            var telemetry = _serviceProvider.GetService<TelemetryClient>();
+            var logger = _serviceProvider.GetService<ILogger<StudyParticipantCreateService>>();          
 
             var adUserServiceMock = new Mock<IAzureUserService>();
             adUserServiceMock.Setup(service => service.GetUserAsync(It.IsAny<string>())).ReturnsAsync(new AzureUserDto() { DisplayName = userFullName, Mail = userEmail });
 
+            //Study model service
+            var studyModelService = StudyServiceMockFactory.StudyModelService(_serviceProvider);
+
             //Used to get current user
             var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);
             userServiceMock.Setup(service => service.GetUserByIdAsync(TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
-
-          
-
+                      
             //Operations service mock 
             var queueServiceMock = new Mock<IProvisioningQueueService>();
             queueServiceMock.Setup(service => service.SendMessageAsync(It.IsAny<ProvisioningQueueParentDto>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>())).ReturnsAsync(new ProvisioningQueueParentDto());
@@ -101,7 +101,7 @@ namespace Sepes.Tests.Services.DomainServices
 
             var operationUpdateServiceMock = new Mock<ICloudResourceOperationUpdateService>();
 
-            var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, telemetry, userServiceMock.Object, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
+            var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, userServiceMock.Object, studyModelService, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 
 //Use the command below to create a new migration. 
 //Replace <migration name> with a good migration name and run this in Package Manager Console
@@ -48,7 +47,7 @@ namespace Sepes.Infrastructure.Model.Context
         }
 
         private void AddIndexing(ModelBuilder modelBuilder)
-        {           
+        {
 
             modelBuilder.Entity<Study>()
               .HasIndex(s => new { s.Id, s.Restricted })
@@ -97,6 +96,9 @@ namespace Sepes.Infrastructure.Model.Context
              s.Id,
              s.Region
          }).HasFilter("[Deleted] = 0");
+
+            modelBuilder.Entity<User>()
+        .HasIndex(s => new { s.ObjectId });
         }
 
         void AddPrimaryKeys(ModelBuilder modelBuilder)

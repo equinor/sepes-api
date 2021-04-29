@@ -17,52 +17,10 @@ namespace Sepes.Infrastructure.Util
             {
                 throw new System.Exception($"{errorMessagePrefix}: Resource {resourceType} with name {name} was not found");
             }
-        }
+        }     
+     
 
-        public static string CreateDescriptionForResourceOperation(string resourceType, string operationType, int resourceId = 0)
-        {
-            var description = $"{operationType} {resourceType}";
-
-            if (resourceId > 0)
-            {
-                description += $" with id {resourceId}";
-            }           
-
-            return description;
-        }
-
-        public static string CreateDescriptionForStudyResourceOperation(string resourceType, string operationType, int studyId = 0, int resourceId = 0)
-        {
-            var description = CreateDescriptionForResourceOperation(resourceType, operationType, resourceId);
-
-            if(studyId > 0)
-            {
-                description += $" for study {studyId}";
-            }           
-
-            return description;
-        }
-
-        public static string CreateDescriptionForSandboxResourceOperation(string resourceType, string operationType, int sandboxId, int resourceId = 0)
-        {
-            var description = CreateDescriptionForResourceOperation(resourceType, operationType, resourceId); 
-
-            description += $" for sandbox {sandboxId}";
-
-            return description;
-        }
-
-        public static string CreateResourceOperationErrorMessage(Exception ex)
-        {
-            var messageBuilder = new StringBuilder(ex.Message);
-
-            if (ex.InnerException != null)
-            {
-                messageBuilder.AppendLine(CreateResourceOperationErrorMessage(ex.InnerException));
-            }
-
-            return messageBuilder.ToString();
-        }
+     
 
         public static string CreateResourceLink(IConfiguration config, CloudResource resource)
         {

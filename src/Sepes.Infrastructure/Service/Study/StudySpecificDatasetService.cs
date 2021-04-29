@@ -21,6 +21,7 @@ namespace Sepes.Infrastructure.Service
     public class StudySpecificDatasetService : DatasetServiceBase, IStudySpecificDatasetService
     {
         readonly IStudyModelService _studyModelService;
+        readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
         public StudySpecificDatasetService(
@@ -29,19 +30,20 @@ namespace Sepes.Infrastructure.Service
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
+            IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
             )
             : base(db, mapper, logger, userService)
         {
             _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
+            _studySpecificDatasetModelService = studySpecificDatasetModelService;
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
-        } 
+        }
 
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
-        {           
-            var studyFromDb =  await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true);
-
-            // Check that study has WbsCode.
+        {
+            var studyFromDb = await _studyModelService.GetForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
+                        
             if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
             {
                 throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
@@ -52,10 +54,10 @@ namespace Sepes.Infrastructure.Service
             ThrowIfDatasetNameTaken(studyFromDb, newDatasetInput.Name);
 
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
-            dataset.StudySpecific = true;           
+            dataset.StudySpecific = true;
 
             var currentUser = await _userService.GetCurrentUserAsync();
-            dataset.CreatedBy = currentUser.UserName;          
+            dataset.CreatedBy = currentUser.UserName;
 
             _db.Datasets.Add(dataset);
             await _db.SaveChangesAsync();
@@ -65,7 +67,7 @@ namespace Sepes.Infrastructure.Service
             await _db.StudyDatasets.AddAsync(studyDataset);
             await _db.SaveChangesAsync();
 
-            dataset = await GetDatasetOrThrowNoAccessCheckAsync(dataset.Id);
+            dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(dataset.Id, UserOperation.Study_AddRemove_Dataset);
 
             try
             {
@@ -78,20 +80,20 @@ namespace Sepes.Infrastructure.Service
                 _db.Datasets.Remove(dataset);
                 await _db.SaveChangesAsync();
                 throw;
-            }           
+            }
 
             var datasetDto = _mapper.Map<DatasetDto>(dataset);
 
             await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
-        }       
+        }
 
         public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DatasetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
-          
-            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_AddRemove_Dataset, true);
+
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
 
             var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
 
@@ -108,15 +110,8 @@ namespace Sepes.Infrastructure.Service
             return datasetDto;
         }
 
-        async Task<Dataset> GetStudySpecificDatasetOrThrowAsync(int studyId, int datasetId, UserOperation operation)
-        {           
-            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, operation, true, true);
-
-            return GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
-        }
-
         Dataset GetStudySpecificDatasetOrThrow(Study study, int datasetId)
-        {            
+        {
             var studyDatasetRelation = study.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
 
             if (studyDatasetRelation == null)
@@ -154,31 +149,24 @@ namespace Sepes.Infrastructure.Service
 
             if (study.StudyDatasets.Any())
             {
-                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => sds.Dataset.StudySpecific && sds.StudyId == study.Id))
+                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => !sds.Dataset.Deleted && sds.Dataset.StudySpecific && sds.StudyId == study.Id))
                 {
                     studySpecificDatasetsToDelete.Add(studySpecificDataset.DatasetId);
                 }
-            }
-
-            await _db.SaveChangesAsync();
+            }          
 
             if (studySpecificDatasetsToDelete.Any())
             {
                 foreach (var curStudySpecificDatasetId in studySpecificDatasetsToDelete)
                 {
-                    var datasetToDelete = await _db.Datasets.Include(d => d.StudyDatasets).FirstOrDefaultAsync(d => d.Id == curStudySpecificDatasetId);
-
-                    if (datasetToDelete != null)
-                    {
-                        await deleteHandler(study, datasetToDelete.Id, cancellationToken);
-                    }
+                    await deleteHandler(study, curStudySpecificDatasetId, cancellationToken);
                 }
             }
         }
 
         public async Task SoftDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_AddRemove_Dataset, false);
+            var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
             var study = dataset.StudyDatasets.SingleOrDefault().Study;
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await SoftDeleteAsync(dataset);
@@ -186,21 +174,21 @@ namespace Sepes.Infrastructure.Service
 
         public async Task SoftDeleteStudySpecificDatasetAsync(Study study, int datasetId, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetStudySpecificDatasetOrThrowAsync(study.Id, datasetId, UserOperation.Study_AddRemove_Dataset);       
+            var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await SoftDeleteAsync(dataset);
         }
 
         public async Task HardDeleteStudySpecificDatasetAsync(Study study, int datasetId, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetStudySpecificDatasetOrThrowAsync(study.Id, datasetId, UserOperation.Study_AddRemove_Dataset);
+            var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await HardDeleteAsync(dataset);
         }
 
         public async Task HardDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_AddRemove_Dataset, false);
+            var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
             var study = dataset.StudyDatasets.SingleOrDefault().Study;
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await HardDeleteAsync(dataset);
@@ -213,7 +201,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<DatasetResourceLightDto>> GetDatasetResourcesAsync(int studyId, int datasetId, CancellationToken cancellation)
         {
-            var dataset = await GetDatasetOrThrowAsync(datasetId, UserOperation.Study_Read, false);
+            var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_Read);
 
             //Filter out deleted resources
             var resourcesFiltered = dataset.Resources

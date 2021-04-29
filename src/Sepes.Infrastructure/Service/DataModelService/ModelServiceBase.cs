@@ -8,7 +8,6 @@ using Sepes.Infrastructure.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
@@ -36,12 +35,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected string GetDbConnectionString()
         {
             return _db.Database.GetDbConnection().ConnectionString;
-        }
-
-        protected async Task<Study> GetStudyByIdAsync(int studyId, UserOperation userOperation, bool withIncludes)
-        {
-            return await StudySingularQueries.GetStudyByIdCheckAccessOrThrow(_db, _userService, studyId, userOperation, withIncludes);
-        }
+        }       
 
         protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
         {
@@ -100,9 +94,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             return singleEntity;
         }
-
     }
-
 
     public class ModelServiceBase<TModel> : ModelServiceBase where TModel : BaseModel
     {

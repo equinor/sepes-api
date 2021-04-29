@@ -1,6 +1,7 @@
 ﻿using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Response;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,13 +11,21 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
     {
         Task<Study> AddAsync(Study study);
 
-        Task<IEnumerable<StudyListItemDto>> GetStudyListAsync();
+        Task<IEnumerable<StudyListItemDto>> GetListAsync();
 
-        Task<Study> GetByIdAsync(int studyId, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false);
+        Task<Study> GetByIdAsync(int studyId, UserOperation userOperation);        
 
-        Task<Study> GetStudyForStudyDetailsAsync(int studyId);
+        Task<Study> GetForStudyDetailsAsync(int studyId);     
 
-        Task<Study> GetByIdWithoutPermissionCheckAsync(int studyId, bool withIncludes = false, bool disableTracking = false);
-        Task<StudyResultsAndLearningsDto> GetStudyResultsAndLearningsAsync(int studyId);
+        Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId);
+        Task<Study> GetForDatasetsAsync(int studyId, UserOperation operation = UserOperation.Study_Read);
+
+        Task<Study> GetForDatasetCreationAsync(int studyId, UserOperation operation);
+
+        Task<Study> GetForDatasetCreationNoAccessCheckAsync(int studyId);
+        Task<Study> GetForParticpantOperationsAsync(int studyId, UserOperation operation, string newRole = null);
+        Task<Study> GetForSandboxCreateAndDeleteAsync(int studyId, UserOperation operation);
+        Task<Study> GetWitParticipantsNoAccessCheck(int studyId);
+        Task<Study> GetForDeleteAsync(int studyId, UserOperation operation);
     }
 }

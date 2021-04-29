@@ -7,7 +7,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -37,23 +36,12 @@ namespace Sepes.Infrastructure.Service
         {
             if (_cachedUser == null)
             {
-                var userFromDb = await EnsureDbUserExists(false);
+                var userFromDb = await EnsureDbUserExists();
                 _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
             }
 
             return _cachedUser;
-        }     
-
-        public async Task<UserDto> GetCurrentUserWithStudyParticipantsAsync()
-        {
-            if (_cachedUser == null || (_cachedUser != null && _cachedUser.StudyParticipants == null))
-            {
-                var userFromDb = await EnsureDbUserExists(true);
-                _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
-            }
-
-            return _cachedUser;
-        }
+        }        
 
         public async Task<UserDto> GetUserByIdAsync(int userId)
         {
@@ -62,11 +50,9 @@ namespace Sepes.Infrastructure.Service
             return userDto;
         }
 
-        async Task<User> EnsureDbUserExists(bool includeParticipantInfo = false)
-        {
-           var sp = Stopwatch.StartNew();
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService, includeParticipantInfo);
-            var elapsed = sp.ElapsedMilliseconds;
+        async Task<User> EnsureDbUserExists()
+        {           
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService);           
         }     
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)

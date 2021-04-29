@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Threading.Tasks;
 
@@ -55,7 +56,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             MarkAsDeletedInternal(resourceFromDb, currentUser.UserName);
 
-            var deleteOperation = await EnsureExistsDeleteOperationInternalAsync(currentUser, deletePrefixForLogMessages, resourceFromDb);
+            var deleteOperation = await EnsureExistsDeleteOperationInternalAsync(deletePrefixForLogMessages, resourceFromDb);
 
             await _db.SaveChangesAsync();
 
@@ -87,7 +88,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return _mapper.Map<CloudResourceDto>(resourceFromDb);
         }
 
-        async Task<CloudResourceOperation> EnsureExistsDeleteOperationInternalAsync(UserDto currentUser, string deleteDescription, CloudResource resource)
+        async Task<CloudResourceOperation> EnsureExistsDeleteOperationInternalAsync(string deleteDescription, CloudResource resource)
         {
             _logger.LogInformation($"{deleteDescription}: Ensuring delete operation exist");
 
@@ -98,7 +99,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 _logger.LogInformation($"{deleteDescription}: Creating delete operation");
 
                 deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resource.Id,
-                    AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(resource.ResourceType, CloudResourceOperationType.DELETE, resource.SandboxId.Value, resource.Id));
+                    ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(
+                        resource.ResourceType,
+                        CloudResourceOperationType.DELETE,
+                        resource.Id,
+                        sandboxId: resource.SandboxId.Value));
 
             }
             else

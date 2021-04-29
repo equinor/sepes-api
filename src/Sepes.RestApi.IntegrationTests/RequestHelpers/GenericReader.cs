@@ -17,9 +17,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         public static async Task<ApiConversation<T>> ReadExpectSuccess<T>(RestHelper restHelper, string url)
         {
             return await Read<T>(restHelper, url);
-        }
-
-     
+        }     
 
         public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> ReadExpectFailure(RestHelper restHelper, string url)
         {

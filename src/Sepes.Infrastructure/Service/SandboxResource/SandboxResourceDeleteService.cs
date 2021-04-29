@@ -60,9 +60,9 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
 
-                var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(sandboxResourceGroup.Id, AzureResourceUtil.CreateDescriptionForSandboxResourceOperation(sandboxResourceGroup.ResourceType,
+                var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(sandboxResourceGroup.Id, ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType,
                      CloudResourceOperationType.DELETE,
-                     sandboxResourceGroup.SandboxId.Value) + ". (Delete of Sandbox resource group and all resources within)");
+                    sandboxId: sandboxResourceGroup.SandboxId.Value) + ". (Delete of Sandbox resource group and all resources within)");
 
                 _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", sandboxFromDb.StudyId, sandboxId);
 

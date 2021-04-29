@@ -5,6 +5,7 @@ using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -94,7 +95,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
         {
-            return await base.WithVirtualMachine(createdByCurrentUser, restricted, studyRole, addDatasets: true);
+            return await base.WithVirtualMachine(createdByCurrentUser, restricted, new List<string> { studyRole }, addDatasets: true);
         }
 
         async Task PerformTestsExpectSuccess(int sandboxId)

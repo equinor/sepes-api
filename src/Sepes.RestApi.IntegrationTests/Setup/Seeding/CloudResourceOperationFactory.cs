@@ -22,19 +22,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         {
             var operation = BasicOperation(description, operationType, status: status, batchId: batchId, tryCount, maxTryCount);
             return operation;
-        }
-
-        //public static CloudResourceOperation AbortedOperation(string description, string operationType = CloudResourceOperationType.CREATE, string batchId = null, int tryCount = 5, int maxTryCount = 5)
-        //{
-        //    var operation = FailedOperation(description, operationType, batchId: batchId, status: CloudResourceOperationState.ABORTED, tryCount, maxTryCount);
-        //    return operation;
-        //}
-
-        //public static CloudResourceOperation AbandonedOperation(string description, string operationType = CloudResourceOperationType.CREATE, string batchId = null, int tryCount = 5, int maxTryCount = 5)
-        //{
-        //    var operation = FailedOperation(description, operationType, batchId: batchId, status: CloudResourceOperationState.ABANDONED, tryCount, maxTryCount);
-        //    return operation;
-        //}
+        }      
 
         public static CloudResourceOperation BasicOperation(string description, string operationType, string status = CloudResourceOperationState.NEW, string batchId = null, int tryCount = 0, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {

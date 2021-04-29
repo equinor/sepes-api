@@ -3,6 +3,7 @@ using Sepes.Infrastructure.Dto.Study;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -63,7 +64,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: isEmployee, isSponsor: sponsor, isDatasetAdmin: isDatasetAdmin);
             await WithUserSeeds();
-            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restricted, studyRole) : await WithStudyCreatedByOtherUser(restricted, studyRole);
+            var createdStudy = createdByCurrentUser ?  await WithStudyCreatedByCurrentUser(restricted, new List<string> { studyRole }) : await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
             var updateRequst = new StudyDto() { Name = "newName", Vendor = "newVendor" };
             var studyDeleteConversation = await StudyUpdater.UpdateAndExpectFailure(_restHelper, createdStudy.Id, updateRequst);
 
