@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.17](https://github.com/equinor/sepes-api/compare/0.4.16...0.4.17) (2021-04-07)
+
+### [0.4.16](https://github.com/equinor/sepes-api/compare/0.4.15...0.4.16) (2021-04-07)
+
+
+### Bug Fixes
+
+* **sandbox:** add correct dataset restrictions text ([3b3afd8](https://github.com/equinor/sepes-api/commit/3b3afd839d85af59949cd9c4ae59eb1829e66c68))
+* **startup:** better logging for empty db con string ([d40427f](https://github.com/equinor/sepes-api/commit/d40427f48a5337d24ec74f692a0ca7c914a65ee0))
+
 ### [0.4.15](https://github.com/equinor/sepes-api/compare/0.4.14...0.4.15) (2021-03-26)
 
 
