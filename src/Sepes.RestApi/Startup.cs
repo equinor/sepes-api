@@ -49,26 +49,7 @@ namespace Sepes.RestApi
             _configuration = configuration;
 
             Log("Sepes Startup Constructor");
-        }
-
-        string GetConnectionString(string name, bool enableSensitiveDataLogging)
-        {
-            var connectionStringFromConfig = _configuration[name];
-
-            if (string.IsNullOrWhiteSpace(connectionStringFromConfig))
-            {
-                throw new Exception($"Could not obtain database connection string with name: {name}.");
-            }
-
-            //Clean and print connection string (password will be removed)
-            if (enableSensitiveDataLogging)
-            {
-                var cleanConnectionString = ConfigUtil.RemovePasswordFromConnectionString(connectionStringFromConfig);              
-                Log($"Connection string named {name}: {cleanConnectionString}");              
-            }
-
-            return connectionStringFromConfig;
-        }
+        }       
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -96,17 +77,14 @@ namespace Sepes.RestApi
                 });
             });
 
-            var enableSensitiveDataLogging = true;
-
             var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
             if (!isIntegrationTest)
             {
-                
-            var enableSensitiveDataLogging = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
+                var enableSensitiveDataLoggingFromConfig = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
 
                 var readWriteDbConnectionString = _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
-            DoMigration(enableSensitiveDataLogging);
+                DoMigration(enableSensitiveDataLoggingFromConfig);
 
                 if (string.IsNullOrWhiteSpace(readWriteDbConnectionString))
                 {
@@ -117,7 +95,7 @@ namespace Sepes.RestApi
                   options => options.UseSqlServer(
                       readWriteDbConnectionString,
                       assembly => assembly.MigrationsAssembly(typeof(SepesDbContext).Assembly.FullName))
-                  .EnableSensitiveDataLogging(enableSensitiveDataLogging)
+                  .EnableSensitiveDataLogging(enableSensitiveDataLoggingFromConfig)
                   );
             }
 
@@ -143,7 +121,7 @@ namespace Sepes.RestApi
 
             SetFileUploadLimits(services);
 
-            SwaggerSetup.ConfigureServices(_configuration, services);          
+            SwaggerSetup.ConfigureServices(_configuration, services);
 
             Log("Configuring services done");
         }
@@ -153,7 +131,7 @@ namespace Sepes.RestApi
             Trace.WriteLine("Configuring Application Insights");
 
             var aiOptions = new ApplicationInsightsServiceOptions
-            {                
+            {
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = _configuration[ConfigConstants.APPI_KEY],
                 EnableDebugLogger = true
@@ -199,7 +177,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();            
+            services.AddTransient<ICloudResourceDeleteService, CloudResourceDeleteService>();
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
@@ -289,7 +267,7 @@ namespace Sepes.RestApi
             }
 
             string sqlConnectionStringOwner = GetConnectionString(ConfigConstants.DB_OWNER_CONNECTION_STRING, enableSensitiveDataLogging); // _configuration[ConfigConstants.DB_OWNER_CONNECTION_STRING];
-            
+
             var createDbOptions = new DbContextOptionsBuilder<SepesDbContext>();
             createDbOptions.UseSqlServer(sqlConnectionStringOwner);
             createDbOptions.EnableSensitiveDataLogging(enableSensitiveDataLogging);
@@ -301,6 +279,25 @@ namespace Sepes.RestApi
             }
 
             Log("Do migration done");
+        }
+
+        string GetConnectionString(string name, bool enableSensitiveDataLogging)
+        {
+            var connectionStringFromConfig = _configuration[name];
+
+            if (string.IsNullOrWhiteSpace(connectionStringFromConfig))
+            {
+                throw new Exception($"Could not obtain database connection string with name: {name}.");
+            }
+
+            //Clean and print connection string (password will be removed)
+            if (enableSensitiveDataLogging)
+            {
+                var cleanConnectionString = ConfigUtil.RemovePasswordFromConnectionString(connectionStringFromConfig);
+                Log($"Connection string named {name}: {cleanConnectionString}");
+            }
+
+            return connectionStringFromConfig;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -345,7 +342,7 @@ namespace Sepes.RestApi
             app.UseAuthentication();
             app.UseAuthorization();
 
-            SwaggerSetup.Configure(_configuration, app);           
+            SwaggerSetup.Configure(_configuration, app);
 
             app.UseEndpoints(endpoints =>
             {
