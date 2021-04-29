@@ -1,10 +1,8 @@
 ﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
-using Sepes.Tests.Common.Constants;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;

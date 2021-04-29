@@ -51,6 +51,9 @@ namespace Sepes.Infrastructure.Service.Azure
 
         async Task<AzureRoleAssignment> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default)
         {
+            try
+            {          
+
             if (String.IsNullOrWhiteSpace(roleAssignmentId))
             {
                 roleAssignmentId = Guid.NewGuid().ToString();
@@ -64,6 +67,13 @@ namespace Sepes.Infrastructure.Service.Azure
             var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
 
             return result;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw new Exception($"Add role assignment with id {roleAssignmentId} failed for resource {resourceId}. Role definition: {roleDefinitionId}, principalId: {principalId}", ex);
+            }
         }
 
         async Task<AzureRoleAssignment> DeleteRoleAssignment(string roleAssignmentId, CancellationToken cancellationToken = default)
