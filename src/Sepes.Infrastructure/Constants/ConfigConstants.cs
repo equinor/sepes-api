@@ -48,5 +48,7 @@
         public const string EMPLOYEE_ROLE = "EmployeeRole";
 
         public const string SERVER_PUBLIC_IP_URLS = "GetServerPublicIpServiceUrls";
+
+        public const string SENSITIVE_DATA_LOGGING = "EnableSensitiveDataLogging";
     }
 }
