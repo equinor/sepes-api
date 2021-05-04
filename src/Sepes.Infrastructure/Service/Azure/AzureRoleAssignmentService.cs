@@ -52,7 +52,8 @@ namespace Sepes.Infrastructure.Service.Azure
         async Task<AzureRoleAssignment> AddRoleAssignment(string resourceId, string roleDefinitionId, string principalId, string roleAssignmentId = null, CancellationToken cancellationToken = default)
         {
             try
-            {          
+            {
+                throw new Exception("Inner message");
 
             if (String.IsNullOrWhiteSpace(roleAssignmentId))
             {
@@ -70,8 +71,7 @@ namespace Sepes.Infrastructure.Service.Azure
 
             }
             catch (Exception ex)
-            {
-
+            {                
                 throw new Exception($"Add role assignment with id {roleAssignmentId} failed for resource {resourceId}. Role definition: {roleDefinitionId}, principalId: {principalId}", ex);
             }
         }
