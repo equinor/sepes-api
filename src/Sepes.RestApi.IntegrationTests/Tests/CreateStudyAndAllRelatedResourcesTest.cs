@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
@@ -84,6 +85,17 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
 
             //TODO: Add some participants
+
+            await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, "admin",
+                new ParticipantLookupDto { FullName = "John", DatabaseId = 1, EmailAddress = "john@email.com", ObjectId = "1", Source = "DB", UserName = "john" });
+
+            var test = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
+            //SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
+
+            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
+
+
+            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, test.Content);
 
             //TODO: OPEN INTERNET
 
