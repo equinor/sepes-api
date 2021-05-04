@@ -53,25 +53,24 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             try
             {
-                throw new Exception("Inner message");
 
-            if (String.IsNullOrWhiteSpace(roleAssignmentId))
-            {
-                roleAssignmentId = Guid.NewGuid().ToString();
-            }
+                if (String.IsNullOrWhiteSpace(roleAssignmentId))
+                {
+                    roleAssignmentId = Guid.NewGuid().ToString();
+                }
 
-            var addRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
+                var addRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
 
-            var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
-            var bodyJson = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
+                var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
+                var bodyJson = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-            var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
+                var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
 
-            return result;
+                return result;
 
             }
             catch (Exception ex)
-            {                
+            {
                 throw new Exception($"Add role assignment with id {roleAssignmentId} failed for resource {resourceId}. Role definition: {roleDefinitionId}, principalId: {principalId}", ex);
             }
         }
@@ -118,12 +117,12 @@ namespace Sepes.Infrastructure.Service.Azure
             var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);
 
             var existingRoleAssignments = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
-            
+
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {
-                var sameRoleFromExisting = existingRoleAssignments.Where(ra=> ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
-                               
+                var sameRoleFromExisting = existingRoleAssignments.Where(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
+
                 if (sameRoleFromExisting != null)
                 {
                     _logger.LogInformation($"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}");
@@ -140,15 +139,15 @@ namespace Sepes.Infrastructure.Service.Azure
             foreach (var curExisting in existingRoleAssignments)
             {
                 var curExistingRoleId = AzureRoleIds.GetRoleIdFromDefinition(curExisting.properties.roleDefinitionId);
-                
+
                 CloudResourceDesiredRoleAssignmentDto sameRoleFromDesired = null;
 
                 if (curExistingRoleId != null)
                 {
-                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.PrincipalId == curExisting.properties.principalId&& ra.RoleId == curExistingRoleId).FirstOrDefault();
+                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.PrincipalId == curExisting.properties.principalId && ra.RoleId == curExistingRoleId).FirstOrDefault();
                 }
-                
-                if(sameRoleFromDesired != null)
+
+                if (sameRoleFromDesired != null)
                 {
                     _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping");
                 }
@@ -157,7 +156,7 @@ namespace Sepes.Infrastructure.Service.Azure
                     _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
                     await DeleteRoleAssignment(curExisting.id, cancellationToken);
                 }
-            }                      
+            }
         }
     }
 }
