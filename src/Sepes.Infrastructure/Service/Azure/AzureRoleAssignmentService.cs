@@ -182,16 +182,17 @@ namespace Sepes.Infrastructure.Service.Azure
             var filteredRoleAssignments = assignmentsFromAzure.value.Where(ra => ra.properties.scope.Contains($"/resourceGroups/{resourceGroupId}") || ra.properties.scope.Contains($"/resourceGroups/{resourceGroupName}")).ToList();
 
             foreach (var curAssignment in filteredRoleAssignments)
-            {              
+            {
+                _logger.LogInformation($"GetResourceGroupRoleAssignments: Evaluating {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}");
                 //Only those created by the principles in the list
                 if (createdByFilter == null || createdByFilter.Contains(curAssignment.properties.createdBy))
                 {
-                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Including {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}");
+                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Including {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}, {curAssignment.properties.createdBy}");
                     result.Add(curAssignment);
                 }
                 else
                 {
-                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Excluding {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}");
+                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Excluding {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}, {curAssignment.properties.createdBy}");
                 }
             }
 
