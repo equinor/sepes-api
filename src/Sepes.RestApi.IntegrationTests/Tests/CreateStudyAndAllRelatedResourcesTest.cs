@@ -1,10 +1,14 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
+using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -82,25 +86,51 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
+            //Add some participants
 
-            //TODO: Add some participants
+            var studyParticipantResponse = await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, StudyRoles.SponsorRep,
+                StudyParticipantAdderAndRemover.CreateParticipantLookupDto());
 
-            //TODO: OPEN INTERNET
+            var getStudy = await _restHelper.Get<StudyDetailsDto>($"api/studies/{studyCreateConversation.Response.Content.Id}");
 
-            //TODO: MOVE TO NEXT PHASE
+            var studyParticipant = getStudy.Content.Participants.Find(x => x.UserId == studyParticipantResponse.Response.Content.UserId);
 
-            //TODO: DELETE VM
+            AddStudyParticipantsAsserts.ExpectSuccess(StudyRoles.SponsorRep, studyParticipant, studyParticipantResponse.Response);
 
-            //TODO: RUN WORKER
+            var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
 
-            //TODO: ASSERT THAT VM DISSAPEARS
+            //OPEN INTERNET
+            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
+
+            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
+
+            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
+
+            //MOVE TO NEXT PHASE
+            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
+
+            SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
+            //DELETE VM
+
+            SandboxOperations.DeleteVm<SandboxDetails>(_restHelper, "1");
+
+            //RUN WORKER
+            await ProcessWorkQueue();
+
+            //ASSERT THAT VM DISSAPEARS
+            var sandboxVmsAfterDelete = await _restHelper.Get<List<VmDto>>($"api/virtualmachines/forsandbox/{sandboxResponseWrapper.Content.Id}");
+
+            SandboxVirtualMachineAsserts.AfterProvisioning(sandboxVmsAfterDelete, "vm-studyname-sandboxnam-integrationtest");
 
             //TRY TO DELETE STUDY, GET ERROR
+            await StudyDeleter.DeleteAndExpectFailure(_restHelper, studyCreateConversation.Response.Content.Id);
+
+            //DELETE SANDBOX
+            await SandboxDeleter.DeleteAndExpectSuccess(_restHelper, sandboxResponseWrapper.Content.Id);
 
             //DELETE STUDY
 
-            //DELETE SANDBOX
-
+            await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
 
         }
     }

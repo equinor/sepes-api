@@ -16,5 +16,14 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant
             Assert.Equal(role, responseWrapper.Content.Role);
             Assert.Contains(createRequest.UserName, responseWrapper.Content.UserName);                
         }
+        public static void ExpectSuccess(string role, StudyParticipantDto createRequest, ApiResponseWrapper<StudyParticipantDto> responseWrapper)
+        {
+            ApiResponseBasicAsserts.ExpectSuccess<StudyParticipantDto>(responseWrapper);
+
+            Assert.NotEqual<int>(0, responseWrapper.Content.StudyId);
+            Assert.NotEqual<int>(0, responseWrapper.Content.UserId);
+            Assert.Equal(role, responseWrapper.Content.Role);
+            Assert.Contains(createRequest.UserName, responseWrapper.Content.UserName);
+        }
     }
 }
