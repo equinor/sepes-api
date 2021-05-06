@@ -17,20 +17,36 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return new AddDatasetToSandboxResult(response);
         }
 
-        /*
-        public static async Task<AddDatasetToSandboxResult> OpenInternetVm(RestHelper restHelper, int sandboxId, int datasetId)
-        {
-            var response = await restHelper.Put<VmRuleDto>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
-
-            return new AddDatasetToSandboxResult(response);
-        }*/
 
         public static async Task<ApiConversation<VmRuleDto, TResponse>> OpenInternetForVm<TResponse>(RestHelper restHelper, string vmId = "1")
         {
-            var request = new VmRuleDto() { Name = "OpenInternet", Action = 0, Description = "tests", Direction = 0, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
-            var response = await restHelper.PostAsForm<TResponse, VmRuleDto>($"api/virtualmachines/{vmId}/rules", "study", request);
+            var request = new VmRuleDto() { Name = "OpenInternet", Action = RuleAction.Allow, Description = "tests", Direction = RuleDirection.Outbound, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
+            var response = await restHelper.Post<TResponse, VmRuleDto>($"api/virtualmachines/{vmId}/rules", request);
 
             return new ApiConversation<VmRuleDto, TResponse>(request, response);
+        }
+
+        public static async Task<ApiConversation<VmRuleDto, TResponse>> CloseInternetForVm<TResponse>(RestHelper restHelper, string vmId = "1")
+        {
+            var request = new VmRuleDto() { Name = "OpenInternet", Action = RuleAction.Deny, Description = "tests", Direction = RuleDirection.Outbound, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
+            var response = await restHelper.Post<TResponse, VmRuleDto>($"api/virtualmachines/{vmId}/rules", request);
+
+            return new ApiConversation<VmRuleDto, TResponse>(request, response);
+        }
+
+        public static async Task<ApiConversation<SandboxDetails, TResponse>> MoveToNextPhase<TResponse>(RestHelper restHelper, string sandboxId = "1")
+        {
+            var request = new SandboxDetails() {  };
+            var response = await restHelper.Post<TResponse, SandboxDetails>($"api/sandboxes/{sandboxId}/nextPhase", request);
+
+            return new ApiConversation<SandboxDetails, TResponse>(request, response);
+        }
+
+        public static async void DeleteVm<TResponse>(RestHelper restHelper, string vmId = "1")
+        {
+
+            await restHelper.Delete<VmDto>($"api/virtualmachine/{vmId}");
+            //return new ApiConversation<VmDto, TResponse>(request, response);
         }
     }
 

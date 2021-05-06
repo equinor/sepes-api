@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Infrastructure.Constants;
+using Sepes.Infrastructure.Dto;
+using Sepes.Infrastructure.Dto.Study;
 using Sepes.Infrastructure.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
@@ -6,6 +8,7 @@ using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -84,32 +87,60 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
 
-            //TODO: Add some participants
+            //TODO: Add some participants X
 
-            await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, "admin",
-                new ParticipantLookupDto { FullName = "John", DatabaseId = 1, EmailAddress = "john@email.com", ObjectId = "1", Source = "DB", UserName = "john" });
+            var studyParticipantResponse = await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, StudyRoles.SponsorRep,
+                StudyParticipantAdderAndRemover.CreateParticipantLookupDto());
 
-            var test = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
+            var getStudy = await _restHelper.Get<StudyDetailsDto>($"api/studies/{studyCreateConversation.Response.Content.Id}");
+
+            var studyParticipant = getStudy.Content.Participants.Find(x => x.UserId == studyParticipantResponse.Response.Content.UserId);
+
+            AddStudyParticipantsAsserts.ExpectSuccess(StudyRoles.SponsorRep, studyParticipant, studyParticipantResponse.Response);
+
+
+            var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
             //SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
             var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
 
 
-            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, test.Content);
+            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
 
-            //TODO: OPEN INTERNET
+            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
 
-            //TODO: MOVE TO NEXT PHASE
+            //TODO: OPEN INTERNET X
 
-            //TODO: DELETE VM
+            //TODO: MOVE TO NEXT PHASE X
+
+            //MOVE TO NEXT PHASE
+            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
+
+            SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
+
+            SandboxOperations.DeleteVm<SandboxDetails>(_restHelper, "1");
+
+            await ProcessWorkQueue();
+
+            var sandboxVmsAfterDelete = await _restHelper.Get<List<VmDto>>($"api/virtualmachines/forsandbox/{sandboxResponseWrapper.Content.Id}");
+
+            //TODO: DELETE VM X
 
             //TODO: RUN WORKER
 
             //TODO: ASSERT THAT VM DISSAPEARS
 
+            SandboxVirtualMachineAsserts.AfterProvisioning(sandboxVmsAfterDelete, "vm-studyname-sandboxnam-integrationtest");
+
+            await StudyDeleter.DeleteAndExpectFailure(_restHelper, studyCreateConversation.Response.Content.Id);
+
             //TRY TO DELETE STUDY, GET ERROR
 
+            await SandboxDeleter.DeleteAndExpectSuccess(_restHelper, sandboxResponseWrapper.Content.Id);
+
             //DELETE STUDY
+
+            await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
 
             //DELETE SANDBOX
 
