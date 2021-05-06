@@ -86,7 +86,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
-
             //Add some participants
 
             var studyParticipantResponse = await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, StudyRoles.SponsorRep,
@@ -98,17 +97,14 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             AddStudyParticipantsAsserts.ExpectSuccess(StudyRoles.SponsorRep, studyParticipant, studyParticipantResponse.Response);
 
-
             var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
 
             //OPEN INTERNET
             var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
 
-
             SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
 
             await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
-
 
             //MOVE TO NEXT PHASE
             var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
@@ -124,8 +120,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //ASSERT THAT VM DISSAPEARS
             var sandboxVmsAfterDelete = await _restHelper.Get<List<VmDto>>($"api/virtualmachines/forsandbox/{sandboxResponseWrapper.Content.Id}");
 
-
-
             SandboxVirtualMachineAsserts.AfterProvisioning(sandboxVmsAfterDelete, "vm-studyname-sandboxnam-integrationtest");
 
             //TRY TO DELETE STUDY, GET ERROR
@@ -137,10 +131,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //DELETE STUDY
 
             await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
-
-            
-
-
 
         }
     }
