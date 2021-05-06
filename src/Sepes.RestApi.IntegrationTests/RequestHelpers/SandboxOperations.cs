@@ -44,9 +44,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
 
         public static async void DeleteVm<TResponse>(RestHelper restHelper, string vmId = "1")
         {
-
             await restHelper.Delete<VmDto>($"api/virtualmachine/{vmId}");
-            //return new ApiConversation<VmDto, TResponse>(request, response);
         }
     }
 
