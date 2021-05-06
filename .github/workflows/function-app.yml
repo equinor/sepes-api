@@ -21,7 +21,7 @@ env:
   acr: ${{ secrets.ACR_URL }}/
 
 jobs:
-  ### CI stage. ADDING COMMENT ###
+  ### CI stage. ###
   dockerbuild:
     runs-on: ubuntu-latest
     env:
