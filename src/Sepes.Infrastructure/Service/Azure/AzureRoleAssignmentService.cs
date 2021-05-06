@@ -1,4 +1,4 @@
-﻿        using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
@@ -32,9 +32,23 @@ namespace Sepes.Infrastructure.Service.Azure
             return sb.ToString();
         }
 
+        string CreateConfigErrorString(HashSet<string> filter)
+        {
+            var sb = new StringBuilder();
+
+            foreach(var cur in filter)
+            {
+                sb.AppendLine(cur);
+            }
+
+            return sb.ToString();
+        }
+
         public async Task SetRoleAssignments(string resourceGroupId, string resourceGroupName, List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments, CancellationToken cancellationToken = default)
         {
-            var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);
+            var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);         
+
+            _logger.LogInformation($"SetRoleAssignments: Filtering by {CreateConfigErrorString(createdByFilter)}");
 
             var existingRoleAssignments = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
 
@@ -165,17 +179,19 @@ namespace Sepes.Infrastructure.Service.Azure
 
             var result = new List<AzureRoleAssignment>();
 
-            foreach (var curAssignment in assignmentsFromAzure.value)
-            {
-                //Only those set at resource group level, not inherited one
-                if (curAssignment.properties.scope.Contains($"/resourceGroups/{resourceGroupId}") || curAssignment.properties.scope.Contains($"/resourceGroups/{resourceGroupName}"))
-                {
-                    //Only those created by the principles in the list
-                    if (createdByFilter == null || createdByFilter.Contains(curAssignment.properties.createdBy))
-                    {
-                        result.Add(curAssignment);
-                    }
+            var filteredRoleAssignments = assignmentsFromAzure.value.Where(ra => ra.properties.scope.Contains($"/resourceGroups/{resourceGroupId}") || ra.properties.scope.Contains($"/resourceGroups/{resourceGroupName}")).ToList();
 
+            foreach (var curAssignment in filteredRoleAssignments)
+            {              
+                //Only those created by the principles in the list
+                if (createdByFilter == null || createdByFilter.Contains(curAssignment.properties.createdBy))
+                {
+                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Including {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}");
+                    result.Add(curAssignment);
+                }
+                else
+                {
+                    _logger.LogInformation($"GetResourceGroupRoleAssignments: Excluding {curAssignment.properties.principalId}, {curAssignment.properties.roleDefinitionId}");
                 }
             }
 
