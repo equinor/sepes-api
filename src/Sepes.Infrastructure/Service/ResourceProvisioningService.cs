@@ -141,6 +141,7 @@ namespace Sepes.Infrastructure.Service
 
                             if (await OperationCompletedUtil.HandledAsAllreadyCompletedAsync(currentOperation, _monitoringService))
                             {
+                                _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is allready completed"));
                                 currentProvisioningResult = await provisioningService.GetSharedVariables(currentProvisioningParameters);
                                 continue;
                             }
