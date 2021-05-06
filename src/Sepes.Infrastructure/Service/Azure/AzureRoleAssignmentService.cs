@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);         
 
-            _logger.LogInformation($"SetRoleAssignments: Filtering by {CreateConfigErrorString(createdByFilter)}");
+            _logger.LogInformation($"SetRoleAssignments: Filtering by {CreateConfigErrorString(createdByFilter)}!");
 
             var existingRoleAssignments = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
 
