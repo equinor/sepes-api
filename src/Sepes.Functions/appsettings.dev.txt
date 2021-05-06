@@ -4,7 +4,7 @@
 "CostAllocationCodeTagName=CostAllocationCode"
 "CostAllocationTypeTagName=CostAllocationType"
 "ManagedBy=sepes"
-"RoleAssignmentsManagedBy=4c7902a0-6b6f-4135-81de-bb6552a21a0e"
+"RoleAssignmentsManagedBy=4c7902a0-6b6f-4135-81de-bb6552a21a0e,96b39c38-e9d7-4b2d-bf55-feba10bc3567"
 "ApplicationInsightsInstrumentationKey=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/ApplicationInsightsInstrumentationKey)"
 "AzureAd__ClientId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/AzureAdClientId)"
 "AzureAd__ClientSecret=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/AzureAdClientSecret)"
