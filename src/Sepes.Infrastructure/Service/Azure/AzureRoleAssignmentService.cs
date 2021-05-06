@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿        using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
@@ -23,6 +23,77 @@ namespace Sepes.Infrastructure.Service.Azure
         public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
         {
 
+        }
+
+        string CreateRoleAssignmentErrorString(List<AzureRoleAssignment> azureRoleAssignments)
+        {
+            var sb = new StringBuilder();
+            azureRoleAssignments.ForEach(ra => sb.AppendLine($"{ra.id} | {ra.properties.principalId} | {ra.properties.roleDefinitionId} "));
+            return sb.ToString();
+        }
+
+        public async Task SetRoleAssignments(string resourceGroupId, string resourceGroupName, List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments, CancellationToken cancellationToken = default)
+        {
+            var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);
+
+            var existingRoleAssignments = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
+
+            //Create desired roles that does not allready exist
+            foreach (var curDesired in desiredRoleAssignments)
+            {
+                try
+                {
+                    var sameRoleFromExisting = existingRoleAssignments.Where(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
+
+                    if (sameRoleFromExisting != null)
+                    {
+                        _logger.LogInformation($"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}");
+                    }
+                    else
+                    {
+                        var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(resourceGroupId, curDesired.RoleId);
+                        _logger.LogInformation($"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}");
+                        await AddRoleAssignment(resourceGroupId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    if (ex.Message.Contains("RoleAssignmentExists"))
+                    {
+                        var existingRoleAssignmentsAfterError = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
+
+                        _logger.LogError(ex, $"It appears that role assignment allready exist. Initial list: {CreateRoleAssignmentErrorString(existingRoleAssignments)}. Updated list: {CreateRoleAssignmentErrorString(existingRoleAssignmentsAfterError)}");
+                        continue;
+                    }
+
+
+                    throw;
+                }
+            }
+
+            //Find out what roles are allready in place, and delete those that are no longer needed
+            foreach (var curExisting in existingRoleAssignments)
+            {
+                var curExistingRoleId = AzureRoleIds.GetRoleIdFromDefinition(curExisting.properties.roleDefinitionId);
+
+                CloudResourceDesiredRoleAssignmentDto sameRoleFromDesired = null;
+
+                if (curExistingRoleId != null)
+                {
+                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.PrincipalId == curExisting.properties.principalId && ra.RoleId == curExistingRoleId).FirstOrDefault();
+                }
+
+                if (sameRoleFromDesired != null)
+                {
+                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping");
+                }
+                else
+                {
+                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
+                    await DeleteRoleAssignment(curExisting.id, cancellationToken);
+                }
+            }
         }
 
         async Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
@@ -53,7 +124,6 @@ namespace Sepes.Infrastructure.Service.Azure
         {
             try
             {
-
                 if (String.IsNullOrWhiteSpace(roleAssignmentId))
                 {
                     roleAssignmentId = Guid.NewGuid().ToString();
@@ -110,53 +180,6 @@ namespace Sepes.Infrastructure.Service.Azure
             }
 
             return result;
-        }
-
-        public async Task SetRoleAssignments(string resourceGroupId, string resourceGroupName, List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments, CancellationToken cancellationToken = default)
-        {
-            var createdByFilter = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.ROLE_ASSIGNMENTS_MANAGED_BY);
-
-            var existingRoleAssignments = await GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, createdByFilter, cancellationToken);
-
-            //Create desired roles that does not allready exist
-            foreach (var curDesired in desiredRoleAssignments)
-            {
-                var sameRoleFromExisting = existingRoleAssignments.Where(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
-
-                if (sameRoleFromExisting != null)
-                {
-                    _logger.LogInformation($"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}");
-                }
-                else
-                {
-                    _logger.LogInformation($"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating");
-                    var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(resourceGroupId, curDesired.RoleId);
-                    await AddRoleAssignment(resourceGroupId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
-                }
-            }
-
-            //Find out what roles are allready in place, and delete those that are no longer needed
-            foreach (var curExisting in existingRoleAssignments)
-            {
-                var curExistingRoleId = AzureRoleIds.GetRoleIdFromDefinition(curExisting.properties.roleDefinitionId);
-
-                CloudResourceDesiredRoleAssignmentDto sameRoleFromDesired = null;
-
-                if (curExistingRoleId != null)
-                {
-                    sameRoleFromDesired = desiredRoleAssignments.Where(ra => ra.PrincipalId == curExisting.properties.principalId && ra.RoleId == curExistingRoleId).FirstOrDefault();
-                }
-
-                if (sameRoleFromDesired != null)
-                {
-                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping");
-                }
-                else
-                {
-                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
-                    await DeleteRoleAssignment(curExisting.id, cancellationToken);
-                }
-            }
         }
     }
 }

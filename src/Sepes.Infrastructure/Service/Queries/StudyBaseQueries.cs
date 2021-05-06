@@ -37,9 +37,7 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.StudyParticipants)
                 .Include(s => s.Sandboxes)
                      .ThenInclude(sd => sd.Resources)
-                .Include(s => s.Resources)
-                .AsNoTracking();
-             
+                .Include(s => s.Resources);             
         }
 
         public static IQueryable<Study> StudyDatasetsQueryable(SepesDbContext db)
