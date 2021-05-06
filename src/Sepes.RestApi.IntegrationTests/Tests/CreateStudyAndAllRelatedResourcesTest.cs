@@ -87,7 +87,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
 
-            //TODO: Add some participants X
+            //Add some participants
 
             var studyParticipantResponse = await StudyParticipantAdderAndRemover.AddAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id, StudyRoles.SponsorRep,
                 StudyParticipantAdderAndRemover.CreateParticipantLookupDto());
@@ -100,8 +100,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
 
             var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
-            //SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
+            //OPEN INTERNET
             var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
 
 
@@ -109,40 +109,37 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
 
-            //TODO: OPEN INTERNET X
-
-            //TODO: MOVE TO NEXT PHASE X
 
             //MOVE TO NEXT PHASE
             var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
 
             SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
+            //DELETE VM
 
             SandboxOperations.DeleteVm<SandboxDetails>(_restHelper, "1");
 
+            //RUN WORKER
             await ProcessWorkQueue();
 
+            //ASSERT THAT VM DISSAPEARS
             var sandboxVmsAfterDelete = await _restHelper.Get<List<VmDto>>($"api/virtualmachines/forsandbox/{sandboxResponseWrapper.Content.Id}");
 
-            //TODO: DELETE VM X
 
-            //TODO: RUN WORKER
-
-            //TODO: ASSERT THAT VM DISSAPEARS
 
             SandboxVirtualMachineAsserts.AfterProvisioning(sandboxVmsAfterDelete, "vm-studyname-sandboxnam-integrationtest");
 
+            //TRY TO DELETE STUDY, GET ERROR
             await StudyDeleter.DeleteAndExpectFailure(_restHelper, studyCreateConversation.Response.Content.Id);
 
-            //TRY TO DELETE STUDY, GET ERROR
-
+            //DELETE SANDBOX
             await SandboxDeleter.DeleteAndExpectSuccess(_restHelper, sandboxResponseWrapper.Content.Id);
 
             //DELETE STUDY
 
             await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
 
-            //DELETE SANDBOX
+            
+
 
 
         }
