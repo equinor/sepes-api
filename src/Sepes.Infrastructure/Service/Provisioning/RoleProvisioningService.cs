@@ -72,11 +72,7 @@ namespace Sepes.Infrastructure.Service.Provisioning
                     Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                 }
 
-                if (currentRoleAssignmentTask.IsCompletedSuccessfully)
-                {
-
-                }
-                else
+                if (!currentRoleAssignmentTask.IsCompletedSuccessfully)
                 {
                     if (currentRoleAssignmentTask.Exception == null)
                     {
@@ -86,7 +82,7 @@ namespace Sepes.Infrastructure.Service.Provisioning
                     {
                         throw currentRoleAssignmentTask.Exception;
                     }
-                }
+                }               
             }
             catch (Exception ex)
             {
