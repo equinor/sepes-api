@@ -59,6 +59,16 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.Sandboxes);
         }
 
+        public static IQueryable<Study> StudyCloseQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesWithParticipantsQueryable(db)
+                .Include(s => s.Sandboxes)                  
+                .Include(s => s.Resources)
+                    .ThenInclude(r => r.ChildResources)
+                .Include(s => s.StudyDatasets)
+                    .ThenInclude(sds => sds.Dataset);
+        }
+
         public static IQueryable<Study> StudyDeleteQueryable(SepesDbContext db)
         {
             return ActiveStudiesWithParticipantsQueryable(db)

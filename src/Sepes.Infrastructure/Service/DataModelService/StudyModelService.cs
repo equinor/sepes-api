@@ -83,6 +83,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyParticipantOperationsQueryable(_db), studyId, operation, roleBeingAddedOrRemoved);
         }
 
+        public async Task<Study> GetForCloseAsync(int studyId, UserOperation operation)
+        {
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyCloseQueryable(_db), studyId, operation);
+        }
+
         public async Task<Study> GetForDeleteAsync(int studyId, UserOperation operation)
         {
             return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyDeleteQueryable(_db), studyId, operation);
