@@ -7,13 +7,13 @@ using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Threading.Tasks;
+using Sepes.Infrastructure.Service.Provisioning.Interface;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationReadService _resourceOperationReadService;
         readonly ICloudResourceOperationUpdateService _resourceOperationUpdateService;
 
-        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
+        readonly IRoleProvisioningService _roleProvisioningService;
 
         readonly ICloudResourceMonitoringService _monitoringService;
 
@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service
             IResourceOperationModelService resourceOperationModelService,
             ICloudResourceOperationReadService resourceOperationReadService,
             ICloudResourceOperationUpdateService resourceOperationUpdateService,
-            IAzureRoleAssignmentService azureRoleAssignmentService,
+            IRoleProvisioningService roleProvisioningService,
             ICloudResourceMonitoringService monitoringService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -63,7 +63,7 @@ namespace Sepes.Infrastructure.Service
             _resourceOperationReadService = resourceOperationReadService ?? throw new ArgumentNullException(nameof(resourceOperationReadService));
             _resourceOperationUpdateService = resourceOperationUpdateService ?? throw new ArgumentNullException(nameof(resourceOperationUpdateService));
 
-            _azureRoleAssignmentService = azureRoleAssignmentService ?? throw new ArgumentNullException(nameof(azureRoleAssignmentService));
+            _roleProvisioningService = roleProvisioningService ?? throw new ArgumentNullException(nameof(roleProvisioningService));
             _monitoringService = monitoringService ?? throw new ArgumentNullException(nameof(monitoringService));
         }
 
@@ -165,16 +165,12 @@ namespace Sepes.Infrastructure.Service
                             currentProvisioningResult = await DeleteOperationUtil.HandleDelete(currentOperation, currentProvisioningParameters, provisioningService, _resourceOperationUpdateService, _logger);
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: null);
                         }
-                        else if (EnsureRolesUtil.WillBeHandledAsEnsureRoles(currentOperation))
+                        else if (_roleProvisioningService.CanHandle(currentOperation))
                         {
                             _logger.LogInformation(ProvisioningLogUtil.Operation(currentOperation, "Operation is ENSURE ROLES"));
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
-                            await EnsureRolesUtil.EnsureRoles(currentOperation,
-                                _azureRoleAssignmentService,
-                                _resourceReadService,
-                                _resourceOperationUpdateService,
-                                _logger);
+                            await _roleProvisioningService.Handle(currentOperation);
 
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
                         }

@@ -4,7 +4,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using Sepes.Infrastructure.Interface;
 using System.Linq;
 
-namespace Sepes.CloudResourceWorker.Service
+namespace Sepes.Functions.Service
 {
     public class RequestIdService : IRequestIdService
     {

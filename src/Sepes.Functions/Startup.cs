@@ -5,7 +5,7 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
-using Sepes.CloudResourceWorker.Service;
+using Sepes.Functions.Service;
 using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Automapper;
@@ -18,11 +18,13 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Diagnostics;
+using Sepes.Infrastructure.Service.Provisioning;
+using Sepes.Infrastructure.Service.Provisioning.Interface;
 
-[assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
+[assembly: FunctionsStartup(typeof(Sepes.Functions.Startup))]
 
 
-namespace Sepes.CloudResourceWorker
+namespace Sepes.Functions
 {
     public class Startup : FunctionsStartup
     {       
@@ -98,7 +100,8 @@ namespace Sepes.CloudResourceWorker
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      
 
-            //Ext System Facade Services            
+            //Ext System Facade Services  
+            builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
