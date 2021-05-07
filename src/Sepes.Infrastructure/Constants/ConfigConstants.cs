@@ -20,25 +20,19 @@
         public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";
         public const string KEY_VAULT = "KeyVault_Url";
 
-  public const string AZURE_VM_TEMP_PASSWORD_KEY_VAULT = "AzureVmTempPasswordStorageKeyVault_Url";
+        public const string AZURE_VM_TEMP_PASSWORD_KEY_VAULT = "AzureVmTempPasswordStorageKeyVault_Url";
 
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwnerConnectionString";
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRWConnectionString";
 
         public const string SUBSCRIPTION_ID = "SubscriptionId";
-        public const string DISABLE_MIGRATIONS = "DisableMigrations";
-
-        public const string CLAIM_OID = "ClaimKeys:ObjectId";
-        public const string CLAIM_USERNAME = "ClaimKeys:UserName";
-        public const string CLAIM_EMAIL = "ClaimKeys:Email";
-        public const string CLAIM_FULLNAME = "ClaimKeys:FullName";
+        public const string DISABLE_MIGRATIONS = "DisableMigrations";       
 
         public const string RESOURCE_PROVISIONING_QUEUE_CONSTRING = "ResourceProvisioningQueueConnectionString";
 
         public const string STUDY_LOGO_STORAGE_CONSTRING = "StudyLogoStorageConnectionString";
 
         public const string MANAGED_BY = "ManagedBy";
-        public const string ROLE_ASSIGNMENTS_MANAGED_BY = "RoleAssignmentsManagedBy";
 
         public const string COST_ALLOCATION_TYPE_TAG_NAME = "CostAllocationTypeTagName";
         public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";

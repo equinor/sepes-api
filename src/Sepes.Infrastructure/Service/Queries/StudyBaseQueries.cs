@@ -63,6 +63,9 @@ namespace Sepes.Infrastructure.Service.Queries
         {
             return ActiveStudiesWithParticipantsQueryable(db)
                 .Include(s => s.Sandboxes)
+                      .ThenInclude(sb => sb.Resources)
+                        .ThenInclude(r => r.Operations)
+                        .ThenInclude(op => op.DependsOnOperation)
                 .Include(s=> s.Resources)
                     .ThenInclude(r=> r.ChildResources)
                 .Include(s => s.StudyDatasets)

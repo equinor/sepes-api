@@ -7,7 +7,7 @@ using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
-namespace Sepes.CloudResourceWorker
+namespace Sepes.Functions
 {
     public class ResourceOperationsQueueFunction
     {    

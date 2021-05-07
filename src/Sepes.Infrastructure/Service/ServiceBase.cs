@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Service.Queries;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

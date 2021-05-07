@@ -2,7 +2,7 @@
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Functions.Service
 {
     public class FunctionUserService : IUserService
     {

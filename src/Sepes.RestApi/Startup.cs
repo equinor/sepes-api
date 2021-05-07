@@ -32,6 +32,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
+using Sepes.Infrastructure.Service.Provisioning.Interface;
+using Sepes.Infrastructure.Service.Provisioning;
 
 namespace Sepes.RestApi
 {
@@ -187,6 +189,7 @@ namespace Sepes.RestApi
             services.AddTransient<ILookupService, LookupService>();
 
             //Ext System Facade Services
+            services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoService, StudyLogoService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
