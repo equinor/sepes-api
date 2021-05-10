@@ -29,6 +29,8 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
+        readonly EventId _sandboxNextPhaseEventId = new EventId(33, "Sepes-Event-Sandbox-NextPhase");     
+
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, ISandboxModelService sandboxModelService, ISandboxDatasetModelService sandboxDatasetModelService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
@@ -45,7 +47,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDetails> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Starting", sandboxId);
 
             SandboxPhaseHistory newestHistoryItem = null;
 
@@ -69,31 +71,31 @@ namespace Sepes.Infrastructure.Service
 
                 await ValidatePhaseMoveThrowIfNot(sandboxFromDb, currentPhaseItem.Phase, nextPhase, cancellation);
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
                 newestHistoryItem = new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName };
                 dataMightHaveBeenChanged = true;
                 sandboxFromDb.PhaseHistory.Add(newestHistoryItem);
                 await _db.SaveChangesAsync();
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
 
                 if (nextPhase == SandboxPhase.DataAvailable)
                 {
                     await MakeDatasetsAvailable(sandboxFromDb, cancellation);
                 }
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Done", sandboxId);
 
                 return await GetSandboxDetailsInternalAsync(sandboxId);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase shift failed.", sandboxId);
+                _logger.LogWarning(_sandboxNextPhaseEventId, ex, "Sandbox {0}: Phase shift failed.", sandboxId);
 
                 if (dataMightHaveBeenChanged)
                 {
-                    _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Data might have been changed. Rolling back");
+                    _logger.LogWarning(_sandboxNextPhaseEventId, ex, "Data might have been changed. Rolling back");
                     await MakeDatasetsUnAvailable(sandboxId);
                     await AttemptRollbackPhase(sandboxId, newestHistoryItem);
                 }
@@ -111,7 +113,7 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
 
             validationErrors.AddRange(VerifyThatSandboxHasDatasets(sandbox));
             validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(sandbox.Resources));
@@ -155,7 +157,7 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
 
             var allVms = CloudResourceUtil.GetAllResourcesByType(sandbox.Resources, AzureResourceType.VirtualMachine, false);
 
