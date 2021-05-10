@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CloseStudyAsync(int studyId)
         {
-            var studyFromDb = await _studyModelService.GetForDeleteAsync(studyId, UserOperation.Study_Close);         
+            var studyFromDb = await _studyModelService.GetForCloseAsync(studyId, UserOperation.Study_Close);         
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
