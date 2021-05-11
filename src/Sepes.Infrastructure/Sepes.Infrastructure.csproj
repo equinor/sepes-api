@@ -33,4 +33,9 @@
     <PackageReference Include="Microsoft.Identity.Web" Version="1.9.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sepes.Azure\Sepes.Azure.csproj" />
+    <ProjectReference Include="..\Sepes.Common\Sepes.Common.csproj" />
+  </ItemGroup>
+
 </Project>
