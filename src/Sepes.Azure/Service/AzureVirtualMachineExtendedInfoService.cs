@@ -3,12 +3,12 @@ using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Azure.Service.Interface;
-using Sepes.Common.Util;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Util;
+using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {

@@ -1,12 +1,11 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Dto.Azure;
-using Sepes.Common.Dto.Azure.Queue;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto.Queue;
 using Sepes.Azure.Service.Interface;
 
 namespace Sepes.Azure.Service

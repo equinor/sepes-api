@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 
-namespace Sepes.Common.Dto.Sandbox
+namespace Sepes.Infrastructure.Dto.Sandbox
 {
     public class SandboxResourceCreationAndSchedulingDto
     {

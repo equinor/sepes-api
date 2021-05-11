@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Model;
+﻿using Sepes.Common.Interface;
+using Sepes.Common.Model;
 
 namespace Sepes.Common.Dto.Sandbox
 {

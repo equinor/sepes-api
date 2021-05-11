@@ -1,17 +1,16 @@
-﻿using Microsoft.Azure.Management.Graph.RBAC.Fluent;
-using Microsoft.Azure.Management.Storage.Fluent;
+﻿using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Dto;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Azure.Service.Interface;
-using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Util;
+using Sepes.Common.Exceptions;
 using Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action;
 
 namespace Sepes.Azure.Service

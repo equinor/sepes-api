@@ -1,9 +1,10 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.Interfaces;
-using Sepes.Infrastructure.Response.Sandbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sepes.Common.Model;
+using Sepes.Common.Response.Sandbox;
 
 namespace Sepes.Common.Util
 {
@@ -56,5 +57,5 @@ namespace Sepes.Common.Util
         }
     }
 
-    public enum DatasetClassification { Open, Internal, Restricted }
+    
 }

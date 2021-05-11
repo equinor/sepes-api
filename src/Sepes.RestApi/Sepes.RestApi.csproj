@@ -43,6 +43,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
+    <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

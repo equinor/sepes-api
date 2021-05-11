@@ -86,13 +86,5 @@ namespace Sepes.Infrastructure.Util
             tags.Add("TechnicalContactName", sandbox.TechnicalContactName);
             tags.Add("TechnicalContactEmail", sandbox.TechnicalContactEmail);
         }
-
-        public static string TagDictionaryToString(Dictionary<string, string> tags)
-        {
-            return JsonSerializer.Serialize(tags);
-        }
-
-       
-
     }
 }

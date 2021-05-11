@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Interface;
-
+﻿
 namespace Sepes.Common.Dto.Study
 {
     public class StudyCreateDto

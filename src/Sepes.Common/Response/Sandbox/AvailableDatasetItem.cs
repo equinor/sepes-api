@@ -1,6 +1,6 @@
 ﻿using Sepes.Common.Dto.Interfaces;
 
-namespace Sepes.Infrastructure.Response.Sandbox
+namespace Sepes.Common.Response.Sandbox
 {
     public class AvailableDatasetItem : IHasDataClassification
     {

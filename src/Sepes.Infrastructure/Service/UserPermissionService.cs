@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util.Auth;
 using System.Threading.Tasks;
+using Sepes.Infrastructure.Util.Auth;
 
 namespace Sepes.Infrastructure.Service
 {

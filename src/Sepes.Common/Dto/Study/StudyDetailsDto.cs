@@ -1,8 +1,8 @@
 ﻿using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Dto.Interfaces;
-using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
+using Sepes.Common.Interface;
+using Sepes.Common.Response.Sandbox;
 
 namespace Sepes.Common.Dto.Study
 {

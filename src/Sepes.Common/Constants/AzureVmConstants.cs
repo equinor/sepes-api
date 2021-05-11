@@ -1,7 +1,4 @@
-﻿using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Common.Util;
-using System.Collections.Generic;
-
+﻿
 namespace Sepes.Common.Constants
 {
     public static class AzureVmConstants
@@ -18,10 +15,7 @@ namespace Sepes.Common.Constants
             public const int ALLOW_FOR_SERVICETAG_VNET_PRIORITY = 4050;
             public const string OPEN_CLOSE_INTERNET = "control-internet-access";
 
-            public static List<VmRuleDto> CreateInitialVmRules(int vmId)
-            {
-                return new List<VmRuleDto>() { new VmRuleDto() { Name = AzureResourceNameUtil.NsgRuleNameForVm(vmId, OPEN_CLOSE_INTERNET), Description = "Control outbound internet access. Set to Allow or Deny as needed!", Action = RuleAction.Deny, Direction = RuleDirection.Outbound } };
-            }
+           
 
         }
     }

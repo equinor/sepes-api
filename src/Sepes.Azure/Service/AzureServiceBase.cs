@@ -9,10 +9,9 @@ using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants.CloudResource;
-using System.Text.Json;
+
 
 namespace Sepes.Azure.Service
 {
@@ -46,18 +45,8 @@ namespace Sepes.Azure.Service
 
         protected void EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(string resourceName, IReadOnlyDictionary<string, string> resourceTags)
         {
-            var convertedTags = TagReadOnlyDictionaryToDictionary(resourceTags);
+            var convertedTags = TagUtils.TagReadOnlyDictionaryToDictionary(resourceTags);
             CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceName, convertedTags);
-        } 
-        
-        public static IDictionary<string, string> TagReadOnlyDictionaryToDictionary(IReadOnlyDictionary<string, string> tags)
-        {
-            return tags.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
-
-        public static Dictionary<string, string> TagStringToDictionary(string tags)
-        {
-            return JsonSerializer.Deserialize<Dictionary<string, string>>(tags);
         }
 
         public static void ContainsTagWithValueThrowIfError(IDictionary<string, string> resourceTags, string tagName, string expectedTagValue)

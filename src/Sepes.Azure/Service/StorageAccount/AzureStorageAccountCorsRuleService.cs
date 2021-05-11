@@ -17,7 +17,7 @@ namespace Sepes.Azure.Service
           
         }
         
-        public async Task SetCorsRules(string resourceGroupName, string resourceName, List<Dto.CorsRule> rules, CancellationToken cancellationToken = default)
+        public async Task SetCorsRules(string resourceGroupName, string resourceName, List<Sepes.Common.Dto.CorsRule> rules, CancellationToken cancellationToken = default)
         {
             var corsRulesProperties = new List<Microsoft.Azure.Management.Storage.Fluent.Models.CorsRule>();
 

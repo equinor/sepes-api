@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Constants;
 using System;
+using Sepes.Common.Util;
 
 namespace Sepes.Azure.Util
 {
@@ -14,14 +15,6 @@ namespace Sepes.Azure.Util
             {
                 throw new System.Exception($"{errorMessagePrefix}: Resource {resourceType} with name {name} was not found");
             }
-        }     
-     
-
-     
-
-        public static string CreateResourceLink(IConfiguration config, CloudResource resource)
-        {
-            return CreateResourceLink(config, resource.ResourceId);
         }
 
         public static string CreateResourceLink(IConfiguration config, string resourceId)
@@ -51,34 +44,7 @@ namespace Sepes.Azure.Util
         {
             return $"api/resources/{resourceId}/retry";
         }
-
-        public static string CreateResourceCostLink(IConfiguration config, Sandbox sandbox)
-        {
-            var resourceGroupEntry = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);
-
-            if (resourceGroupEntry == null)
-
-            {
-                return null;
-            }
-
-            var resourceGroupId = resourceGroupEntry.ResourceId;
-
-            if (String.IsNullOrWhiteSpace(resourceGroupId))
-            {
-                return null;
-            }
-            
-            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);           
-
-            if (resourceGroupId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
-            {
-                return null;
-            }
-
-            return CreateResourceCostLink(domain, resourceGroupId);
-        }
-
+        
         public static string CreateResourceCostLink(string domain, string resourceId)
         {
             var azureUrlPart = "https://portal.azure.com/#@";

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Sepes.Common.Util
+namespace Sepes.RestApi.Util
 {
     public static class IpAddressUtil
     {      

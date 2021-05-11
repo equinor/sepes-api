@@ -5,12 +5,11 @@ using Microsoft.Identity.Web;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Azure.Service.Interface;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static Sepes.Infrastructure.Constants.AzureVmOperatingSystemConstants;
+using static Sepes.Common.Constants.AzureVmOperatingSystemConstants;
 
 namespace Sepes.Azure.Service
 {

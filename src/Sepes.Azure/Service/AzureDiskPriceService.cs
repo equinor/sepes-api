@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Sepes.Common.Dto.Azure;
 using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {

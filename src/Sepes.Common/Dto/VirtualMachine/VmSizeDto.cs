@@ -1,6 +1,4 @@
-﻿using Sepes.Infrastructure.Model;
-
-namespace Sepes.Common.Dto.VirtualMachine
+﻿namespace Sepes.Common.Dto.VirtualMachine
 {
     public class VmSizeDto
     {
@@ -16,6 +14,6 @@ namespace Sepes.Common.Dto.VirtualMachine
 
         public int MaxDataDiskCount { get; set; }
 
-        public Region Region { get; set; }
+        public string Region { get; set; }
     }
 }

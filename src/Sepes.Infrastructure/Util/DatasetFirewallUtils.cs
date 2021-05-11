@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Sepes.Common.Util;
 
-namespace Sepes.Common.Util
+namespace Sepes.Infrastructure.Util
 {
     public static class DatasetFirewallUtils
     {

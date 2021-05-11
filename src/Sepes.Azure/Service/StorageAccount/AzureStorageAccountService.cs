@@ -3,16 +3,16 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants.CloudResource;
-using Sepes.Common.Dto.Azure;
 using Sepes.Common.Dto.Provisioning;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Azure.Service.Interface;
-using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Util;
+using Sepes.Azure.Util.Provisioning;
+using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
@@ -113,7 +113,7 @@ namespace Sepes.Azure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var storageAccount = await GetResourceAsync(resourceGroupName, resourceName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(storageAccount.Tags);
+            return TagUtils.TagReadOnlyDictionaryToDictionary(storageAccount.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)

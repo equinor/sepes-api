@@ -6,7 +6,6 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Common.Dto.Azure;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Azure.Service.Interface;
@@ -16,6 +15,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Util;
+using Sepes.Azure.Util.Provisioning;
 
 namespace Sepes.Azure.Service
 {
@@ -54,7 +56,7 @@ namespace Sepes.Azure.Service
 
                 string vmSize = vmSettings.Size;
 
-                virtualMachine = await CreateInternalAsync(parameters.Region,
+                virtualMachine = await CreateInternalAsync(GetRegionFromString(parameters.Region),
                     parameters.ResourceGroupName,
                     parameters.Name,
                     vmSettings.NetworkName, vmSettings.SubnetName,
@@ -323,7 +325,7 @@ namespace Sepes.Azure.Service
             AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
-                                    .WithRegion()
+                                    .WithRegion(region)
                                     .WithExistingResourceGroup(resourceGroupName)
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
@@ -513,7 +515,7 @@ namespace Sepes.Azure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var resource = await GetInternalAsync(resourceGroupName, resourceName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(resource.Tags);
+            return TagUtils.TagReadOnlyDictionaryToDictionary(resource.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)

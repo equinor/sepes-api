@@ -1,11 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Dto.Azure;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {

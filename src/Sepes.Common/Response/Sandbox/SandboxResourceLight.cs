@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Dto.Interfaces;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Response.Sandbox
+namespace Sepes.Common.Response.Sandbox
 {
     public class SandboxResourceLight : IHasLinkToExtSystem
     {  

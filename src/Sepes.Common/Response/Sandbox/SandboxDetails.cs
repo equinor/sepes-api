@@ -1,10 +1,10 @@
 ﻿using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
-using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
+using Sepes.Common.Interface;
+using Sepes.Common.Model;
 
-namespace Sepes.Infrastructure.Response.Sandbox
+namespace Sepes.Common.Response.Sandbox
 {
     public class SandboxDetails : UpdateableBaseDto, IHasCurrentPhase
     {

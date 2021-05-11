@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Response.Sandbox
+﻿namespace Sepes.Common.Response.Sandbox
 {
     public class SandboxListItem
     {

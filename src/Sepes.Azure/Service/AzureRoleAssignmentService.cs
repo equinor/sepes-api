@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sepes.Common.Dto.Azure.RoleAssignment;
 using Sepes.Azure.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -11,6 +10,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto.RoleAssignment;
 
 namespace Sepes.Azure.Service
 {

@@ -3,11 +3,45 @@ using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Sepes.Azure.Util;
+using Sepes.Common.Util;
 
 namespace Sepes.Infrastructure.Util
 {
     public static class CloudResourceUtil
     {
+        public static string CreateResourceLink(IConfiguration config, CloudResource resource)
+        {
+            return AzureResourceUtil.CreateResourceLink(config, resource.ResourceId);
+        }
+        
+        public static string CreateResourceCostLink(IConfiguration config, Sandbox sandbox)
+        {
+            var resourceGroupEntry = CloudResourceUtil.GetSandboxResourceGroupEntry(sandbox.Resources);
+
+            if (resourceGroupEntry == null)
+            {
+                return null;
+            }
+
+            var resourceGroupId = resourceGroupEntry.ResourceId;
+
+            if (String.IsNullOrWhiteSpace(resourceGroupId))
+            {
+                return null;
+            }
+            
+            var domain = ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.AZ_DOMAIN);           
+
+            if (resourceGroupId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
+            {
+                return null;
+            }
+
+            return AzureResourceUtil.CreateResourceCostLink(domain, resourceGroupId);
+        }
+        
         public static CloudResource GetSibilingResource(CloudResource resource, string resourceType)
         {
             if (resource.Sandbox == null)

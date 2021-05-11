@@ -5,13 +5,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
-using Sepes.Infrastructure.Exceptions;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Util;
+using Sepes.Azure.Util.Provisioning;
+using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
@@ -33,7 +35,7 @@ namespace Sepes.Azure.Service
 
             if (virtualNetwork == null)
             {
-                virtualNetwork = await CreateInternalAsync(parameters.Region, parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
+                virtualNetwork = await CreateInternalAsync(GetRegionFromString(parameters.Region), parameters.ResourceGroupName, parameters.Name, networkSettings.SandboxSubnetName, parameters.Tags, cancellationToken);
             }          
 
             if (!parameters.TryGetSharedVariable(AzureCrudSharedVariable.NETWORK_SECURITY_GROUP_NAME, out string networkSecurityGroupName))
@@ -169,7 +171,7 @@ namespace Sepes.Azure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var vNet = await GetResourceInternalAsync(resourceGroupName, resourceName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(vNet.Tags);
+            return TagUtils.TagReadOnlyDictionaryToDictionary(vNet.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)

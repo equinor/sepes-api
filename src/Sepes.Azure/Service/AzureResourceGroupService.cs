@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Util;
+using Sepes.Azure.Util.Provisioning;
 
 namespace Sepes.Azure.Service
 {
@@ -29,7 +31,7 @@ namespace Sepes.Azure.Service
             if (resourceGroup == null)
             {
                 _logger.LogInformation($"Resource group not found, creating");
-                resourceGroup = await CreateInternal(parameters.ResourceGroupName, parameters.Region, parameters.Tags);
+                resourceGroup = await CreateInternal(parameters.ResourceGroupName, GetRegionFromString(parameters.Region), parameters.Tags);
             }
             else
             {
@@ -131,7 +133,7 @@ namespace Sepes.Azure.Service
         public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
         {
             var rg = await GetResourceGroupAsync(resourceGroupName);
-            return AzureResourceTagsFactory.TagReadOnlyDictionaryToDictionary(rg.Tags);
+            return TagUtils.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
         public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)

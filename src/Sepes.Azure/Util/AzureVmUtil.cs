@@ -1,8 +1,5 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Compute.Models;
-using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,17 +8,7 @@ namespace Sepes.Azure.Util
 {
     public static class AzureVmUtil
     {
-        public static string GetOsName(CloudResource resource)
-        {
-            var vmSettings = CloudResourceConfigStringSerializer.VmSettings(resource.ConfigString);
-
-            if (vmSettings != null)
-            {
-                return vmSettings.OperatingSystem;
-            }
-
-            return null;
-        }
+     
 
         public static string GetSizeCategory(string vmSize)
         {
@@ -44,15 +31,7 @@ namespace Sepes.Azure.Util
             return "unknowncategory";
         }
 
-        public static string GetDisplayTextSizeForDropdown(VmSize vmSizeInfo)
-        {
-            if (vmSizeInfo == null)
-            {
-                return "unknown";
-            }
-
-            return $"{vmSizeInfo.Key} ({vmSizeInfo.NumberOfCores} cores, {vmSizeInfo.MemoryGB} GB Memory, os disk: {vmSizeInfo.OsDiskSizeInMB}, max data disks: {vmSizeInfo.MaxDataDiskCount})";
-        }
+       
 
         public static string GetDiskSizeDisplayTextForDropdown(int diskSize)
         {
@@ -107,58 +86,5 @@ namespace Sepes.Azure.Util
             return false;
         }
 
-        public static bool InternetIsOpen(CloudResource vmResource)
-        {
-            var relevantRule = GetInternetRule(vmResource);
-
-            if(relevantRule == null)
-            {
-                return false;
-            }
-
-            return relevantRule.Action == RuleAction.Allow;
-        }
-
-        public static VmRuleDto GetInternetRule(CloudResource vmResource)
-        {
-            if (!String.IsNullOrWhiteSpace(vmResource.ConfigString))
-            {
-                var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vmResource.ConfigString);
-
-                if (vmSettings != null && vmSettings.Rules != null)
-                {
-                    foreach (var curRule in vmSettings.Rules)
-                    {
-                        if (curRule.Direction == RuleDirection.Outbound)
-                        {
-                            if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-                            {
-                                return curRule;
-                            }
-                        }
-                    }
-                }
-            }          
-
-            return null;
-        }
-
-        //public static int GetNextVmRulePriority(List<VmRuleDto> rules, RuleDirection direction)
-        //{
-        //    var ruleWithHighestPriority = rules.Where(r => r.Direction == direction).OrderByDescending(r => r.Priority).FirstOrDefault();
-
-        //    if (ruleWithHighestPriority == null)
-        //    {
-        //        return 500;
-        //    }
-        //    else if (ruleWithHighestPriority.Priority < 500)
-        //    {
-        //        return 500;
-        //    }
-        //    else
-        //    {
-        //        return ruleWithHighestPriority.Priority + 10;
-        //    }
-        //} 
     }
 }

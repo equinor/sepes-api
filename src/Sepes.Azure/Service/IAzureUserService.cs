@@ -1,7 +1,7 @@
-﻿using Sepes.Common.Dto.Azure;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service.Interface
 {

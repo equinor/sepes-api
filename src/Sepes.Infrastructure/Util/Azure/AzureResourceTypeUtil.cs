@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 
-namespace Sepes.Azure.Util
+namespace Sepes.Infrastructure.Util
 {
     public static class AzureResourceTypeUtil
     {
