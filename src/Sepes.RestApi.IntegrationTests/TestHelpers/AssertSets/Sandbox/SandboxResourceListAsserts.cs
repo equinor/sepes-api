@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;
 using System.Collections.Generic;

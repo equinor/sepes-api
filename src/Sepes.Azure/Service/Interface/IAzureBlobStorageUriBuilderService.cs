@@ -3,7 +3,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureBlobStorageUriBuilderService
     {

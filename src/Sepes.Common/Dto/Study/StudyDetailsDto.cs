@@ -1,10 +1,10 @@
-﻿using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Dto.Interfaces;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Study
+namespace Sepes.Common.Dto.Study
 {
     public class StudyDetailsDto : UpdateableBaseDto, IHasLogoUrl, IHasStudyParticipants
     {

@@ -1,14 +1,13 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Provisioning;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util.Provisioning
+namespace Sepes.Common.Util.Provisioning
 {
     public static class ProvisioningParamaterUtil
     {
-        public static async Task PrepareForNewOperation(ResourceProvisioningParameters currentCrudInput, CloudResourceOperationDto currentOperation, ResourceProvisioningResult lastResult, ICloudResourceReadService resourceReadService)
+        public static async Task PrepareForNewOperation(ResourceProvisioningParameters currentCrudInput, CloudResourceOperationDto currentOperation, ResourceProvisioningResult lastResult, string nsgName = null)
         {  
             currentCrudInput.ResetButKeepSharedVariables(lastResult?.NewSharedVariables);
 
@@ -20,17 +19,10 @@ namespace Sepes.Infrastructure.Util.Provisioning
             currentCrudInput.DatasetId = currentOperation.Resource.DatasetId;
             currentCrudInput.SandboxName = currentOperation.Resource.SandboxName;
             currentCrudInput.ResourceGroupName = currentOperation.Resource.ResourceGroupName;
-            currentCrudInput.Region = RegionStringConverter.Convert(currentOperation.Resource.Region);         
+            currentCrudInput.Region = currentOperation.Resource.Region;         
             currentCrudInput.Tags = currentOperation.Resource.Tags;
             currentCrudInput.ConfigurationString = currentOperation.Resource.ConfigString;
-
-
-            //Only relevant for Sandbox Resource Creation
-            if (currentOperation.Resource.SandboxId.HasValue)
-            {
-                var nsg = CloudResourceUtil.GetSibilingResource(await resourceReadService.GetByIdNoAccessCheckAsync(currentOperation.Resource.Id), AzureResourceType.NetworkSecurityGroup);
-                currentCrudInput.NetworkSecurityGroupName = nsg?.ResourceName;
-            }        
+            currentCrudInput.NetworkSecurityGroupName = nsgName;            
         }
     }
 }

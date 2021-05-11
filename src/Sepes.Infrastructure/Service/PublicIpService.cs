@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

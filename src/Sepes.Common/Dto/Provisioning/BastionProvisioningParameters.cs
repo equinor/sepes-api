@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Provisioning
+﻿namespace Sepes.Common.Dto.Provisioning
 {
     public class BastionProvisioningParameters
     {

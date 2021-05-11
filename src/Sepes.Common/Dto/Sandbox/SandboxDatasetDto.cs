@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Dto.Interfaces;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Common.Dto.Sandbox
 {
     public class SandboxDatasetDto : IHasDataClassification
     {

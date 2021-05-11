@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;

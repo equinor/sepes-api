@@ -1,10 +1,10 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Dataset;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using System;
 using System.Linq;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public static class DatasetUtils
     {

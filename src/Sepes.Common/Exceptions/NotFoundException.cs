@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Sepes.Infrastructure.Exceptions
+namespace Sepes.Common.Exceptions
 {
     public class NotFoundException : Exception
     {

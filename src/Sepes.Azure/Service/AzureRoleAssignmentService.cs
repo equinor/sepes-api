@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Dto.Azure.RoleAssignment;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Dto.Azure.RoleAssignment;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureRoleAssignmentService : AzureApiServiceBase, IAzureRoleAssignmentService
     {

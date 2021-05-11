@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Dataset
+﻿namespace Sepes.Common.Dto.Dataset
 {
     public class DatasetLookupItemDto : LookupBaseDto
     {       

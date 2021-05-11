@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Service.Azure.Interface
+﻿namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureStorageAccountCorsRuleService : IHasCorsRules
     {

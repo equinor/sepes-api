@@ -1,9 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public static class ConfigUtil
     {

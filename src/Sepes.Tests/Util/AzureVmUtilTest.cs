@@ -1,7 +1,7 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;

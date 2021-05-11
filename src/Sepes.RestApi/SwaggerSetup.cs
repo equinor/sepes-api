@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using System;
 using System.Collections.Generic;
 

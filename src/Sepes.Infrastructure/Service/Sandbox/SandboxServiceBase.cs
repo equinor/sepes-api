@@ -1,16 +1,16 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

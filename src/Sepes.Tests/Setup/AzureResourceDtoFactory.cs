@@ -1,6 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Auth;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Util;
+﻿using Sepes.Common.Dto.Azure;
+using Sepes.Common.Util;
 
 namespace Sepes.Tests.Setup
 {

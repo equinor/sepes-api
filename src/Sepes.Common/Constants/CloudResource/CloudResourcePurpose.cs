@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Constants
+﻿namespace Sepes.Common.Constants
 {
     public class CloudResourcePurpose
     {

@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto.Interfaces;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Dto.Interfaces;
+using Sepes.Common.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {

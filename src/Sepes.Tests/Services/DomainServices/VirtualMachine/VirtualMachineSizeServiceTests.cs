@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
 using Xunit;

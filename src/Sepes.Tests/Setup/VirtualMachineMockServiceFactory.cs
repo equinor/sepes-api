@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Azure.Interface;

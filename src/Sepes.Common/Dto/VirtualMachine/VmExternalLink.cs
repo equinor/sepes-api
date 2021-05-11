@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Dto.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sepes.Infrastructure.Dto.VirtualMachine
+namespace Sepes.Common.Dto.VirtualMachine
 {
     public class VmExternalLink :IHasLinkToExtSystem
     {

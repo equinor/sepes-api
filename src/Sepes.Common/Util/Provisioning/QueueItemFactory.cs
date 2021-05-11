@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Util.Provisioning
+namespace Sepes.Common.Util.Provisioning
 {
     public static class QueueItemFactory
     {

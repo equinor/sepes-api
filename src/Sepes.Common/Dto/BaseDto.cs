@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Common.Dto
 {
     public class BaseDto
     {

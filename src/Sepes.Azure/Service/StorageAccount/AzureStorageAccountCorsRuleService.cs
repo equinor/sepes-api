@@ -2,12 +2,12 @@
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountCorsRuleService : AzureStorageAccountBaseService, IAzureStorageAccountCorsRuleService
     {

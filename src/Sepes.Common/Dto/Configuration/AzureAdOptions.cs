@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Configuration
+﻿namespace Sepes.Common.Dto.Configuration
 {
     public class AzureAdOptions
     {

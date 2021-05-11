@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {

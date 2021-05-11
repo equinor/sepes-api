@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;

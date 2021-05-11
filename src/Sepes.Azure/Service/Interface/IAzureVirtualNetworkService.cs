@@ -1,6 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using Sepes.Common.Interface.Service;
+using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureVirtualNetworkService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
     {       

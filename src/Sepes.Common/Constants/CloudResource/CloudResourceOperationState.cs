@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Constants.CloudResource
+﻿namespace Sepes.Common.Constants.CloudResource
 {
     public static class CloudResourceOperationState
     {

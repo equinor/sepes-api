@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Util;
+﻿using Sepes.Common.Util;
 using Xunit;
 
 namespace Sepes.Tests.Util

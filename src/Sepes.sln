@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.Azure", "Sepes.Azure\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.Common", "Sepes.Common\Sepes.Common.csproj", "{C2210D8B-6741-4BC4-85EF-41B719B21FFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sepes.Provisioning", "Sepes.Provisioning\Sepes.Provisioning.csproj", "{5241FDAA-B799-41DE-9506-FA062BC054C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -127,6 +129,18 @@ Global
 		{C2210D8B-6741-4BC4-85EF-41B719B21FFF}.Release|x64.Build.0 = Release|Any CPU
 		{C2210D8B-6741-4BC4-85EF-41B719B21FFF}.Release|x86.ActiveCfg = Release|Any CPU
 		{C2210D8B-6741-4BC4-85EF-41B719B21FFF}.Release|x86.Build.0 = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|x64.Build.0 = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Debug|x86.Build.0 = Debug|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|x64.ActiveCfg = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|x64.Build.0 = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|x86.ActiveCfg = Release|Any CPU
+		{5241FDAA-B799-41DE-9506-FA062BC054C1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

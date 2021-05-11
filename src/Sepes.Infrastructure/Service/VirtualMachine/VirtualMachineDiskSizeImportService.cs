@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Common.Dto.Azure;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;

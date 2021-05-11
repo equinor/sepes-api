@@ -2,12 +2,12 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Constants;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureKeyVaultSecretService : IAzureKeyVaultSecretService
     {

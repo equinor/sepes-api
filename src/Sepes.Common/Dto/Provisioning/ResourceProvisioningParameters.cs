@@ -1,7 +1,6 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Provisioning
+namespace Sepes.Common.Dto.Provisioning
 {
     public class ResourceProvisioningParameters
     {
@@ -15,7 +14,7 @@ namespace Sepes.Infrastructure.Dto.Provisioning
         public int? DatasetId { get; set; }
 
         public string SandboxName { get; set; }
-        public Region Region { get; set; }
+        public string Region { get; set; }
 
         public Dictionary<string, string> Tags;
 

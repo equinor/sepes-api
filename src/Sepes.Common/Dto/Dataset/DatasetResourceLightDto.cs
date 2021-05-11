@@ -1,6 +1,6 @@
 ﻿using Sepes.Infrastructure.Interface;
 
-namespace Sepes.Infrastructure.Dto.Dataset
+namespace Sepes.Common.Dto.Dataset
 {
     public class DatasetResourceLightDto : IHasStorageAccountLink
     {

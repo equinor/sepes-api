@@ -4,15 +4,15 @@ using Azure.Storage.Blobs.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto.Storage;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Dto.Storage;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
 
     public class AzureBlobStorageService : AzureBlobStorageServiceBase, IAzureBlobStorageService

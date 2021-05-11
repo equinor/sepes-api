@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Study;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Xunit;
 

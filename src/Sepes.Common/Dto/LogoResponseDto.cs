@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto
+﻿namespace Sepes.Common.Dto
 {
     public class LogoResponseDto
     {

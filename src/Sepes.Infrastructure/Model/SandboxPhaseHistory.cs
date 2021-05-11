@@ -1,4 +1,6 @@
-﻿namespace Sepes.Infrastructure.Model
+﻿using Sepes.Common.Model;
+
+namespace Sepes.Infrastructure.Model
 {
     public class SandboxPhaseHistory : BaseModel
     {

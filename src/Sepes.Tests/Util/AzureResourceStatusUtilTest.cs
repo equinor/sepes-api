@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
+﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;

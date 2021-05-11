@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto.Dataset;
+using Sepes.Common.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Threading.Tasks;
 

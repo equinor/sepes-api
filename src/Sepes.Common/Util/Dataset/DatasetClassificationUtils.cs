@@ -1,11 +1,11 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Interfaces;
 using Sepes.Infrastructure.Response.Sandbox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public static class DatasetClassificationUtils
     {

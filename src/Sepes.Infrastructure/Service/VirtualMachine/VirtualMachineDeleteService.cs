@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Provisioning;
+using Sepes.Common.Util.Provisioning;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service

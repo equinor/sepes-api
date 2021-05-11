@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Provisioning;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
+using Sepes.Common.Util;
+using Sepes.Common.Util.Provisioning;
 using System.Collections.Generic;
 using System.Linq;
 

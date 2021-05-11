@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Provisioning
+namespace Sepes.Common.Dto.Provisioning
 {
     public class ResourceProvisioningResult
     {       

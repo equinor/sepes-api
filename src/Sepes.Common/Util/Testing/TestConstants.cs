@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Util.Testing
+﻿namespace Sepes.Common.Util.Testing
 {
     public static class TestConstants
     {

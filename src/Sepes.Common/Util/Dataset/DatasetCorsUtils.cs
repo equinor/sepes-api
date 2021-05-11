@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using System;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public static class DatasetCorsUtils
     {

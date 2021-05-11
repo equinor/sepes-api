@@ -6,20 +6,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
 using Sepes.Functions.Service;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Diagnostics;
-using Sepes.Infrastructure.Service.Provisioning;
-using Sepes.Infrastructure.Service.Provisioning.Interface;
+using Sepes.Azure.Service;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Interface;
+using Sepes.Provisioning.Service;
+using Sepes.Provisioning.Service.Interface;
 
 [assembly: FunctionsStartup(typeof(Sepes.Functions.Startup))]
 
@@ -100,14 +100,24 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      
 
-            //Ext System Facade Services  
-            builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
-            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            //Provisioning service
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
+            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            builder.Services.AddTransient<ICorsRuleProvisioningService, CorsRuleProvisioningService>();
+            builder.Services.AddTransient<ICreateAndUpdateService, CreateAndUpdateService>();
+            builder.Services.AddTransient<IDeleteOperationService, DeleteOperationService>();
+            builder.Services.AddTransient<IFirewallService, FirewallService>();
+            builder.Services.AddTransient<IOperationCheckService, OperationCheckService>();
+            builder.Services.AddTransient<IOperationCompletedService, OperationCompletedService>();
+            
+            
+            //Ext System Facade Services  
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
-            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sepes.Infrastructure.Constants
+namespace Sepes.Common.Constants
 {
     public class ParticipantSource
     {

@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Dto.Dataset;
+﻿using Sepes.Common.Dto.Dataset;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto
+namespace Sepes.Common.Dto
 {
     public class StudyDatasetDto : UpdateableBaseDto
     {

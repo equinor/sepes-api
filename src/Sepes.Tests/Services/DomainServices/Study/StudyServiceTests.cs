@@ -1,4 +1,4 @@
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Tests.Setup;
 using Xunit;
 

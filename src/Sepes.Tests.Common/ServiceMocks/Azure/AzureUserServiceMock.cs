@@ -1,5 +1,5 @@
 ﻿using Microsoft.Graph;
-using Sepes.Infrastructure.Dto.Azure;
+using Sepes.Common.Dto.Azure;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 using System.Collections.Generic;

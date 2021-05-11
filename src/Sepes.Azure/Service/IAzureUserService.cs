@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Dto.Azure;
+﻿using Sepes.Common.Dto.Azure;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureUserService
     {

@@ -3,18 +3,18 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Provisioning;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.Azure;
+using Sepes.Common.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
     {

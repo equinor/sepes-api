@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
 
     public abstract class AzureBlobStorageServiceBase : AzureServiceBase

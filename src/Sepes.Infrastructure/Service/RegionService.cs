@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;

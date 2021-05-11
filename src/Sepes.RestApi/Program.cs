@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;

@@ -5,19 +5,19 @@ using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Azure;
+using Sepes.Common.Dto.Provisioning;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureVirtualMachineService : AzureVirtualMachineServiceBase, IAzureVirtualMachineService
     {
@@ -323,7 +323,7 @@ namespace Sepes.Infrastructure.Service
             AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
-                                    .WithRegion(region)
+                                    .WithRegion()
                                     .WithExistingResourceGroup(resourceGroupName)
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)

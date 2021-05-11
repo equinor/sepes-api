@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public static class DatasetFirewallUtils
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sepes.Infrastructure.Dto.VirtualMachine
+namespace Sepes.Common.Dto.VirtualMachine
 {
     public class VmCalculateNameDto
     {

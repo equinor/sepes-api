@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureApiServiceBase
     {

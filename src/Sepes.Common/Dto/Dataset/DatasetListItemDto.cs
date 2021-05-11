@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Dataset
+namespace Sepes.Common.Dto.Dataset
 {
     public class DatasetListItemDto : LookupBaseDto
     {

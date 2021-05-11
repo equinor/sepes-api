@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Dto.Storage;
+using Sepes.Common.Dto.Storage;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureBlobStorageService
     {

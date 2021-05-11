@@ -3,17 +3,17 @@ using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Provisioning;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Provisioning;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureVirtualNetworkService : AzureServiceBase, IAzureVirtualNetworkService
     {

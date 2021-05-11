@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;

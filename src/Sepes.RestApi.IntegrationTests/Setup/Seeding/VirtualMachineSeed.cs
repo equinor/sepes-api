@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System;

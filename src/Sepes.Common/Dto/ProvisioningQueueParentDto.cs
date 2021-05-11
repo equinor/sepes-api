@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Common.Dto.Sandbox
 {
     public class ProvisioningQueueParentDto
     {     

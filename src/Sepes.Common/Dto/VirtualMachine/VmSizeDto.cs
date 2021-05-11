@@ -1,6 +1,6 @@
 ﻿using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Dto.VirtualMachine
+namespace Sepes.Common.Dto.VirtualMachine
 {
     public class VmSizeDto
     {

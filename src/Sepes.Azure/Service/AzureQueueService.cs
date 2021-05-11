@@ -1,15 +1,15 @@
 ﻿using Azure.Storage.Queues;
 using Azure.Storage.Queues.Models;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Azure.Queue;
+using Sepes.Common.Dto.Azure;
+using Sepes.Common.Dto.Azure.Queue;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Service.Interface;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureQueueService : IAzureQueueService
     {

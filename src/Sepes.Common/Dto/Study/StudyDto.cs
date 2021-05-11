@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Dto.Interfaces;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Study
+namespace Sepes.Common.Dto.Study
 {
     public class StudyDto : UpdateableBaseDto, IHasStudyParticipants
     {

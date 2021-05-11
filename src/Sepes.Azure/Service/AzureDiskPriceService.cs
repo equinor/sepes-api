@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Dto.Azure;
+using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureDiskPriceService : AzureApiServiceBase, IAzureDiskPriceService
     {

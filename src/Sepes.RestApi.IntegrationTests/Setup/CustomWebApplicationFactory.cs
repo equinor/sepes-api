@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;

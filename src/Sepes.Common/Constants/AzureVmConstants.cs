@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Util;
+﻿using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Util;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Constants
+namespace Sepes.Common.Constants
 {
     public static class AzureVmConstants
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureKeyVaultSecretService
     {

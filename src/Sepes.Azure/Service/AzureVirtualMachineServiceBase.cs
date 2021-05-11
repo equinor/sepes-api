@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Exceptions;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureVirtualMachineServiceBase : AzureServiceBase
     {      

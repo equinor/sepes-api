@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;

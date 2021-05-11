@@ -2,7 +2,7 @@
 //using System.Collections.Generic;
 //using System.Text;
 
-//namespace Sepes.Infrastructure.Util.Testing
+//namespace Sepes.Common.Util.Testing
 //{
 //    public static class WipeUnitTestStudiesUtil
 //    {

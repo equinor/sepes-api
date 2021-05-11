@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Dto.Interfaces
+﻿namespace Sepes.Common.Dto.Interfaces
 {
     public interface IHasLinkToExtSystem
     {

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Azure.Queue;
+﻿using Sepes.Common.Dto.Azure;
+using Sepes.Common.Dto.Azure.Queue;
 using Sepes.Infrastructure.Service;
 using System;
 using System.Collections.Generic;

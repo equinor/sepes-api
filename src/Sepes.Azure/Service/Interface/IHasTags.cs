@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IHasTags
     {

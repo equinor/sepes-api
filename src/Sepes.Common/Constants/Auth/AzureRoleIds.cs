@@ -1,4 +1,4 @@
-﻿namespace Sepes.Infrastructure.Constants.Auth
+﻿namespace Sepes.Common.Constants.Auth
 {
     public static class AzureRoleIds
     {

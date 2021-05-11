@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Infrastructure.Dto.Azure.RoleAssignment;
+using Sepes.Azure.Dto.RoleAssignment;
 
-namespace Sepes.Infrastructure.Service.Azure.Interface
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureRoleAssignmentService
     {

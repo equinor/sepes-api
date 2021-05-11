@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Dto;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface

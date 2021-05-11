@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Infrastructure.Interface;
 
-namespace Sepes.Infrastructure.Dto.Study
+namespace Sepes.Common.Dto.Study
 {
     public class StudyCreateDto
     {

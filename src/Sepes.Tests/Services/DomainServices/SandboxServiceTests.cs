@@ -1,5 +1,5 @@
 //using Microsoft.Extensions.DependencyInjection;
-//using Sepes.Infrastructure.Constants;
+//using Sepes.Common.Constants;
 //using Sepes.Infrastructure.Exceptions;
 //using Sepes.Infrastructure.Model;
 //using Sepes.Infrastructure.Service.Interface;

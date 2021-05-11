@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Model.Automapper

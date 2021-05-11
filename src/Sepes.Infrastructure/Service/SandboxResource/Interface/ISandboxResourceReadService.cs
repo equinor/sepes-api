@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Dto;
 using Sepes.Infrastructure.Response.Sandbox;
 using System.Collections.Generic;
 using System.Threading;

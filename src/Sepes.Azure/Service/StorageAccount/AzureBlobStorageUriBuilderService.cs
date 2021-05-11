@@ -2,13 +2,13 @@
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util.Azure;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Util;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureBlobStorageUriBuilderService : AzureBlobStorageServiceBase, IAzureBlobStorageUriBuilderService
     {

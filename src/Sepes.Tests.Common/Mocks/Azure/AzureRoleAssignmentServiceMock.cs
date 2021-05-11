@@ -1,5 +1,5 @@
 ﻿//using Microsoft.Extensions.Logging;
-//using Sepes.Infrastructure.Dto;
+//using Sepes.Common.Dto;
 //using Sepes.Infrastructure.Service.Azure.Interface;
 //using System.Collections.Generic;
 //using System.Threading;

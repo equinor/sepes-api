@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Dto.Interfaces;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Dto.Study;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Dataset
+namespace Sepes.Common.Dto.Dataset
 {
     public class DatasetDto : UpdateableBaseDto, IHasDataClassification
     {

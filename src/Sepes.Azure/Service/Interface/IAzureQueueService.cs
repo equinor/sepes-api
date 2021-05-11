@@ -1,10 +1,9 @@
-﻿using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Azure.Queue;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Azure.Dto.Queue;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service.Interface
 {
     public interface IAzureQueueService
     {

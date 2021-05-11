@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sepes.Infrastructure.Dto.Storage
+namespace Sepes.Common.Dto.Storage
 {
     public class BlobStorageItemDto
     {

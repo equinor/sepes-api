@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Util.Azure;
+﻿using Sepes.Common.Dto.Azure;
+using Sepes.Common.Util.Azure;
 using System;
 using System.Collections.Generic;
 using System.Text;

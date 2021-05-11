@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Dto;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service.Interface
 {
     public interface IHasCorsRules
     {

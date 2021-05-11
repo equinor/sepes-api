@@ -3,10 +3,10 @@ using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Azure.Management.Storage.Fluent.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Exceptions;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Action = Microsoft.Azure.Management.Storage.Fluent.Models.Action;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountNetworkRuleService : AzureStorageAccountBaseService, IAzureStorageAccountNetworkRuleService
     {

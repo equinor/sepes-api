@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using Sepes.Tests.Services;
 using Sepes.Tests.Setup;
 using System;

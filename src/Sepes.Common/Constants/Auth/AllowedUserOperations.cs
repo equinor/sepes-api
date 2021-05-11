@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Dto.Auth;
+﻿using Sepes.Common.Dto.Auth;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sepes.Infrastructure.Constants.Auth
+namespace Sepes.Common.Constants.Auth
 {
     //This class describes what a user is allowed to do. If a operation is not described here, it's not allowed
     //One line describes allowed actions for a type of user

@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
+using Sepes.Common.Util.Auth;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service

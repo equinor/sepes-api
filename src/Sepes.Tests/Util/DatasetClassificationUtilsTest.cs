@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;

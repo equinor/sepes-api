@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Dto.Study;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Interfaces
+namespace Sepes.Common.Dto.Interfaces
 {
     public interface IHasStudyParticipants
     {

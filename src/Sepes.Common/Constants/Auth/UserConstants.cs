@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Dto;
 
-namespace Sepes.Infrastructure.Constants.Auth
+namespace Sepes.Common.Constants.Auth
 {
     public static class UserConstants
     {

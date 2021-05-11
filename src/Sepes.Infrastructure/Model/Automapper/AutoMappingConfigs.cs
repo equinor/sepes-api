@@ -2,16 +2,16 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Study;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Azure;
+using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Dto.Study;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Model.Automapper

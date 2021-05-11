@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Sepes.Common.Constants;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.Auth
+namespace Sepes.Common.Dto.Auth
 {
     public enum PermissionLevel { AllNonExternalUser, AppRoles, StudySpecificRole }
 

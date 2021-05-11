@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Constants.Auth;
+using Sepes.Common.Constants.Auth;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;

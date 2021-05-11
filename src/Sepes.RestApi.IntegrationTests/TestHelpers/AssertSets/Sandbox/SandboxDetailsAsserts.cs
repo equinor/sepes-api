@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;

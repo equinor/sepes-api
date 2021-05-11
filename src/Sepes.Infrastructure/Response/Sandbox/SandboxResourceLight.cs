@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Interfaces;
+﻿using Sepes.Common.Dto.Interfaces;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Response.Sandbox

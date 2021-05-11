@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Dto.VirtualMachine
+namespace Sepes.Common.Dto.VirtualMachine
 {
     public class VmSettingsDto
     {

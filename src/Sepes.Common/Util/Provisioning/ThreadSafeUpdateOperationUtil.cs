@@ -1,12 +1,12 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Util.Provisioning
+namespace Sepes.Common.Util.Provisioning
 {
     public static class ThreadSafeUpdateOperationUtil
     {

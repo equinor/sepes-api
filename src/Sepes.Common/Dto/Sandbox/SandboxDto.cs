@@ -1,7 +1,7 @@
 ﻿using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Dto.Sandbox
+namespace Sepes.Common.Dto.Sandbox
 {
     public class SandboxDto : UpdateableBaseDto, IHasCurrentPhase
     {

@@ -1,4 +1,4 @@
-//using Sepes.Infrastructure.Dto;
+//using Sepes.Common.Dto;
 
 //namespace Sepes.Infrastructure.Model.SepesSqlModels
 //{

@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Sepes.Infrastructure.Constants.AzureVmOperatingSystemConstants;
 
-namespace Sepes.Infrastructure.Service.Azure
+namespace Sepes.Azure.Service
 {
     public class AzureVirtualNetworkOperatingSystemService : AzureApiServiceBase, IAzureVirtualNetworkOperatingSystemService
     {

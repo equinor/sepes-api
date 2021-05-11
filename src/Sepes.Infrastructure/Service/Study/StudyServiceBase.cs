@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;

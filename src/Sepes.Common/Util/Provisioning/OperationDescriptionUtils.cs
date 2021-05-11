@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sepes.Infrastructure.Util.Provisioning
+namespace Sepes.Common.Util.Provisioning
 {
     public static class ResourceOperationDescriptionUtils
     {

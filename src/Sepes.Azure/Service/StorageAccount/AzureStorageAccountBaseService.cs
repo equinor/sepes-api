@@ -5,7 +5,7 @@ using Sepes.Infrastructure.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Infrastructure.Service
+namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountBaseService : AzureServiceBase
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text.RegularExpressions;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Common.Util
 {
     public class GenericNameValidation
     {
