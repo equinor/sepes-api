@@ -1,4 +1,5 @@
-﻿using Sepes.Azure.Service.Interface;
+﻿using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants.Auth;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
@@ -29,7 +30,7 @@ namespace Sepes.Provisioning.Service
             _provisioningLogService = provisioningLogService;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
-            _azureRoleAssignmentService = azureRoleAssignmentService;
+            _azureRoleAssignmentService = roleAssignmentService;
         }
 
         public bool CanHandle(CloudResourceOperationDto operation)
@@ -97,7 +98,7 @@ namespace Sepes.Provisioning.Service
         {
             _provisioningLogService.OperationInformation(operation, "SetRoleAssignments");
 
-            var existingRoleAssignments = await _roleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
+            var existingRoleAssignments = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
 
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
@@ -112,7 +113,7 @@ namespace Sepes.Provisioning.Service
                     {
                         var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(operation.Resource.ResourceId, curDesired.RoleId);
                     _provisioningLogService.OperationInformation(operation, $"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}");
-                        await _roleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
+                        await _azureRoleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
                     }
             }
 
@@ -135,7 +136,7 @@ namespace Sepes.Provisioning.Service
                 else
                 {
                     _provisioningLogService.OperationInformation(operation, $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
-                    await _roleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
+                    await _azureRoleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
                 }
             }
         }       
