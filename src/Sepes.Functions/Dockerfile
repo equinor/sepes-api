@@ -2,9 +2,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 # WORKDIR /src
 
 COPY Sepes.Infrastructure /src/Sepes.Infrastructure
-COPY Sepes.Infrastructure /src/Sepes.Common
-COPY Sepes.Infrastructure /src/Sepes.Provisioning
-COPY Sepes.Infrastructure /src/Sepes.Azure
+COPY Sepes.Common /src/Sepes.Common
+COPY Sepes.Provisioning /src/Sepes.Provisioning
+COPY Sepes.Azure /src/Sepes.Azure
 COPY Sepes.Functions /src/Sepes.Functions
 RUN cd /src && \
     ls
