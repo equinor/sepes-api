@@ -2,19 +2,6 @@
 {
     public class SepesEventId
     {
-        public const string SandboxCreate = "Sandbox-Create";
-
-        public const string SandboxNextPhase = "Sandbox-NextPhase";
-
-        public const string SandboxDelete = "Sandbox-Delete";
-
-        public const string VMDelete = "VM-Delete";    
-
-        public const string StudyParticipantAdd = "StudyParticipant-Add";
-
-        public const string StudyParticipantRemove = "StudyParticipant-Remove";
-
-
         //Monitoring events
         public const string MONITORING_GENERAL = "Monitoring-General";
         public const string MONITORING_CRITICAL = "Monitoring-Critical";
@@ -27,8 +14,6 @@
         public const string MONITORING_MANUALLY_ADDED_TAGS = "Monitoring-ManuallyAddedTags";
         public const string MONITORING_DELETED_RESOURCE_STILL_PRESENT_IN_CLOUD = "Monitoring-NotDeletedFromCloud";
         public const string MONITORING_NEW_RESOURCE_ID_NOT_SET = "Monitoring-ResourceIdNotSetLocally";
-        public const string MONITORING_NEW_RESOURCE_NAME_NOT_SET = "Monitoring-ResourceNameNotSetLocally";
-
-    
+        public const string MONITORING_NEW_RESOURCE_NAME_NOT_SET = "Monitoring-ResourceNameNotSetLocally";    
     }
 }

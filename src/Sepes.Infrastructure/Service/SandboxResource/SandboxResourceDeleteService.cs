@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             _provisioningQueueService = provisioningQueueService;
         }     
 
-        public async Task HandleSandboxDeleteAsync(int sandboxId)
+        public async Task HandleSandboxDeleteAsync(int sandboxId, EventId eventId)
         {
             var sandboxFromDb = await GetWithoutChecks(sandboxId);
 
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
                         sandboxResourceGroup = curResource;
                     }
 
-                    _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", sandboxFromDb.StudyId, sandboxId, curResource.Id);
+                    _logger.LogInformation(eventId, "Study {0}, Sandbox {1}: Marking resource {2} for deletion", sandboxFromDb.StudyId, sandboxId, curResource.Id);
 
                     await _cloudResourceDeleteService.MarkAsDeletedAsync(curResource.Id);                
                 }
@@ -58,13 +58,13 @@ namespace Sepes.Infrastructure.Service
                     throw new Exception($"Unable to find ResourceGroup record in DB for Sandbox {sandboxId}, StudyId: {sandboxFromDb.StudyId}.");
                 }
 
-                _logger.LogInformation(SepesEventId.SandboxDelete, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
+                _logger.LogInformation(eventId, $"Creating delete operation for resource group {sandboxResourceGroup.ResourceGroupName}");
 
                 var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(sandboxResourceGroup.Id, ResourceOperationDescriptionUtils.CreateDescriptionForResourceOperation(sandboxResourceGroup.ResourceType,
                      CloudResourceOperationType.DELETE,
                     sandboxId: sandboxResourceGroup.SandboxId.Value) + ". (Delete of Sandbox resource group and all resources within)");
 
-                _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Queuing operation", sandboxFromDb.StudyId, sandboxId);
+                _logger.LogInformation(eventId, "Study {0}, Sandbox {1}: Queuing operation", sandboxFromDb.StudyId, sandboxId);
 
                 var queueParentItem = QueueItemFactory.CreateParent(deleteOperation);              
                
@@ -72,7 +72,7 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                _logger.LogCritical(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", sandboxFromDb.StudyId, sandboxId);
+                _logger.LogCritical(eventId, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", sandboxFromDb.StudyId, sandboxId);
                 await _db.SaveChangesAsync();
             }
         }

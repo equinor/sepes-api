@@ -22,6 +22,11 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyModelService _studyModelService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
+        
+        readonly EventId _sandboxCreateEventId = new EventId(30, "Sepes-Event-Sandbox-Create");
+        readonly EventId _sandboxDeleteEventId = new EventId(32, "Sepes-Event-Sandbox-Delete");
+
+        public const string SandboxDelete = "Sandbox-Delete";
 
         public SandboxService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, IStudyModelService studyModelService, ISandboxModelService sandboxModelService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
@@ -39,7 +44,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDetails> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
-            _logger.LogInformation(SepesEventId.SandboxCreate, "Sandbox {0}: Starting", studyId);
+            _logger.LogInformation(_sandboxCreateEventId, "Sandbox {0}: Starting", studyId);
 
             Sandbox createdSandbox = null;
 
@@ -117,7 +122,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task DeleteAsync(int sandboxId)
         {
-            _logger.LogWarning(SepesEventId.SandboxDelete, "Sandbox {0}: Starting", sandboxId);
+            _logger.LogWarning(_sandboxDeleteEventId, "Sandbox {0}: Starting", sandboxId);
 
             var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Study_Crud_Sandbox, true);
 
@@ -125,15 +130,15 @@ namespace Sepes.Infrastructure.Service
 
             var user = await _userService.GetCurrentUserAsync();
 
-            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
+            _logger.LogInformation(_sandboxDeleteEventId, "Study {0}, Sandbox {1}: Marking sandbox record for deletion", studyId, sandboxId);
 
             SoftDeleteUtil.MarkAsDeleted(sandboxFromDb, user);
 
             await _db.SaveChangesAsync();
 
-            await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId);
+            await _sandboxResourceDeleteService.HandleSandboxDeleteAsync(sandboxId, _sandboxDeleteEventId);
 
-            _logger.LogInformation(SepesEventId.SandboxDelete, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
+            _logger.LogInformation(_sandboxDeleteEventId, "Study {0}, Sandbox {1}: Done", studyId, sandboxId);
         }
     }
 }

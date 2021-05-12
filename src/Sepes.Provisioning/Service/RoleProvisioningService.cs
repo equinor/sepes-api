@@ -20,14 +20,16 @@ namespace Sepes.Provisioning.Service
         readonly IProvisioningLogService _provisioningLogService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
-        readonly IAzureRoleAssignmentService _roleAssignmentService;
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
+
+        readonly EventId _roleAssignmentEventId = new EventId(50, "Sepes-Event-RoleAssignment-Operations");
 
         public RoleProvisioningService(IProvisioningLogService provisioningLogService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
         {
             _provisioningLogService = provisioningLogService;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
-            _roleAssignmentService = roleAssignmentService;
+            _azureRoleAssignmentService = azureRoleAssignmentService;
         }
 
         public bool CanHandle(CloudResourceOperationDto operation)
