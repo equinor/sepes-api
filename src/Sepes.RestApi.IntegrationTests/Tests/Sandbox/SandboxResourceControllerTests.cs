@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
 using System.Collections.Generic;

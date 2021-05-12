@@ -1,6 +1,6 @@
 ﻿using Sepes.Common.Dto.Sandbox;
-using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Common.Model;
+using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Xunit;
 

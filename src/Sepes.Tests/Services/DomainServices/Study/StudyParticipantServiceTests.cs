@@ -1,11 +1,11 @@
 using AutoMapper;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
-using Sepes.Common.Dto.Azure;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model.Context;

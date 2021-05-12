@@ -1,10 +1,7 @@
 ﻿using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Interface;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util

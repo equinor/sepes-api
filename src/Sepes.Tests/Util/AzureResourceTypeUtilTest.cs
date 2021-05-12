@@ -1,9 +1,6 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
-using Sepes.Common.Util;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Sepes.Infrastructure.Util;
 using Xunit;
 
 namespace Sepes.Tests.Util

@@ -1,10 +1,9 @@
-﻿using Microsoft.Azure.Management.Compute.Fluent;
+﻿using Sepes.Azure.Util;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util.Azure;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util
@@ -53,7 +52,7 @@ namespace Sepes.Tests.Util
         {
             var vmSize = new VmSize() { Key = "first", NumberOfCores = 4, MemoryGB = 3, OsDiskSizeInMB = 1000, MaxDataDiskCount = 4 };
 
-            var result = AzureVmUtil.GetDisplayTextSizeForDropdown(vmSize);
+            var result = VmSizeUtil.GetDisplayTextSizeForDropdown(vmSize);
 
             var expectedResult = "first (4 cores, 3 GB Memory, os disk: 1000, max data disks: 4)";
 
@@ -64,7 +63,7 @@ namespace Sepes.Tests.Util
         [Fact]
         public void Vm_getSizeCategory_shouldReturnEmptyString()
         {
-            var result = AzureVmUtil.GetDisplayTextSizeForDropdown(null);
+            var result = VmSizeUtil.GetDisplayTextSizeForDropdown(null);
 
             var expectedResult = "unknown";
 

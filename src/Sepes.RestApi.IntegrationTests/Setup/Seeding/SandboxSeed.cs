@@ -1,7 +1,8 @@
-﻿using Sepes.Common.Constants;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
-using Sepes.Common.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System;

@@ -1,12 +1,11 @@
-﻿using Sepes.Common.Constants;
-using Sepes.Common.Constants.CloudResource;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
-using Sepes.Common.Util;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Seeding

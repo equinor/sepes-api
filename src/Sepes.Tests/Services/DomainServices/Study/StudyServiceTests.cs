@@ -1,4 +1,5 @@
 using Sepes.Common.Constants;
+using Sepes.Common.Exceptions;
 using Sepes.Tests.Setup;
 using Xunit;
 
@@ -22,7 +23,7 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabase();
             var studyService = StudyServiceMockFactory.ReadService(_serviceProvider);
 
-            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
+            await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }       
     }
 }

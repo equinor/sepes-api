@@ -1,8 +1,7 @@
 ﻿using Sepes.Common.Constants;
-using Sepes.Common.Dto;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;

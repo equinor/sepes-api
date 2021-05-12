@@ -1,5 +1,4 @@
-﻿using Sepes.Common.Dto.Azure;
-using Sepes.Common.Util;
+﻿using Sepes.Azure.Dto;
 
 namespace Sepes.Tests.Setup
 {
@@ -11,7 +10,7 @@ namespace Sepes.Tests.Setup
             result.Id = "resource-id";
             result.Key = "resource-key";
             result.Name = "resource-name";
-            result.Region = RegionStringConverter.Convert("norwayeast");
+            result.Region = "norwayeast";
             return result;
         }
 

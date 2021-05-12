@@ -17,9 +17,7 @@ namespace Sepes.Azure.Dto
 
         public string Type { get; set; }
 
-        public string RegionName { get { return Region.Name; } }
-
-        public Region Region { get; set; }
+        public string Region { get; set; }
 
         public Dictionary<string, string> Tags { get; set; }
     }

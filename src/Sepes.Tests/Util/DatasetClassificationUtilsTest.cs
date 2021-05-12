@@ -1,10 +1,9 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.Sandbox;
-using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Common.Model;
+using Sepes.Common.Response.Sandbox;
 using Sepes.Common.Util;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util

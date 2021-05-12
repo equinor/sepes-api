@@ -21,9 +21,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return await Delete<NoContentResult>(restHelper, sandboxId);
         }
 
-        public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, int sandboxId)
+        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, int sandboxId)
         {
-            return await Delete<Infrastructure.Dto.ErrorResponse>(restHelper, sandboxId);
+            return await Delete<Common.Dto.ErrorResponse>(restHelper, sandboxId);
         }
     } 
 }

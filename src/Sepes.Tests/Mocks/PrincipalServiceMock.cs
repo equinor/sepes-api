@@ -1,5 +1,5 @@
 ﻿using Moq;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
 
 namespace Sepes.Tests.Mocks
 {

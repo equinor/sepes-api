@@ -26,9 +26,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return await Delete<T>(restHelper, url);
         }      
 
-        public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, string url)
+        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, string url)
         {
-            return await Delete<Infrastructure.Dto.ErrorResponse>(restHelper, url);
+            return await Delete<Common.Dto.ErrorResponse>(restHelper, url);
         }       
 
         public static string StudyUrl(int studyId) => $"api/studies/{studyId}";     

@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
 using Sepes.Test.Common.ServiceMockFactories;
 using Sepes.Tests.Common.Extensions;
 

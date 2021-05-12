@@ -2,14 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sepes.Azure.Service;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Provisioning.Service;
+using Sepes.Provisioning.Service.Interface;
 using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Mocks;
 
