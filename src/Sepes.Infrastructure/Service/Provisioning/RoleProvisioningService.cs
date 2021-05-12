@@ -1,39 +1,38 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
 using Sepes.Infrastructure.Constants.Auth;
 using Sepes.Infrastructure.Constants.CloudResource;
 using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Azure.RoleAssignment;
 using Sepes.Infrastructure.Exceptions;
 using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.Provisioning.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Infrastructure.Service.Provisioning.Interface;
 
 namespace Sepes.Infrastructure.Service.Provisioning
 {
     public class RoleProvisioningService : IRoleProvisioningService
-    {      
+    {        
         readonly ILogger _logger;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
-        readonly IAzureRoleAssignmentService _roleAssignmentService;
+        readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
 
-        public RoleProvisioningService(ILogger<RoleProvisioningService> logger, IConfiguration config, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
+        readonly EventId _roleAssignmentEventId = new EventId(50, "Sepes-Event-RoleAssignment-Operations");
+
+        public RoleProvisioningService(ILogger<RoleProvisioningService> logger, IConfiguration config, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService azureRoleAssignmentService)
         {
             _logger = logger;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
-            _roleAssignmentService = roleAssignmentService;
+            _azureRoleAssignmentService = azureRoleAssignmentService;
         }
 
         public bool CanHandle(CloudResourceOperationDto operation)
@@ -64,7 +63,7 @@ namespace Sepes.Infrastructure.Service.Provisioning
                         || operation.Status == CloudResourceOperationState.ABORTED
                         || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        _logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
+                        _logger.LogWarning(eventId: _roleAssignmentEventId, message: ProvisioningLogUtil.Operation(operation, $"Operation aborted, role assignment will be aborted"));
                         cancellation.Cancel();
                         break;
                     }
@@ -99,9 +98,9 @@ namespace Sepes.Infrastructure.Service.Provisioning
 
         async Task SetRoleAssignments(string resourceGroupId, string resourceGroupName, List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"SetRoleAssignments");
+            _logger.LogInformation(eventId: _roleAssignmentEventId, message: $"SetRoleAssignments");
 
-            var existingRoleAssignments = await _roleAssignmentService.GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, cancellationToken);
+            var existingRoleAssignments = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(resourceGroupId, resourceGroupName, cancellationToken);
 
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
@@ -110,13 +109,13 @@ namespace Sepes.Infrastructure.Service.Provisioning
 
                     if (sameRoleFromExisting != null)
                     {
-                        _logger.LogInformation($"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}");
+                        _logger.LogInformation(eventId: _roleAssignmentEventId, message: $"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}");
                     }
                     else
                     {
                         var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(resourceGroupId, curDesired.RoleId);
-                        _logger.LogInformation($"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}");
-                        await _roleAssignmentService.AddRoleAssignment(resourceGroupId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
+                        _logger.LogInformation(eventId: _roleAssignmentEventId, message: $"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}");
+                        await _azureRoleAssignmentService.AddRoleAssignment(resourceGroupId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
                     }
             }
 
@@ -134,35 +133,14 @@ namespace Sepes.Infrastructure.Service.Provisioning
 
                 if (sameRoleFromDesired != null)
                 {
-                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping");
+                    _logger.LogInformation(eventId: _roleAssignmentEventId, message: $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping");
                 }
                 else
                 {
-                    _logger.LogInformation($"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
-                    await _roleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
+                    _logger.LogInformation(eventId: _roleAssignmentEventId, message: $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted");
+                    await _azureRoleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
                 }
             }
         }
-        
-        string CreateRoleAssignmentErrorString(List<AzureRoleAssignment> azureRoleAssignments)
-        {
-            var sb = new StringBuilder();
-            azureRoleAssignments.ForEach(ra => sb.AppendLine($"{ra.id} | {ra.properties.principalId} | {ra.properties.roleDefinitionId} "));
-            return sb.ToString();
-        }
-
-        string CreateConfigErrorString(HashSet<string> filter)
-        {
-            var sb = new StringBuilder();
-
-            foreach(var cur in filter)
-            {
-                sb.AppendLine(cur);
-            }
-
-            return sb.ToString();
-        }
-
-        
     }
 }
