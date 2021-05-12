@@ -8,11 +8,17 @@ on:
     paths:
       - 'src/Sepes.Functions/**'
       - 'src/Sepes.Infrastructure/**'
+      - 'src/Sepes.Common/**'
+      - 'src/Sepes.Azure/**'
+      - 'src/Sepes.Provisioning/**'
       - .github/workflows/function-app.yml
   push:
     paths:
       - 'src/Sepes.Functions/**'
       - 'src/Sepes.Infrastructure/**'
+      - 'src/Sepes.Common/**'
+      - 'src/Sepes.Azure/**'
+      - 'src/Sepes.Provisioning/**'
       - .github/scripts/powershell-modules/FunctionApp/FunctionApp.psm1
       - .github/workflows/function-app.yml
 env:
