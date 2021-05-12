@@ -44,5 +44,7 @@
         public const string SERVER_PUBLIC_IP_URLS = "GetServerPublicIpServiceUrls";
 
         public const string SENSITIVE_DATA_LOGGING = "EnableSensitiveDataLogging";
+
+        public const string CYPRESS_MOCK_USER = "CypressMockUser";
     }
 }

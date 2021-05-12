@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<User> EnsureDbUserExists()
         {           
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService);           
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_config, _db, _currentUserService, _azureUserService);           
         }     
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)
