@@ -1,31 +1,29 @@
-﻿using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants.CloudResource;
+﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Provisioning;
+using Sepes.Common.Exceptions;
+using Sepes.Common.Interface.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Common.Exceptions;
-using Sepes.Common.Interface.Service;
-using Sepes.Common.Util.Provisioning;
-using Sepes.Provisioning.Service.Interface;
 
 namespace Sepes.Provisioning.Service
 {
     public class CreateAndUpdateService : ICreateAndUpdateService
     {
-        readonly ILogger _logger;
+        readonly IProvisioningLogService _provisioningLogService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceUpdateService _cloudResourceUpdateService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
-        public CreateAndUpdateService(ILogger<CreateAndUpdateService> logger, ICloudResourceReadService cloudResourceReadService,
+        public CreateAndUpdateService(IProvisioningLogService provisioningLogService, ICloudResourceReadService cloudResourceReadService,
             ICloudResourceUpdateService cloudResourceUpdateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _provisioningLogService = provisioningLogService ?? throw new ArgumentNullException(nameof(provisioningLogService));
             _cloudResourceReadService = cloudResourceReadService ??
                                         throw new ArgumentNullException(nameof(cloudResourceReadService));
             _cloudResourceUpdateService = cloudResourceUpdateService ??
@@ -60,7 +58,7 @@ namespace Sepes.Provisioning.Service
             try
             {
                 var cancellation = new CancellationTokenSource();
-                var currentCrudResultTask = CreateProvisioningResultTask(operation, currentCrudInput, provisioningService, cancellation, _logger);
+                var currentCrudResultTask = CreateProvisioningResultTask(operation, currentCrudInput, provisioningService, cancellation);
 
                 while (!currentCrudResultTask.IsCompleted)
                 {
@@ -68,7 +66,7 @@ namespace Sepes.Provisioning.Service
 
                     if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        _logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, provisioning will be aborted"));
+                        _provisioningLogService.OperationWarning(operation, "Operation aborted, provisioning will be aborted");
                         cancellation.Cancel();
                         break;
                     }
@@ -80,7 +78,7 @@ namespace Sepes.Provisioning.Service
 
                 if (operation.OperationType == CloudResourceOperationType.CREATE)
                 {
-                    _logger.LogInformation(ProvisioningLogUtil.Operation(operation, $"Storing resource Id and Name"));
+                    _provisioningLogService.OperationInformation(operation, $"Storing resource Id and Name");
                     await _cloudResourceUpdateService.UpdateResourceIdAndName(operation.Resource.Id, provisioningResult.IdInTargetSystem, provisioningResult.NameInTargetSystem);
                 }
 
@@ -100,7 +98,7 @@ namespace Sepes.Provisioning.Service
             }
         }
 
-        static Task<ResourceProvisioningResult> CreateProvisioningResultTask(CloudResourceOperationDto operation, ResourceProvisioningParameters currentCrudInput, IPerformResourceProvisioning provisioningService, CancellationTokenSource cancellation, ILogger logger)
+        Task<ResourceProvisioningResult> CreateProvisioningResultTask(CloudResourceOperationDto operation, ResourceProvisioningParameters currentCrudInput, IPerformResourceProvisioning provisioningService, CancellationTokenSource cancellation)
         {
             if (operation.OperationType == CloudResourceOperationType.CREATE)
             {              

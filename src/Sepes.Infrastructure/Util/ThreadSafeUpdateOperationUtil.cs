@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Common.Util.Provisioning
+namespace Sepes.Infrastructure.Util
 {
     public static class ThreadSafeUpdateOperationUtil
     {

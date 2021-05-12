@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
@@ -12,28 +11,25 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Microsoft.OpenApi.Models;
+using Sepes.Azure.Service;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Provisioning.Service;
+using Sepes.Provisioning.Service.Interface;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Net.Http;
-using Sepes.Infrastructure.Service.Provisioning.Interface;
-using Sepes.Infrastructure.Service.Provisioning;
 
 namespace Sepes.RestApi
 {
@@ -187,6 +183,20 @@ namespace Sepes.RestApi
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
+
+            //Provisioning service
+            services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
+            services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
+            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
+            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            services.AddTransient<ICorsRuleProvisioningService, CorsRuleProvisioningService>();
+            services.AddTransient<ICreateAndUpdateService, CreateAndUpdateService>();
+            services.AddTransient<IDeleteOperationService, DeleteOperationService>();
+            services.AddTransient<IFirewallService, FirewallService>();
+            services.AddTransient<IOperationCheckService, OperationCheckService>();
+            services.AddTransient<IOperationCompletedService, OperationCompletedService>();
 
             //Ext System Facade Services
             services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;

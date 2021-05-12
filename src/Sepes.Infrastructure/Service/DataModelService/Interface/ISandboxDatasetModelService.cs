@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

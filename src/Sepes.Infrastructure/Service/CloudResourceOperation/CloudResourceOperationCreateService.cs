@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -9,6 +8,7 @@ using Sepes.Common.Util.Provisioning;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sepes.Common.Interface;
 
 namespace Sepes.Infrastructure.Service
 {

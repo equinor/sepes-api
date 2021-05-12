@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Dto.Interfaces;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
         public string Resolve(CloudResource source, IHasLinkToExtSystem destination, string destMember, ResolutionContext context)
         {
-            return AzureResourceUtil.CreateResourceLink(_config, source);
+            return CloudResourceUtil.CreateResourceLink(_config, source);
         }
     }
    

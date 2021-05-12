@@ -5,7 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Provisioning.Service.Interface
+namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IProvisioningQueueService
     {
@@ -22,10 +22,11 @@ namespace Sepes.Provisioning.Service.Interface
         Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds);
 
         Task ReQueueMessageAsync(ProvisioningQueueParentDto message, int? invisibleForInSeconds = default, CancellationToken cancellationToken = default);
-        Task AddNewQueueMessageForOperation(CloudResourceOperation operation);      
-        void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperation operation);       
+        Task AddNewQueueMessageForOperation(CloudResourceOperation operation);            
         
         Task CreateItemAndEnqueue(int operationId, string operationDescription);
         Task IncreaseInvisibleBasedOnResource(CloudResourceOperationDto currentOperation, ProvisioningQueueParentDto queueParentItem);
+        Task CreateItemAndEnqueue(CloudResourceOperationDto operation);
+        Task CreateItemAndEnqueue(CloudResourceOperation operation);
     }
 }

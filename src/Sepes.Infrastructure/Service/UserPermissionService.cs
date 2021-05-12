@@ -30,9 +30,9 @@ namespace Sepes.Infrastructure.Service
 
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.Study_Create);
-            result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.PreApprovedDataset_Read);
-            result.CanEdit_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.Study_Create);
+            result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Read);
+            result.CanEdit_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             return result;
         } 

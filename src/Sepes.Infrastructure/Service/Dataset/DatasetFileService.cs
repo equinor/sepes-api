@@ -1,13 +1,13 @@
 ﻿using AutoMapper;
 using Azure.Storage.Sas;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Storage;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;

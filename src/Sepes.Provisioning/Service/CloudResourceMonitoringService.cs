@@ -1,17 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
-using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sepes.Provisioning.Service.Interface;
-using Sepes.Azure.Util;
 
 namespace Sepes.Provisioning.Service
 {
@@ -207,7 +205,7 @@ namespace Sepes.Provisioning.Service
                 {
                     // Read info used to create tags from resourceGroup in DB
                     // These tags should be checked with the ones in Azure.            
-                    var tagsFromDb = AzureResourceTagsFactory.TagStringToDictionary(resource.Tags);
+                    var tagsFromDb = TagUtils.TagStringToDictionary(resource.Tags);
                     var tagsFromAzure = await serviceForResource.GetTagsAsync(resource.ResourceGroupName, resource.ResourceName);
 
                     if (tagsFromDb != null && tagsFromDb.Count > 0 && tagsFromAzure == null)

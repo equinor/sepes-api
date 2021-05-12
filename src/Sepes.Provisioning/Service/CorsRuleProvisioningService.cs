@@ -1,29 +1,27 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
+using Sepes.Common.Exceptions;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Service.Interface;
-using Sepes.Common.Exceptions;
-using Sepes.Common.Util;
-using Sepes.Common.Util.Provisioning;
-using Sepes.Provisioning.Service.Interface;
 
 namespace Sepes.Provisioning.Service
 {
     public class CorsRuleProvisioningService : ICorsRuleProvisioningService
     {
-        readonly ILogger _logger;
+        readonly IProvisioningLogService _provisioningLogService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
-        public CorsRuleProvisioningService(ILogger<CorsRuleProvisioningService> logger, ICloudResourceReadService cloudResourceReadService,
+        public CorsRuleProvisioningService(IProvisioningLogService provisioningLogService, ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _provisioningLogService = provisioningLogService ?? throw new ArgumentNullException(nameof(provisioningLogService));
             _cloudResourceReadService = cloudResourceReadService ??
                                         throw new ArgumentNullException(nameof(cloudResourceReadService));
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService ??
@@ -65,7 +63,7 @@ namespace Sepes.Provisioning.Service
 
                     if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        _logger.LogWarning(ProvisioningLogUtil.Operation(operation, $"Operation aborted, cors rule assignment will be aborted"));
+                        _provisioningLogService.OperationWarning(operation, $"Operation aborted, cors rule assignment will be aborted");
                         cancellation.Cancel();
                         break;
                     }

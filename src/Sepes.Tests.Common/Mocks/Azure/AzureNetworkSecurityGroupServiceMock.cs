@@ -1,5 +1,5 @@
 ﻿//using Microsoft.Extensions.Logging;
-//using Sepes.Infrastructure.Service.Azure.Interface;
+//using Sepes.Azure.Service.Interface;
 
 //namespace Sepes.Tests.Common.Mocks.Azure
 //{

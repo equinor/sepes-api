@@ -1,12 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Dto.Azure;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +22,6 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IUserService _userService;       
         readonly IAzureDiskPriceService _azureDiskPriceService;
-
 
         public VirtualMachineDiskSizeImportService(
             ILogger<VirtualMachineDiskSizeImportService> logger,

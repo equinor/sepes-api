@@ -1,5 +1,5 @@
 ﻿//using Sepes.Common.Constants;
-//using Sepes.Infrastructure.Exceptions;
+//using Sepes.Common.Exceptions;
 //using Sepes.Infrastructure.Service.Queries;
 //using Sepes.Tests.Common.Constants;
 //using Sepes.Tests.Setup;

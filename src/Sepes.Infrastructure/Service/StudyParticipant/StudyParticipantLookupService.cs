@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using Microsoft.ApplicationInsights;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;

@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto.Dataset;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -18,7 +19,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
         public string Resolve(CloudResource source, DatasetResourceLightDto destination, string destMember, ResolutionContext context)
         {            
-            var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
+            var baseStatusOnThisOperation = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 
             if(baseStatusOnThisOperation != null)
             {

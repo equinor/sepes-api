@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Response.Sandbox;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface

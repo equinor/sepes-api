@@ -2,12 +2,12 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util.Auth;
+using Sepes.Infrastructure.Util.Auth;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

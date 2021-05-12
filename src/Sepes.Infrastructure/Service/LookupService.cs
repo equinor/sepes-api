@@ -28,10 +28,10 @@ namespace Sepes.Infrastructure.Service
         {
             return new List<LookupDto>()
             {
-                new LookupDto{ Key= Constants.StudyRoles.SponsorRep, DisplayValue = Constants.StudyRoles.SponsorRep },
-                new LookupDto{ Key= Constants.StudyRoles.VendorAdmin,  DisplayValue = Constants.StudyRoles.VendorAdmin },
-                new LookupDto{ Key= Constants.StudyRoles.VendorContributor,  DisplayValue = Constants.StudyRoles.VendorContributor },
-                new LookupDto{ Key= Constants.StudyRoles.StudyViewer,  DisplayValue =  Constants.StudyRoles.StudyViewer }
+                new LookupDto{ Key= Common.Constants.StudyRoles.SponsorRep, DisplayValue = Common.Constants.StudyRoles.SponsorRep },
+                new LookupDto{ Key= Common.Constants.StudyRoles.VendorAdmin,  DisplayValue = Common.Constants.StudyRoles.VendorAdmin },
+                new LookupDto{ Key= Common.Constants.StudyRoles.VendorContributor,  DisplayValue = Common.Constants.StudyRoles.VendorContributor },
+                new LookupDto{ Key= Common.Constants.StudyRoles.StudyViewer,  DisplayValue =  Common.Constants.StudyRoles.StudyViewer }
             };
         }
 
@@ -50,21 +50,21 @@ namespace Sepes.Infrastructure.Service
                     continue;
                 }
              
-                if (curExistingRole.RoleName == Constants.StudyRoles.VendorContributor)
+                if (curExistingRole.RoleName == Common.Constants.StudyRoles.VendorContributor)
                 {
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.VendorContributor);
                 }
-                else if (curExistingRole.RoleName == Constants.StudyRoles.VendorAdmin)
+                else if (curExistingRole.RoleName == Common.Constants.StudyRoles.VendorAdmin)
                 {
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorAdmin);
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.VendorAdmin);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.VendorContributor);
                 }
-                else if (curExistingRole.RoleName == Constants.StudyRoles.SponsorRep || curExistingRole.RoleName == Constants.StudyRoles.StudyOwner)
+                else if (curExistingRole.RoleName == Common.Constants.StudyRoles.SponsorRep || curExistingRole.RoleName == Common.Constants.StudyRoles.StudyOwner)
                 {
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.SponsorRep);
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorAdmin);
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.VendorContributor);
-                    EnsureItemExistsForRole(result, Constants.StudyRoles.StudyViewer);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.SponsorRep);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.VendorAdmin);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.VendorContributor);
+                    EnsureItemExistsForRole(result, Common.Constants.StudyRoles.StudyViewer);
                 }               
             }
 

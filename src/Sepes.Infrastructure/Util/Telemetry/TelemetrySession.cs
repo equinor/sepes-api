@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Sepes.Common.Util.Telemetry
+namespace Sepes.Infrastructure.Util.Telemetry
 {
     public class TelemetrySession
     {

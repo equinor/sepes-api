@@ -2,13 +2,13 @@
 using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util.Azure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
                             else
                             { 
                                 PopulateVmSizeProps(curAzureSku, curVmSizeInDb);
-                                curVmSizeInDb.DisplayText = AzureVmUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
+                                curVmSizeInDb.DisplayText = VmSizeUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
 
                                 //Get updated price for VM Size and set on db entry
                                 var regionAssociation = curVmSizeInDb.RegionAssociations.Where(ra => ra.RegionKey == curRegionFromDb.Key).SingleOrDefault();
@@ -125,7 +125,7 @@ namespace Sepes.Infrastructure.Service
                             }
 
                             PopulateVmSizeProps(curAzureSku, curVmSizeInDb);
-                            curVmSizeInDb.DisplayText = AzureVmUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
+                            curVmSizeInDb.DisplayText = VmSizeUtil.GetDisplayTextSizeForDropdown(curVmSizeInDb);
 
                             //Add to lookup
                             existingSizeItemsForRegion.Add(curAzureSku.Name, curVmSizeInDb);

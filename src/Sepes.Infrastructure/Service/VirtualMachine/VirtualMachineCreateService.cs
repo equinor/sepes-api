@@ -2,16 +2,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Azure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,7 +82,7 @@ namespace Sepes.Infrastructure.Service
 
                 await _cloudResourceCreateService.ValidateThatNameDoesNotExistThrowIfInvalid(virtualMachineName);
 
-                var tags = AzureResourceTagsFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
+                var tags = ResourceTagFactory.SandboxResourceTags(_config, sandbox.Study, sandbox);
 
                 var region = RegionStringConverter.Convert(sandbox.Region);
 
@@ -182,7 +185,7 @@ namespace Sepes.Infrastructure.Service
             var networkSetting = CloudResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
 
-            vmSettings.Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(vmId);
+            vmSettings.Rules = VmRuleUtils.CreateInitialVmRules(vmId);
             return CloudResourceConfigStringSerializer.Serialize(vmSettings);
         }
 

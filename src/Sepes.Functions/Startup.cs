@@ -5,21 +5,21 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
-using Sepes.Functions.Service;
+using Sepes.Azure.Service;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
+using Sepes.Common.Interface;
+using Sepes.Functions.Service;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Diagnostics;
-using Sepes.Azure.Service;
-using Sepes.Azure.Service.Interface;
-using Sepes.Common.Interface;
 using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
+using System;
+using System.Diagnostics;
 
 [assembly: FunctionsStartup(typeof(Sepes.Functions.Startup))]
 
@@ -98,9 +98,10 @@ namespace Sepes.Functions
 
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      
+            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
-            //Provisioning service
+            //Provisioning service            
+            builder.Services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();

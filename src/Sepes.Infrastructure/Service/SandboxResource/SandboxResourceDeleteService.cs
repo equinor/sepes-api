@@ -3,12 +3,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Util.Provisioning;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
-using Sepes.Common.Util.Provisioning;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Threading.Tasks;
 

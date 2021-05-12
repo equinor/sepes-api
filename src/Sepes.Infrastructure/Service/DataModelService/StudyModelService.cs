@@ -9,7 +9,7 @@ using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Common.Util.Auth;
+using Sepes.Infrastructure.Util.Auth;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

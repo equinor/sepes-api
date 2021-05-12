@@ -8,12 +8,12 @@ using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
-using Sepes.Provisioning.Service.Interface;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Provisioning.Service
+namespace Sepes.Infrastructure.Service
 {
     public class ProvisioningQueueService : IProvisioningQueueService
     {
@@ -129,23 +129,7 @@ namespace Sepes.Provisioning.Service
         public async Task CreateItemAndEnqueue(CloudResourceOperationDto operation)
         {
             await CreateItemAndEnqueue(operation.Id, operation.Description);
-        }
-
-        public void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperationDto operation)
-        {
-            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
-        }
-
-        public void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResourceOperation operation)
-        {
-            parent.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
-        }
-
-        public void CreateChildAndAdd(ProvisioningQueueParentDto parent, CloudResource resource)
-        {
-            var createOperation = CloudResourceOperationUtil.GetCreateOperation(resource);
-            CreateChildAndAdd(parent, createOperation);
-        }
+        }       
 
         public async Task AddNewQueueMessageForOperation(CloudResourceOperation operation)
         {

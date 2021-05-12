@@ -1,6 +1,6 @@
 ﻿using Moq;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using System.Threading;
 
 namespace Sepes.Test.Common.ServiceMockFactories

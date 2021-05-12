@@ -2,15 +2,18 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Util;
+using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
-using Sepes.Common.Util.Auth;
+using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, sandbox.Study, sandbox);
+                var tags = ResourceTagFactory.SandboxResourceTags(_configuration, sandbox.Study, sandbox);
 
                 var creationAndSchedulingDto =
                     new SandboxResourceCreationAndSchedulingDto()

@@ -8,8 +8,13 @@ namespace Sepes.Provisioning.Service
 {
     public class ProvisioningLogService : IProvisioningLogService
     {
-        readonly ILogger<ProvisioningLogService> _logger;
-        
+        readonly ILogger _logger;
+
+        public ProvisioningLogService(ILogger<ProvisioningLogService> logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
         public void HandlingQueueParent(ProvisioningQueueParentDto queueParentItem)
         {
             _logger.LogInformation($"Handling: {queueParentItem.MessageId} - {queueParentItem.Description}");

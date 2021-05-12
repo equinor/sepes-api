@@ -41,28 +41,6 @@ namespace Sepes.Provisioning.Service
             }
 
             throw new ProvisioningException($"Unexpected provisioning state for allready completed Resource: {currentProvisioningState}");
-        }
-
-        public async Task WaitForOperationToCompleteAsync(ICloudResourceOperationReadService cloudResourceOperationReadService, int operationId, int timeoutInSeconds = 60) 
-        {
-            var timeout = TimeSpan.FromSeconds(timeoutInSeconds);
-            var startTime = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - startTime) < timeout)
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(3));
-
-                if (await cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operationId))
-                {
-                    return;
-                }
-                else if (await cloudResourceOperationReadService.OperationFailedOrAbortedAsync(operationId))
-                {
-                    throw new Exception("Awaited operation failed");
-                }
-            }
-
-            throw new Exception("Awaited operation timed out");
-        }
+        }        
     }
 }

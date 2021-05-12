@@ -8,7 +8,7 @@ using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util.Auth;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

@@ -1,7 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Common.Util;
+using Sepes.Azure.Util;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -21,7 +22,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
                 var shouldHaveRetryLink = false;
 
-                var baseStatusOnThisOperation = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
+                var baseStatusOnThisOperation = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 
                 if (baseStatusOnThisOperation == null)
                 {

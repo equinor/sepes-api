@@ -3,14 +3,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
-using Sepes.Common.Util.Auth;
-using Sepes.Common.Util.Provisioning;
+using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -119,7 +119,7 @@ namespace Sepes.Infrastructure.Service
                 if (desiredRolesPerPurposeLookup.TryGetValue(currentOperation.Resource.Purpose, out string desiredRoles))
                 {
                     var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperation.Id, desiredRoles);
-                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, updateOp);
+                    await _provisioningQueueService.CreateItemAndEnqueue(updateOp);
                 }
                 else
                 {

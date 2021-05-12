@@ -2,7 +2,7 @@
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 
-namespace Sepes.Common.Util.Provisioning
+namespace Sepes.Infrastructure.Util
 {
     public static class QueueItemFactory
     {

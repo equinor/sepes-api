@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using Moq;
-using Sepes.Infrastructure.Service.Azure.Interface;
+﻿using Moq;
+using Sepes.Azure.Dto.RoleAssignment;
+using Sepes.Azure.Service.Interface;
+using System.Collections.Generic;
 using System.Threading;
-using Sepes.Common.Dto.Azure.RoleAssignment;
 
 namespace Sepes.Test.Common.ServiceMockFactories
 {

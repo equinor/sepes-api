@@ -1,5 +1,5 @@
 ﻿using Moq;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
 
 namespace Sepes.Test.Common.ServiceMockFactories
 {

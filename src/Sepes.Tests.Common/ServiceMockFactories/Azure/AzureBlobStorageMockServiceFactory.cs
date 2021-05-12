@@ -1,6 +1,6 @@
 ﻿using Azure.Storage.Sas;
 using Moq;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading;
 

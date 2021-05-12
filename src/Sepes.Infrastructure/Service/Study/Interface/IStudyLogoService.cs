@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;

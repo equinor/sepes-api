@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Common.Util;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {
@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Model.Automapper
 
         public string Resolve(Sandbox source, SandboxDetails destination, string destMember, ResolutionContext context)
         {
-            return AzureResourceUtil.CreateResourceCostLink(_config, source);
+            return CloudResourceUtil.CreateResourceCostLink(_config, source);
         }
     }
 }
