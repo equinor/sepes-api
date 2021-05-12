@@ -178,7 +178,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
-                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
+                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow, cancellation)) //Verify that internet is actually closed in Network Security Group in Azure
                 {
                     validationErrors.Add($"Internet is actually open on VM in Azure {curVm.ResourceName}");
                 }

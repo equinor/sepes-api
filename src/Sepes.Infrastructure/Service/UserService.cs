@@ -20,9 +20,9 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
 
-        ICurrentUserService _currentUserService;
-        IPrincipalService _principalService;
-        IAzureUserService _azureUserService;
+        readonly ICurrentUserService _currentUserService;
+        readonly IPrincipalService _principalService;
+        readonly IAzureUserService _azureUserService;
 
         public UserService(IConfiguration config, SepesDbContext db, IMapper mapper, ICurrentUserService currentUserService, IPrincipalService principalService, IAzureUserService azureUserService)
         {

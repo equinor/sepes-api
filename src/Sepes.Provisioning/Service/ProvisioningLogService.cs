@@ -45,14 +45,14 @@ namespace Sepes.Provisioning.Service
             return $"MessageId: {queueParentItem.MessageId} - {queueParentItem.Description} | {suffix}";
         }
 
-        public void OperationInformation(CloudResourceOperationDto currentResourceOperation, string suffix)
+        public void OperationInformation(CloudResourceOperationDto currentResourceOperation, string suffix, EventId eventId = default(EventId))
         {
-            _logger.LogInformation(CurrentOperationLogMessage(currentResourceOperation, suffix));
+            _logger.LogInformation(eventId, CurrentOperationLogMessage(currentResourceOperation, suffix));
         }
         
-        public void OperationWarning(CloudResourceOperationDto currentResourceOperation, string suffix, Exception exeption = null)
+        public void OperationWarning(CloudResourceOperationDto currentResourceOperation, string suffix, Exception exeption = null, EventId eventId = default(EventId))
         {
-            _logger.LogWarning(exeption, CurrentOperationLogMessage(currentResourceOperation, suffix));
+            _logger.LogWarning(eventId, exeption, CurrentOperationLogMessage(currentResourceOperation, suffix));
         }
         
         public void OperationError(Exception exeption, CloudResourceOperationDto currentResourceOperation, string suffix)
