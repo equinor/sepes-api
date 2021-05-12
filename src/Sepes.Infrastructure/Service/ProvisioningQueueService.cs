@@ -114,8 +114,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CreateItemAndEnqueue(int operationId, string operationDescription)
         {
-            var queueParentItem = new ProvisioningQueueParentDto();
-            queueParentItem.Description = operationDescription;
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                Description = operationDescription
+            };
+
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operationId });
 
             await SendMessageAsync(queueParentItem);

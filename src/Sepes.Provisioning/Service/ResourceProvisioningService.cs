@@ -144,6 +144,7 @@ namespace Sepes.Provisioning.Service
                         await _operationCheckService.ThrowIfDependentOnUnfinishedOperationAsync(currentOperation, queueParentItem);
 
                         string networkSecurityGroupName = null;
+
                         //Only relevant for Sandbox Resource Creation
                         if (currentOperation.Resource.SandboxId.HasValue)
                         {
@@ -151,7 +152,7 @@ namespace Sepes.Provisioning.Service
                             networkSecurityGroupName = nsg?.ResourceName;
                         }                     
 
-                        await ProvisioningParamaterUtil.PrepareForNewOperation(currentProvisioningParameters, currentOperation, currentProvisioningResult, networkSecurityGroupName);
+                        ProvisioningParamaterUtil.PrepareForNewOperation(currentProvisioningParameters, currentOperation, currentProvisioningResult, networkSecurityGroupName);
 
                         await _provisioningQueueService.IncreaseInvisibleBasedOnResource(currentOperation, queueParentItem);
 

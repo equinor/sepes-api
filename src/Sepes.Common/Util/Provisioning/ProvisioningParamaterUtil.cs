@@ -1,5 +1,4 @@
-﻿using Sepes.Common.Constants;
-using Sepes.Common.Dto;
+﻿using Sepes.Common.Dto;
 using Sepes.Common.Dto.Provisioning;
 using System.Threading.Tasks;
 
@@ -7,7 +6,7 @@ namespace Sepes.Common.Util.Provisioning
 {
     public static class ProvisioningParamaterUtil
     {
-        public static async Task PrepareForNewOperation(ResourceProvisioningParameters currentCrudInput, CloudResourceOperationDto currentOperation, ResourceProvisioningResult lastResult, string nsgName = null)
+        public static void PrepareForNewOperation(ResourceProvisioningParameters currentCrudInput, CloudResourceOperationDto currentOperation, ResourceProvisioningResult lastResult, string nsgName = null)
         {  
             currentCrudInput.ResetButKeepSharedVariables(lastResult?.NewSharedVariables);
 

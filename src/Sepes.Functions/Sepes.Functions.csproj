@@ -18,7 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sepes.Azure\Sepes.Azure.csproj" />
-    <ProjectReference Include="..\Sepes.Common\Sepes.Common.csproj" />
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
     <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
