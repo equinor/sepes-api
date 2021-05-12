@@ -17,6 +17,8 @@
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="3.0.11" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Sepes.Azure\Sepes.Azure.csproj" />
+    <ProjectReference Include="..\Sepes.Common\Sepes.Common.csproj" />
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
     <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
