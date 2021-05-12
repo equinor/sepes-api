@@ -2,6 +2,9 @@ FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
 # WORKDIR /src
 
 COPY Sepes.Infrastructure /src/Sepes.Infrastructure
+COPY Sepes.Infrastructure /src/Sepes.Common
+COPY Sepes.Infrastructure /src/Sepes.Provisioning
+COPY Sepes.Infrastructure /src/Sepes.Azure
 COPY Sepes.Functions /src/Sepes.Functions
 RUN cd /src && \
     ls
@@ -13,7 +16,7 @@ RUN cd /src/Sepes.Functions && \
 # FROM mcr.microsoft.com/azure-functions/dotnet:3.0-appservice
 FROM mcr.microsoft.com/azure-functions/dotnet:3.0
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
-AzureFunctionsJobHost__Logging__Console__IsEnabled=true
+    AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
 COPY --from=build-env ["/home/site/wwwroot", "/home/site/wwwroot"]
 
