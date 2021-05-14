@@ -107,7 +107,12 @@ namespace Sepes.RestApi
                     b.Backchannel = defaultBackChannel;
 
                 }).EnableTokenAcquisitionToCallDownstreamApi(e =>
-                    { _configuration.Bind("GraphApi", e); })
+                    {
+                        //_configuration.Bind("GraphApi", e);
+                    }
+                    )
+                 .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
+                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
                 .AddInMemoryTokenCaches();
 
             services.AddHttpClient();
