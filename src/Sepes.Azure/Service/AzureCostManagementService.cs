@@ -8,13 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sepes.Azure.Dto;
 using Sepes.Common.Service;
+using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
     public class AzureCostManagementService : RestApiServiceBase, IAzureCostManagementService
     {
-        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition)
-            : base(config, logger, tokenAcquisition)
+        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
 
         }

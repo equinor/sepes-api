@@ -114,16 +114,12 @@ namespace Sepes.RestApi
                     )
                  .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
                 .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
-                .AddInMemoryTokenCaches();
-
-            services.AddHttpClient();
+                .AddInMemoryTokenCaches();           
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
             RegisterServices(services);
-
-            SetFileUploadLimits(services);
 
             SwaggerSetup.ConfigureServices(_configuration, services);
 
@@ -146,6 +142,13 @@ namespace Sepes.RestApi
 
         void RegisterServices(IServiceCollection services)
         {
+            //HttpClients            
+            services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+            services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+            services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+            services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+
             //Plumbing
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
@@ -245,31 +248,11 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
             services.AddTransient<IAzureUserService, AzureUserService>();
-            services.AddTransient<IAzureVirtualNetworkOperatingSystemService, AzureVirtualNetworkOperatingSystemService>();
+            services.AddTransient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
             services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
             services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
             services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
-        }
-
-        void SetFileUploadLimits(IServiceCollection services)
-        {
-            services.Configure<IISServerOptions>(options =>
-            {
-                options.MaxRequestBodySize = int.MaxValue;
-            });
-
-            services.Configure<KestrelServerOptions>(options =>
-            {
-                options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
-            });
-
-            services.Configure<FormOptions>(options =>
-            {
-                options.ValueLengthLimit = int.MaxValue;
-                options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
-                options.MultipartHeadersLengthLimit = int.MaxValue;
-            });
-        }
+        }        
 
         void DoMigration(bool enableSensitiveDataLogging)
         {

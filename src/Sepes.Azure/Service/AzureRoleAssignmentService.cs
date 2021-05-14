@@ -20,8 +20,8 @@ namespace Sepes.Azure.Service
     {
         readonly string _subscriptionId;
 
-        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition)
-            : base(config, logger, tokenAcquisition)
+        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }

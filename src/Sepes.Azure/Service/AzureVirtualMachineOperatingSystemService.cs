@@ -11,15 +11,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using static Sepes.Common.Constants.AzureVmOperatingSystemConstants;
 using Sepes.Common.Service;
+using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualNetworkOperatingSystemService : RestApiServiceBase, IAzureVirtualNetworkOperatingSystemService
+    public class AzureVirtualMachineOperatingSystemService : RestApiServiceBase, IAzureVirtualMachineOperatingSystemService
     {
         readonly string _subscriptionId;
 
-        public AzureVirtualNetworkOperatingSystemService(IConfiguration config, ILogger<AzureVirtualNetworkOperatingSystemService> logger, ITokenAcquisition tokenAcquisition)
-            : base(config, logger, tokenAcquisition)
+        public AzureVirtualMachineOperatingSystemService(IConfiguration config, ILogger<AzureVirtualMachineOperatingSystemService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }

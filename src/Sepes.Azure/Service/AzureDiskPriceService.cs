@@ -5,6 +5,7 @@ using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Service;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,8 +13,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureDiskPriceService : RestApiServiceBase, IAzureDiskPriceService
     {
-        public AzureDiskPriceService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition)
-            : base(config, logger, tokenAcquisition)
+        public AzureDiskPriceService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
         }
 

@@ -12,8 +12,8 @@ namespace Sepes.Infrastructure.Service
     {
         protected readonly string _subscriptionId;        
 
-        public WbsValidationService(IConfiguration config, ILogger<WbsValidationService> logger, ITokenAcquisition tokenAcquisition)
-          : base(config, logger, tokenAcquisition)
+        public WbsValidationService(IConfiguration config, ILogger<WbsValidationService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+          : base(config, logger, tokenAcquisition, httpClient)
         {
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         } 
