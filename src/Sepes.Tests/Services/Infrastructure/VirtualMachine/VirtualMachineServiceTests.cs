@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {
-    public class VirtualMachineServiceTests : ServiceTestBase
+    public class VirtualMachineServiceTests : ServiceTestBaseWithInMemoryDb
     {
         public VirtualMachineServiceTests()
            : base()

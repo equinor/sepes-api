@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.DomainServices.Lookup
 {
-    public class LookupServiceBase : ServiceTestBase
+    public class LookupServiceBase : ServiceTestBaseWithInMemoryDb
     {
         public LookupServiceBase()
             : base()

@@ -3,9 +3,7 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -142,11 +140,12 @@ namespace Sepes.RestApi
 
         void RegisterServices(IServiceCollection services)
         {
-            //HttpClients            
-            services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
-            services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-            services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+            //HttpClients
+           // services.AddHttpClient();
+            //services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+            //services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+            //services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            //services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
             services.AddHttpClient<IWbsValidationService, WbsValidationService>();
 
             //Plumbing
@@ -227,6 +226,8 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
+            //services.AddTransient<IWbsValidationService, WbsValidationService>();
+            
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();

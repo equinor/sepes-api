@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class UserServiceTest : ServiceTestBase
+    public class UserServiceTest : ServiceTestBaseWithInMemoryDb
     {
         public UserServiceTest()
             : base()

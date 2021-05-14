@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -38,7 +39,7 @@ namespace Sepes.Common.Service
             }
         }
 
-        protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, CancellationToken cancellationToken = default)
+        protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, Dictionary<string, string> additionalHeaders = null, CancellationToken cancellationToken = default)
         {
             string token = null;
 
@@ -47,10 +48,17 @@ namespace Sepes.Common.Service
                 token = await _tokenAcquisition.GetAccessTokenForAppAsync("https://management.azure.com/.default");
             }
 
-
             if (needsAuth)
             {
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            if(additionalHeaders != null)
+            {
+                foreach(var curHeader in additionalHeaders)
+                {
+                    _httpClient.DefaultRequestHeaders.Add(curHeader.Key, curHeader.Value);
+                }
             }
 
             HttpResponseMessage responseMessage = null;

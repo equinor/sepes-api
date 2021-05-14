@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Sepes.Tests.Util
 {
-    public class AzureResourceTagsFactoryTest : ServiceTestBase
+    public class AzureResourceTagsFactoryTest : ServiceTestBaseWithInMemoryDb
     {
         [Fact]
         public void SandboxResourceTags_ShouldReturnCorrectValues()

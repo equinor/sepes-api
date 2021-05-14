@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services
 {
-    public class PublicIpServiceTests : ServiceTestBase
+    public class PublicIpServiceTests : ServiceTestBaseWithInMemoryDb
     {
         [Theory]
         [InlineData("192.168.1.1")]

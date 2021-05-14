@@ -56,7 +56,7 @@ namespace Sepes.Azure.Service
                 var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
                 var bodyJson = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
+                var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken: cancellationToken);
 
                 return result;
 
