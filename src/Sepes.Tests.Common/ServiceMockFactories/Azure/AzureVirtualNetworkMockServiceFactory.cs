@@ -1,7 +1,7 @@
 ﻿using Moq;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Provisioning;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Provisioning;
+using Sepes.Azure.Service.Interface;
 using Sepes.Tests.Common.ServiceMockFactories.Azure;
 using System.Threading;
 

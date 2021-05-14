@@ -2,8 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Dto.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -46,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var tags = AzureResourceTagsFactory.SandboxResourceTags(_configuration, sandbox.Study, sandbox);
+                var tags = ResourceTagFactory.SandboxResourceTags(_configuration, sandbox.Study, sandbox);
 
                 var creationAndSchedulingDto =
                     new SandboxResourceCreationAndSchedulingDto()

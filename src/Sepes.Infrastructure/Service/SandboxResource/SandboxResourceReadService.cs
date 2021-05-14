@@ -2,19 +2,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
-using Sepes.Infrastructure.Response.Sandbox;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -59,7 +60,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default)
         {
             var sandboxFromDb = await _sandboxModelService.GetByIdForCostAnalysisLinkAsync(sandboxId, UserOperation.Study_Read);
-            return AzureResourceUtil.CreateResourceCostLink(_configuration, sandboxFromDb);
+            return CloudResourceUtil.CreateResourceCostLink(_configuration, sandboxFromDb);
         }
     }
 }

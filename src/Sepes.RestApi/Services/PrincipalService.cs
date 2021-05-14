@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System.Security.Principal;
+using Sepes.Common.Interface;
+using Sepes.Infrastructure.Util.Auth;
 
 namespace Sepes.RestApi.Services
 {

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Exceptions;
+﻿using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Tests.Setup;
 using Sepes.Tests.Setup.ModelFactory;

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Response.Sandbox;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface

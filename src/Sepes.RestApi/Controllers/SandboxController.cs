@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using System.Net.Mime;
 using System.Threading.Tasks;

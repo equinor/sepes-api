@@ -1,12 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Model;
+﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using Sepes.Tests.Services;
 using Sepes.Tests.Setup;
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util
@@ -24,7 +20,7 @@ namespace Sepes.Tests.Util
             var study = new Study() { Name = "Study1", WbsCode = "123", StudyParticipants = participants };
             var sandbox = new Sandbox() { Study = study, Name = "Sandbox1" };
 
-            var res = AzureResourceTagsFactory.SandboxResourceTags(config, study, sandbox);
+            var res = ResourceTagFactory.SandboxResourceTags(config, study, sandbox);
 
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";
@@ -47,7 +43,7 @@ namespace Sepes.Tests.Util
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });
             var study = new Study() { Name = "Study1", WbsCode = "123", StudyParticipants = participants };
 
-            var res = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(config, study);
+            var res = ResourceTagFactory.StudySpecificDatasourceResourceGroupTags(config, study);
 
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";
@@ -68,7 +64,7 @@ namespace Sepes.Tests.Util
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });
             var study = new Study() { Name = "Study1", WbsCode = "123", StudyParticipants = participants };
 
-            var res = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(config, study, "dataset1");
+            var res = ResourceTagFactory.StudySpecificDatasourceStorageAccountTags(config, study, "dataset1");
 
             var expectedResultStudy = "Study1";
             var expectedResultOwnerName = "John Doe";

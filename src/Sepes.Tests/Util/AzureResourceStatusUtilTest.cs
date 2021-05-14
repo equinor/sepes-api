@@ -1,9 +1,8 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
+﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util
@@ -15,7 +14,7 @@ namespace Sepes.Tests.Util
         {
             var cloudResource = new CloudResource() { };
 
-            var ex = Assert.Throws<ArgumentNullException>(() => AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource));
+            var ex = Assert.Throws<ArgumentNullException>(() => ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource));
         }
 
         [Fact]
@@ -23,7 +22,7 @@ namespace Sepes.Tests.Util
         {
             var cloudResourceOperation = new List<CloudResourceOperation>() { };
             var cloudResource = new CloudResource() { Operations = cloudResourceOperation };
-            var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
+            var result = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
             Assert.Null(result);
         }
 
@@ -34,7 +33,7 @@ namespace Sepes.Tests.Util
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.DONE_SUCCESSFUL };
             cloudResourceOperationList.Add(cloudOperation1);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
-            var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
+            var result = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
             Assert.Equal(cloudOperation1, result);
         }
 
@@ -45,7 +44,7 @@ namespace Sepes.Tests.Util
             var cloudOperation1 = new CloudResourceOperation() { Status = CloudResourceOperationState.FAILED };
             cloudResourceOperationList.Add(cloudOperation1);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
-            var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
+            var result = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
             Assert.Equal(cloudOperation1, result);
         }
 
@@ -58,7 +57,7 @@ namespace Sepes.Tests.Util
             cloudResourceOperationList.Add(cloudOperation1);
             cloudResourceOperationList.Add(cloudOperation2);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
-            var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
+            var result = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
             Assert.Equal(cloudOperation1, result);
         }
 
@@ -71,7 +70,7 @@ namespace Sepes.Tests.Util
             cloudResourceOperationList.Add(cloudOperation1);
             cloudResourceOperationList.Add(cloudOperation2);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
-            var result = AzureResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
+            var result = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(cloudResource);
             Assert.Equal(cloudOperation2, result);
         }
 
@@ -91,7 +90,7 @@ namespace Sepes.Tests.Util
             var cloudOperation1 = new CloudResourceOperation() { Status = status, OperationType = operationType };
             cloudResourceOperationList.Add(cloudOperation1);
             var cloudResource = new CloudResource() { Operations = cloudResourceOperationList };
-            var result = AzureResourceStatusUtil.ResourceStatus(cloudResource);
+            var result = ResourceStatusUtil.ResourceStatus(cloudResource);
             Assert.Equal(expectedResult, result);
         }
 

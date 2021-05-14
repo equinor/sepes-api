@@ -1,6 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;
 using System.Linq;

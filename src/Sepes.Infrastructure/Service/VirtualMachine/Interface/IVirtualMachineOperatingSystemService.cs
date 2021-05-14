@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Common.Dto.VirtualMachine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
+﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Infrastructure.Model;
 using System;
 

@@ -1,16 +1,17 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Auth;
-using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Linq;
 using System.Threading;
@@ -64,7 +65,7 @@ namespace Sepes.Infrastructure.Service
             if (resourceGroupForDatasets == null)
             {
                 var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(studyForCreation.Name);
-                var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, studyForCreation);
+                var tags = ResourceTagFactory.StudySpecificDatasourceResourceGroupTags(_config, studyForCreation);
                 resourceGroupForDatasets = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(studyForCreation.Id, resourceGroupName, "norwayeast", tags);
                 ProvisioningQueueUtil.CreateChildAndAdd(parentQueueItem, resourceGroupForDatasets);
             }
@@ -136,7 +137,7 @@ namespace Sepes.Infrastructure.Service
         async Task<CloudResource> CreateResourceGroupForStudySpecificDatasetsInternalAsync(Study study, ProvisioningQueueParentDto parentQueueItem)
         {
             var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(study.Name);
-            var tags = AzureResourceTagsFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
+            var tags = ResourceTagFactory.StudySpecificDatasourceResourceGroupTags(_config, study);
             var resourceGroupForDatasets = await _cloudResourceCreateService.CreateStudySpecificResourceGroupEntryAsync(study.Id, resourceGroupName, "norwayeast", tags);
             ProvisioningQueueUtil.CreateChildAndAdd(parentQueueItem, resourceGroupForDatasets);
 
@@ -195,7 +196,7 @@ namespace Sepes.Infrastructure.Service
 
                 var currentUser = await _userService.GetCurrentUserAsync();
 
-                var tagsForStorageAccount = AzureResourceTagsFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
+                var tagsForStorageAccount = ResourceTagFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
@@ -241,10 +242,32 @@ namespace Sepes.Infrastructure.Service
                 var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
                     CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);
 
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, firewallUpdateOperation);
+                await _provisioningQueueService.CreateItemAndEnqueue(firewallUpdateOperation);
 
-                await OperationCompletedUtil.WaitForOperationToCompleteAsync(_cloudResourceOperationReadService, firewallUpdateOperation.Id);
+                await WaitForOperationToCompleteAsync(firewallUpdateOperation.Id);
             }
+        }
+
+        async Task WaitForOperationToCompleteAsync(int operationId, int timeoutInSeconds = 60)
+        {
+            var timeout = TimeSpan.FromSeconds(timeoutInSeconds);
+            var startTime = DateTime.UtcNow;
+
+            while ((DateTime.UtcNow - startTime) < timeout)
+            {
+                Thread.Sleep(TimeSpan.FromSeconds(3));
+
+                if (await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operationId))
+                {
+                    return;
+                }
+                else if (await _cloudResourceOperationReadService.OperationFailedOrAbortedAsync(operationId))
+                {
+                    throw new Exception("Awaited operation failed");
+                }
+            }
+
+            throw new Exception("Awaited operation timed out");
         }
 
         public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)
@@ -267,7 +290,7 @@ namespace Sepes.Infrastructure.Service
                     }
 
                     var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(resourceGroupEntry.Id, $"Delete study related resurces for Study {study.Id}");
-                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
+                    await _provisioningQueueService.CreateItemAndEnqueue(deleteOperation);
                 }
             }
             catch (Exception ex)
@@ -289,7 +312,7 @@ namespace Sepes.Infrastructure.Service
                     await SoftDeleteUtil.MarkAsDeleted(datasetResourceEntry, _userService);
 
                     var deleteOperation = await _cloudResourceOperationCreateService.CreateDeleteOperationAsync(datasetResourceEntry.Id, $"Delete dataset related resurces for dataset {dataset.Id}");
-                    await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, deleteOperation);
+                    await _provisioningQueueService.CreateItemAndEnqueue(deleteOperation);
                 }
             }
             catch (Exception ex)

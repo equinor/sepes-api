@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Study;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;

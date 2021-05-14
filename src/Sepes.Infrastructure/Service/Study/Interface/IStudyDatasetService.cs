@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Dataset;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Dataset;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

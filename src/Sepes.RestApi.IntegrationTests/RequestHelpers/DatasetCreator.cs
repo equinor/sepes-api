@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Dataset;
+﻿using Sepes.Common.Dto.Dataset;
 using Sepes.RestApi.IntegrationTests.Constants;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;

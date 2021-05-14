@@ -1,5 +1,6 @@
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Study;
+using Sepes.Common.Exceptions;
 using Sepes.Tests.Setup;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabase();
             var studyService = StudyServiceMockFactory.ReadService(_serviceProvider);
 
-            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
+            await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }
 
         [Theory]
@@ -38,7 +39,7 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabase();
             var studyDeleteService = StudyServiceMockFactory.DeleteService(_serviceProvider);
 
-            await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyDeleteService.DeleteStudyAsync(id));
+            await Assert.ThrowsAsync<NotFoundException>(() => studyDeleteService.DeleteStudyAsync(id));
         }
 
         [Fact]
@@ -59,7 +60,7 @@ namespace Sepes.Tests.Services.DomainServices
             await studyDeleteService.CloseStudyAsync(createdStudy.Id);
          
             var studyReadService = StudyServiceMockFactory.ReadService(_serviceProvider);
-            _ = await Assert.ThrowsAsync<Infrastructure.Exceptions.NotFoundException>(() => studyReadService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
+            _ = await Assert.ThrowsAsync<NotFoundException>(() => studyReadService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
         }  
     }

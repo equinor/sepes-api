@@ -1,19 +1,25 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Util.Provisioning;
+﻿using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
+using Sepes.Provisioning.Service.Interface;
+using Sepes.Test.Common.ServiceMockFactories;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util.Provisioning
 {
     public class CreateAndUpdateUtilTest
     {
+        ICreateAndUpdateService _createAndUpdateService;
+
+        public CreateAndUpdateUtilTest()
+        {
+            _createAndUpdateService = CreateAndUpdateServiceMock.CreateBasic();
+        }
+
         [Fact]
         public void WillBeHandledAsCreateOrUpdate_ShouldReturnFalse()
         {
-            var result = CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(new CloudResourceOperationDto {  });
+            var result = _createAndUpdateService.CanHandle(new CloudResourceOperationDto {  });
 
             Assert.False(result);
         }
@@ -21,14 +27,14 @@ namespace Sepes.Tests.Util.Provisioning
         [Fact]
         public void WillBeHandledAsCreateOrUpdate_ShouldReturnException()
         {
-            var ex = Assert.Throws<ArgumentException>(() => CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(null));
+            var ex = Assert.Throws<ArgumentException>(() => _createAndUpdateService.CanHandle(null));
             Assert.Equal("Cloud-Resource-Operation was null", ex.Message);
         }
 
         [Fact]
         public void WillBeHandledAsCreateOrUpdate_ShouldReturnTrue2()
         {
-            var result = CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(new CloudResourceOperationDto { OperationType = CloudResourceOperationType.CREATE });
+            var result = _createAndUpdateService.CanHandle(new CloudResourceOperationDto { OperationType = CloudResourceOperationType.CREATE });
 
             Assert.True(result);
         }
@@ -36,7 +42,7 @@ namespace Sepes.Tests.Util.Provisioning
         [Fact]
         public void WillBeHandledAsCreateOrUpdate_ShouldReturnTrue3()
         {
-            var result = CreateAndUpdateUtil.WillBeHandledAsCreateOrUpdate(new CloudResourceOperationDto { OperationType = CloudResourceOperationType.UPDATE });
+            var result = _createAndUpdateService.CanHandle(new CloudResourceOperationDto { OperationType = CloudResourceOperationType.UPDATE });
 
             Assert.True(result);
         }

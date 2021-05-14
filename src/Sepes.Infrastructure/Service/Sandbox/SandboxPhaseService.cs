@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Model;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -176,7 +178,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
-                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
+                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow, cancellation)) //Verify that internet is actually closed in Network Security Group in Azure
                 {
                     validationErrors.Add($"Internet is actually open on VM in Azure {curVm.ResourceName}");
                 }

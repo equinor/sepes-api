@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;

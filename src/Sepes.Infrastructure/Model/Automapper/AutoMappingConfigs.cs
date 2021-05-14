@@ -2,16 +2,17 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Dto.Dataset;
-using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Dto.Study;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Response;
-using Sepes.Infrastructure.Response.Sandbox;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Dto.Study;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Azure;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Model.Automapper
@@ -73,7 +74,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<CloudResource, DatasetResourceLightDto>()
                  .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
                   .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
-                   .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
+                   .ForMember(dest => dest.Status, source => source.MapFrom(x => ResourceStatusUtil.ResourceStatus(x)))
                      .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<StorageAccountResourceExternalLinkResolver>())
                      .ForMember(dest => dest.RetryLink, source => source.MapFrom<DatasetResourceRetryLinkResolver>());
                       
@@ -98,7 +99,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<CloudResource, SandboxResourceLight>()
             .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))           
              .ForMember(dest => dest.Type, source => source.MapFrom(x => AzureResourceTypeUtil.GetUserFriendlyName(x)))
-              .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
+              .ForMember(dest => dest.Status, source => source.MapFrom(x => ResourceStatusUtil.ResourceStatus(x)))
                 .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>())
                 .ForMember(dest => dest.RetryLink, source => source.MapFrom<SandboxResourceRetryLinkResolver>())
                   .ForMember(dest => dest.AdditionalProperties, source => source.MapFrom<SandboxResourceAdditionalPropertiesResolver>())
@@ -108,13 +109,13 @@ namespace Sepes.Infrastructure.Model.Automapper
             //CLOUD RESOURCE
 
             CreateMap<CloudResource, CloudResourceDto>()
-                .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagStringToDictionary(x.Tags)))
+                .ForMember(dest => dest.Tags, source => source.MapFrom(x => TagUtils.TagStringToDictionary(x.Tags)))
                 .ForMember(dest => dest.SandboxName, source => source.MapFrom(s => s.Sandbox.Name))
             .ForMember(dest => dest.StudyName, source => source.MapFrom(s => s.Sandbox.Study.Name));
 
 
             CreateMap<CloudResourceDto, CloudResource>()
-                .ForMember(dest => dest.Tags, source => source.MapFrom(x => AzureResourceTagsFactory.TagDictionaryToString(x.Tags)));
+                .ForMember(dest => dest.Tags, source => source.MapFrom(x => TagUtils.TagDictionaryToString(x.Tags)));
 
             CreateMap<CloudResourceOperation, CloudResourceOperationDto>();
             CreateMap<CloudResourceOperationDto, CloudResourceOperation>();
@@ -161,8 +162,8 @@ namespace Sepes.Infrastructure.Model.Automapper
             CreateMap<CloudResource, VmDto>()
            .ForMember(dest => dest.Name, source => source.MapFrom(x => x.ResourceName))
             .ForMember(dest => dest.Region, source => source.MapFrom(x => RegionStringConverter.Convert(x.Region).Name))
-            .ForMember(dest => dest.Status, source => source.MapFrom(x => AzureResourceStatusUtil.ResourceStatus(x)))
-            .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => AzureVmUtil.GetOsName(x)))
+            .ForMember(dest => dest.Status, source => source.MapFrom(x => ResourceStatusUtil.ResourceStatus(x)))
+            .ForMember(dest => dest.OperatingSystem, source => source.MapFrom(x => VmOsUtil.GetOsName(x)))
                    .ForMember(dest => dest.LinkToExternalSystem, source => source.MapFrom<SandboxResourceExternalLinkResolver>());
 
 

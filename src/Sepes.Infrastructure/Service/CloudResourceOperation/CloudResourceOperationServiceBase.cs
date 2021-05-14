@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;

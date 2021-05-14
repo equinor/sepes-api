@@ -1,5 +1,5 @@
 ﻿//using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-//using Sepes.Infrastructure.Dto.Sandbox;
+//using Sepes.Common.Dto.Sandbox;
 //using Sepes.Infrastructure.Service.Interface;
 //using System;
 //using System.Collections.Generic;

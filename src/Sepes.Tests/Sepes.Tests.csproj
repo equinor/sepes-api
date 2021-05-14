@@ -59,7 +59,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sepes.Common\Sepes.Common.csproj" />
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
+    <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
     <ProjectReference Include="..\Sepes.Tests.Common\Sepes.Tests.Common.csproj" />
   </ItemGroup>
 

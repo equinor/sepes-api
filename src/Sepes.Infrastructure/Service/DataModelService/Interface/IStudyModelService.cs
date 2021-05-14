@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Response;
 using System.Collections.Generic;

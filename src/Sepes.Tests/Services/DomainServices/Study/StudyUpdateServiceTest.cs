@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Dto.Study;
 using Sepes.Tests.Setup;
 using System;
 using Xunit;

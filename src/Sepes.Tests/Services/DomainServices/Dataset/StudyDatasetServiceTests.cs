@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Exceptions;
+﻿using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Tests.Setup;
 using System.Collections.Generic;

@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Constants;
+﻿using Sepes.Common.Constants;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;

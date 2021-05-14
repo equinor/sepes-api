@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Util;
 using System.Linq;
 using Xunit;
 

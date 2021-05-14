@@ -1,17 +1,17 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Dto.Configuration;
 using System.Security.Principal;
+using Sepes.Azure.Dto;
+using Sepes.Common.Interface;
+using Sepes.Common.Util;
 
 namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
     {  
-        public static User CreateDbUserFromAzureUser(string objectId,  AzureUserDto azureUser)
+        public static User CreateDbUserFromAzureUser(string objectId, AzureUserDto azureUser)
         {
             var userDb = new User();
             userDb.ObjectId = objectId;

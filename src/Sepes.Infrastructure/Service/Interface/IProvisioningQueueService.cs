@@ -1,4 +1,6 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Infrastructure.Model;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,10 +17,16 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task DeleteMessageAsync(string messageId, string popReceipt);
 
-        Task DeleteQueueAsync();
+     
 
         Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds);
 
         Task ReQueueMessageAsync(ProvisioningQueueParentDto message, int? invisibleForInSeconds = default, CancellationToken cancellationToken = default);
+        Task AddNewQueueMessageForOperation(CloudResourceOperation operation);            
+        
+        Task CreateItemAndEnqueue(int operationId, string operationDescription);
+        Task IncreaseInvisibleBasedOnResource(CloudResourceOperationDto currentOperation, ProvisioningQueueParentDto queueParentItem);
+        Task CreateItemAndEnqueue(CloudResourceOperationDto operation);
+        Task CreateItemAndEnqueue(CloudResourceOperation operation);
     }
 }

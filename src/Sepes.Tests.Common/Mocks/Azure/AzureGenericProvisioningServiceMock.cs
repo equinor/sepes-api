@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Provisioning;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Provisioning;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Dto;
 using System.Linq;
 using Xunit;

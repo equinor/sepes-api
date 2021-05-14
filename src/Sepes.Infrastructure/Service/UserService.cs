@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System.Threading.Tasks;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Interface;
+using Sepes.Infrastructure.Util.Auth;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -19,9 +20,9 @@ namespace Sepes.Infrastructure.Service
         readonly SepesDbContext _db;
         readonly IMapper _mapper;
 
-        ICurrentUserService _currentUserService;
-        IPrincipalService _principalService;
-        IAzureUserService _azureUserService;
+        readonly ICurrentUserService _currentUserService;
+        readonly IPrincipalService _principalService;
+        readonly IAzureUserService _azureUserService;
 
         public UserService(IConfiguration config, SepesDbContext db, IMapper mapper, ICurrentUserService currentUserService, IPrincipalService principalService, IAzureUserService azureUserService)
         {
@@ -52,7 +53,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<User> EnsureDbUserExists()
         {           
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_db, _currentUserService, _azureUserService);           
+            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_config, _db, _currentUserService, _azureUserService);           
         }     
 
         UserDto MapToDtoAndPersistRelevantProperties(User user)

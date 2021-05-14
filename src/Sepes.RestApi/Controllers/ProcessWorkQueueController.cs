@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Sepes.Infrastructure.Service.Interface;
 using System.Net.Mime;
 using System.Threading.Tasks;
+using Sepes.Provisioning.Service.Interface;
 
 namespace Sepes.RestApi.Controllers
 {

@@ -1,4 +1,6 @@
-﻿using Sepes.Tests.Setup;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Exceptions;
+using Sepes.Tests.Setup;
 using Xunit;
 
 namespace Sepes.Tests.Services
@@ -26,7 +28,7 @@ namespace Sepes.Tests.Services
 
             var preApprovedDatasetModelService = DatasetServiceMockFactory.GetPreApprovedDatasetModelService(_serviceProvider);
            
-            await Assert.ThrowsAsync<Sepes.Infrastructure.Exceptions.NotFoundException>(async () => await preApprovedDatasetModelService.GetByIdAsync(id, Infrastructure.Constants.UserOperation.Study_Read));
+            await Assert.ThrowsAsync<NotFoundException>(async () => await preApprovedDatasetModelService.GetByIdAsync(id, UserOperation.Study_Read));
         }
     }
 }

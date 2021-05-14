@@ -1,5 +1,5 @@
 ﻿using Microsoft.ApplicationInsights;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
 
 namespace Sepes.RestApi.Services
 {

@@ -1,10 +1,10 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Provisioning;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
+using Sepes.Common.Util.Provisioning;
 using System.Collections.Generic;
 using System.Linq;
+using Sepes.Azure.Util;
 
 namespace Sepes.Infrastructure.Model.Factory
 {
@@ -86,7 +86,7 @@ namespace Sepes.Infrastructure.Model.Factory
         public static CloudResource CreateBasicResource(UserDto currentUser, string sessionId, string region, string resourceType, string resourceName, Dictionary<string, string> tags, string resourceGroupName = null
             )
         {
-            var tagsString = AzureResourceTagsFactory.TagDictionaryToString(tags);
+            var tagsString = TagUtils.TagDictionaryToString(tags);
 
             var newResource = new CloudResource()
             {

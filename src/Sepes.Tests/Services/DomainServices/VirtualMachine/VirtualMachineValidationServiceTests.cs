@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Tests.Setup;
 using System;
 using Xunit;

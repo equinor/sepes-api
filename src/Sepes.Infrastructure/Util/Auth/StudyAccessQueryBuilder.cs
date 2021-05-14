@@ -1,6 +1,6 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.Auth;
-using Sepes.Infrastructure.Dto;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Constants.Auth;
+using Sepes.Common.Dto;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
