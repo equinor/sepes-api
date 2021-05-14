@@ -35,7 +35,7 @@ namespace Sepes.Tests.Services
         protected async Task<SepesDbContext> ClearTestDatabaseAddUser()
         {
             var db = await ClearTestDatabase();
-            db.Users.Add(new Infrastructure.Model.User() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, EmailAddress = TestUserConstants.COMMON_CUR_USER_EMAIL, UserName = TestUserConstants.COMMON_CUR_USER_UPN  });
+            db.Users.Add(new Model.User() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, EmailAddress = TestUserConstants.COMMON_CUR_USER_EMAIL, UserName = TestUserConstants.COMMON_CUR_USER_UPN  });
             await db.SaveChangesAsync();
             return db;
         }

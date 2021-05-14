@@ -1,9 +1,7 @@
-﻿using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
-using Sepes.Common.Constants;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,25 +9,20 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.Azure.Service
+namespace Sepes.Common.Service
 {
-    public class AzureApiServiceBase
+    public class RestApiServiceBase
     {        
         protected readonly ILogger _logger;
         protected readonly IConfiguration _config;
-        protected readonly AzureCredentials _credentials;
-        protected readonly ITokenAcquisition _tokenAcquisition;     
+        protected readonly ITokenAcquisition _tokenAcquisition;           
 
-        protected readonly string _subscriptionId;
-
-
-        public AzureApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition)
+        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _tokenAcquisition = tokenAcquisition;         
-
-            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];           
+            _tokenAcquisition = tokenAcquisition;
+                    
         }             
 
         protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default)

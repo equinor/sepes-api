@@ -26,6 +26,7 @@ using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
+using Sepes.RestApi.Services.GraphApi;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;

@@ -11,14 +11,19 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Sepes.Azure.Dto.RoleAssignment;
+using Sepes.Common.Service;
+using Sepes.Common.Constants;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureRoleAssignmentService : AzureApiServiceBase, IAzureRoleAssignmentService
+    public class AzureRoleAssignmentService : RestApiServiceBase, IAzureRoleAssignmentService 
     {
-        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
-        {
+        readonly string _subscriptionId;
 
+        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition)
+            : base(config, logger, tokenAcquisition)
+        {
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }
 
         public async Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)

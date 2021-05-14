@@ -10,17 +10,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using static Sepes.Common.Constants.AzureVmOperatingSystemConstants;
+using Sepes.Common.Service;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualNetworkOperatingSystemService : AzureApiServiceBase, IAzureVirtualNetworkOperatingSystemService
+    public class AzureVirtualNetworkOperatingSystemService : RestApiServiceBase, IAzureVirtualNetworkOperatingSystemService
     {
+        readonly string _subscriptionId;
+
         public AzureVirtualNetworkOperatingSystemService(IConfiguration config, ILogger<AzureVirtualNetworkOperatingSystemService> logger, ITokenAcquisition tokenAcquisition)
             : base(config, logger, tokenAcquisition)
         {
-
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }
-        
+
         public async Task<List<VmOsDto>> GetAvailableOperatingSystemsAsync(string region, CancellationToken cancellationToken = default)
         {
             var requestsToPerform = new List<ImageRequestProperties>() {
@@ -28,11 +31,11 @@ namespace Sepes.Azure.Service
                 CreateWindowsRequestProps("Windows 2019 Datacenter", region, "2019-Datacenter"),
                 CreateWindowsRequestProps("Windows 2016 Datacenter Core", region, "2016-Datacenter-Server-Core"),
                 CreateWindowsRequestProps("Windows 2016 Datacenter", region, "2016-Datacenter"),
-                 CreateWindowsRequestProps("Windows 2016 Datacenter", region, "2016-Datacenter"),
-                 CreateLinuxRequestProps("RedHat", region, Linux.RedHat7LVM.Publisher, Linux.RedHat7LVM.Offer, Linux.RedHat7LVM.Sku),
-                 CreateLinuxRequestProps("Ubuntu", region, Linux.UbuntuServer1804LTS.Publisher, Linux.UbuntuServer1804LTS.Offer, Linux.UbuntuServer1804LTS.Sku),
-                 CreateLinuxRequestProps("Debian", region, Linux.Debian10.Publisher, Linux.Debian10.Offer, Linux.Debian10.Sku),
-                 CreateLinuxRequestProps("CentOS", region, Linux.CentOS75.Publisher, Linux.CentOS75.Offer, Linux.CentOS75.Sku),
+                CreateWindowsRequestProps("Windows 2016 Datacenter", region, "2016-Datacenter"),
+                CreateLinuxRequestProps("RedHat", region, Linux.RedHat7LVM.Publisher, Linux.RedHat7LVM.Offer, Linux.RedHat7LVM.Sku),
+                CreateLinuxRequestProps("Ubuntu", region, Linux.UbuntuServer1804LTS.Publisher, Linux.UbuntuServer1804LTS.Offer, Linux.UbuntuServer1804LTS.Sku),
+                CreateLinuxRequestProps("Debian", region, Linux.Debian10.Publisher, Linux.Debian10.Offer, Linux.Debian10.Sku),
+                CreateLinuxRequestProps("CentOS", region, Linux.CentOS75.Publisher, Linux.CentOS75.Offer, Linux.CentOS75.Sku),
             };
 
             var result = new List<VmOsDto>();

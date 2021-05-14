@@ -2,7 +2,7 @@
 using Microsoft.Identity.Web;
 using Sepes.Azure.Service.Interface;
 
-namespace Sepes.RestApi
+namespace Sepes.RestApi.Services.GraphApi
 {
     public class GraphServiceProvider : IGraphServiceProvider
     {

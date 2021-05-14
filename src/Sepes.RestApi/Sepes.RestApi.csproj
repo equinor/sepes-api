@@ -46,6 +46,10 @@
     <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Services\GraphApi\" />
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
 
 </Project>
