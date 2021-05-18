@@ -5,6 +5,6 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IWbsValidationService
     {
-        Task<bool> Exists(string wbsCode, CancellationToken cancellation);
+        Task<bool> Exists(string wbsCode, CancellationToken cancellation = default);
     }
 }

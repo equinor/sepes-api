@@ -35,8 +35,7 @@ namespace Sepes.Provisioning.Service
 
        
         public async Task StartMonitoringSession()
-        {
-           
+        {           
             _logger.LogInformation($"Monitoring provisioning state and tags");
 
             var monitoringDisabled = _config[ConfigConstants.DISABLE_MONITORING];

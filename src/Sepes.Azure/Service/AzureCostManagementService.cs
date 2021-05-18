@@ -12,7 +12,7 @@ using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureCostManagementService : RestApiServiceBase, IAzureCostManagementService
+    public class AzureCostManagementService : AzureApiServiceBase, IAzureCostManagementService
     {
         public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
             : base(config, logger, tokenAcquisition, httpClient)

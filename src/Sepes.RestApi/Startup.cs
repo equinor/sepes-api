@@ -87,7 +87,7 @@ namespace Sepes.RestApi
                 {
                     throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
                 }
-
+                
                 services.AddDbContext<SepesDbContext>(
                   options => options.UseSqlServer(
                       readWriteDbConnectionString,
@@ -140,14 +140,6 @@ namespace Sepes.RestApi
 
         void RegisterServices(IServiceCollection services)
         {
-            //HttpClients
-           // services.AddHttpClient();
-            //services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
-            //services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
-            //services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-            //services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-            services.AddHttpClient<IWbsValidationService, WbsValidationService>();
-
             //Plumbing
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
@@ -226,8 +218,15 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
-            //services.AddTransient<IWbsValidationService, WbsValidationService>();
-            
+
+            //Services that use HttpClient, this registers both HttpClient and the service it self in same line
+            services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+            services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+            services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+            services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+
+
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
@@ -248,10 +247,7 @@ namespace Sepes.RestApi
             services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
             services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-            services.AddTransient<IAzureUserService, AzureUserService>();
-            services.AddTransient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-            services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddTransient<IAzureUserService, AzureUserService>();    
             services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
         }        
 

@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureDiskPriceService : RestApiServiceBase, IAzureDiskPriceService
+    public class AzureDiskPriceService : AzureApiServiceBase, IAzureDiskPriceService
     {
-        public AzureDiskPriceService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+        public AzureDiskPriceService(IConfiguration config, ILogger<AzureDiskPriceService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
             : base(config, logger, tokenAcquisition, httpClient)
         {
         }

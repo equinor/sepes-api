@@ -2,26 +2,25 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using static Sepes.Common.Constants.AzureVmOperatingSystemConstants;
-using Sepes.Common.Service;
-using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualMachineOperatingSystemService : RestApiServiceBase, IAzureVirtualMachineOperatingSystemService
+    public class AzureVirtualMachineOperatingSystemService : AzureApiServiceBase, IAzureVirtualMachineOperatingSystemService
     {
         readonly string _subscriptionId;
 
         public AzureVirtualMachineOperatingSystemService(IConfiguration config, ILogger<AzureVirtualMachineOperatingSystemService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
             : base(config, logger, tokenAcquisition, httpClient)
-        {
+        {       
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }
 

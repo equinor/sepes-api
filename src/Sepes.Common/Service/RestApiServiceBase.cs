@@ -18,13 +18,15 @@ namespace Sepes.Common.Service
         protected readonly IConfiguration _config;
         protected readonly ITokenAcquisition _tokenAcquisition;
         protected readonly HttpClient _httpClient;
+        readonly string _scope;
 
-        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient, string scope)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+            _scope = scope;
         }
 
         protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default)
@@ -45,7 +47,7 @@ namespace Sepes.Common.Service
 
             if (needsAuth)
             {
-                token = await _tokenAcquisition.GetAccessTokenForAppAsync("https://management.azure.com/.default");
+                token = await _tokenAcquisition.GetAccessTokenForAppAsync(_scope);
             }
 
             if (needsAuth)
