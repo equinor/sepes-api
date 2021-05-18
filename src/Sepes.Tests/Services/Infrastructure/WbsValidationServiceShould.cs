@@ -21,24 +21,24 @@ namespace Sepes.Tests.Services.Infrastructure
         [Fact]
         public async Task ReturnTrueForValidWbs()
         {
+            var wbsCode = "someWbs";
+
             var config = _serviceProvider.GetService<IConfiguration>();
             var logger = _serviceProvider.GetService<ILogger<WbsValidationService>>();
             var tokenAquisition = TokenAquistionMockFactory.CreateDefault();
             
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handlerMock
-                .Protected()
-               
+                .Protected()               
                 .Setup<Task<HttpResponseMessage>>(
                     "SendAsync",
                     ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>()
-                )
-                
+                )                
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent("[{'id':1,'value':'1'}]"),
+                    Content = new StringContent("{'code':'" + wbsCode + "'}"),
                 })
                 .Verifiable();
 
