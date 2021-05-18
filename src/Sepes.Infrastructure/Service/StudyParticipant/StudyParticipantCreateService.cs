@@ -28,10 +28,11 @@ namespace Sepes.Infrastructure.Service
             IStudyModelService studyModelService,
             IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 
-            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService,cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureADUsersService = azureADUsersService;            
         }

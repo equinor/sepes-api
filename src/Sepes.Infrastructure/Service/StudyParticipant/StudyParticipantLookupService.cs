@@ -15,20 +15,21 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
     {
-        readonly IAzureUserService _azureUserService;   
+        readonly IAzureUserService _azureUserService;
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
-            IMapper mapper,          
+            IMapper mapper,
             IUserService userService,
             IAzureUserService azureUserService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
-            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
-        {          
-            _azureUserService = azureUserService;     
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+        {
+            _azureUserService = azureUserService;
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
@@ -46,7 +47,7 @@ namespace Sepes.Infrastructure.Service
             {
                 _logger.LogError(ex, $"Could not get user list from Azure. Use only list from DB instead");
             }
-            
+
             var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.StartsWith(searchText) || u.FullName.StartsWith(searchText) || u.ObjectId.Equals(searchText)).ToListAsync(cancellationToken);
 
             await Task.WhenAll(usersFromDbTask, usersFromAzureAdTask);
@@ -67,7 +68,7 @@ namespace Sepes.Infrastructure.Service
                 }
             }
 
-            if(usersFromAzureAdTask.IsCompletedSuccessfully)
+            if (usersFromAzureAdTask.IsCompletedSuccessfully)
             {
                 var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
 

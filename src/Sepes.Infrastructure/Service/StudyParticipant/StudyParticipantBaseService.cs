@@ -26,6 +26,7 @@ namespace Sepes.Infrastructure.Service
         protected readonly IUserService _userService;
         protected readonly IStudyModelService _studyModelService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
+        protected readonly ICloudResourceReadService _cloudResourceReadService;
         protected readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         protected readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
@@ -35,6 +36,7 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
         {
@@ -44,6 +46,7 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyModelService = studyModelService;
             _provisioningQueueService = provisioningQueueService;
+            _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
         }
@@ -88,7 +91,7 @@ namespace Sepes.Infrastructure.Service
 
         protected async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync(Study study)
         {           
-            var operations = await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync(study, _cloudResourceOperationCreateService);           
+            var operations = await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync2(study, _cloudResourceReadService, _cloudResourceOperationCreateService);           
             return operations;
         }
 

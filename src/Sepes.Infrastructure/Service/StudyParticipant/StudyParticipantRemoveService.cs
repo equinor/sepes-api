@@ -22,10 +22,11 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
 
         }

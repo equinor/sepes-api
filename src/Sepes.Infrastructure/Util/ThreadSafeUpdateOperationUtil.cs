@@ -1,6 +1,7 @@
 ﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
 using System.Threading;
@@ -32,6 +33,32 @@ namespace Sepes.Infrastructure.Util
 
                 return result;
             }            
+            finally
+            {
+                _semaphore.Release();
+            }
+        }
+
+        public static async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync2(Study study, ICloudResourceReadService cloudResourceReadService,
+          ICloudResourceOperationCreateService cloudResourceOperationCreateService)
+        {
+            try
+            {
+                await _semaphore.WaitAsync();
+
+                var result = new List<CloudResourceOperationDto>();
+
+                var resourcesToUpdate = await cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(study.Id);
+                resourcesToUpdate.AddRange(await cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(study.Id));
+
+                foreach (var currentResourceId in resourcesToUpdate)
+                {
+                    var updateOp = await cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES);
+                    result.Add(updateOp);
+                }
+
+                return result;
+            }
             finally
             {
                 _semaphore.Release();
