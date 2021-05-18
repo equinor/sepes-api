@@ -226,8 +226,6 @@ namespace Sepes.RestApi
             services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
             services.AddHttpClient<IWbsValidationService, WbsValidationService>();
 
-
-
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
