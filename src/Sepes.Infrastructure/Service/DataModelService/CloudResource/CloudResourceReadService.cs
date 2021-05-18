@@ -61,33 +61,26 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId)
         {
-            var sandboxesQueryable =
+            var resourceGroupsQueryable =
                 _db.Sandboxes
                 .Where(sb => sb.StudyId == studyId && sb.Deleted == false)
                 .SelectMany(sb => sb.Resources)
                 .Where(r => r.Deleted == false && r.ResourceType == AzureResourceType.ResourceGroup && (r.SandboxControlled || r.Purpose == CloudResourcePurpose.SandboxResourceGroup))
                 .Select(r => r.Id);
 
-            return await sandboxesQueryable.ToListAsync();          
+            return await resourceGroupsQueryable.ToListAsync();          
         }
 
         public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
         {
-            var datasetsQueryable =
-             _db.Studies.Where(s=> s.Id == studyId)
-             .SelectMany(s=> s.StudyDatasets)
-             .Select(sds=> sds.Dataset)
-             .Where(ds=> ds.Deleted == false && ds.StudySpecific)
-             .SelectMany(ds => ds.Resources)
-              .Where(r => r.Deleted == false && r.ResourceType == AzureResourceType.ResourceGroup && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
-              .Select(r => r.Id);
+            var resourceGroupsQueryable =
+             _db.CloudResources.Where(r=> r.StudyId == studyId
+             && r.Deleted == false
+             && r.ResourceType == AzureResourceType.ResourceGroup
+             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+             .Select(r => r.Id);
 
-            return await datasetsQueryable.ToListAsync();
-
-
-
-            //   .Where(r => !SoftDeleteUtil.IsMarkedAsDeleted(r) && r.ResourceType == AzureResourceType.ResourceGroup && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
-
+            return await resourceGroupsQueryable.ToListAsync();           
         }
     }
 }
