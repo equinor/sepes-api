@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.19](https://github.com/equinor/sepes-api/compare/0.4.18...0.4.19) (2021-05-19)
+
+
+### Bug Fixes
+
+* **function:** updated managed by ids for dev and prod ([#663](https://github.com/equinor/sepes-api/issues/663)) ([03d44d6](https://github.com/equinor/sepes-api/commit/03d44d6f5dfbc51507b454dd292de166f49fc01c))
+* **logging:** clean up appi event ids ([#670](https://github.com/equinor/sepes-api/issues/670)) ([869ccca](https://github.com/equinor/sepes-api/commit/869ccca26774791556506cae752d37740ba21cb6))
+* **participant:** remove created by filter on existing role assignments before add ([#667](https://github.com/equinor/sepes-api/issues/667)) ([47c8663](https://github.com/equinor/sepes-api/commit/47c8663c6add37b6f2b6a2399f59a70af8c49888))
+* **study:** add and remove participant did not save ([a78d8e4](https://github.com/equinor/sepes-api/commit/a78d8e47abded38395a065bc6a60ebf831317271))
+* **study:** fix slow study close due to include ([#668](https://github.com/equinor/sepes-api/issues/668)) ([e1628fd](https://github.com/equinor/sepes-api/commit/e1628fd1a738c26d352da41e2ee7f496b1208929))
+
 ### [0.4.18](https://github.com/equinor/sepes-api/compare/0.4.17...0.4.18) (2021-04-29)
 
 
