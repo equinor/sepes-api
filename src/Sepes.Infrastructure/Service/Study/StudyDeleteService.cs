@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task CloseStudyAsync(int studyId)
         {
-            var studyFromDb = await _studyModelService.GetForDeleteAsync(studyId, UserOperation.Study_Close);         
+            var studyFromDb = await _studyModelService.GetForCloseAsync(studyId, UserOperation.Study_Close);         
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 

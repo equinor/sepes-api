@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Util;
+﻿using Sepes.Azure.Util;
 using Xunit;
 
 namespace Sepes.Tests.Util

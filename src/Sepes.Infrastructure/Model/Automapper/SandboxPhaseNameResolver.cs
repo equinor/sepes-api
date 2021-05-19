@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
-using Sepes.Infrastructure.Interface;
+using Sepes.Common.Interface;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper

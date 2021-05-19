@@ -1,10 +1,10 @@
 ﻿using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
-using Sepes.Infrastructure.Interface;
 using System.Linq;
+using Sepes.Common.Interface;
 
-namespace Sepes.CloudResourceWorker.Service
+namespace Sepes.Functions.Service
 {
     public class RequestIdService : IRequestIdService
     {

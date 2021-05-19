@@ -1,9 +1,9 @@
 ﻿//using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 //using Microsoft.Extensions.DependencyInjection;
-//using Sepes.Infrastructure.Dto;
+//using Sepes.Common.Dto;
 //using Sepes.Infrastructure.Service;
 //using Sepes.Infrastructure.Service.Interface;
-//using Sepes.Infrastructure.Util;
+//using Sepes.Common.Util;
 //using Sepes.Tests.Mocks;
 //using Sepes.Tests.Setup;
 //using System;

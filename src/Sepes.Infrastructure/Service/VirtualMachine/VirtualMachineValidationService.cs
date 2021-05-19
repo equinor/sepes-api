@@ -1,7 +1,7 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using System.Linq;
 using System.Text;
 

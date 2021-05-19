@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Response;
@@ -81,6 +81,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Study> GetForParticpantOperationsAsync(int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
             return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyParticipantOperationsQueryable(_db), studyId, operation, roleBeingAddedOrRemoved);
+        }
+
+        public async Task<Study> GetForCloseAsync(int studyId, UserOperation operation)
+        {
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(StudyBaseQueries.StudyCloseQueryable(_db), studyId, operation);
         }
 
         public async Task<Study> GetForDeleteAsync(int studyId, UserOperation operation)

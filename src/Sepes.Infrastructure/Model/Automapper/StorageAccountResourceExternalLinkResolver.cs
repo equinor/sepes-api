@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Azure.Util;
+using Sepes.Common.Interface;
 
 namespace Sepes.Infrastructure.Model.Automapper
 {

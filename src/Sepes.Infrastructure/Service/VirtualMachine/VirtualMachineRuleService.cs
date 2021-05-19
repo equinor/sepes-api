@@ -2,15 +2,17 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.VirtualMachine;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Exceptions;
+using Sepes.Common.Model;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Provisioning;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -287,7 +289,7 @@ namespace Sepes.Infrastructure.Service
             {
                 var vmUpdateOperation = await _sandboxResourceOperationCreateService.CreateUpdateOperationAsync(vm.Id);
 
-                await ProvisioningQueueUtil.CreateItemAndEnqueue(_provisioningQueueService, vmUpdateOperation);
+                await _provisioningQueueService.CreateItemAndEnqueue(vmUpdateOperation);
             }
         }
     }

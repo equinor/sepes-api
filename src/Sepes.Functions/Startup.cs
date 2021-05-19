@@ -5,24 +5,26 @@ using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Identity.Web;
-using Sepes.CloudResourceWorker.Service;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Interface;
+using Sepes.Azure.Service;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Interface;
+using Sepes.Functions.Service;
 using Sepes.Infrastructure.Model.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.Azure;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Provisioning.Service;
+using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Diagnostics;
 
-[assembly: FunctionsStartup(typeof(Sepes.CloudResourceWorker.Startup))]
+[assembly: FunctionsStartup(typeof(Sepes.Functions.Startup))]
 
 
-namespace Sepes.CloudResourceWorker
+namespace Sepes.Functions
 {
     public class Startup : FunctionsStartup
     {       
@@ -96,15 +98,27 @@ namespace Sepes.CloudResourceWorker
 
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();      
+            builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
-            //Ext System Facade Services            
-            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            //Provisioning service            
+            builder.Services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
+            builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            builder.Services.AddTransient<ICorsRuleProvisioningService, CorsRuleProvisioningService>();
+            builder.Services.AddTransient<ICreateAndUpdateService, CreateAndUpdateService>();
+            builder.Services.AddTransient<IDeleteOperationService, DeleteOperationService>();
+            builder.Services.AddTransient<IFirewallService, FirewallService>();
+            builder.Services.AddTransient<IOperationCheckService, OperationCheckService>();
+            builder.Services.AddTransient<IOperationCompletedService, OperationCompletedService>();
+            
+            
+            //Ext System Facade Services  
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
-            builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 

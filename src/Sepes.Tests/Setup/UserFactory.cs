@@ -1,6 +1,6 @@
 ﻿using Moq;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 

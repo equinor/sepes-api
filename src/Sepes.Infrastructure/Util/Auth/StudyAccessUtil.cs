@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.Auth;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Dto.Auth;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.Auth;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Auth;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Response.Sandbox;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;

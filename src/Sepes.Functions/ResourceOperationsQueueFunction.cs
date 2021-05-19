@@ -2,12 +2,13 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using Microsoft.WindowsAzure.Storage.Queue;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
+using Sepes.Provisioning.Service.Interface;
 
-namespace Sepes.CloudResourceWorker
+namespace Sepes.Functions
 {
     public class ResourceOperationsQueueFunction
     {    

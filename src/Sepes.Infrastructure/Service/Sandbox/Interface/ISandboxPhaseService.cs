@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Response.Sandbox;
 using System.Threading;
 using System.Threading.Tasks;
 

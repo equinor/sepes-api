@@ -1,7 +1,7 @@
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Service.Interface;
 using System.Threading.Tasks;
+using Sepes.Provisioning.Service.Interface;
 
 namespace Sepes.Functions
 {
@@ -17,7 +17,7 @@ namespace Sepes.Functions
         //To run every minute (in debug only): "0 */30 * * * *"
         //Run every hour: "0 * * * *"        
         [FunctionName("SandboxResourceMonitoring")]
-        public async Task Run([TimerTrigger("0 * * * *", RunOnStartup =true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 * * * * *", RunOnStartup =true)]TimerInfo myTimer, ILogger log)
 
         {
            await _resourceMonitoringService.StartMonitoringSession();

@@ -2,17 +2,16 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Exceptions;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
+using Sepes.Common.Exceptions;
+using Sepes.Common.Util.Provisioning;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Provisioning;
-using System;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Graph;
 using Microsoft.Identity.Web;
-using Sepes.Infrastructure.Service.Interface;
+using Sepes.Azure.Service.Interface;
 
 namespace Sepes.RestApi
 {

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Response.Sandbox;
+﻿using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Constants;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
@@ -23,9 +23,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return await Create<SandboxDetails>(restHelper, studyId, sandboxName, region);
         }
 
-        public static async Task<ApiConversation<SandboxCreateDto, Infrastructure.Dto.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int studyId, string sandboxName = "sandboxName", string region = "norwayeast")
+        public static async Task<ApiConversation<SandboxCreateDto, Common.Dto.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int studyId, string sandboxName = "sandboxName", string region = "norwayeast")
         {
-            return await Create<Infrastructure.Dto.ErrorResponse>(restHelper, studyId, sandboxName, region);
+            return await Create<Common.Dto.ErrorResponse>(restHelper, studyId, sandboxName, region);
         }
     } 
 }

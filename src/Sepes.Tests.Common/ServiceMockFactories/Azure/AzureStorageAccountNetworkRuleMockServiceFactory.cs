@@ -1,6 +1,6 @@
 ﻿using Moq;
-using Sepes.Infrastructure.Dto;
-using Sepes.Infrastructure.Service.Azure.Interface;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Dto;
 using System.Collections.Generic;
 using System.Threading;
 

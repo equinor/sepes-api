@@ -1,8 +1,6 @@
-﻿using Sepes.Infrastructure.Dto.Azure;
-using Sepes.Infrastructure.Util.Azure;
+﻿using Sepes.Azure.Dto;
+using Sepes.Azure.Util;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace Sepes.Tests.Util

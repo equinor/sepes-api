@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Util.Azure;
 using System.Collections.Generic;
 
 namespace Sepes.Infrastructure.Model.Automapper
@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Model.Automapper
             {
                 if (source.ResourceType == AzureResourceType.VirtualMachine)
                 {
-                    if (AzureVmUtil.InternetIsOpen(source)) {
+                    if (VmRuleUtils.InternetIsOpen(source)) {
                         return new Dictionary<string, string>() { { "InternetIsOpen", "true" } };
                     } 
                 }

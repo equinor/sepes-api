@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Common.Dto.VirtualMachine;
 using Sepes.RestApi.IntegrationTests.Constants;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.TestHelpers;

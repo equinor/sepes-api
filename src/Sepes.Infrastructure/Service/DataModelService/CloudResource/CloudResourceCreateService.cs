@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Dto.Sandbox;
-using Sepes.Infrastructure.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Model.Factory;

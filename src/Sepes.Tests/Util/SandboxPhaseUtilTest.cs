@@ -1,4 +1,5 @@
-﻿using Sepes.Infrastructure.Model;
+﻿using Sepes.Common.Model;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;

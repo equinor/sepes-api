@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -57,8 +57,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             return SoftDeleteUtil.IsMarkedAsDeleted(resource);
-        }
-
-      
+        }      
     }
 }

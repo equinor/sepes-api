@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<List<VmSizeLookupDto>> AvailableSizes(int sandboxId, CancellationToken cancellationToken = default)
         {
-            var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
+            var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, Common.Constants.UserOperation.Study_Crud_Sandbox);
 
             var sizes = await AvailableSizes(sandboxRegion, cancellationToken);
 
@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<double> CalculateVmPrice(int sandboxId, CalculateVmPriceUserInputDto input, CancellationToken cancellationToken = default)
         {            
-            var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, Constants.UserOperation.Study_Crud_Sandbox);
+            var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, Common.Constants.UserOperation.Study_Crud_Sandbox);
             var priceOfVm = await _db.RegionVmSize.Where(x => x.Region.Key == sandboxRegion && x.VmSizeKey == input.Size).AsNoTracking().SingleOrDefaultAsync();
 
             var diskPriceSummarized = 0.0;

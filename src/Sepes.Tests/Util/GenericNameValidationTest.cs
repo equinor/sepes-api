@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Util;
+﻿using Sepes.Common.Util;
 using System;
 using Xunit;
 

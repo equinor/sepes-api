@@ -23,9 +23,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return await Post<T>(restHelper, url);
         }      
 
-        public static async Task<ApiConversation<Infrastructure.Dto.ErrorResponse>> PostAndExpectFailure(RestHelper restHelper, string url)
+        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> PostAndExpectFailure(RestHelper restHelper, string url)
         {
-            return await Post<Infrastructure.Dto.ErrorResponse>(restHelper, url);
+            return await Post<Common.Dto.ErrorResponse>(restHelper, url);
         }       
 
         public static string SandboxNextPhase(int sandboxId) => $"api/sandboxes/{sandboxId}/nextPhase";     

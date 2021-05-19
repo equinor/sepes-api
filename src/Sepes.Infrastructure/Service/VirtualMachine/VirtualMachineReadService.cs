@@ -2,12 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Query;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -76,7 +76,7 @@ namespace Sepes.Infrastructure.Service
             var vmExternalLink = new VmExternalLink
             {
                 Id = vmId,
-                LinkToExternalSystem = AzureResourceUtil.CreateResourceLink(_config, vmResource)
+                LinkToExternalSystem = CloudResourceUtil.CreateResourceLink(_config, vmResource)
             };
 
             return vmExternalLink;

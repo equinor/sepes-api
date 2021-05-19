@@ -37,9 +37,7 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.StudyParticipants)
                 .Include(s => s.Sandboxes)
                      .ThenInclude(sd => sd.Resources)
-                .Include(s => s.Resources)
-                .AsNoTracking();
-             
+                .Include(s => s.Resources);             
         }
 
         public static IQueryable<Study> StudyDatasetsQueryable(SepesDbContext db)
@@ -61,10 +59,23 @@ namespace Sepes.Infrastructure.Service.Queries
                 .Include(s => s.Sandboxes);
         }
 
+        public static IQueryable<Study> StudyCloseQueryable(SepesDbContext db)
+        {
+            return ActiveStudiesWithParticipantsQueryable(db)
+                .Include(s => s.Sandboxes)                  
+                .Include(s => s.Resources)
+                    .ThenInclude(r => r.ChildResources)
+                .Include(s => s.StudyDatasets)
+                    .ThenInclude(sds => sds.Dataset);
+        }
+
         public static IQueryable<Study> StudyDeleteQueryable(SepesDbContext db)
         {
             return ActiveStudiesWithParticipantsQueryable(db)
                 .Include(s => s.Sandboxes)
+                      .ThenInclude(sb => sb.Resources)
+                        .ThenInclude(r => r.Operations)
+                        .ThenInclude(op => op.DependsOnOperation)
                 .Include(s=> s.Resources)
                     .ThenInclude(r=> r.ChildResources)
                 .Include(s => s.StudyDatasets)

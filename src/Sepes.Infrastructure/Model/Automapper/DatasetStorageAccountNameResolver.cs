@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
-using Sepes.Infrastructure.Dto.Dataset;
+using Sepes.Common.Dto.Dataset;
 using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Model.Automapper

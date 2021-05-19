@@ -1,8 +1,13 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Sandbox;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading;
@@ -36,20 +41,6 @@ namespace Sepes.Infrastructure.Service
 
         }
 
-        // Message needs to be retrieved with ReceiveMessageAsync() to be able to be deleted.
-        public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
-        {
-            _logger.LogInformation($"Queue: Deleting message: {message.MessageId} with description \"{message.Description}\", having {message.Children.Count} children");
-            await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
-        }
-
-        // Message needs to be retrieved with ReceiveMessageAsync() to be able to be deleted.
-        public async Task DeleteMessageAsync(string messageId, string popReceipt)
-        {
-            _logger.LogInformation($"Queue: Deleting message: {messageId}");
-            await _queueService.DeleteMessageAsync(messageId, popReceipt);
-        }
-
         // Gets first message as QueueMessage without removing from queue, but makes it invisible for 30 seconds.
         public async Task<ProvisioningQueueParentDto> ReceiveMessageAsync()
         {
@@ -69,6 +60,22 @@ namespace Sepes.Infrastructure.Service
 
             return null;
         }
+
+        // Message needs to be retrieved with ReceiveMessageAsync() to be able to be deleted.
+        public async Task DeleteMessageAsync(ProvisioningQueueParentDto message)
+        {
+            _logger.LogInformation($"Queue: Deleting message: {message.MessageId} with description \"{message.Description}\", having {message.Children.Count} children");
+            await _queueService.DeleteMessageAsync(message.MessageId, message.PopReceipt);
+        }
+
+        // Message needs to be retrieved with ReceiveMessageAsync() to be able to be deleted.
+        public async Task DeleteMessageAsync(string messageId, string popReceipt)
+        {
+            _logger.LogInformation($"Queue: Deleting message: {messageId}");
+            await _queueService.DeleteMessageAsync(messageId, popReceipt);
+        }
+
+      
 
         public async Task DeleteQueueAsync()
         {
@@ -99,6 +106,44 @@ namespace Sepes.Infrastructure.Service
             await SendMessageAsync(message, visibilityTimeout: invisibleForTimespan, cancellationToken: cancellationToken);
         }
 
+        public async Task IncreaseInvisibleBasedOnResource(CloudResourceOperationDto currentOperation, ProvisioningQueueParentDto queueParentItem)
+        {
+            var increaseBy = ResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(currentOperation.Resource.ResourceType, currentOperation.OperationType);
+            await IncreaseInvisibilityAsync(queueParentItem, increaseBy);
+        }
 
+        public async Task CreateItemAndEnqueue(int operationId, string operationDescription)
+        {
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                Description = operationDescription
+            };
+
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operationId });
+
+            await SendMessageAsync(queueParentItem);
+        }
+
+        public async Task CreateItemAndEnqueue(CloudResourceOperation operation)
+        {
+            await CreateItemAndEnqueue(operation.Id, operation.Description);
+        }
+
+        public async Task CreateItemAndEnqueue(CloudResourceOperationDto operation)
+        {
+            await CreateItemAndEnqueue(operation.Id, operation.Description);
+        }       
+
+        public async Task AddNewQueueMessageForOperation(CloudResourceOperation operation)
+        {
+            var queueParentItem = new ProvisioningQueueParentDto
+            {
+                Description = operation.Description
+            };
+
+            queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = operation.Id });
+
+            await SendMessageAsync(queueParentItem, visibilityTimeout: TimeSpan.FromSeconds(5));
+        }
     }
 }

@@ -1,5 +1,5 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Study;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;

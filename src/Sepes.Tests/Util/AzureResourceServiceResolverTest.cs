@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Service.Azure.Interface;
-using Sepes.Infrastructure.Util;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
 using Sepes.Tests.Setup;
 using Xunit;
 

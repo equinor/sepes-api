@@ -1,11 +1,13 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
+using Sepes.Infrastructure.Util.Azure;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
-using System;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
@@ -103,7 +105,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 NetworkName = "networkName",
                 SubnetName = "subnetname",
                 Size = size,
-                Rules = AzureVmConstants.RulePresets.CreateInitialVmRules(1),
+                Rules = VmRuleUtils.CreateInitialVmRules(1),
                 OperatingSystemCategory = osCategory,
                 OperatingSystem = os,
                 Username = VirtualMachineConstants.USERNAME,

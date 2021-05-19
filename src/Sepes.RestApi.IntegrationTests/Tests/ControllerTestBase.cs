@@ -1,11 +1,11 @@
-﻿using Sepes.Infrastructure.Constants.CloudResource;
+﻿using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;

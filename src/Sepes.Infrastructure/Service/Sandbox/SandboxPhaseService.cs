@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Dto.VirtualMachine;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Model;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Response.Sandbox;
-using Sepes.Infrastructure.Service.Azure.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
@@ -29,6 +31,8 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureStorageAccountNetworkRuleService _azureStorageAccountNetworkRuleService;
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
+        readonly EventId _sandboxNextPhaseEventId = new EventId(33, "Sepes-Event-Sandbox-NextPhase");     
+
         public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
             IUserService userService, ISandboxModelService sandboxModelService, ISandboxDatasetModelService sandboxDatasetModelService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
@@ -45,7 +49,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<SandboxDetails> MoveToNextPhaseAsync(int sandboxId, CancellationToken cancellation = default)
         {
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Starting", sandboxId);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Starting", sandboxId);
 
             SandboxPhaseHistory newestHistoryItem = null;
 
@@ -69,31 +73,31 @@ namespace Sepes.Infrastructure.Service
 
                 await ValidatePhaseMoveThrowIfNot(sandboxFromDb, currentPhaseItem.Phase, nextPhase, cancellation);
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Moving from {1} to {2}", sandboxId, currentPhaseItem.Phase, nextPhase);
 
                 newestHistoryItem = new SandboxPhaseHistory() { Counter = currentPhaseItem.Counter + 1, Phase = nextPhase, CreatedBy = user.UserName };
                 dataMightHaveBeenChanged = true;
                 sandboxFromDb.PhaseHistory.Add(newestHistoryItem);
                 await _db.SaveChangesAsync();
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Phase added to db. Proceeding to make data available", sandboxId);
 
                 if (nextPhase == SandboxPhase.DataAvailable)
                 {
                     await MakeDatasetsAvailable(sandboxFromDb, cancellation);
                 }
 
-                _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Done", sandboxId);
+                _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Done", sandboxId);
 
                 return await GetSandboxDetailsInternalAsync(sandboxId);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Sandbox {0}: Phase shift failed.", sandboxId);
+                _logger.LogWarning(_sandboxNextPhaseEventId, ex, "Sandbox {0}: Phase shift failed.", sandboxId);
 
                 if (dataMightHaveBeenChanged)
                 {
-                    _logger.LogWarning(ex, SepesEventId.SandboxNextPhase, "Data might have been changed. Rolling back");
+                    _logger.LogWarning(_sandboxNextPhaseEventId, ex, "Data might have been changed. Rolling back");
                     await MakeDatasetsUnAvailable(sandboxId);
                     await AttemptRollbackPhase(sandboxId, newestHistoryItem);
                 }
@@ -111,7 +115,7 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Validation phase move from {1} to {2}", sandbox.Id, currentPhase, nextPhase);
 
             validationErrors.AddRange(VerifyThatSandboxHasDatasets(sandbox));
             validationErrors.AddRange(VerifyBasicResourcesIsFinishedAsync(sandbox.Resources));
@@ -155,7 +159,7 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            _logger.LogInformation(SepesEventId.SandboxNextPhase, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
+            _logger.LogInformation(_sandboxNextPhaseEventId, "Sandbox {0}: Verifying that internet is closed for all VMs ", sandbox.Id);
 
             var allVms = CloudResourceUtil.GetAllResourcesByType(sandbox.Resources, AzureResourceType.VirtualMachine, false);
 
@@ -174,7 +178,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     validationErrors.Add($"Internet is set to open on VM {curVm.ResourceName}");
                 }
-                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow)) //Verify that internet is actually closed in Network Security Group in Azure
+                else if (await _azureNetworkSecurityGroupRuleService.IsRuleSetTo(curVm.ResourceGroupName, networkSecurityGroup.ResourceName, vmInternetRule.Name, RuleAction.Allow, cancellation)) //Verify that internet is actually closed in Network Security Group in Azure
                 {
                     validationErrors.Add($"Internet is actually open on VM in Azure {curVm.ResourceName}");
                 }

@@ -1,9 +1,6 @@
-﻿using Sepes.Infrastructure.Constants;
-using Sepes.Infrastructure.Constants.CloudResource;
-using Sepes.Infrastructure.Util;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
 using Xunit;
 
 namespace Sepes.Tests.Util
@@ -22,7 +19,7 @@ namespace Sepes.Tests.Util
         [Theory]
         public void GetTimeoutForOperationInSeconds_ShouldContainStudyName(string resourceType, string operationType, int expectedResult)
         {
-            var result = AzureResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(resourceType, operationType);
+            var result = ResourceProivisoningTimeoutResolver.GetTimeoutForOperationInSeconds(resourceType, operationType);
             Assert.Equal(expectedResult, result);
 
         }

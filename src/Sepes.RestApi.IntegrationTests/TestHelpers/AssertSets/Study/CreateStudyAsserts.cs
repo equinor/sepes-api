@@ -1,4 +1,4 @@
-﻿using Sepes.Infrastructure.Dto.Study;
+﻿using Sepes.Common.Dto.Study;
 using Sepes.RestApi.IntegrationTests.Dto;
 using System.Net;
 using Xunit;
@@ -17,7 +17,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(createRequest.WbsCode, responseWrapper.Content.WbsCode); 
         }
 
-        public static void ExpectValidationFailure(ApiResponseWrapper<Infrastructure.Dto.ErrorResponse> responseWrapper, string message)
+        public static void ExpectValidationFailure(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, string message)
         {
             ApiResponseBasicAsserts.ExpectFailureWithMessage(responseWrapper, HttpStatusCode.BadRequest, message);           
         }
