@@ -25,9 +25,8 @@ namespace Sepes.RestApi.IntegrationTests
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
-        {
-            var azureServices = new MockedAzureServiceSets();
-            _testHostFixture.SetScenario(azureServices, isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+        {            
+            _testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
             _restHelper = new RestHelper(_testHostFixture.Client);
         }
 

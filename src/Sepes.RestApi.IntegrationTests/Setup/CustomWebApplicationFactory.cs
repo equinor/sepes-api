@@ -10,6 +10,7 @@ using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.RestApi.IntegrationTests.Services;
+using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Common.ServiceMocks;
@@ -28,14 +29,14 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
         readonly IMockServicesForScenarioProvider _mockServicesForScenarioProvider;
 
-        public CustomWebApplicationFactory(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
+        public CustomWebApplicationFactory(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
             :base()
         {
             _isEmployee = isEmployee;
             _isAdmin = isAdmin;
             _isSponsor = isSponsor;
             _isDatasetAdmin = isDatasetAdmin;
-            _mockServicesForScenarioProvider = mockServicesForScenarioProvider;
+            _mockServicesForScenarioProvider = new MockedAzureServiceSets();
         }     
 
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory
