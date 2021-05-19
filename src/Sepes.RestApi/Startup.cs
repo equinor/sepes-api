@@ -145,7 +145,7 @@ namespace Sepes.RestApi
             if (isIntegrationTest)
             {
                 Log("Is Integration test, adding HTTP client");
-                services.AddHttpClient();
+               
             }
             else
             {

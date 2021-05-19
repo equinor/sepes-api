@@ -48,7 +48,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                         typeof(DbContextOptions<SepesDbContext>));
 
                 services.Remove(descriptor);
-              
+                services.AddHttpClient();
                 services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
