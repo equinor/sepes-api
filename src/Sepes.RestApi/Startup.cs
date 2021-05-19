@@ -140,6 +140,7 @@ namespace Sepes.RestApi
 
         void RegisterServices(IServiceCollection services, bool isIntegrationTest)
         {
+            Log("Register services");
             //Plumbing
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
@@ -221,10 +222,12 @@ namespace Sepes.RestApi
 
             if (isIntegrationTest)
             {
+                Log("Is Integration test, adding HTTP client");
                 services.AddHttpClient();
             }
             else
             {
+                Log("Is NOT Integration test, adding HTTP client for services");
                 //Services that use HttpClient, this registers both HttpClient and the service it self in same line
                 services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
                 services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
@@ -254,8 +257,7 @@ namespace Sepes.RestApi
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
-
-
+            Log("Register services done");
         }
 
         void DoMigration(bool enableSensitiveDataLogging)
