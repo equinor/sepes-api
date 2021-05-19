@@ -12,7 +12,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualMachineExtendedInfoService : AzureVirtualMachineServiceBase, IAzureVirtualMachineExtenedInfoService
+    public class AzureVirtualMachineExtendedInfoService : AzureVirtualMachineServiceBase, IAzureVirtualMachineExtendedInfoService
     { 
         public AzureVirtualMachineExtendedInfoService(IConfiguration config, ILogger<AzureVirtualMachineExtendedInfoService> logger)
             : base(config, logger)

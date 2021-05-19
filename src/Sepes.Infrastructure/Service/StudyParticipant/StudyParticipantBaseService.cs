@@ -1,18 +1,14 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Util;
-using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +22,7 @@ namespace Sepes.Infrastructure.Service
         protected readonly IUserService _userService;
         protected readonly IStudyModelService _studyModelService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
+        protected readonly ICloudResourceReadService _cloudResourceReadService;
         protected readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         protected readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
@@ -35,6 +32,7 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
         {
@@ -44,6 +42,7 @@ namespace Sepes.Infrastructure.Service
             _userService = userService;
             _studyModelService = studyModelService;
             _provisioningQueueService = provisioningQueueService;
+            _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
         }
@@ -86,57 +85,17 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
-        protected async Task<List<CloudResourceOperationDto>> CreateDraftRoleUpdateOperationsAsync(Study study)
-        {           
-            var operations = await ThreadSafeUpdateOperationUtil.CreateDraftRoleUpdateOperationsAsync(study, _cloudResourceOperationCreateService);           
-            return operations;
-        }
-
-        protected async Task FinalizeAndQueueRoleAssignmentUpdateAsync(int studyId, List<CloudResourceOperationDto> existingUpdateOperation)
+        protected async Task CreateRoleUpdateOperationsAsync(StudyParticipant studyParticipant)
         {
-            var study = await GetStudyAsync(studyId, true);
+            var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyParticipant.StudyId);
+            resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyParticipant.StudyId));
 
-            var desiredRolesPerPurposeLookup = new Dictionary<string, string>
+            foreach (var currentResourceId in resourcesToUpdate)
             {
-                {
-                    CloudResourcePurpose.SandboxResourceGroup,
-                    CloudResourceConfigStringSerializer.Serialize(ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList()))
-                },
-
-                {
-                    CloudResourcePurpose.StudySpecificDatasetContainer,
-                    CloudResourceConfigStringSerializer.Serialize(ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(study.StudyParticipants.ToList()))
-                }
-            };
-
-            foreach (var currentOperation in existingUpdateOperation)
-            {
-                if (String.IsNullOrWhiteSpace(currentOperation.Resource.Purpose))
-                {
-                    throw new Exception($"Unspecified purpose for resource {currentOperation.Resource.Id}, operation {currentOperation.Id}");
-                }
-
-                if (desiredRolesPerPurposeLookup.TryGetValue(currentOperation.Resource.Purpose, out string desiredRoles))
-                {
-                    var updateOp = await _cloudResourceOperationUpdateService.SetDesiredStateAsync(currentOperation.Id, desiredRoles);
-                    await _provisioningQueueService.CreateItemAndEnqueue(updateOp);
-                }
-                else
-                {
-                    throw new Exception($"Desired roles not specificed for purpose {currentOperation.Resource.Purpose} for resource {currentOperation.Resource.Id}, operation {currentOperation.Id}");
-                }
-            }           
-        }      
-
-        async Task<Study> GetStudyAsync(int studyId, bool allIncludes)
-        {
-            var studyQueryable = _db.Studies.AsNoTracking()
-              .Include(s => s.Sandboxes)
-                  .ThenInclude(sb => sb.Resources)
-              .If(allIncludes, x => x.Include(s => s.StudyParticipants)
-                  .ThenInclude(sp => sp.User));
-
-            return await studyQueryable.FirstOrDefaultAsync(s => s.Id == studyId);
-        }      
+                var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyParticipant.StudyId));
+                var updateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);
+                await _provisioningQueueService.CreateItemAndEnqueue(updateOperation);
+            }
+        }             
     }
 }

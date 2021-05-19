@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services
 {
-    public class DatasetServiceTestBase : ServiceTestBase
+    public class DatasetServiceTestBase : ServiceTestBaseWithInMemoryDb
     {
 
         public DatasetServiceTestBase()

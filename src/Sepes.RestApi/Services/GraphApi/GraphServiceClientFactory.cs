@@ -1,19 +1,15 @@
 ﻿using Microsoft.Graph;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi
+namespace Sepes.RestApi.Services.GraphApi
 {
     public class GraphServiceClientFactory
     {
-        public static GraphServiceClient GetAuthenticatedGraphClient(Func<Task<string>> acquireAccessToken,
-                                                                                 string baseUrl)
+        public static GraphServiceClient GetAuthenticatedGraphClient(Func<Task<string>> acquireAccessToken, string baseUrl)
         {
-
             return new GraphServiceClient(baseUrl, new CustomAuthenticationProvider(acquireAccessToken));
         }
     }
@@ -35,7 +31,5 @@ namespace Sepes.RestApi
             request.Headers.Authorization = new AuthenticationHeaderValue(
                 "Bearer", accessToken);
         }
-
-
     }
 }

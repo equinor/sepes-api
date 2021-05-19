@@ -9,6 +9,7 @@ using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,6 +30,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         //[InlineData(true, true)]
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
+            Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
             await WithBasicSeeds();
 
             SetScenario(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
@@ -130,7 +132,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //DELETE STUDY
 
             await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
-
+            Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
         }
     }
 }

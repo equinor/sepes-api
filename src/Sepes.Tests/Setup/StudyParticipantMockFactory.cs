@@ -5,6 +5,7 @@ using Moq;
 using Sepes.Azure.Service.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup
@@ -24,11 +25,13 @@ namespace Sepes.Tests.Setup
 
             var provisioningQueueService = new Mock<IProvisioningQueueService>();
 
+            var resourceReadServiceMock = new Mock<ICloudResourceReadService>();
+
             var cloudResourceOperationCreateService = new Mock<ICloudResourceOperationCreateService>();
 
             var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();
 
-            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, studyModelService, provisioningQueueService.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
+            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
         }
     }
 }

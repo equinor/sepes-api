@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {
-    public class VirtualMachineValidationServiceTests: ServiceTestBase
+    public class VirtualMachineValidationServiceTests: ServiceTestBaseWithInMemoryDb
     {
         public VirtualMachineValidationServiceTests()
            : base()

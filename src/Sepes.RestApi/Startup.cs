@@ -3,9 +3,7 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +24,7 @@ using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
 using Sepes.RestApi.Middelware;
 using Sepes.RestApi.Services;
+using Sepes.RestApi.Services.GraphApi;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -47,7 +46,7 @@ namespace Sepes.RestApi
             _configuration = configuration;
 
             Log("Sepes Startup Constructor");
-        }       
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -77,6 +76,8 @@ namespace Sepes.RestApi
 
             var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
+            Log($"Is Integration test: {isIntegrationTest}");
+
             if (!isIntegrationTest)
             {
                 var enableSensitiveDataLoggingFromConfig = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
@@ -97,7 +98,7 @@ namespace Sepes.RestApi
                   );
             }
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            var authenticationAdder = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(a => { }, b =>
                 {
                     _configuration.Bind("AzureAd", b);
@@ -107,17 +108,26 @@ namespace Sepes.RestApi
                     b.Backchannel = defaultBackChannel;
 
                 }).EnableTokenAcquisitionToCallDownstreamApi(e =>
-                    { _configuration.Bind("GraphApi", e); })
+                    {
+
+                    }
+                    )
+
+                // .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
+                //.AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
                 .AddInMemoryTokenCaches();
 
-            services.AddHttpClient();
+            if (!isIntegrationTest)
+            {
+                authenticationAdder
+                .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
+                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"));
+            }
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
 
-            RegisterServices(services);
-
-            SetFileUploadLimits(services);
+            RegisterServices(services, isIntegrationTest);
 
             SwaggerSetup.ConfigureServices(_configuration, services);
 
@@ -138,8 +148,44 @@ namespace Sepes.RestApi
             services.AddApplicationInsightsTelemetry(aiOptions);
         }
 
-        void RegisterServices(IServiceCollection services)
+        void RegisterServices(IServiceCollection services, bool isIntegrationTest)
         {
+            Log("Register services");
+
+            if (isIntegrationTest)
+            {
+                Log("Is Integration test, adding HTTP client");
+                services.AddHttpClient();
+            }
+            else
+            {
+                Log("Is NOT Integration test, adding HTTP client for services");
+                //Services that use HttpClient, this registers both HttpClient and the service it self in same line
+                services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+                services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+                services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+                services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+                services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+
+                //Azure Services
+                services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+                services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
+                services.AddTransient<IAzureBastionService, AzureBastionService>();
+                services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
+                services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
+                services.AddTransient<IAzureVirtualMachineExtendedInfoService, AzureVirtualMachineExtendedInfoService>();
+                services.AddTransient<IAzureQueueService, AzureQueueService>();
+                services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+                services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
+                services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+                services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
+                services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
+                services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
+                services.AddTransient<IAzureUserService, AzureUserService>();
+                services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
+            }
+
             //Plumbing
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
@@ -219,50 +265,12 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
+
+
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
-
-            //Azure Services
-            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
-            services.AddTransient<IAzureBastionService, AzureBastionService>();
-            services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
-            services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
-            services.AddTransient<IAzureVirtualMachineExtenedInfoService, AzureVirtualMachineExtendedInfoService>();
-            services.AddTransient<IAzureQueueService, AzureQueueService>();
-            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
-            services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
-            services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
-            services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-            services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-            services.AddTransient<IAzureUserService, AzureUserService>();
-            services.AddTransient<IAzureVirtualNetworkOperatingSystemService, AzureVirtualNetworkOperatingSystemService>();
-            services.AddTransient<IAzureCostManagementService, AzureCostManagementService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-            services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
-        }
-
-        void SetFileUploadLimits(IServiceCollection services)
-        {
-            services.Configure<IISServerOptions>(options =>
-            {
-                options.MaxRequestBodySize = int.MaxValue;
-            });
-
-            services.Configure<KestrelServerOptions>(options =>
-            {
-                options.Limits.MaxRequestBodySize = int.MaxValue; // if don't set default value is: 30 MB
-            });
-
-            services.Configure<FormOptions>(options =>
-            {
-                options.ValueLengthLimit = int.MaxValue;
-                options.MultipartBodyLengthLimit = int.MaxValue; // if don't set default value is: 128 MB
-                options.MultipartHeadersLengthLimit = int.MaxValue;
-            });
+            Log("Register services done");
         }
 
         void DoMigration(bool enableSensitiveDataLogging)

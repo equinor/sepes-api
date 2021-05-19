@@ -10,17 +10,19 @@ using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyParticipantServiceTests : ServiceTestBase
+    public class StudyParticipantServiceTests : ServiceTestBaseWithInMemoryDb
     {
         public StudyParticipantServiceTests()
             : base()
@@ -92,16 +94,20 @@ namespace Sepes.Tests.Services.DomainServices
             var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);
             userServiceMock.Setup(service => service.GetUserByIdAsync(TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
                       
-            //Operations service mock 
+            //Queue service mock 
             var queueServiceMock = new Mock<IProvisioningQueueService>();
             queueServiceMock.Setup(service => service.SendMessageAsync(It.IsAny<ProvisioningQueueParentDto>(), It.IsAny<TimeSpan?>(), It.IsAny<CancellationToken>())).ReturnsAsync(new ProvisioningQueueParentDto());
 
-            var operationCreateServiceMock = new Mock<ICloudResourceOperationCreateService>();
-            //operationCreateServiceMock.Setup(service => service.C
+            var resourceReadServiceMock = new Mock<ICloudResourceReadService>();
+            resourceReadServiceMock.Setup(service => service.GetDatasetResourceGroupIdsForStudy(It.IsAny<int>())).ReturnsAsync(new List<int> { 1 });
+            resourceReadServiceMock.Setup(service => service.GetSandboxResourceGroupIdsForStudy(It.IsAny<int>())).ReturnsAsync(new List<int> { 2 });
+
+
+            var operationCreateServiceMock = new Mock<ICloudResourceOperationCreateService>();           
 
             var operationUpdateServiceMock = new Mock<ICloudResourceOperationUpdateService>();
 
-            var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, userServiceMock.Object, studyModelService, adUserServiceMock.Object, queueServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
+            var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, userServiceMock.Object, studyModelService, adUserServiceMock.Object, queueServiceMock.Object, resourceReadServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 

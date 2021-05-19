@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.DomainServices.Lookup
 {
-    public class LookupServiceBase : ServiceTestBase
+    public class LookupServiceBase : ServiceTestBaseWithInMemoryDb
     {
         public LookupServiceBase()
             : base()
@@ -14,16 +14,15 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase(string roleType)
         {
-            var db = await ClearTestDatabaseAddUser();           
+            var db = await ClearTestDatabaseAddUser();
 
             var study = new Study()
             {
                 Id = 1,
-                Name= "Test Study with specific participants",
-                StudyParticipants = new List<Infrastructure.Model.StudyParticipant>
+                Name = "Test Study with specific participants",
+                StudyParticipants = new List<StudyParticipant>
                     {
-                    
-                        new Infrastructure.Model.StudyParticipant(){ UserId = 1, RoleName = roleType }
+                        new StudyParticipant(){ UserId = 1, RoleName = roleType }
                     }
             };
 

@@ -5,7 +5,6 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
@@ -76,6 +75,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Study> GetWitParticipantsNoAccessCheck(int studyId)
         {
             return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsQueryable(_db), studyId);
+        }
+
+        public async Task<Study> GetWithParticipantsAndUsersNoAccessCheck(int studyId)
+        {
+            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsAndUserQueryable(_db), studyId);
         }
 
         public async Task<Study> GetForParticpantOperationsAsync(int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)

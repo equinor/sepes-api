@@ -1,13 +1,10 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Sepes.Tests.Services.DomainServices.StudyParticipant
+namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyParticipantLookupBase : ServiceTestBase
+    public class StudyParticipantLookupBase : ServiceTestBaseWithInMemoryDb
     {
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase()
         {

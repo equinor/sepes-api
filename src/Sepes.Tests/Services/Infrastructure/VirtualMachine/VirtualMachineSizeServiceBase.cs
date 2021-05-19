@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {
-    public class VirtualMachineSizeServiceBase: ServiceTestBase
+    public class VirtualMachineSizeServiceBase: ServiceTestBaseWithInMemoryDb
     {
         protected async Task<SepesDbContext> GetCalculateVmPrice_ShouldReturnPrice_RefreshAndSeedTestDatabase()
         {

@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyServiceTestBase : ServiceTestBase
+    public class StudyServiceTestBase : ServiceTestBaseWithInMemoryDb
     {
         public StudyServiceTestBase()
             :base()

@@ -28,10 +28,11 @@ namespace Sepes.Infrastructure.Service
             IStudyModelService studyModelService,
             IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
+            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 
-            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceOperationCreateService,cloudResourceOperationUpdateService)
+            : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureADUsersService = azureADUsersService;            
         }
@@ -44,28 +45,26 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateRoleNameThrowIfInvalid(role);              
 
-                var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
-                
-                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);           
+                var studyFromDb = await GetStudyForParticipantOperation(studyId, role);                         
 
-                StudyParticipantDto participantDto = null;
+                StudyParticipant newlyAddedParticipant = null;
 
                 if (user.Source == ParticipantSource.Db)
                 {                  
-                    participantDto = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);                
+                    newlyAddedParticipant = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);                
                 }
                 else if (user.Source == ParticipantSource.Azure)
                 {                 
-                    participantDto = await AddAzureUserAsync(studyFromDb, user, role);                   
+                    newlyAddedParticipant = await AddAzureUserAsync(studyFromDb, user, role);                   
                 }
                 else
                 {
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
-                
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);                   
+                                  
+                await CreateRoleUpdateOperationsAsync(newlyAddedParticipant);
 
-                return participantDto;
+                return _mapper.Map<StudyParticipantDto>(newlyAddedParticipant);
             }
             catch (Exception ex)
             {
@@ -86,7 +85,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipantDto> AddDbUserAsync(Study studyFromDb, int userId, string role)
+        async Task<StudyParticipant> AddDbUserAsync(Study studyFromDb, int userId, string role)
         {
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
@@ -108,7 +107,7 @@ namespace Sepes.Infrastructure.Service
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
 
-                return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
+                return createdStudyParticipant;
             }
             catch (Exception)
             {
@@ -117,7 +116,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipantDto> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        async Task<StudyParticipant> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
         {
             var userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
 
@@ -152,7 +151,7 @@ namespace Sepes.Infrastructure.Service
 
                 await _db.SaveChangesAsync();
 
-                return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
+                return createdStudyParticipant;
 
             }
             catch (Exception)

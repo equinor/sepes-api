@@ -2,7 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Newtonsoft.Json;
+using Sepes.Azure.Dto.RoleAssignment;
 using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +12,17 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto.RoleAssignment;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureRoleAssignmentService : AzureApiServiceBase, IAzureRoleAssignmentService
+    public class AzureRoleAssignmentService : AzureApiServiceBase, IAzureRoleAssignmentService 
     {
-        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
-        {
+        readonly string _subscriptionId;
 
+        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
+        {
+            _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }
 
         public async Task<bool> RoleAssignmentExists(string resourceId, string roleAssignmentId, CancellationToken cancellationToken = default)
@@ -51,7 +55,7 @@ namespace Sepes.Azure.Service
                 var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
                 var bodyJson = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
 
-                var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken);
+                var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken: cancellationToken);
 
                 return result;
 

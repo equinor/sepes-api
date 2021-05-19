@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
@@ -16,13 +17,17 @@ namespace Sepes.Tests.Util
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
 
+            Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+            Services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
+            Services.AddTransient<IAzureBastionService, AzureBastionService>();           
+
             ServiceProvider = Services.BuildServiceProvider();
         }
 
         [Fact]
         public async void ResolvingServiceForResourceWithProvisioningStateShouldBeOkay()
         {
-            //Trying resource group
+            //Trying resource that does not exist
             var shouldBeNull = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "SomeResourceThatDoesNotExist");
 
             Assert.Null(shouldBeNull); 
@@ -38,7 +43,6 @@ namespace Sepes.Tests.Util
 
             Assert.NotNull(vNetService);
             Assert.IsAssignableFrom<IAzureVirtualNetworkService>(vNetService);
-
 
             //Trying Bastion
             var bastionService = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, AzureResourceType.Bastion);

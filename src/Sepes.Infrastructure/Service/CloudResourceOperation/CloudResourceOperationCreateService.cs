@@ -68,8 +68,7 @@ namespace Sepes.Infrastructure.Service
             updateOperation.OperationType = operationType;
             updateOperation.BatchId = batchId;
             updateOperation.DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?);
-            updateOperation.DesiredState = desiredState;
-
+            updateOperation.DesiredState = desiredState;           
             return updateOperation;
         }
 

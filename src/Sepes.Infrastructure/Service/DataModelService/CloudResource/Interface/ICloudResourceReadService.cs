@@ -1,5 +1,4 @@
 ﻿using Sepes.Common.Constants;
-using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -12,8 +11,10 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<CloudResource> GetByIdNoAccessCheckAsync(int id);
 
+        Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId);
 
-        //Task<CloudResourceDto> GetDtoByIdAsync(int id);
+        Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId);
+       
 
         Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync();
 

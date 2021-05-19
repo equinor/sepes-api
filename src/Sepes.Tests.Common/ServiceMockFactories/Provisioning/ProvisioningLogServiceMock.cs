@@ -7,10 +7,8 @@ namespace Sepes.Test.Common.ServiceMockFactories
     {
         public static Mock<IProvisioningLogService> CreateBasic() {
 
-            var mock = new Mock<IProvisioningLogService>();          
-           
+            var mock = new Mock<IProvisioningLogService>();
             return mock;
-
         }
     }
 }

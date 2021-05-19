@@ -1,11 +1,8 @@
 ﻿using Sepes.Tests.Setup;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit;
 using System.Linq;
+using Xunit;
 
-namespace Sepes.Tests.Services.DomainServices.StudyParticipant
+namespace Sepes.Tests.Services.DomainServices
 {
     public class StudyParticipantLookupServiceTests : StudyParticipantLookupBase
     {

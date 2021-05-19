@@ -7,14 +7,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sepes.Azure.Dto;
+using Sepes.Common.Service;
+using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
     public class AzureCostManagementService : AzureApiServiceBase, IAzureCostManagementService
     {
-        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
+        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
+
         }
+
         public async Task<double> GetVmPrice(string region, string size, CancellationToken cancellationToken = default)
         {
             //Size
@@ -24,8 +29,8 @@ namespace Sepes.Azure.Service
 
             var relevantPricesInOrder = sizePrices.Items.Where(p => p.effectiveStartDate <= DateTime.UtcNow).OrderBy(p => p.meterName.ToLower().Contains("spot") || p.meterName.ToLower().Contains("low")).ThenByDescending(p => p.retailPrice).ToList();
 
-            var relevantPriceItem = relevantPricesInOrder.FirstOrDefault();           
-         
+            var relevantPriceItem = relevantPricesInOrder.FirstOrDefault();
+
             if (relevantPriceItem == null)
             {
                 return 0.0;
