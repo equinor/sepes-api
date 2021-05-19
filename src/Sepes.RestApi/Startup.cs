@@ -76,6 +76,8 @@ namespace Sepes.RestApi
 
             var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
+            Log($"Is Integration test: {isIntegrationTest}");
+
             if (!isIntegrationTest)
             {
                 var enableSensitiveDataLoggingFromConfig = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.SENSITIVE_DATA_LOGGING);
@@ -145,7 +147,7 @@ namespace Sepes.RestApi
             if (isIntegrationTest)
             {
                 Log("Is Integration test, adding HTTP client");
-               
+                services.AddHttpClient();
             }
             else
             {
