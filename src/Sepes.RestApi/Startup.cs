@@ -46,7 +46,7 @@ namespace Sepes.RestApi
             _configuration = configuration;
 
             Log("Sepes Startup Constructor");
-        }       
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -87,7 +87,7 @@ namespace Sepes.RestApi
                 {
                     throw new Exception("Could not obtain database READWRITE connection string. Unable to add DB Context");
                 }
-                
+
                 services.AddDbContext<SepesDbContext>(
                   options => options.UseSqlServer(
                       readWriteDbConnectionString,
@@ -112,7 +112,7 @@ namespace Sepes.RestApi
                     )
                  .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
                 .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
-                .AddInMemoryTokenCaches();           
+                .AddInMemoryTokenCaches();
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
@@ -219,7 +219,11 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
-            if (!isIntegrationTest)
+            if (isIntegrationTest)
+            {
+                services.AddHttpClient();
+            }
+            else
             {
                 //Services that use HttpClient, this registers both HttpClient and the service it self in same line
                 services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
@@ -245,14 +249,14 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
                 services.AddTransient<IAzureUserService, AzureUserService>();
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
-            }            
+            }
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
-           
-        }        
+
+        }
 
         void DoMigration(bool enableSensitiveDataLogging)
         {
