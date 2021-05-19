@@ -98,7 +98,7 @@ namespace Sepes.RestApi
                   );
             }
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            var authenticationAdder = services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddMicrosoftIdentityWebApi(a => { }, b =>
                 {
                     _configuration.Bind("AzureAd", b);
@@ -109,12 +109,20 @@ namespace Sepes.RestApi
 
                 }).EnableTokenAcquisitionToCallDownstreamApi(e =>
                     {
-                      
+
                     }
                     )
+
                 // .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
                 //.AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
                 .AddInMemoryTokenCaches();
+
+            if (!isIntegrationTest)
+            {
+                authenticationAdder
+                .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
+                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"));
+            }
 
             services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(AutoMappingConfigs));
@@ -257,7 +265,7 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
-            
+
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
