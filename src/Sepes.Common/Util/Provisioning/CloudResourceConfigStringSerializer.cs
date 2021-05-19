@@ -19,9 +19,14 @@ namespace Sepes.Common.Util
             return DeserializeInternal<NetworkSettingsDto>(settingAsString);
         }
 
-        public static List<CloudResourceDesiredRoleAssignmentDto> DesiredRoleAssignment(string settingAsString)
+        //public static List<CloudResourceDesiredRoleAssignmentDto> DesiredRoleAssignment(string settingAsString)
+        //{
+        //    return DeserializeInternal<List<CloudResourceDesiredRoleAssignmentDto>>(settingAsString);
+        //}
+
+        public static CloudResourceOperationStateForRoleUpdate DesiredRoleAssignment(string settingAsString)
         {
-            return DeserializeInternal<List<CloudResourceDesiredRoleAssignmentDto>>(settingAsString);
+            return DeserializeInternal<CloudResourceOperationStateForRoleUpdate>(settingAsString);
         }
 
         public static List<FirewallRule> DesiredFirewallRules(string settingAsString)

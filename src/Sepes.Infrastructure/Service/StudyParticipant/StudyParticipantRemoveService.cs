@@ -42,9 +42,7 @@ namespace Sepes.Infrastructure.Service
                 if (roleName == StudyRoles.StudyOwner)
                 {
                     throw new ArgumentException($"The Study Owner role cannot be deleted");
-                }
-
-                updateOperations = await CreateDraftRoleUpdateOperationsAsync(studyFromDb);
+                }              
 
                 var studyParticipantFromDb = studyFromDb.StudyParticipants.FirstOrDefault(p => p.UserId == userId && p.RoleName == roleName);
 
@@ -55,9 +53,9 @@ namespace Sepes.Infrastructure.Service
 
                 studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
 
-                await _db.SaveChangesAsync();
+                await CreateRoleUpdateOperationsAsync(studyParticipantFromDb);            
 
-                await FinalizeAndQueueRoleAssignmentUpdateAsync(studyId, updateOperations);
+                await _db.SaveChangesAsync();
 
                 return _mapper.Map<StudyParticipantDto>(studyParticipantFromDb);
             }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
@@ -11,7 +12,6 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Linq;
 using System.Threading;
@@ -173,12 +173,11 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleResourceGroupRoleAssignments(Study study, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)
         {
             var participants = await _db.StudyParticipants.Include(sp => sp.User).Where(p => p.StudyId == study.Id).ToListAsync();
-            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(participants);
-            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
+            var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(study.Id));          
 
             var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroup);
 
-            var roleAssignmentUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation.Id, desiredState: desiredRolesSerialized);
+            var roleAssignmentUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation.Id, desiredState: desiredState);
 
             ProvisioningQueueUtil.CreateChildAndAdd(queueParentItem, roleAssignmentUpdateOperation);
         }

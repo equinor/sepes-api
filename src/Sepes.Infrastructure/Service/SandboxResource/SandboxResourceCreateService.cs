@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Dto.Sandbox;
@@ -94,10 +95,10 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleCreationOfSandboxResourceGroupRoleAssignments(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
             var participants = await _db.StudyParticipants.Include(sp=> sp.User).Where(p => p.StudyId == dto.StudyId).ToListAsync();
-            var desiredRoles = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(participants);
-            var desiredRolesSerialized = CloudResourceConfigStringSerializer.Serialize(desiredRoles);
+         
+            var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(dto.StudyId));
             var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;
-            var updateOpId = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(dto.ResourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation, desiredState: desiredRolesSerialized);
+            var updateOpId = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(dto.ResourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation, desiredState: desiredState);
             queueParentItem.Children.Add(new ProvisioningQueueChildDto() { ResourceOperationId = updateOpId.Id });
         }
 

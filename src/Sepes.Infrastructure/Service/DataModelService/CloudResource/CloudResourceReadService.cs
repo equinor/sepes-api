@@ -59,6 +59,18 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return SoftDeleteUtil.IsMarkedAsDeleted(resource);
         }
 
+        public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
+        {
+            var resourceGroupsQueryable =
+             _db.CloudResources.Where(r => r.StudyId == studyId
+             && r.Deleted == false
+             && r.ResourceType == AzureResourceType.ResourceGroup
+             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+             .Select(r => r.Id);
+
+            return await resourceGroupsQueryable.ToListAsync();
+        }
+
         public async Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId)
         {
             var resourceGroupsQueryable =
@@ -71,16 +83,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await resourceGroupsQueryable.ToListAsync();          
         }
 
-        public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
-        {
-            var resourceGroupsQueryable =
-             _db.CloudResources.Where(r=> r.StudyId == studyId
-             && r.Deleted == false
-             && r.ResourceType == AzureResourceType.ResourceGroup
-             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
-             .Select(r => r.Id);
-
-            return await resourceGroupsQueryable.ToListAsync();           
-        }
+      
     }
 }
