@@ -112,8 +112,8 @@ namespace Sepes.RestApi
                       
                     }
                     )
-                 .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
+                // .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
+                //.AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
                 .AddInMemoryTokenCaches();
 
             services.AddHttpContextAccessor();
