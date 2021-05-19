@@ -93,7 +93,8 @@ namespace Sepes.Infrastructure.Service
             foreach (var currentResourceId in resourcesToUpdate)
             {
                 var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyParticipant.StudyId));
-                await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);               
+                var updateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);
+                await _provisioningQueueService.CreateItemAndEnqueue(updateOperation);
             }
         }             
     }

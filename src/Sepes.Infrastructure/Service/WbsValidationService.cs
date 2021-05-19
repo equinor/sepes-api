@@ -5,7 +5,10 @@ using Sepes.Common.Constants;
 using Sepes.Common.Service;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util.Auth;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,33 +16,59 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class WbsValidationService : RestApiServiceBase, IWbsValidationService
-    {             
+    {
+        readonly IUserService _userService;
 
-        public WbsValidationService(IConfiguration config, ILogger<WbsValidationService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-          : base(config, logger, tokenAcquisition, httpClient, ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.WBS_SEARCH_API_SCOPE))
+        public WbsValidationService(IConfiguration config, ILogger<WbsValidationService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient, IUserService userService)
+          : base(config, logger, tokenAcquisition, httpClient, ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.WBS_SEARCH_API_SCOPE), ApiTokenType.User)
         {
-            
-        } 
-        
+            _userService = userService;
+        }
+
         public async Task<bool> Exists(string wbsCode, CancellationToken cancellation = default)
         {
+            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserAsync(), UserOperation.Study_Create);
+
             return await PerformRequestAsync(wbsCode, cancellation);
         }
 
         async Task<bool> PerformRequestAsync(string wbsCode, CancellationToken cancellation)
         {
             var wbsApiUrlFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_API_URL);
-            var wbsApiUrl = $"{wbsApiUrlFromConfig}&code={wbsCode}";
+            var wbsApiUrl = $"{wbsApiUrlFromConfig}?code={wbsCode}&skip=0&top=100&api-version=1.0";
 
             var wbsApimSubscriptionKey = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_APIM_SUBSCRIPTION);
 
             var additionalHeaders = new Dictionary<string, string> { { "Ocp-Apim-Subscription-Key", wbsApimSubscriptionKey } };
-            var result = await PerformRequest<WbsApiResponse>(wbsApiUrl, HttpMethod.Get, needsAuth: true, additionalHeaders: additionalHeaders, cancellationToken: cancellation);
+                       
+            var apiResponse = await PerformRequest<List<WbsApiResponse>>(wbsApiUrl, HttpMethod.Get, needsAuth: true, additionalHeaders: additionalHeaders, cancellationToken: cancellation);
            
-            //TODO: Add real implementation
-            return true;
+            return ApiResponseContainsWbsCode(apiResponse, wbsCode);
         }
-    }  
+
+        bool ApiResponseContainsWbsCode(List<WbsApiResponse> response, string wbsCode)
+        {
+            if (response != null)
+            {
+                if (response.Count > 1)
+                {
+                    return false;
+                }
+
+                var wbsFromResponse = response.SingleOrDefault();
+
+                if (wbsFromResponse != null)
+                {
+                    if (wbsFromResponse.code.ToLowerInvariant() == wbsCode)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
 
     class WbsApiResponse
     {

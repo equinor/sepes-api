@@ -12,6 +12,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Common.Service
 {
+    public enum ApiTokenType
+    {
+        App,
+        User
+    }
+
     public class RestApiServiceBase
     {
         protected readonly ILogger _logger;
@@ -19,14 +25,16 @@ namespace Sepes.Common.Service
         protected readonly ITokenAcquisition _tokenAcquisition;
         protected readonly HttpClient _httpClient;
         readonly string _scope;
+        readonly ApiTokenType _apiTokenType;
 
-        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient, string scope)
+        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient, string scope, ApiTokenType apiTokenType = ApiTokenType.App)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _scope = scope;
+            _apiTokenType = apiTokenType;
         }
 
         protected async Task<T> GetResponse<T>(string url, bool needsAuth = true, CancellationToken cancellationToken = default)
@@ -43,15 +51,9 @@ namespace Sepes.Common.Service
 
         protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, Dictionary<string, string> additionalHeaders = null, CancellationToken cancellationToken = default)
         {
-            string token = null;
-
             if (needsAuth)
             {
-                token = await _tokenAcquisition.GetAccessTokenForAppAsync(_scope);
-            }
-
-            if (needsAuth)
-            {
+                var token = _apiTokenType == ApiTokenType.App ? await _tokenAcquisition.GetAccessTokenForAppAsync(_scope) : await _tokenAcquisition.GetAccessTokenForUserAsync(scopes: new List<string>() { _scope });
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
