@@ -3,16 +3,15 @@ using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests
-{
-    [Collection("Integration tests collection")]
+{    
     public class ControllerTestBase : IAsyncLifetime
     {
         protected readonly TestHostFixture _testHostFixture;
@@ -20,12 +19,14 @@ namespace Sepes.RestApi.IntegrationTests
 
         public ControllerTestBase(TestHostFixture testHostFixture)
         {
+            Trace.WriteLine("ControllerTestBase Constructor");
             _testHostFixture = testHostFixture;
             //_restHelper = new RestHelper(testHostFixture.Client);
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
-        {            
+        {
+            Trace.WriteLine("ControllerTestBase SetScenario");
             _testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
             _restHelper = new RestHelper(_testHostFixture.Client);
         }
