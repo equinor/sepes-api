@@ -23,8 +23,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         static SliceFixture()
         {
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                //.AddJsonFile("appsettings.development.json", true, true)
+                .SetBasePath(Directory.GetCurrentDirectory())               
                 .AddUserSecrets<IntegrationTestsCollection>()
                 .AddEnvironmentVariables();
             _configuration = builder.Build();

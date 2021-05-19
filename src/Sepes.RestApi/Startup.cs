@@ -107,7 +107,7 @@ namespace Sepes.RestApi
 
                 }).EnableTokenAcquisitionToCallDownstreamApi(e =>
                     {
-                        //_configuration.Bind("GraphApi", e);
+                      
                     }
                     )
                  .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
@@ -141,6 +141,41 @@ namespace Sepes.RestApi
         void RegisterServices(IServiceCollection services, bool isIntegrationTest)
         {
             Log("Register services");
+
+            if (isIntegrationTest)
+            {
+                Log("Is Integration test, adding HTTP client");
+                services.AddHttpClient();
+            }
+            else
+            {
+                Log("Is NOT Integration test, adding HTTP client for services");
+                //Services that use HttpClient, this registers both HttpClient and the service it self in same line
+                services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+                services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+                services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+                services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+                services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+
+                //Azure Services
+                services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
+                services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
+                services.AddTransient<IAzureBastionService, AzureBastionService>();
+                services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
+                services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
+                services.AddTransient<IAzureVirtualMachineExtendedInfoService, AzureVirtualMachineExtendedInfoService>();
+                services.AddTransient<IAzureQueueService, AzureQueueService>();
+                services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+                services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
+                services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
+                services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
+                services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
+                services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
+                services.AddTransient<IAzureUserService, AzureUserService>();
+                services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
+            }
+
             //Plumbing
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
@@ -220,39 +255,7 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
 
-            if (isIntegrationTest)
-            {
-                Log("Is Integration test, adding HTTP client");
-                //services.AddHttpClient();
-            }
-            else
-            {
-                Log("Is NOT Integration test, adding HTTP client for services");
-                //Services that use HttpClient, this registers both HttpClient and the service it self in same line
-                //services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
-                //services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
-                //services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-                //services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-                //services.AddHttpClient<IWbsValidationService, WbsValidationService>();
-
-                //Azure Services
-                services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-                services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
-                services.AddTransient<IAzureBastionService, AzureBastionService>();
-                services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
-                services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
-                services.AddTransient<IAzureVirtualMachineExtendedInfoService, AzureVirtualMachineExtendedInfoService>();
-                services.AddTransient<IAzureQueueService, AzureQueueService>();
-                services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
-                services.AddTransient<IAzureBlobStorageUriBuilderService, AzureBlobStorageUriBuilderService>();
-                services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-                services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
-                services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
-                services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-                services.AddTransient<IAzureUserService, AzureUserService>();
-                services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
-            }
+            
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
