@@ -6,8 +6,8 @@ using Sepes.Common.Service;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -34,16 +34,27 @@ namespace Sepes.Infrastructure.Service
 
         async Task<bool> PerformRequestAsync(string wbsCode, CancellationToken cancellation)
         {
-            var wbsApiUrlFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_API_URL);
-            var wbsApiUrl = $"{wbsApiUrlFromConfig}?code={wbsCode}&skip=0&top=100&api-version=1.0";
+            try
+            {
 
-            var wbsApimSubscriptionKey = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_APIM_SUBSCRIPTION);
+                var wbsApiUrlFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_API_URL);
+                var wbsApiUrl = $"{wbsApiUrlFromConfig}?code={wbsCode}&skip=0&top=100&api-version=1.0";
 
-            var additionalHeaders = new Dictionary<string, string> { { "Ocp-Apim-Subscription-Key", wbsApimSubscriptionKey } };
-                       
-            var apiResponse = await PerformRequest<List<WbsApiResponse>>(wbsApiUrl, HttpMethod.Get, needsAuth: true, additionalHeaders: additionalHeaders, cancellationToken: cancellation);
-           
-            return ApiResponseContainsWbsCode(apiResponse, wbsCode);
+                var wbsApimSubscriptionKey = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.WBS_SEARCH_APIM_SUBSCRIPTION);
+
+                var additionalHeaders = new Dictionary<string, string> { { "Ocp-Apim-Subscription-Key", wbsApimSubscriptionKey } };
+
+                var apiResponse = await PerformRequest<List<WbsApiResponse>>(wbsApiUrl, HttpMethod.Get, needsAuth: true, additionalHeaders: additionalHeaders, cancellationToken: cancellation);
+
+                return ApiResponseContainsWbsCode(apiResponse, wbsCode);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Wbs validation failed for code {wbsCode}");
+            }
+
+            return false;
         }
 
         bool ApiResponseContainsWbsCode(List<WbsApiResponse> response, string wbsCode)
@@ -59,7 +70,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (wbsFromResponse != null)
                 {
-                    if (wbsFromResponse.code.ToLowerInvariant() == wbsCode)
+                    if (wbsFromResponse.code.ToLowerInvariant() == wbsCode.ToLowerInvariant())
                     {
                         return true;
                     }
