@@ -21,7 +21,7 @@ namespace Sepes.RestApi.IntegrationTests
         public ControllerTestBase(TestHostFixture testHostFixture)
         {
             _testHostFixture = testHostFixture;
-            _restHelper = new RestHelper(testHostFixture.Client);
+            //_restHelper = new RestHelper(testHostFixture.Client);
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
@@ -119,16 +119,12 @@ namespace Sepes.RestApi.IntegrationTests
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue(int timesToRun = 1)
         {
-
             ApiResponseWrapper apiResponseWrapper = null;
 
             for (var counter = 0; counter < timesToRun; counter++)
             {
                 apiResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
-
-                Assert.Equal(System.Net.HttpStatusCode.OK, apiResponseWrapper.StatusCode);
-
-                
+                Assert.Equal(System.Net.HttpStatusCode.OK, apiResponseWrapper.StatusCode);                
             }
 
             return apiResponseWrapper;

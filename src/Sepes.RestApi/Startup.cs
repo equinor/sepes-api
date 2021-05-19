@@ -223,17 +223,17 @@ namespace Sepes.RestApi
             if (isIntegrationTest)
             {
                 Log("Is Integration test, adding HTTP client");
-                services.AddHttpClient();
+                //services.AddHttpClient();
             }
             else
             {
                 Log("Is NOT Integration test, adding HTTP client for services");
                 //Services that use HttpClient, this registers both HttpClient and the service it self in same line
-                services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
-                services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
-                services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
-                services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-                services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+                //services.AddHttpClient<IAzureCostManagementService, AzureCostManagementService>();
+                //services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
+                //services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+                //services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
+                //services.AddHttpClient<IWbsValidationService, WbsValidationService>();
 
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();

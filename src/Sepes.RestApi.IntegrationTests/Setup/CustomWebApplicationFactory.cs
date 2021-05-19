@@ -110,8 +110,6 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                                ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
                                ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode"
                            });
-
-
             });
         }
     }

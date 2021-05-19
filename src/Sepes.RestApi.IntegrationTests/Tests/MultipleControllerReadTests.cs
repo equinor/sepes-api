@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.RestApi.IntegrationTests.RequestHelpers;
 using Sepes.RestApi.IntegrationTests.Setup;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,8 +19,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
 
         }
-
-        //Can be used to read study, sandbox, vm, dataset
+        
 
         [Theory]
         [InlineData(false, false)]
@@ -27,11 +27,13 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false)]
         [InlineData(true, true)]
         public async Task Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed(bool createdByCurrentUser, bool restrictedStudy)
-        {            
+        {
+            Trace.WriteLine("START Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
             SetScenario(isAdmin: true);
             await WithUserSeeds();
             var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy);
             await ReadAllAndAssertExpectSuccess(virtualMachine);
+            Trace.WriteLine("END Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
         }
 
         [Theory]

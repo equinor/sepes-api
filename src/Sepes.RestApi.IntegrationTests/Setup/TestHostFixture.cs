@@ -16,7 +16,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
         public TestHostFixture()
         {
-            SetScenario();
+            //SetScenario();
         }
 
         public void SetScenario(IMockServicesForScenarioProvider mockServicesForScenarioProvider = null, bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
