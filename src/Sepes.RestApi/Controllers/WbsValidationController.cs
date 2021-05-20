@@ -23,7 +23,7 @@ namespace Sepes.RestApi.Controller
         [HttpGet("{code}")]
         public async Task<IActionResult> Validate(string code, CancellationToken cancellationToken = default)
         {
-            var regions = await _wbsValidationService.Exists(code, cancellationToken);
+            var regions = await _wbsValidationService.IsValid(code, cancellationToken);
             return new JsonResult(regions);
         }       
     }

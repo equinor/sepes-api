@@ -38,6 +38,8 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<VmSize> VmSizes { get; set; }
         public virtual DbSet<DiskSize> DiskSizes { get; set; }
 
+        public virtual DbSet<WbsCodeCache> WbsCodeCache { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             AddPrimaryKeys(modelBuilder);
@@ -120,6 +122,7 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<DiskSize>().HasKey(r => r.Key);
             modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
             modelBuilder.Entity<RegionDiskSize>().HasKey(r => new { r.RegionKey, r.VmDiskKey });
+            modelBuilder.Entity<WbsCodeCache>().HasKey(r => r.WbsCode);
         }
 
         void AddRelationships(ModelBuilder modelBuilder)

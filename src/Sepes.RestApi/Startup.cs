@@ -111,10 +111,7 @@ namespace Sepes.RestApi
                     {
 
                     }
-                    )
-
-                // .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                //.AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
+                    )              
                 .AddInMemoryTokenCaches();
 
             if (!isIntegrationTest)
@@ -165,7 +162,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-                services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+                services.AddHttpClient<IWbsApiService, WbsApiService>();
 
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
@@ -204,6 +201,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
             services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
             services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
+            services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();            
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -225,6 +223,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+            services.AddTransient<IWbsValidationService, WbsValidationService>();
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -264,8 +263,6 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
-
-
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
