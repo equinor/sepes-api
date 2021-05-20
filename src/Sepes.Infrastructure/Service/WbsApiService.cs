@@ -73,6 +73,7 @@ namespace Sepes.Infrastructure.Service
 
     class WbsApiResponse
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "<Pending>")]
         public string code { get; set; }
     }
 }

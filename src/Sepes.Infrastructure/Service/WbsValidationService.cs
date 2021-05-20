@@ -15,7 +15,6 @@ namespace Sepes.Infrastructure.Service
         readonly IWbsCodeCacheModelService _wbsCodeCacheModelService;       
 
         public WbsValidationService(ILogger<WbsValidationService> logger, IUserService userService, IWbsApiService wbsApiService, IWbsCodeCacheModelService wbsCodeCacheModelService)
-
         {
             _userService = userService;
             _wbsApiService = wbsApiService;
