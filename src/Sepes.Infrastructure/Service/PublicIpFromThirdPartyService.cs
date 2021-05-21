@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Sepes.Infrastructure.Service.Interface;
+﻿using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,7 +31,7 @@ namespace Sepes.Infrastructure.Service
                     {
                         var responseString = await responseMessage.Content.ReadAsStringAsync();
 
-                        var deserializedResponse = JsonConvert.DeserializeObject<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
+                        var deserializedResponse = JsonSerializer.Deserialize<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
 
                         return deserializedResponse.ip;
                     }

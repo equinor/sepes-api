@@ -1,36 +1,39 @@
+using Azure.Storage.Queues.Models;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
-using Microsoft.WindowsAzure.Storage.Queue;
-using Newtonsoft.Json;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Sandbox;
-using Sepes.Infrastructure.Service.Interface;
-using System.Threading.Tasks;
 using Sepes.Provisioning.Service.Interface;
+using System;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Sepes.Functions
 {
     public class ResourceOperationsQueueFunction
-    {    
+    {
+        readonly ILogger _logger;
         readonly IResourceProvisioningService _provisioningService;
 
-        public ResourceOperationsQueueFunction(IResourceProvisioningService provisioningService)
+        public ResourceOperationsQueueFunction(ILogger<ResourceOperationsQueueFunction> logger, IResourceProvisioningService provisioningService)
         {
+            _logger = logger;
             _provisioningService = provisioningService;
         }
 
         [FunctionName("ResourceOperationsQueue")]
         [StorageAccount(ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING)]      
-        public async Task Run([QueueTrigger(queueName: "sandbox-resource-operations-queue")] CloudQueueMessage myQueueItem, ILogger log)
-        {           
-            log.LogInformation($"Processing message: {myQueueItem.Id}, pop count: {myQueueItem.DequeueCount}, exp: {myQueueItem.ExpirationTime}, next visible: { myQueueItem.NextVisibleTime}");
+        public async Task Run([QueueTrigger(queueName: "sandbox-resource-operations-queue")] QueueMessage queueMessage)
+        {
+            //var queueMessage = JsonSerializer.Deserialize<QueueMessage>(messageText);
+            _logger.LogInformation($"Processing message: {queueMessage.MessageId}, pop count: {queueMessage.DequeueCount}, exp: {queueMessage.ExpiresOn}, next visible: { queueMessage.NextVisibleOn}");
 
-            var transformedQueueItem = JsonConvert.DeserializeObject<ProvisioningQueueParentDto>(myQueueItem.AsString);
-            transformedQueueItem.MessageId = myQueueItem.Id;
-            transformedQueueItem.PopReceipt = myQueueItem.PopReceipt;
-            transformedQueueItem.DequeueCount = myQueueItem.DequeueCount;
+            var transformedQueueItem = JsonSerializer.Deserialize<ProvisioningQueueParentDto>(queueMessage.Body);
+            transformedQueueItem.MessageId = queueMessage.MessageId;
+            transformedQueueItem.PopReceipt = queueMessage.PopReceipt;
+            transformedQueueItem.DequeueCount = Convert.ToInt32(queueMessage.DequeueCount);
 
-          await  _provisioningService.HandleWork(transformedQueueItem);          
+            await  _provisioningService.HandleWork(transformedQueueItem);          
         }
     }
 }

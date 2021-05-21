@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -91,7 +91,7 @@ namespace Sepes.Common.Service
             if (responseMessage.IsSuccessStatusCode)
             {
                 var responseString = await responseMessage.Content.ReadAsStringAsync();
-                var deserializedResponse = JsonConvert.DeserializeObject<T>(await responseMessage.Content.ReadAsStringAsync());
+                var deserializedResponse = JsonSerializer.Deserialize<T>(await responseMessage.Content.ReadAsStringAsync());
                 return deserializedResponse;
             }
             else

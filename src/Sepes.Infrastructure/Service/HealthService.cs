@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
             return result;
         }
 
-        async Task<bool> DatabaseOkayAsync(CancellationToken cancellation = default)
+        public async Task<bool> DatabaseOkayAsync(CancellationToken cancellation = default)
         {
             try
             {

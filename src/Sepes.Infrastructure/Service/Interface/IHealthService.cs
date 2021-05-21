@@ -7,6 +7,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IHealthService
     {
+        Task<bool> DatabaseOkayAsync(CancellationToken cancellation = default);
         Task<HealthSummaryResponse> GetHealthSummaryAsync(HttpContext context, CancellationToken cancellation = default);
     }
 }

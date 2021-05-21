@@ -1,8 +1,8 @@
-﻿using Newtonsoft.Json;
-using Sepes.RestApi.IntegrationTests.Dto;
+﻿using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Extensions;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers
@@ -82,7 +82,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
         private async Task<T> GetResponseObject<T>(HttpResponseMessage response)
         {
             var content = await response.Content.ReadAsStringAsync();
-            var deserializedObject = JsonConvert.DeserializeObject<T>(content);
+            var deserializedObject = JsonSerializer.Deserialize<T>(content);
             return deserializedObject;
         }
 

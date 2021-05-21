@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using System;
-using System.Net;
-using System.Threading.Tasks;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Interface;
+using System;
+using System.Net;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Middelware
 {
@@ -106,7 +106,7 @@ namespace Sepes.RestApi.Middelware
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            var content = JsonConvert.SerializeObject(new Common.Dto.ErrorResponse
+            var content = JsonSerializer.Serialize(new Common.Dto.ErrorResponse
             {
                 Message = message,
                 RequestId = requestId
