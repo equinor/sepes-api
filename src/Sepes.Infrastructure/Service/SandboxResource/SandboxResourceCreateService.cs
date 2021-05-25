@@ -21,24 +21,25 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceCreateService : SandboxServiceBase, ISandboxResourceCreateService
+    public class SandboxResourceCreateService : ISandboxResourceCreateService
     {
+        readonly IConfiguration _configuration;  
+        readonly ILogger _logger;
+        
         readonly ICloudResourceCreateService _cloudResourceCreateService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;       
         readonly IProvisioningQueueService _provisioningQueueService;
 
         public SandboxResourceCreateService(IConfiguration config,
-            SepesDbContext db,
-            IMapper mapper,
-            ILogger<SandboxResourceDeleteService> logger,
-            IUserService userService,
-            ISandboxModelService sandboxModelService,
+            ILogger<SandboxResourceCreateService> logger,
             ICloudResourceCreateService cloudResourceCreateService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             IProvisioningQueueService provisioningQueueService)
-              : base(config, db, mapper, logger, userService, sandboxModelService)
-        {
 
+        {
+            _configuration = config;
+            _logger = logger;
+            
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
@@ -94,8 +95,6 @@ namespace Sepes.Infrastructure.Service
 
         async Task ScheduleCreationOfSandboxResourceGroupRoleAssignments(SandboxResourceCreationAndSchedulingDto dto, ProvisioningQueueParentDto queueParentItem)
         {
-            var participants = await _db.StudyParticipants.Include(sp=> sp.User).Where(p => p.StudyId == dto.StudyId).ToListAsync();
-         
             var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(dto.StudyId));
             var resourceGroupCreateOperation = dto.ResourceGroup.Operations.FirstOrDefault().Id;
             var updateOpId = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(dto.ResourceGroup.Id, CloudResourceOperationType.ENSURE_ROLES, dependsOn: resourceGroupCreateOperation, desiredState: desiredState);

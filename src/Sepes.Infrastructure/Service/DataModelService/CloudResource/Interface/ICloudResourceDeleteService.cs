@@ -8,7 +8,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
     {         
         Task<CloudResourceDto> MarkAsDeletedAsync(int resourceId);
 
-        Task HardDeletedAsync(int resourceId);
+        Task HardDeleteAsync(int resourceId);
 
         Task<CloudResourceOperationDto> MarkAsDeletedWithDeleteOperationAsync(int resourceId, UserOperation operation);
     }

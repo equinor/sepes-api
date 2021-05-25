@@ -13,15 +13,8 @@ namespace Sepes.Tests.Setup
 
     public static class SandboxServiceWithMocksFactory
     {
-        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId, SepesDbContext db = null)
+        public static ISandboxService CreateWithMockedStudyService(ServiceProvider serviceProvider, string userAppRole, int userId)
         {
-            if(db == null)
-            {
-                db = serviceProvider.GetService<SepesDbContext>();
-            }
-
-            var config = serviceProvider.GetService<IConfiguration>();
-          
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<SandboxService>>();
 
@@ -35,7 +28,30 @@ namespace Sepes.Tests.Setup
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(config, db, mapper, logger, userService.Object, studyModelService, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
+            return new SandboxService(mapper, logger, userService.Object,
+                studyModelService,
+                sandboxModelServiceMock.Object,
+                sandboxResourceCreateServiceMock.Object,
+                sandboxResourceDeleteServiceMock.Object);
+        }
+
+
+        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId)
+        {
+            var mapper = serviceProvider.GetService<IMapper>();
+            var logger = serviceProvider.GetService<ILogger<SandboxService>>();
+
+            var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);
+
+            //Study model service
+            var studyModelService = StudyServiceMockFactory.StudyModelService(serviceProvider);
+
+            var sandboxModelServiceMock = new Mock<ISandboxModelService>();
+
+            var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
+            var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
+
+            return new SandboxService(mapper, logger, userService.Object, studyModelService, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

@@ -37,9 +37,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return _db.Database.GetDbConnection().ConnectionString;
         }       
 
-        protected async Task CheckAccesAndThrowIfMissing(Study study, UserOperation operation)
+        protected async Task CheckAccesAndThrowIfNotAllowed(Study study, UserOperation operation)
         {
-            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, study, operation);
+            await StudyAccessUtil.VerifyAccessOrThrow(_userService, study, operation);
         }
 
         protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query, object parameters = null)
@@ -90,7 +90,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             var completeQuery = WrapSingleEntityQuery(currentUser, dataQuery, operation);
             var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
 
-            StudyAccessUtil.CheckAccesAndThrowIfMissing(singleEntity, currentUser, operation);
+            StudyAccessUtil.VerifyAccessOrThrow(singleEntity, currentUser, operation);
 
             return singleEntity;
         }
@@ -113,7 +113,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             dbSet.Add(entity);
             await _db.SaveChangesAsync();
             return entity;
-        }
+        }       
 
         public async Task Remove(TModel entity)
         {

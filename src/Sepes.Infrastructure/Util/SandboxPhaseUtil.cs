@@ -1,6 +1,8 @@
-﻿using Sepes.Common.Model;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Util
@@ -47,6 +49,14 @@ namespace Sepes.Infrastructure.Util
             }
 
             return sandbox.PhaseHistory.OrderByDescending(ph => ph.Counter).FirstOrDefault();
+        }
+
+        public static void InitiatePhaseHistory(Sandbox sandbox, UserDto currentUser)
+        {
+            sandbox.PhaseHistory = new List<SandboxPhaseHistory>
+            {
+                new SandboxPhaseHistory { Counter = 0, Phase = SandboxPhase.Open, CreatedBy = currentUser.UserName }
+            };
         }
     }
 }

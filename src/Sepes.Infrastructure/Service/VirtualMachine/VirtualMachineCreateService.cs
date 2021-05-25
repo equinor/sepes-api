@@ -120,7 +120,7 @@ namespace Sepes.Infrastructure.Service
                     //Delete resource if created
                     if (vmResourceEntry != null)
                     {
-                        await _cloudResourceDeleteService.HardDeletedAsync(vmResourceEntry.Id);
+                        await _cloudResourceDeleteService.HardDeleteAsync(vmResourceEntry.Id);
                     }
                 }
                 catch (Exception rollbackEx)

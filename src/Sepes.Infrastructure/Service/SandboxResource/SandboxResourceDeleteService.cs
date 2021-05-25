@@ -1,6 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Util.Provisioning;
@@ -14,19 +12,24 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceDeleteService : SandboxServiceBase, ISandboxResourceDeleteService
+    public class SandboxResourceDeleteService : ISandboxResourceDeleteService
     {       
+        readonly ILogger _logger;
+        readonly SepesDbContext _db;
+        
+        readonly ISandboxModelService _sandboxModelService;
         readonly ICloudResourceDeleteService _cloudResourceDeleteService;        
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
-        public SandboxResourceDeleteService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService,
+        public SandboxResourceDeleteService(SepesDbContext db,  ILogger<SandboxResourceDeleteService> logger,
                ISandboxModelService sandboxModelService,
                ICloudResourceDeleteService cloudResourceDeleteService, ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
-              : base(config, db, mapper, logger, userService, sandboxModelService)
         {
-         
+            _logger = logger;
+            _db = db;
+            _sandboxModelService = sandboxModelService;
             _cloudResourceDeleteService = cloudResourceDeleteService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
@@ -34,7 +37,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task HandleSandboxDeleteAsync(int sandboxId, EventId eventId)
         {
-            var sandboxFromDb = await GetWithoutChecks(sandboxId);
+            var sandboxFromDb = await _sandboxModelService.GetWithResourcesNoPermissionCheckAsync(sandboxId);
 
             CloudResource sandboxResourceGroup = null;
 
@@ -73,8 +76,24 @@ namespace Sepes.Infrastructure.Service
             else
             {
                 _logger.LogCritical(eventId, "Study {0}, Sandbox {1}: Unable to find any resources for Sandbox", sandboxFromDb.StudyId, sandboxId);
-                await _db.SaveChangesAsync();
             }
+        }
+
+        public async Task UndoResourceCreationAsync(int sandboxId)
+        {
+            var sandboxFromDb = await _sandboxModelService.GetWithResourcesNoPermissionCheckAsync(sandboxId);
+            
+                foreach (var curRes in sandboxFromDb.Resources)
+                {
+                    foreach (var curOp in curRes.Operations)
+                    {
+                        _db.CloudResourceOperations.Remove(curOp);
+                    }
+
+                    _db.CloudResources.Remove(curRes);
+                }
+
+                await _db.SaveChangesAsync();            
         }
     }
 }
