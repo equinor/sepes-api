@@ -9,13 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
-    <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
+    <Compile Remove="ModelFactory\Sandbox\**" />
+    <Compile Remove="ModelFactory\Study\**" />
+    <EmbeddedResource Remove="ModelFactory\Sandbox\**" />
+    <EmbeddedResource Remove="ModelFactory\Study\**" />
+    <None Remove="ModelFactory\Sandbox\**" />
+    <None Remove="ModelFactory\Study\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ModelFactory\Sandbox\" />
-    <Folder Include="ModelFactory\Study\" />
+    <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
+    <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
 
   <ItemGroup>

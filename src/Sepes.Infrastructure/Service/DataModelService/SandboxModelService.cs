@@ -61,7 +61,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
             newSandbox.TechnicalContactEmail = user.EmailAddress;
 
             SandboxPhaseUtil.InitiatePhaseHistory(newSandbox, user);
-
+            
+            newSandbox.Study = study;
             study.Sandboxes.Add(newSandbox);
 
             await _db.SaveChangesAsync();

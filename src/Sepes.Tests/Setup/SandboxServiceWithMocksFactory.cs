@@ -1,57 +1,54 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Sepes.Infrastructure.Model.Context;
+using Sepes.Common.Constants;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
+using System.Linq;
+using Sepes.Common.Response.Sandbox;
+using Sepes.Tests.Common.ModelFactory;
 
 namespace Sepes.Tests.Setup
 {
 
     public static class SandboxServiceWithMocksFactory
     {
-        public static ISandboxService CreateWithMockedStudyService(ServiceProvider serviceProvider, string userAppRole, int userId)
+        public static ISandboxService ForSandboxCreate(ServiceProvider serviceProvider, string userAppRole, int userId, List<Study> studies = null, List<Sandbox> sandboxForSandboxDetails = null)
         {
-            var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<SandboxService>>();
+            //STUDY MODEL SERVICE
+            var studyModelServiceMock = new Mock<IStudyModelService>();
+            
+            studyModelServiceMock
+                .Setup(x => 
+                    x.GetForSandboxCreateAndDeleteAsync(It.IsAny<int>(), It.IsAny<UserOperation>()))
+                .ReturnsAsync((int a, UserOperation b) => studies?.FirstOrDefault(s => s.Id == a));
 
-            var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);
-
-            //Study model service
-            var studyModelService = StudyServiceMockFactory.StudyModelService(serviceProvider);
-
+            //SANDBOX MODEL SERVICE
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
 
-            var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
-            var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
+            sandboxModelServiceMock
+                .Setup(x =>
+                    x.GetDetailsByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync((int a) => sandboxForSandboxDetails?.FirstOrDefault(sd => sd.Id == a));
 
-            return new SandboxService(mapper, logger, userService.Object,
-                studyModelService,
-                sandboxModelServiceMock.Object,
-                sandboxResourceCreateServiceMock.Object,
-                sandboxResourceDeleteServiceMock.Object);
+            return Create(serviceProvider, userAppRole, userId, studyModelServiceMock.Object,  sandboxModelServiceMock.Object);
         }
-
-
-        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId)
+        
+        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId, IStudyModelService studyModelService, ISandboxModelService sandboxModelService)
         {
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<SandboxService>>();
 
             var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);
 
-            //Study model service
-            var studyModelService = StudyServiceMockFactory.StudyModelService(serviceProvider);
-
-            var sandboxModelServiceMock = new Mock<ISandboxModelService>();
-
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(mapper, logger, userService.Object, studyModelService, sandboxModelServiceMock.Object, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
+            return new SandboxService(mapper, logger, userService.Object, studyModelService, sandboxModelService, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

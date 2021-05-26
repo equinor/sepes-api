@@ -18,7 +18,6 @@ namespace Sepes.Infrastructure.Service
 
         public SandboxServiceBase(IMapper mapper, ILogger logger, IUserService userService, ISandboxModelService sandboxModelService)
         {
-                  
             _logger = logger;
             _mapper = mapper;          
             _userService = userService;

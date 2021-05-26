@@ -27,8 +27,4 @@
     <ProjectReference Include="..\Sepes.Common\Sepes.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interface\" />
-  </ItemGroup>
-
 </Project>

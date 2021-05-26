@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
         }
 
-        public async Task<SandboxDetails> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
+        public async Task<Sandbox> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
         {
             _logger.LogInformation(_sandboxCreateEventId, "Sandbox {0}: Starting", studyId);
 
@@ -82,10 +82,11 @@ namespace Sepes.Infrastructure.Service
                         await _sandboxResourceDeleteService.UndoResourceCreationAsync(createdSandbox.Id);
                         await _sandboxModelService.HardDeleteAsync(createdSandbox.Id);
                     }
+
                     throw;
                 }
 
-                return await GetSandboxDetailsAsync(createdSandbox.Id);
+                return createdSandbox;
             }
             catch (Exception ex)
             {
