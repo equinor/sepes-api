@@ -15,6 +15,7 @@ namespace Sepes.Infrastructure.Service
     public class SandboxService : SandboxServiceBase, ISandboxService
     {
         readonly IStudyModelService _studyModelService;
+        readonly IStudyWbsValidationService _studyWbsValidationService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
 
@@ -24,12 +25,13 @@ namespace Sepes.Infrastructure.Service
         public const string SandboxDelete = "Sandbox-Delete";
 
         public SandboxService(IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, IStudyModelService studyModelService, ISandboxModelService sandboxModelService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            IUserService userService, ISandboxModelService sandboxModelService, IStudyModelService studyModelService, IStudyWbsValidationService studyWbsValidationService ,ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             : base(mapper, logger, userService, sandboxModelService)
         {
             _studyModelService = studyModelService;
             _sandboxResourceCreateService = sandboxCloudResourceService;
             _sandboxResourceDeleteService = sandboxResourceDeleteService;
+            _studyWbsValidationService = studyWbsValidationService;
         }
 
         public async Task<Sandbox> CreateAsync(int studyId, SandboxCreateDto sandboxCreateDto)
@@ -48,17 +50,7 @@ namespace Sepes.Infrastructure.Service
             // Verify that study with that id exists
             var study = await _studyModelService.GetForSandboxCreateAndDeleteAsync(studyId, UserOperation.Study_Crud_Sandbox);
 
-            // Check that study has WbsCode.
-            if (String.IsNullOrWhiteSpace(study.WbsCode))
-            {
-                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before Sandbox can be created.");
-            }
-
-            // TODO: Check that study WbsCode is valid.
-            if (String.IsNullOrWhiteSpace(study.WbsCode))
-            {
-                throw new ArgumentException("WBS code missing in Study. Study requires WBS code before Sandbox can be created.");
-            }
+            await  _studyWbsValidationService.ValidateForSandboxCreationOrThrow(study);
 
             //Check uniqueness of name
             if (await _sandboxModelService.NameIsTaken(studyId, sandboxCreateDto.Name))

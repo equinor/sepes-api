@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Response
+namespace Sepes.Common.Response
 {
     public class HealthSummaryResponse
     {

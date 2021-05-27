@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Sepes.Infrastructure.Response;
+using Sepes.Common.Response;
 using System.Threading;
 using System.Threading.Tasks;
 

@@ -12,7 +12,6 @@
         public const int CREATED_BY_OTHER_ID = 10;
         public const string CREATED_BY_OTHER_NAME = "creather by other name";
         public const string CREATED_BY_OTHER_VENDOR = "creather by other vendor";
-        public const string CREATED_BY_OTHER_WBS = "otherwbs1234";
-
+        public const string CREATED_BY_OTHER_WBS = "otherwbs1234";  
     }
 }

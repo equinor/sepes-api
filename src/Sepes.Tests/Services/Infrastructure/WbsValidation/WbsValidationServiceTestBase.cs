@@ -12,7 +12,6 @@ using Sepes.Tests.Common.Mocks;
 using Sepes.Tests.Setup;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -59,7 +58,7 @@ namespace Sepes.Tests.Services.Infrastructure
                 {
                     sbResponse.Append(",");
                 }
-                sbResponse.Append("{'code':'" + curWbsCode + "'}");
+                sbResponse.Append("{\"code\":\"" + curWbsCode + "\"}");
             }
 
             sbResponse.Append("]");

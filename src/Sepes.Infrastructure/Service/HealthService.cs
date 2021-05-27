@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Common.Response;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Response;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;

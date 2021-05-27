@@ -1,22 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Moq;
+﻿using Moq;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Common.ModelFactory;
+using Sepes.Tests.Common.ServiceMockFactories.Infrastructure;
 using Sepes.Tests.Setup;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Sepes.Tests.Services.Infrastructure
 {
     public class SandboxServiceShould : ServiceTestBase
     {
+      
         //[Fact]
         //public async Task CreateSandbox_When_Required_Properties_Provided()
         //{
@@ -25,17 +27,17 @@ namespace Sepes.Tests.Services.Infrastructure
         //    var serviceMockPackage = CreateMockPackageForSuccess(study);
 
         //    var createdSandbox = await serviceMockPackage.SandboxService.CreateAsync(study.Id, sandboxCreateRequest);
-            
+
         //    Assert.Equal(study.Id, createdSandbox.StudyId);
         //}
-        
-          
+
+
         [Theory]
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
         public async void Throw_When_Sandbox_Missing_Name(string sandboxName)
-        {
+        {            
             var sandboxService = CreateForFailingSandboxCreate(AppRoles.Admin, 1);
             
             var sandboxCreateRequest = CreateSandboxRequest(sandboxName);
@@ -66,21 +68,22 @@ namespace Sepes.Tests.Services.Infrastructure
             
             var sandboxCreateRequest = CreateSandboxRequest();
 
-            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
-        
+
         [Theory]
-        [InlineData("")]
-        [InlineData(" ")]
-        [InlineData(null)]
-        public async void Throw_When_Study_Invalid_Wbs(string wbs)
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        public async void Throw_When_Study_Invalid_Wbs(bool wbsExists, bool wbsValidationFails)
         {
-            var sandboxService = CreateForFailingSandboxCreate(AppRoles.Admin, 1, wbs: wbs);
-            
+            var sandboxService = CreateForFailingSandboxCreate(AppRoles.Admin, 1, wbsExists: wbsExists, wbsValidationFails: wbsValidationFails);
+
             var sandboxCreateRequest = CreateSandboxRequest();
 
-            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
+        
         
         SandboxCreateDto CreateSandboxRequest(string name = "newSandbox", string region = "norwayeast")
         {
@@ -106,7 +109,7 @@ namespace Sepes.Tests.Services.Infrastructure
             return mockPackage;
         }
 
-        SandboxServicesAndMocks CreateMockPackageWithExistingStudy(Study study)
+        SandboxServicesAndMocks CreateMockPackageWithExistingStudy(Study study, bool wbsExists = false, bool wbsValidationFails = false)
         {
             var studies = new List<Study>() { study };
             
@@ -121,7 +124,9 @@ namespace Sepes.Tests.Services.Infrastructure
             //SANDBOX MODEL SERVICE
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
 
-            var  sandboxService = SandboxServiceWithMocksFactory.Create(_serviceProvider, AppRoles.Admin, 1, studyModelServiceMock.Object,  sandboxModelServiceMock.Object);
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, wbsExists, wbsValidationFails);
+
+            var  sandboxService = SandboxServiceWithMocksFactory.Create(_serviceProvider, AppRoles.Admin, 1, studyModelServiceMock.Object,  sandboxModelServiceMock.Object, studyWbsValidationService);
             
             return new SandboxServicesAndMocks(sandboxService, studyModelServiceMock, sandboxModelServiceMock);
         }
@@ -129,10 +134,13 @@ namespace Sepes.Tests.Services.Infrastructure
         ISandboxService CreateForFailingSandboxCreate(string userAppRole,
             int userId,
             int studyId = StudyConstants.CREATED_BY_ME_ID,
-            string wbs = StudyConstants.CREATED_BY_ME_WBS)
+            string wbs = StudyConstants.CREATED_BY_ME_WBS, bool wbsExists = false, bool wbsValidationFails = false)
         {
-            var study = StudyModelFactory.CreateBasic(id: studyId, wbs: wbs);
-            return SandboxServiceWithMocksFactory.ForSandboxCreate(_serviceProvider, userAppRole, userId, new List<Study>() {study});
+            var study = StudyModelFactory.CreateBasic(id: studyId, wbs: wbs);         
+
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, wbsExists, wbsValidationFails);
+
+            return SandboxServiceWithMocksFactory.ForSandboxCreate(_serviceProvider, userAppRole, userId, studyWbsValidationService, new List<Study>() {study});
         }
         
         class SandboxServicesAndMocks

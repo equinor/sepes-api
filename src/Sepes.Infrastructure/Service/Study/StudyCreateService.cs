@@ -20,15 +20,18 @@ namespace Sepes.Infrastructure.Service
     public class StudyCreateService : StudyServiceBase, IStudyCreateService
     {
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
+        readonly IStudyWbsValidationService _studyWbsValidationService;
 
         public StudyCreateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
             IStudyLogoService studyLogoService,
-            IDatasetCloudResourceService datasetCloudResourceService)
+            IDatasetCloudResourceService datasetCloudResourceService,
+            IStudyWbsValidationService studyWbsValidationService)
             : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
             _datasetCloudResourceService = datasetCloudResourceService;
+            _studyWbsValidationService = studyWbsValidationService;
         }      
 
         public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
@@ -40,9 +43,11 @@ namespace Sepes.Infrastructure.Service
 
             var currentUser = await _userService.GetCurrentUserAsync();
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
+            
+            await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyDb);
 
             studyDb = await _studyModelService.AddAsync(studyDb);
-                     
+
             await _datasetCloudResourceService.CreateResourceGroupForStudySpecificDatasetsAsync(studyDb, cancellation);
 
             if (logo != null)
@@ -52,7 +57,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return await GetStudyDetailsAsync(studyDb.Id);
-        }        
+        }
 
         void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
         {

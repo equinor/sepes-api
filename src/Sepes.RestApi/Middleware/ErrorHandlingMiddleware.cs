@@ -102,7 +102,24 @@ namespace Sepes.RestApi.Middelware
     }
 
     static class JsonExceptionResultFactory
-    {     
+    {    
+        
+        public static JsonResponse CreateExceptionMessageResult(string requestId, Exception ex, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
+        {
+            var userMessage = ex.Message;
+
+            if (ex is CustomUserMessageException)
+            {
+                var exceptionConverted = ex as CustomUserMessageException;
+
+                if (!String.IsNullOrWhiteSpace(exceptionConverted.UserFriendlyMessage))
+                {
+                    userMessage = exceptionConverted.UserFriendlyMessage;
+                }
+            }
+            
+            return CreateErrorMessageResult(requestId,userMessage , statusCode);
+        }
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
@@ -114,11 +131,6 @@ namespace Sepes.RestApi.Middelware
 
             return new JsonResponse { Content = content, StatusCode = statusCode };
         }
-
-        public static JsonResponse CreateExceptionMessageResult(string requestId, Exception ex, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
-        {
-            return CreateErrorMessageResult(requestId, ex.Message, statusCode);
-        }      
     }
 
     static class LogHelper

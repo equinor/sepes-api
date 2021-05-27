@@ -1,16 +1,19 @@
-﻿using Sepes.Infrastructure.Model;
+﻿using System;
+using Sepes.Infrastructure.Model;
 using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Common.ModelFactory
 {
     public static class StudyModelFactory
     {
-        public static Study CreateBasic(int id = StudyConstants.CREATED_BY_ME_ID, string name = StudyConstants.CREATED_BY_ME_NAME, string vendor = StudyConstants.CREATED_BY_ME_VENDOR, string wbs = StudyConstants.CREATED_BY_ME_WBS) {
+        public static Study CreateBasic(int id = StudyConstants.CREATED_BY_ME_ID, string name = StudyConstants.CREATED_BY_ME_NAME, string vendor = StudyConstants.CREATED_BY_ME_VENDOR, string wbs = StudyConstants.CREATED_BY_ME_WBS, bool wbsValid = false, DateTime? wbsCodeValidated = default(DateTime?) ) {
             return new Study() {
                 Id = id,
                 Name = name,
                 Vendor = vendor,
-                WbsCode = wbs
+                WbsCode = wbs,
+                WbsCodeValid = wbsValid,
+                WbsCodeValidatedAt = wbsCodeValidated
             };
         } }
 }

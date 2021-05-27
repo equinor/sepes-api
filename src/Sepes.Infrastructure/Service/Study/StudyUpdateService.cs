@@ -16,11 +16,13 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyUpdateService : StudyServiceBase, IStudyUpdateService
     {
-        public StudyUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
+        readonly IStudyWbsValidationService _studyWbsValidationService;
+        
+        public StudyUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService,
+            IStudyWbsValidationService studyWbsValidationService)
             : base(db, mapper, logger, userService, studyModelService, studyLogoService)
         {
-
-
+            _studyWbsValidationService = studyWbsValidationService;
         }
 
         public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
@@ -57,6 +59,8 @@ namespace Sepes.Infrastructure.Service
             if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
+                
+                await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyFromDb);
             }
 
             if (updatedStudy.DeleteLogo)

@@ -224,6 +224,8 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
             services.AddTransient<IWbsValidationService, WbsValidationService>();
+            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();
+            
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();

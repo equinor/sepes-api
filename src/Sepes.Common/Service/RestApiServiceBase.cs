@@ -89,8 +89,7 @@ namespace Sepes.Common.Service
             }
 
             if (responseMessage.IsSuccessStatusCode)
-            {
-                var responseString = await responseMessage.Content.ReadAsStringAsync();
+            {               
                 var deserializedResponse = JsonSerializer.Deserialize<T>(await responseMessage.Content.ReadAsStringAsync());
                 return deserializedResponse;
             }
