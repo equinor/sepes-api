@@ -1,14 +1,14 @@
 ﻿using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
-using Sepes.Common.Util;
 
 namespace Sepes.Azure.Service
 {
@@ -20,7 +20,7 @@ namespace Sepes.Azure.Service
         
         }
 
-        public async Task<List<ResourceSku>> GetSKUsForRegion(string region, string resourceType = null, bool filterBasedOnResponseRestrictions = true, CancellationToken cancellationToken = default)
+        public async Task<List<AzureResourceSku>> GetSKUsForRegion(string region, string resourceType = null, bool filterBasedOnResponseRestrictions = true, CancellationToken cancellationToken = default)
         {
             using (var client = new Microsoft.Azure.Management.Compute.ComputeManagementClient(_credentials))
             {
@@ -28,15 +28,15 @@ namespace Sepes.Azure.Service
 
                 var skus = await client.ResourceSkus.ListWithHttpMessagesAsync($"location eq '{region}'", cancellationToken: cancellationToken);
                 var responseText = await skus.Response.Content.ReadAsStringAsync();
-                var responseDeserialized = JsonSerializerUtil.Deserialize<AzureSkuResponse>(responseText);
+               : var responseDeserialized = JsonSerializerUtil.Deserialize<AzureSkuResponse>(responseText);
 
-                return ApplyRelevantFilters(region, responseDeserialized.Value, resourceType, filterBasedOnResponseRestrictions);               
+                return ApplyRelevantFilters(region, responseDeserialized.value, resourceType, filterBasedOnResponseRestrictions);               
             }
         }
 
-        List<ResourceSku> ApplyRelevantFilters(string region, IEnumerable<ResourceSku> source, string resourceType = null, bool filterBasedOnResponseRestrictions = true)
+        List<AzureResourceSku> ApplyRelevantFilters(string region, IEnumerable<AzureResourceSku> source, string resourceType = null, bool filterBasedOnResponseRestrictions = true)
         {
-            IEnumerable<ResourceSku> result = source;
+            IEnumerable<AzureResourceSku> result = source;
 
             if (!String.IsNullOrWhiteSpace(resourceType))
             {
@@ -51,12 +51,12 @@ namespace Sepes.Azure.Service
             return result.ToList();               
         }
 
-        IEnumerable<ResourceSku> FilterOnResourceType(string region, IEnumerable<ResourceSku> source, string resourceType)
+        IEnumerable<AzureResourceSku> FilterOnResourceType(string region, IEnumerable<AzureResourceSku> source, string resourceType)
         {
             return source.Where(r => r.ResourceType == resourceType);
         }
 
-        IEnumerable<ResourceSku> FilterOnResponseRestrictions(string region, IEnumerable<ResourceSku> source)
+        IEnumerable<AzureResourceSku> FilterOnResponseRestrictions(string region, IEnumerable<AzureResourceSku> source)
         {
             return source
                 .Where(sku => sku.Restrictions.Count == 0 

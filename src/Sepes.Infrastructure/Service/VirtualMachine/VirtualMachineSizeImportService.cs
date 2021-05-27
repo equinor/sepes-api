@@ -1,12 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.Azure.Management.Compute.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Azure;
 using System;
@@ -22,26 +20,20 @@ namespace Sepes.Infrastructure.Service
     {
         readonly ILogger _logger;
         readonly SepesDbContext _db;
-        readonly IMapper _mapper;
         readonly IUserService _userService;
-        readonly ISandboxModelService _sandboxModelService;
         readonly IAzureResourceSkuService _azureResourceSkuService;
         readonly IAzureCostManagementService _azureCostManagementService;
 
         public VirtualMachineSizeImportService(
             ILogger<VirtualMachineSizeImportService> logger,
             SepesDbContext db,
-            IMapper mapper,
             IUserService userService,
-            ISandboxModelService sandboxModelService,
             IAzureResourceSkuService azureResourceSkuService,
             IAzureCostManagementService azureCostManagementService)
         {
             _logger = logger;
-            _db = db;
-            _mapper = mapper;
-            _userService = userService;
-            _sandboxModelService = sandboxModelService;
+            _db = db;      
+            _userService = userService;       
             _azureResourceSkuService = azureResourceSkuService;
             _azureCostManagementService = azureCostManagementService;
         }      
@@ -107,7 +99,6 @@ namespace Sepes.Infrastructure.Service
                         {
                             //Size item might exist in db for other region
                             curVmSizeInDb = await _db.VmSizes.FirstOrDefaultAsync(r => r.Key == curAzureSku.Name);
-
 
                             if (curVmSizeInDb == null)
                             {
@@ -180,7 +171,7 @@ namespace Sepes.Infrastructure.Service
             _logger.LogInformation($"Done updating VM Size Cache");
         }
 
-        void PopulateVmSizeProps(ResourceSku source, VmSize target)
+        void PopulateVmSizeProps(AzureResourceSku source, VmSize target)
         {
             foreach (var curCapability in source.Capabilities)
             {

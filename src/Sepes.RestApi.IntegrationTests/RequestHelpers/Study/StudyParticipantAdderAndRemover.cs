@@ -17,9 +17,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return new ApiConversation<ParticipantLookupDto, TResponse>(requestDto, response);
         }
 
-        public static async Task<ApiConversation<ParticipantLookupDto, StudyParticipantDto>> AddAndExpectSuccess(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)
+        public static async Task<ApiConversation<ParticipantLookupDto, StudyParticipantListItem>> AddAndExpectSuccess(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)
         {
-            return await Add<StudyParticipantDto>(restHelper, studyId, role, requestDto);
+            return await Add<StudyParticipantListItem>(restHelper, studyId, role, requestDto);
         }
 
         public static async Task<ApiConversation<ParticipantLookupDto, ErrorResponse>> AddAndExpectFailure(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)

@@ -18,6 +18,7 @@ namespace Sepes.Common.Util
         {
             return new JsonSerializerOptions
             {   
+                PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = jsonNamingPolicy,               
                 IgnoreNullValues = true,
                 AllowTrailingCommas = true              

@@ -7,5 +7,7 @@
         public string EmailAddress { get; set; }
         public string Role { get; set; }
         public int UserId { get; set; }
+
+        public int StudyId { get; set; }
     }
 }
