@@ -4,13 +4,13 @@ namespace Sepes.Azure.Dto
 {
     public class AzurePriceV2ApiResponse
     {
-        public Dictionary<string, Offer> offers;
+        public Dictionary<string, Offer> offers { get; set; }
     }
 
     public class Offer
     {    
         public int size { get; set; }
-        public Dictionary<string, PriceValue> prices;
+        public Dictionary<string, PriceValue> prices { get; set; }
 
         public string pricingTypes { get; set; }
     }

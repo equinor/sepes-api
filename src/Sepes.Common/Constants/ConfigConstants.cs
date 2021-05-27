@@ -49,8 +49,8 @@
         public const string CYPRESS_MOCK_USER = "CypressMockUser";
 
         //WBS SEARCH
-        public const string WBS_SEARCH_API_URL = "WbsSearch:BaseUrl";
-        public const string WBS_SEARCH_API_SCOPE = "WbsSearch:Scope";
-        public const string WBS_SEARCH_APIM_SUBSCRIPTION = "WbsSearch:ApimSubscriptionKey";
+        public const string WBS_SEARCH_API_URL = "WbsSearchBaseUrl";
+        public const string WBS_SEARCH_API_SCOPE = "WbsSearchScope";
+        public const string WBS_SEARCH_APIM_SUBSCRIPTION = "WbsSearchApimSubscriptionKey";
     }
 }

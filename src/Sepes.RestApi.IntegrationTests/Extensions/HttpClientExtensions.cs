@@ -1,6 +1,6 @@
-﻿using System.Net.Http;
+﻿using Sepes.Common.Util;
+using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,7 +20,7 @@ namespace Sepes.RestApi.IntegrationTests.Extensions
 
         static MultipartFormDataContent CreateContent<TValue>(string formKey, TValue value)
         {
-            var valueAsJson = JsonSerializer.Serialize(value);
+            var valueAsJson = JsonSerializerUtil.Serialize(value);
 
             var formContent = new MultipartFormDataContent("integrationtestboundrary")
             {

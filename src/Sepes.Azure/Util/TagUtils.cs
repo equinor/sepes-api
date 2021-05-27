@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sepes.Common.Util;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 
 namespace Sepes.Azure.Util
 {
@@ -13,12 +13,12 @@ namespace Sepes.Azure.Util
 
         public static Dictionary<string, string> TagStringToDictionary(string tags)
         {
-            return JsonSerializer.Deserialize<Dictionary<string, string>>(tags);
+            return JsonSerializerUtil.Deserialize<Dictionary<string, string>>(tags);
         }
         
         public static string TagDictionaryToString(Dictionary<string, string> tags)
         {
-            return JsonSerializer.Serialize(tags);
+            return JsonSerializerUtil.Serialize(tags);
         }
     }
 }

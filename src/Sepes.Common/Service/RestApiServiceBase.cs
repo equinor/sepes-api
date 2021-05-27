@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -89,8 +90,9 @@ namespace Sepes.Common.Service
             }
 
             if (responseMessage.IsSuccessStatusCode)
-            {               
-                var deserializedResponse = JsonSerializer.Deserialize<T>(await responseMessage.Content.ReadAsStringAsync());
+            {
+                var responseText = await responseMessage.Content.ReadAsStringAsync();
+                var deserializedResponse = JsonSerializerUtil.Deserialize<T>(responseText);
                 return deserializedResponse;
             }
             else

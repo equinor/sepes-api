@@ -5,10 +5,10 @@ using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using System;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service
         public async Task<ProvisioningQueueParentDto> SendMessageAsync(ProvisioningQueueParentDto message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             _logger.LogInformation($"Queue: Adding message: {message.Description}, having {message.Children.Count} children");
-            var serializedMessage = JsonSerializer.Serialize(message);
+            var serializedMessage = JsonSerializerUtil.Serialize(message);
             var sendtMessage = await _queueService.SendMessageAsync(serializedMessage, visibilityTimeout, cancellationToken);
 
             message.MessageId = sendtMessage.MessageId;
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
             if (messageFromQueue != null)
             {
-                var convertedMessage = JsonSerializer.Deserialize<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
+                var convertedMessage = JsonSerializerUtil.Deserialize<ProvisioningQueueParentDto>(messageFromQueue.MessageText);
 
                 convertedMessage.MessageId = messageFromQueue.MessageId;
                 convertedMessage.PopReceipt = messageFromQueue.PopReceipt;
@@ -82,7 +82,7 @@ namespace Sepes.Infrastructure.Service
         public async Task IncreaseInvisibilityAsync(ProvisioningQueueParentDto message, int invisibleForInSeconds)
         {
             _logger.LogInformation($"Queue: Increasing message invisibility for {message.MessageId} with description \"{message.Description}\" by {invisibleForInSeconds} seconds.");
-            var messageAsJson = JsonSerializer.Serialize(message);
+            var messageAsJson = JsonSerializerUtil.Serialize(message);
             var updateReceipt = await _queueService.UpdateMessageAsync(message.MessageId, message.PopReceipt, messageAsJson, invisibleForInSeconds);
             message.PopReceipt = updateReceipt.PopReceipt;
             message.NextVisibleOn = updateReceipt.NextVisibleOn;

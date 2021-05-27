@@ -30,6 +30,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
+
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
@@ -55,7 +56,7 @@ namespace Sepes.RestApi
 
             AddApplicationInsights(services);
 
-            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddControllers();
 
             var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
@@ -118,7 +119,7 @@ namespace Sepes.RestApi
             {
                 authenticationAdder
                 .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"));
+                .AddDownstreamWebApi("WbsSearch",(a) => { a.BaseUrl = _configuration[ConfigConstants.WBS_SEARCH_API_URL]; a.Scopes = _configuration[ConfigConstants.WBS_SEARCH_API_SCOPE]; });
             }
 
             services.AddHttpContextAccessor();

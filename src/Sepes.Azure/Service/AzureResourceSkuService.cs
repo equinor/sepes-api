@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sepes.Azure.Dto;
-using System.Text.Json;
+using Sepes.Common.Util;
 
 namespace Sepes.Azure.Service
 {
@@ -28,7 +28,7 @@ namespace Sepes.Azure.Service
 
                 var skus = await client.ResourceSkus.ListWithHttpMessagesAsync($"location eq '{region}'", cancellationToken: cancellationToken);
                 var responseText = await skus.Response.Content.ReadAsStringAsync();
-                var responseDeserialized = JsonSerializer.Deserialize<AzureSkuResponse>(responseText);
+                var responseDeserialized = JsonSerializerUtil.Deserialize<AzureSkuResponse>(responseText);
 
                 return ApplyRelevantFilters(region, responseDeserialized.Value, resourceType, filterBasedOnResponseRestrictions);               
             }

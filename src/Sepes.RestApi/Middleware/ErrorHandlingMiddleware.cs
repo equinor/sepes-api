@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Middelware
@@ -116,6 +116,11 @@ namespace Sepes.RestApi.Middelware
                 {
                     userMessage = exceptionConverted.UserFriendlyMessage;
                 }
+
+                if (exceptionConverted.StatusCode.HasValue)
+                {
+                    statusCode = exceptionConverted.StatusCode.Value;
+                }
             }
             
             return CreateErrorMessageResult(requestId,userMessage , statusCode);
@@ -123,7 +128,7 @@ namespace Sepes.RestApi.Middelware
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            var content = JsonSerializer.Serialize(new Common.Dto.ErrorResponse
+            var content = JsonSerializerUtil.Serialize(new Common.Dto.ErrorResponse
             {
                 Message = message,
                 RequestId = requestId

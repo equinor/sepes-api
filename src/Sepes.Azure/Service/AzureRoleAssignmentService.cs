@@ -4,12 +4,12 @@ using Microsoft.Identity.Web;
 using Sepes.Azure.Dto.RoleAssignment;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
+using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -53,7 +53,7 @@ namespace Sepes.Azure.Service
                 var addRoleUrl = $"https://management.azure.com{resourceId}/providers/Microsoft.Authorization/roleAssignments/{roleAssignmentId}?api-version=2015-07-01";
 
                 var body = new AzureRoleAssignmentRequestDto(roleDefinitionId, principalId);
-                var bodyJson = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json");
+                var bodyJson = new StringContent(JsonSerializerUtil.Serialize(body), Encoding.UTF8, "application/json");
 
                 var result = await PerformRequest<AzureRoleAssignment>(addRoleUrl, HttpMethod.Put, bodyJson, true, cancellationToken: cancellationToken);
 

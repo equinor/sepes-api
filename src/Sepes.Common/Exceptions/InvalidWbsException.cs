@@ -4,6 +4,6 @@ namespace Sepes.Common.Exceptions
 {
     public class InvalidWbsException : CustomUserMessageException
     {
-        public InvalidWbsException(string message, string userFriendlyMessage) : base(message, userFriendlyMessage) { }
+        public InvalidWbsException(string message, string userFriendlyMessage) : base(message, userFriendlyMessage, System.Net.HttpStatusCode.BadRequest) { }
     }
 }

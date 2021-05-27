@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace Sepes.Common.Exceptions
 {
@@ -6,13 +7,17 @@ namespace Sepes.Common.Exceptions
     {
         public string UserFriendlyMessage { get; private set; }
 
-        public CustomUserMessageException(string message, string userFriendlyMessage = null) : base(message)
+        public HttpStatusCode? StatusCode { get; private set; }
+
+        public CustomUserMessageException(string message, string userFriendlyMessage = null, HttpStatusCode? httpStatusCode = default) : base(message)
         {
-            UserFriendlyMessage = userFriendlyMessage; 
+            UserFriendlyMessage = userFriendlyMessage;
+            StatusCode = httpStatusCode;
         }
         
-        public CustomUserMessageException(string message, System.Exception inner, string userFriendlyMessage = null) : base(message, inner)  {
-            UserFriendlyMessage = userFriendlyMessage; 
+        public CustomUserMessageException(string message, System.Exception inner, string userFriendlyMessage = null, HttpStatusCode? httpStatusCode = default) : base(message, inner)  {
+            UserFriendlyMessage = userFriendlyMessage;
+            StatusCode = httpStatusCode;
         }
         
         protected CustomUserMessageException(System.Runtime.Serialization.SerializationInfo info,

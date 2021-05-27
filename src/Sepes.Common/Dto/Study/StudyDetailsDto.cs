@@ -6,7 +6,7 @@ using Sepes.Common.Response.Sandbox;
 
 namespace Sepes.Common.Dto.Study
 {
-    public class StudyDetailsDto : UpdateableBaseDto, IHasLogoUrl, IHasStudyParticipants
+    public class StudyDetailsDto : UpdateableBaseDto, IHasLogoUrl
     {
         public string Name { get; set; }
 
@@ -26,7 +26,7 @@ namespace Sepes.Common.Dto.Study
 
         public List<SandboxListItem> Sandboxes { get; set; }
 
-        public List<StudyParticipantDto> Participants { get; set; }
+        public List<StudyParticipantListItem> Participants { get; set; }
         
     }
 }

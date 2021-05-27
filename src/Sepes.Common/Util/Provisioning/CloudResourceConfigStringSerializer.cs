@@ -2,7 +2,6 @@
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.VirtualMachine;
 using System.Collections.Generic;
-using System.Text.Json;
 
 namespace Sepes.Common.Util
 {
@@ -36,12 +35,12 @@ namespace Sepes.Common.Util
 
         public static string Serialize(object obj)
         {
-            return JsonSerializer.Serialize(obj);
+            return JsonSerializerUtil.Serialize(obj);
         }
 
         public static T DeserializeInternal<T>(string settings)
         {
-            return JsonSerializer.Deserialize<T>(settings);
+            return JsonSerializerUtil.Deserialize<T>(settings);
         }
     }
 }
