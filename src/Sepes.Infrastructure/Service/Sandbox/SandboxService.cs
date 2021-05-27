@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
         public const string SandboxDelete = "Sandbox-Delete";
 
         public SandboxService(IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ISandboxModelService sandboxModelService, IStudyModelService studyModelService, IStudyWbsValidationService studyWbsValidationService ,ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            IUserService userService, ISandboxModelService sandboxModelService, IStudyModelService studyModelService, IStudyWbsValidationService studyWbsValidationService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             : base(mapper, logger, userService, sandboxModelService)
         {
             _studyModelService = studyModelService;

@@ -28,7 +28,7 @@ namespace Sepes.Tests.Services
             studies[0].WbsCode = null;
 
             var datasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider, studies);        
-            await Assert.ThrowsAsync<Exception>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));         
+            await Assert.ThrowsAsync<InvalidWbsException>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));         
         
         }
 

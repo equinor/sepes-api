@@ -45,13 +45,14 @@ namespace Sepes.Tests.Services.Infrastructure
         }
 
         [Fact]
-        public async Task AllowSandboxCreation_OnValidWbs()
+        public async Task AllowSandboxAndDatasetCreation_OnValidWbs()
         {
             var study = CreateStudyValidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, true, false);
 
             await studyWbsValidationService.ValidateForSandboxCreationOrThrow(study);
-            
+            await studyWbsValidationService.ValidateForDatasetCreationOrThrow(study);
+
             Assert.True(study.WbsCodeValid);
         }       
 
@@ -60,21 +61,23 @@ namespace Sepes.Tests.Services.Infrastructure
         {
             var study = CreateStudyInvalidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, true, false);
-            
-            await studyWbsValidationService.ValidateForSandboxCreationOrThrow(study);
 
-           Assert.True(study.WbsCodeValid);
+            await studyWbsValidationService.ValidateForSandboxCreationOrThrow(study);
+            await studyWbsValidationService.ValidateForDatasetCreationOrThrow(study);
+
+            Assert.True(study.WbsCodeValid);
            Assert.NotNull((study.WbsCodeValidatedAt));
            Assert.True((DateTime.UtcNow - study.WbsCodeValidatedAt.Value).TotalSeconds < 10);
         }
         
         [Fact]
-        public async Task Throw_On_SandboxCreation_IfInvalidAndReValidationReturnsFalse()
+        public async Task Throw_On_SandboxAndDatasetCreation_IfInvalidAndReValidationReturnsFalse()
         {
             var study = CreateStudyInvalidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, false);
 
             await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForSandboxCreationOrThrow(study));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForDatasetCreationOrThrow(study));
         }
         
         [Fact]
@@ -84,6 +87,7 @@ namespace Sepes.Tests.Services.Infrastructure
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, true);
            
             await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForSandboxCreationOrThrow(study));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForDatasetCreationOrThrow(study));
         }
 
         Study CreateStudyValidWbs()

@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Service
         {
             try
             {
-                await PerformValidation(study, false);
+                await PerformValidation(study, false, null);
             }
             catch (Exception ex)
             {
@@ -33,20 +33,30 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ValidateForSandboxCreationOrThrow(Study study)
         {
+            await ValidateForDependentEntityCreationOrThrow(study, "Sandbox");
+        }
+
+        public async Task ValidateForDatasetCreationOrThrow(Study study)
+        {
+            await ValidateForDependentEntityCreationOrThrow(study, "Dataset");
+        }
+
+        async Task ValidateForDependentEntityCreationOrThrow(Study study, string entityName)
+        {
             if (String.IsNullOrWhiteSpace(study.WbsCode))
             {
-                throw new InvalidWbsException($"Empty WBS Code for Study {study.Id}","Missing WBS code for Study. Study requires WBS code before Sandbox can be created.");
+                throw new InvalidWbsException($"Empty WBS Code for Study {study.Id}", $"Missing WBS code for Study. Study requires WBS code before {entityName} can be created.");
             }
-            
+
             if (study.WbsCodeValid)
             {
                 return;
             }
 
-            await PerformValidation(study, true);
+            await PerformValidation(study, true, entityName);
         }
-        
-        async Task PerformValidation(Study study, bool throwIfInvalid)
+
+        async Task PerformValidation(Study study, bool throwIfInvalid, string entityName)
         {
             bool isValid = false;
 
@@ -71,7 +81,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (throwIfInvalid)
                 {
-                    throw new InvalidWbsException($"Invalid WBS Code {study.WbsCode} for Study {study.Id}","Invalid WBS code for Study. Study requires valid WBS code before Sandbox can be created.");
+                    throw new InvalidWbsException($"Invalid WBS Code {study.WbsCode} for Study {study.Id}", $"Invalid WBS code for Study. Study requires valid WBS code before {entityName} can be created.");
                 }
             }
         }

@@ -20,6 +20,7 @@ namespace Sepes.Infrastructure.Service
     public class StudySpecificDatasetService : DatasetServiceBase, IStudySpecificDatasetService
     {
         readonly IStudyModelService _studyModelService;
+        readonly IStudyWbsValidationService _studyWbsValidationService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
@@ -29,12 +30,14 @@ namespace Sepes.Infrastructure.Service
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
+            IStudyWbsValidationService studyWbsValidationService,
             IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
             )
             : base(db, mapper, logger, userService)
         {
             _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
+            _studyWbsValidationService = studyWbsValidationService ?? throw new ArgumentNullException(nameof(studyWbsValidationService));
             _studySpecificDatasetModelService = studySpecificDatasetModelService;
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
@@ -42,11 +45,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {
             var studyFromDb = await _studyModelService.GetForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
-                        
-            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
-            {
-                throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
-            }
+
+            await _studyWbsValidationService.ValidateForDatasetCreationOrThrow(studyFromDb);
 
             DatasetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
 

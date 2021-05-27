@@ -8,5 +8,7 @@ namespace Sepes.Infrastructure.Service.Interface
         Task ValidateForStudyCreateOrUpdate(Study study);
         
         Task ValidateForSandboxCreationOrThrow(Study study);
+
+        Task ValidateForDatasetCreationOrThrow(Study study);
     }
 }
