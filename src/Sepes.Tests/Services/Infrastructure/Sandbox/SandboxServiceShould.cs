@@ -73,8 +73,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
         [Theory]
         [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
+        [InlineData(false, true)]        
         public async void Throw_When_Study_Invalid_Wbs(bool wbsExists, bool wbsValidationFails)
         {
             var sandboxService = CreateForFailingSandboxCreate(AppRoles.Admin, 1, wbsExists: wbsExists, wbsValidationFails: wbsValidationFails);

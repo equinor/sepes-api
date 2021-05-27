@@ -82,9 +82,8 @@ namespace Sepes.Tests.Services.Infrastructure
         {
             var study = CreateStudyInvalidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, true);
-
-            await Assert.ThrowsAsync<Exception>(() => studyWbsValidationService.ValidateForStudyCreateOrUpdate(study));
-            await Assert.ThrowsAsync<Exception>(() => studyWbsValidationService.ValidateForSandboxCreationOrThrow(study));
+           
+            await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForSandboxCreationOrThrow(study));
         }
 
         Study CreateStudyValidWbs()

@@ -48,7 +48,18 @@ namespace Sepes.Infrastructure.Service
         
         async Task PerformValidation(Study study, bool throwIfInvalid)
         {
-            if (await _wbsValidationService.IsValid(study.WbsCode))
+            bool isValid = false;
+
+            try
+            {
+                isValid = await _wbsValidationService.IsValid(study.WbsCode);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidWbsException($"WBS validation failed for Study {study.Id}, code: {study.WbsCode}", "Wbs validation failed.", ex);               
+            }
+
+            if (isValid)
             {
                 study.WbsCodeValid = true;
                 study.WbsCodeValidatedAt = DateTime.UtcNow;
