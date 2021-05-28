@@ -20,6 +20,8 @@ namespace Sepes.Common.Dto.Study
 
         public string LogoUrl { get; set; }
 
+        public bool WbsCodeValid { get; set; }
+
         public StudyPermissionsDto Permissions { get; set; } = new StudyPermissionsDto();
 
         public List<DatasetListItemDto> Datasets { get; set; }
