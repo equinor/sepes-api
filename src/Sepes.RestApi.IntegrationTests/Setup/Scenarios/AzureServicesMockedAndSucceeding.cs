@@ -22,10 +22,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
             serviceCollection.SwapTransient<IAzureBastionService>(provider => AzureBastionMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureVirtualMachineService>(provider => AzureVirtualMachineMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureRoleAssignmentService>(provider => AzureRoleAssignmentMockServiceFactory.CreateBasicForCreate().Object);
-
             serviceCollection.SwapTransient<IAzureBlobStorageService>(provider => AzureBlobStorageMockServiceFactory.CreateBasicBlobStorageServiceForResourceCreation().Object);
             serviceCollection.SwapTransient<IAzureBlobStorageUriBuilderService>(provider => AzureBlobStorageMockServiceFactory.CreateBasicUriBuilderServiceForCreate().Object);
-
             serviceCollection.SwapTransient<IAzureStorageAccountService>(provider => AzureStorageAccountMockServiceFactory.CreateBasicForCreate().Object);         
             serviceCollection.SwapTransient<IAzureStorageAccountNetworkRuleService>(provider => AzureStorageAccountNetworkRuleMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureStorageAccountCorsRuleService>(provider => AzureStorageAccountCorsRuleMockServiceFactory.CreateBasicForCreate().Object);
