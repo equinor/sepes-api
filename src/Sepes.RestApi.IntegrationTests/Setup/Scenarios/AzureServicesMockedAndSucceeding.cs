@@ -1,15 +1,18 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sepes.Azure.Service.Interface;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.Test.Common.ServiceMockFactories;
 using Sepes.Tests.Common.Extensions;
+using Sepes.Tests.Common.ServiceMockFactories.Infrastructure;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
 {
-    public class MockedAzureServiceSets : IMockServicesForScenarioProvider
+    public class AzureServicesMockedAndSucceeding : IMockServicesForScenarioProvider
     {
         public void RegisterServices(IServiceCollection serviceCollection)
         {
-            
+            serviceCollection.SwapTransient<IWbsApiService>(provider => WbsApiMockServiceFactory.GetService(true, false));
+
             serviceCollection.SwapTransient<IAzureKeyVaultSecretService>(provider => AzureKeyVaultSecretMockServiceFactory.CreateBasicForResourceCreate().Object);
             serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureVirtualMachineExtendedInfoService>(provider => AzureVirtualMachineExtendedInfoMockServiceFactory.CreateBasicForCreate().Object);
@@ -26,6 +29,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
             serviceCollection.SwapTransient<IAzureStorageAccountService>(provider => AzureStorageAccountMockServiceFactory.CreateBasicForCreate().Object);         
             serviceCollection.SwapTransient<IAzureStorageAccountNetworkRuleService>(provider => AzureStorageAccountNetworkRuleMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureStorageAccountCorsRuleService>(provider => AzureStorageAccountCorsRuleMockServiceFactory.CreateBasicForCreate().Object);
+            
+            
         }
     }
 }
