@@ -15,9 +15,7 @@ namespace Sepes.Azure.Dto
         public string ResourceType { get; set; }  
       
         [JsonPropertyName("name")]
-        public string Name { get; set; }      
-       
-             
+        public string Name { get; set; }              
 
         [JsonPropertyName("capabilities")]
         public IList<ResourceSkuCapabilities> Capabilities { get; set; }  
