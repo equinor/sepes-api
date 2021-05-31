@@ -27,7 +27,6 @@ namespace Sepes.Tests.Setup
             return new StudyModelService(config, db, logger, userService.Object, mapper);
         }
 
-
         public static IStudyReadService ReadService(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
@@ -52,11 +51,15 @@ namespace Sepes.Tests.Setup
             var studyModelService = StudyModelService(serviceProvider);
 
             var logoServiceMock = new Mock<IStudyLogoService>();
+            
+            var studyWbsValidationService = new Mock<IStudyWbsValidationService>();
+            // studyWbsValidationService.Setup(s =>
+            //     s.CheckValidityIfNotReValidateOrThrow(It.IsAny<Study>()));
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
             dsCloudResourceServiceMock.Setup(x => x.CreateResourceGroupForStudySpecificDatasetsAsync(It.IsAny<Study>(), default(CancellationToken))).Returns(Task.CompletedTask);
 
-            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, dsCloudResourceServiceMock.Object);
+            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
         }
 
         public static IStudyUpdateService UpdateService(ServiceProvider serviceProvider)
@@ -69,8 +72,10 @@ namespace Sepes.Tests.Setup
             var studyModelService = StudyModelService(serviceProvider);
 
             var logoServiceMock = new Mock<IStudyLogoService>();
+            
+            var studyWbsValidationService = new Mock<IStudyWbsValidationService>();
 
-            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object);
+            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, studyWbsValidationService.Object);
         }
 
         public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)

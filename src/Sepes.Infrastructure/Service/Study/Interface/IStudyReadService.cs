@@ -1,6 +1,5 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
-using Sepes.Infrastructure.Response;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

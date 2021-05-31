@@ -15,7 +15,7 @@ namespace Sepes.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.11")
+                .HasAnnotation("ProductVersion", "3.1.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -651,6 +651,12 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(64)")
                         .HasMaxLength(64);
 
+                    b.Property<bool>("WbsCodeValid")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("WbsCodeValidatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Closed")
@@ -864,6 +870,19 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasKey("Key");
 
                     b.ToTable("VmSizes");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.WbsCodeCache", b =>
+                {
+                    b.Property<string>("WbsCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Expires")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("WbsCode");
+
+                    b.ToTable("WbsCodeCache");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>

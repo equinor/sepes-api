@@ -5,6 +5,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface ISandboxResourceDeleteService
     {           
-        Task HandleSandboxDeleteAsync(int sandboxId, EventId eventId);     
+        Task HandleSandboxDeleteAsync(int sandboxId, EventId eventId);
+        Task UndoResourceCreationAsync(int sandboxId);
     }   
 }

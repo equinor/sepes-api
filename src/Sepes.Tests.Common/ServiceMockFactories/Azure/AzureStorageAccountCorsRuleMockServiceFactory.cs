@@ -12,8 +12,7 @@ namespace Sepes.Test.Common.ServiceMockFactories
 
             var mock = new Mock<IAzureStorageAccountCorsRuleService>();
 
-            mock.Setup(us => us.SetCorsRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<CorsRule>>(), It.IsAny<CancellationToken>()));
-               
+            mock.Setup(us => us.SetCorsRules(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<List<CorsRule>>(), It.IsAny<CancellationToken>()));               
 
             return mock;
         }

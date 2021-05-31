@@ -6,7 +6,7 @@ using Sepes.Common.Response.Sandbox;
 
 namespace Sepes.Common.Dto.Study
 {
-    public class StudyDetailsDto : UpdateableBaseDto, IHasLogoUrl, IHasStudyParticipants
+    public class StudyDetailsDto : UpdateableBaseDto, IHasLogoUrl
     {
         public string Name { get; set; }
 
@@ -20,13 +20,15 @@ namespace Sepes.Common.Dto.Study
 
         public string LogoUrl { get; set; }
 
+        public bool WbsCodeValid { get; set; }
+
         public StudyPermissionsDto Permissions { get; set; } = new StudyPermissionsDto();
 
         public List<DatasetListItemDto> Datasets { get; set; }
 
         public List<SandboxListItem> Sandboxes { get; set; }
 
-        public List<StudyParticipantDto> Participants { get; set; }
+        public List<StudyParticipantListItem> Participants { get; set; }
         
     }
 }

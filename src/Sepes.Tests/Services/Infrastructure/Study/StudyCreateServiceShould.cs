@@ -6,18 +6,12 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyCreateServiceTest : StudyServiceTestBase
+    public class StudyCreateServiceShould : StudyServiceTestBase
     {
-        public StudyCreateServiceTest()
-            :base()
-        {
-           
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async Task CreatingStudyWithoutNameShouldFail(string name)
+        public async Task FailIfStudyIsMissingName(string name)
         {
             await ClearTestDatabase();
 
@@ -35,7 +29,7 @@ namespace Sepes.Tests.Services.DomainServices
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async void CreatingStudyWithoutVendorShouldFail(string vendor)
+        public async void FailIfStudyIsMissingVendor(string vendor)
         {
             await ClearTestDatabase();
 
@@ -48,6 +42,6 @@ namespace Sepes.Tests.Services.DomainServices
             };
 
             await Assert.ThrowsAsync<ArgumentException>(() => studyCreateService.CreateAsync(studyWithInvalidVendor));
-        }     
+        }
     }
 }

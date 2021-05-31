@@ -30,6 +30,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 
+
 namespace Sepes.RestApi
 {
     [ExcludeFromCodeCoverage]
@@ -55,7 +56,7 @@ namespace Sepes.RestApi
 
             AddApplicationInsights(services);
 
-            services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            services.AddControllers();
 
             var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
@@ -111,17 +112,14 @@ namespace Sepes.RestApi
                     {
 
                     }
-                    )
-
-                // .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                //.AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"))
+                    )              
                 .AddInMemoryTokenCaches();
 
             if (!isIntegrationTest)
             {
                 authenticationAdder
                 .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                .AddDownstreamWebApi("WbsSearch", _configuration.GetSection("WbsSearch"));
+                .AddDownstreamWebApi("WbsSearch",(a) => { a.BaseUrl = _configuration[ConfigConstants.WBS_SEARCH_API_URL]; a.Scopes = _configuration[ConfigConstants.WBS_SEARCH_API_SCOPE]; });
             }
 
             services.AddHttpContextAccessor();
@@ -165,7 +163,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureDiskPriceService, AzureDiskPriceService>();
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
-                services.AddHttpClient<IWbsValidationService, WbsValidationService>();
+                services.AddHttpClient<IWbsApiService, WbsApiService>();
 
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
@@ -204,6 +202,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
             services.AddTransient<ISandboxDatasetModelService, SandboxDatasetModelService>();
             services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
+            services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();            
 
             //Domain Model Services
             services.AddTransient<IStudyReadService, StudyReadService>();
@@ -225,6 +224,9 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+            services.AddTransient<IWbsValidationService, WbsValidationService>();
+            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();
+            
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
@@ -264,8 +266,6 @@ namespace Sepes.RestApi
             services.AddTransient<IVirtualMachineRuleService, VirtualMachineRuleService>();
             services.AddTransient<IVirtualMachineValidationService, VirtualMachineValidationService>();
             services.AddTransient<IDatasetCloudResourceService, DatasetCloudResourceService>();
-
-
 
             //Import Services
             services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();

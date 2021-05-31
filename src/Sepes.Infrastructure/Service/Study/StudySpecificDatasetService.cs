@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
@@ -20,6 +21,7 @@ namespace Sepes.Infrastructure.Service
     public class StudySpecificDatasetService : DatasetServiceBase, IStudySpecificDatasetService
     {
         readonly IStudyModelService _studyModelService;
+        readonly IStudyWbsValidationService _studyWbsValidationService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
@@ -29,12 +31,14 @@ namespace Sepes.Infrastructure.Service
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
             IStudyModelService studyModelService,
+            IStudyWbsValidationService studyWbsValidationService,
             IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
             )
             : base(db, mapper, logger, userService)
         {
             _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
+            _studyWbsValidationService = studyWbsValidationService ?? throw new ArgumentNullException(nameof(studyWbsValidationService));
             _studySpecificDatasetModelService = studySpecificDatasetModelService;
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
@@ -42,11 +46,8 @@ namespace Sepes.Infrastructure.Service
         public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {
             var studyFromDb = await _studyModelService.GetForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
-                        
-            if (String.IsNullOrWhiteSpace(studyFromDb.WbsCode))
-            {
-                throw new Exception("WBS code missing in Study. Study requires WBS code before Dataset can be created.");
-            }
+
+            await _studyWbsValidationService.ValidateForDatasetCreationOrThrow(studyFromDb);
 
             DatasetUtils.PerformUsualTestForPostedDatasets(newDatasetInput);
 
@@ -144,13 +145,14 @@ namespace Sepes.Infrastructure.Service
 
         async Task DeleteAllStudySpecificDatasetsWithHandlerAsync(Study study, Func<Study, int, CancellationToken, Task> deleteHandler, CancellationToken cancellationToken = default)
         {
+            var idsForStudySpecificDataset = await _db.StudyDatasets.Where(sd => sd.StudyId == study.Id && !sd.Dataset.Deleted && sd.Dataset.StudySpecific).Select(sd => sd.DatasetId).ToListAsync();
             var studySpecificDatasetsToDelete = new List<int>();
 
-            if (study.StudyDatasets.Any())
+            if (idsForStudySpecificDataset.Any())
             {
-                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => !sds.Dataset.Deleted && sds.Dataset.StudySpecific && sds.StudyId == study.Id))
+                foreach (var studySpecificDataset in idsForStudySpecificDataset)
                 {
-                    studySpecificDatasetsToDelete.Add(studySpecificDataset.DatasetId);
+                    studySpecificDatasetsToDelete.Add(studySpecificDataset);
                 }
             }          
 

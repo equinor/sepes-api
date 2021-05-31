@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
 using System.Threading.Tasks;
+using Sepes.Common.Constants.CloudResource;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
@@ -29,6 +30,18 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             var result = await GetFromQueryableThrowIfNotFound(queryable, id);
             return result;
+        }
+        
+        public async Task<CloudResourceOperation> EnsureReadyForRetry(CloudResourceOperation operationToRetry)
+        {
+            if (operationToRetry.TryCount >= operationToRetry.MaxTryCount)
+            {
+                operationToRetry.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count 
+                operationToRetry.Status = CloudResourceOperationState.IN_PROGRESS;
+                await _db.SaveChangesAsync();
+            }
+
+            return operationToRetry;
         }
 
         async Task<CloudResourceOperation> GetFromQueryableThrowIfNotFound(IQueryable<CloudResourceOperation> queryable, int id)
@@ -56,11 +69,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             if (cloudResourceOperation.Resource.StudyId.HasValue)
             {
-                await CheckAccesAndThrowIfMissing(cloudResourceOperation.Resource.Study, operation);
+                await CheckAccesAndThrowIfNotAllowed(cloudResourceOperation.Resource.Study, operation);
             }
             else if (cloudResourceOperation.Resource.SandboxId.HasValue)
             {
-                await CheckAccesAndThrowIfMissing(cloudResourceOperation.Resource.Sandbox.Study, operation);
+                await CheckAccesAndThrowIfNotAllowed(cloudResourceOperation.Resource.Sandbox.Study, operation);
             }           
         }
     }

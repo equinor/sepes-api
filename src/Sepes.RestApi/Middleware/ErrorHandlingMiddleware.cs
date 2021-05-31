@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using Sepes.Common.Exceptions;
+using Sepes.Common.Interface;
+using Sepes.Common.Util;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using Sepes.Common.Exceptions;
-using Sepes.Common.Interface;
 
 namespace Sepes.RestApi.Middelware
 {
@@ -102,11 +102,33 @@ namespace Sepes.RestApi.Middelware
     }
 
     static class JsonExceptionResultFactory
-    {     
+    {    
+        
+        public static JsonResponse CreateExceptionMessageResult(string requestId, Exception ex, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
+        {
+            var userMessage = ex.Message;
+
+            if (ex is CustomUserMessageException)
+            {
+                var exceptionConverted = ex as CustomUserMessageException;
+
+                if (!String.IsNullOrWhiteSpace(exceptionConverted.UserFriendlyMessage))
+                {
+                    userMessage = exceptionConverted.UserFriendlyMessage;
+                }
+
+                if (exceptionConverted.StatusCode.HasValue)
+                {
+                    statusCode = exceptionConverted.StatusCode.Value;
+                }
+            }
+            
+            return CreateErrorMessageResult(requestId,userMessage , statusCode);
+        }
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            var content = JsonConvert.SerializeObject(new Common.Dto.ErrorResponse
+            var content = JsonSerializerUtil.Serialize(new Common.Dto.ErrorResponse
             {
                 Message = message,
                 RequestId = requestId
@@ -114,11 +136,6 @@ namespace Sepes.RestApi.Middelware
 
             return new JsonResponse { Content = content, StatusCode = statusCode };
         }
-
-        public static JsonResponse CreateExceptionMessageResult(string requestId, Exception ex, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
-        {
-            return CreateErrorMessageResult(requestId, ex.Message, statusCode);
-        }      
     }
 
     static class LogHelper

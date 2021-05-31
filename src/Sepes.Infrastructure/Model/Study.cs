@@ -20,6 +20,11 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(64)]
         public string WbsCode { get; set; }
 
+        public bool WbsCodeValid { get; set; }
+
+        public DateTime? WbsCodeValidatedAt { get; set; }
+        
+
         [MaxLength(128)]
         [Required(AllowEmptyStrings =false)]
         public string Vendor { get; set; }

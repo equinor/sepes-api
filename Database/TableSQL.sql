@@ -1,1 +1,0 @@
-CREATE TABLE [dbo].[Studies]([StudyID] [int] IDENTITY(1,1) NOT NULL,[JsonData] [nvarchar](max) NOT NULL)

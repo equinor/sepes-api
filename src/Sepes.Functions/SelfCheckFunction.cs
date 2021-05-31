@@ -1,6 +1,6 @@
 using Microsoft.Azure.WebJobs;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,22 +9,24 @@ namespace Sepes.Functions
 {
     public class SelfCheckFunction
     {
-        public SelfCheckFunction()
+        readonly ILogger _logger;
+        readonly IHealthService _healthService;
+
+        public SelfCheckFunction(ILogger<SelfCheckFunction> logger, IHealthService healthService)
         {
-          
+            _logger = logger;
+            _healthService = healthService;
         }
 
         [FunctionName("SelfCheck")]
-        public Task Run([TimerTrigger("0 */30 * * * *", RunOnStartup = true)]TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 */30 * * * *", RunOnStartup = true)]TimerInfo myTimer)
         {
-            var databaseOkay = true;
-            var provisioningQueueOkay = true;
+            var databaseOkay = await _healthService.DatabaseOkayAsync();          
 
             var selfMonitoringStringBuilder = new StringBuilder($"Self check started at {DateTime.UtcNow}: ");
-            selfMonitoringStringBuilder.Append(GenerateKeyValue("db", databaseOkay));
-            selfMonitoringStringBuilder.Append(GenerateKeyValue("resource queue", provisioningQueueOkay));
-            log.LogWarning(selfMonitoringStringBuilder.ToString());
-            return Task.CompletedTask;
+            selfMonitoringStringBuilder.Append(GenerateKeyValue("Database", databaseOkay));
+
+            _logger.LogWarning(selfMonitoringStringBuilder.ToString());         
         }
 
         static string GenerateKeyValue(string key, bool okay)

@@ -10,12 +10,14 @@ namespace Sepes.Functions
 {
     public class UpdateCacheFunction
     {
-        readonly IConfiguration _configuration;
+        readonly ILogger _logger;
+        readonly IConfiguration _configuration;        
         readonly IVirtualMachineSizeImportService _virtualMachineSizeImportService;
         readonly IVirtualMachineDiskSizeImportService _virtualMachineDiskSizeImportService;
 
-        public UpdateCacheFunction(IConfiguration configuration, IVirtualMachineSizeImportService virtualMachineSizeImportService, IVirtualMachineDiskSizeImportService virtualMachineDiskSizeImportService)
+        public UpdateCacheFunction(ILogger<UpdateCacheFunction> logger, IConfiguration configuration, IVirtualMachineSizeImportService virtualMachineSizeImportService, IVirtualMachineDiskSizeImportService virtualMachineDiskSizeImportService)
         {
+            _logger = logger;
             _configuration = configuration;
             _virtualMachineSizeImportService = virtualMachineSizeImportService;
             _virtualMachineDiskSizeImportService = virtualMachineDiskSizeImportService;
@@ -25,13 +27,13 @@ namespace Sepes.Functions
         //Run every hour: "0 * * * *"    
         //Run ever 6 hour "0 */6 * * *"
         [FunctionName("UpdateAllCaches")]
-        public async Task Run([TimerTrigger("0 */6 * * * *", RunOnStartup = true)] TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 */6 * * * *", RunOnStartup = true)] TimerInfo myTimer)
         {
             var cacheUpdateDisabled = _configuration[ConfigConstants.DISABLE_CACHE_UPDATE];
 
             if (!String.IsNullOrWhiteSpace(cacheUpdateDisabled) && cacheUpdateDisabled.ToLower() == "true")
             {
-                log.LogWarning($"Cache update is disabled, aborting!");
+                _logger.LogWarning($"Cache update is disabled, aborting!");
                 return;
             }
 

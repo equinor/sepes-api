@@ -1,22 +1,18 @@
 ﻿using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Exceptions;
-using Sepes.Infrastructure.Model;
 using Sepes.Tests.Setup;
-using Sepes.Tests.Setup.ModelFactory;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Sepes.Tests.Services
 {
     public class StudySpecificDatasetServiceTests : DatasetServiceTestBase
-    {      
+    {
 
         public StudySpecificDatasetServiceTests()
-            :base()
+            : base()
         {
-            
-        }  
+
+        }
 
 
         [Fact]
@@ -27,11 +23,8 @@ namespace Sepes.Tests.Services
             var studies = CreateTestStudyList(studyId);
             studies[0].WbsCode = null;
 
-            var datasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider, studies);        
-            await Assert.ThrowsAsync<Exception>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));         
-        
+            var datasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(_serviceProvider, studies);
+            await Assert.ThrowsAsync<InvalidWbsException>(() => datasetService.CreateStudySpecificDatasetAsync(1, new DatasetCreateUpdateInputBaseDto() { Name = "testds", Location = "norwayeast", Classification = "open" }, "192.168.1.1"));
         }
-
-            
     }
 }

@@ -17,17 +17,29 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceRetryService : SandboxServiceBase, ISandboxResourceRetryService
+    public class SandboxResourceRetryService : ISandboxResourceRetryService
     {
+        readonly IMapper _mapper;
+        readonly ILogger _logger;
+        
+        readonly ISandboxModelService _sandboxModelService;
+        
         readonly ICloudResourceReadService _cloudResourceReadService;
+        readonly IResourceOperationModelService _resourceOperationModelService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
-        public SandboxResourceRetryService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceRetryService> logger, IUserService userService, ISandboxModelService sandboxModelService,
+        public SandboxResourceRetryService(IMapper mapper, ILogger<SandboxResourceRetryService> logger, ISandboxModelService sandboxModelService,
             ICloudResourceReadService cloudResourceReadService,
+            IResourceOperationModelService resourceOperationModelService,
             IProvisioningQueueService provisioningQueueService)
-              : base(config, db, mapper, logger, userService, sandboxModelService)
         {
+            _mapper = mapper;
+            _logger = logger;
+
+            _sandboxModelService = sandboxModelService;
+                
             _cloudResourceReadService = cloudResourceReadService;
+            _resourceOperationModelService = resourceOperationModelService;
             _provisioningQueueService = provisioningQueueService;
         }
 
@@ -190,12 +202,7 @@ namespace Sepes.Infrastructure.Service
         {
             _logger.LogInformation(ReScheduleResourceLogPrefix(resource, $"Increasing MAX try count"), operationToRetry);
 
-            if (operationToRetry.TryCount >= operationToRetry.MaxTryCount)
-            {
-                operationToRetry.MaxTryCount += CloudResourceConstants.RESOURCE_MAX_TRY_COUNT; //Increase max try count 
-                operationToRetry.Status = CloudResourceOperationState.IN_PROGRESS;
-                await _db.SaveChangesAsync();
-            }          
+           await  _resourceOperationModelService.EnsureReadyForRetry(operationToRetry);
         }
 
         string ReScheduleResourceLogPrefix(CloudResource resource, string logText, CloudResourceOperation operation = null)

@@ -36,7 +36,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
             _isAdmin = isAdmin;
             _isSponsor = isSponsor;
             _isDatasetAdmin = isDatasetAdmin;
-            _mockServicesForScenarioProvider = new MockedAzureServiceSets();
+            _mockServicesForScenarioProvider = new AzureServicesMockedAndSucceeding();
         }     
 
         //Inspired by: https://docs.microsoft.com/en-us/aspnet/core/test/integration-tests?view=aspnetcore-3.0#customize-webapplicationfactory

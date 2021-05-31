@@ -11,6 +11,8 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<CloudResource> GetByIdNoAccessCheckAsync(int id);
 
+        Task<CloudResource> GetByStudyIdForDeletionNoAccessCheckAsync(int id);
+
         Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId);
 
         Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId);

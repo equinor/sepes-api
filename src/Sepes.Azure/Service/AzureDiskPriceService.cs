@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
-using Sepes.Common.Service;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;

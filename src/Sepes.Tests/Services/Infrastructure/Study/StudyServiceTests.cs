@@ -6,13 +6,8 @@ using Xunit;
 namespace Sepes.Tests.Services.DomainServices
 {
     public class StudyServiceTests : StudyServiceTestBase
-    {  
-        public StudyServiceTests()
-            :base()
-        {
-          
-        }
-        
+    {
+
         [Theory]
         [InlineData(2)]
         [InlineData(7)]

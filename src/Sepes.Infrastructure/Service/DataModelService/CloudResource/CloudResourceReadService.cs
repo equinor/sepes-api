@@ -30,6 +30,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetInternalWithoutAccessCheckAsync(id);
         }
 
+        public Task<CloudResource> GetByStudyIdForDeletionNoAccessCheckAsync(int id)
+        {
+          return _db.CloudResources.Where(r => r.StudyId == id && !r.Deleted).Include(r => r.ChildResources).FirstOrDefaultAsync();
+        }
+
         public async Task<CloudResource> GetByIdAsync(int id, UserOperation operation)
         {
             return await GetInternalAsync(id, operation, throwIfNotFound: true);
@@ -83,6 +88,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await resourceGroupsQueryable.ToListAsync();          
         }
 
-      
+       
     }
 }

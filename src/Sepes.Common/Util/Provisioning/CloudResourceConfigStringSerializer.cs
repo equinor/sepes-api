@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using Sepes.Common.Dto;
+﻿using Sepes.Common.Dto;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.VirtualMachine;
 using System.Collections.Generic;
@@ -17,12 +16,7 @@ namespace Sepes.Common.Util
         public static NetworkSettingsDto NetworkSettings(string settingAsString)
         {
             return DeserializeInternal<NetworkSettingsDto>(settingAsString);
-        }
-
-        //public static List<CloudResourceDesiredRoleAssignmentDto> DesiredRoleAssignment(string settingAsString)
-        //{
-        //    return DeserializeInternal<List<CloudResourceDesiredRoleAssignmentDto>>(settingAsString);
-        //}
+        }       
 
         public static CloudResourceOperationStateForRoleUpdate DesiredRoleAssignment(string settingAsString)
         {
@@ -41,12 +35,12 @@ namespace Sepes.Common.Util
 
         public static string Serialize(object obj)
         {
-            return JsonConvert.SerializeObject(obj);
+            return JsonSerializerUtil.Serialize(obj);
         }
 
         public static T DeserializeInternal<T>(string settings)
         {
-            return JsonConvert.DeserializeObject<T>(settings);
+            return JsonSerializerUtil.Deserialize<T>(settings);
         }
     }
 }

@@ -2,6 +2,11 @@
 {
     public class CloudResourceOperationStateForRoleUpdate
     {
+        public CloudResourceOperationStateForRoleUpdate()
+        {
+          
+        }
+
         public CloudResourceOperationStateForRoleUpdate(int studyId)
         {
             StudyId = studyId;   

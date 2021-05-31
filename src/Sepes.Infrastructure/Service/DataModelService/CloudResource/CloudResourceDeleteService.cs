@@ -133,13 +133,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return resourceEntity;
         }
 
-        CloudResource MarkAsDeletedInternal(CloudResource resource, string deletedBy)
+        void MarkAsDeletedInternal(CloudResource resource, string deletedBy)
         {
             SoftDeleteUtil.MarkAsDeleted(resource, deletedBy);
-            return resource;
         }
 
-        public async Task HardDeletedAsync(int resourceId)
+        public async Task HardDeleteAsync(int resourceId)
         {
             var resourceFromDb = await GetInternalWithoutAccessCheckAsync(resourceId, throwIfNotFound: true);
 

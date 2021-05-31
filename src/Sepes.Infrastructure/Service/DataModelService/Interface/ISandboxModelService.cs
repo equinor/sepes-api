@@ -6,7 +6,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
     public interface ISandboxModelService
     {
-        Task<Sandbox> AddAsync(Sandbox sandbox);  
+        Task<Sandbox> AddAsync(Study study, Sandbox sandbox);  
 
         Task<Sandbox> GetByIdAsync(int id, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false);
 
@@ -18,9 +18,12 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<string> GetRegionByIdAsync(int id, UserOperation userOperation);
 
-        Task<Sandbox> GetByIdWithoutPermissionCheckAsync(int id);
+        Task<Sandbox> GetWithResourcesNoPermissionCheckAsync(int id);
         Task<Sandbox> GetByIdForPhaseShiftAsync(int id, UserOperation userOperation);
         Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId);
         Task<Sandbox> GetByIdForResourceCreationAsync(int id, UserOperation userOperation);
+        Task<bool> NameIsTaken(int studyId, string sandboxName);
+        Task HardDeleteAsync(int sandboxId);
+        Task SoftDeleteAsync(int sandboxId);
     }
 }

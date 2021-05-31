@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
 
             var sandbox = vmList.FirstOrDefault().Sandbox;
 
-            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, sandbox.Study, UserOperation.Study_Read);
+            await StudyAccessUtil.VerifyAccessOrThrow(_userService, sandbox.Study, UserOperation.Study_Read);
             
             return vmList;
         }
