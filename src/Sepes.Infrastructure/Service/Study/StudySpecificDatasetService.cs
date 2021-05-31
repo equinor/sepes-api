@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
@@ -144,13 +145,14 @@ namespace Sepes.Infrastructure.Service
 
         async Task DeleteAllStudySpecificDatasetsWithHandlerAsync(Study study, Func<Study, int, CancellationToken, Task> deleteHandler, CancellationToken cancellationToken = default)
         {
+            var idsForStudySpecificDataset = await _db.StudyDatasets.Where(sd => sd.StudyId == study.Id && !sd.Dataset.Deleted && sd.Dataset.StudySpecific).Select(sd => sd.DatasetId).ToListAsync();
             var studySpecificDatasetsToDelete = new List<int>();
 
-            if (study.StudyDatasets.Any())
+            if (idsForStudySpecificDataset.Any())
             {
-                foreach (var studySpecificDataset in study.StudyDatasets.Where(sds => !sds.Dataset.Deleted && sds.Dataset.StudySpecific && sds.StudyId == study.Id))
+                foreach (var studySpecificDataset in idsForStudySpecificDataset)
                 {
-                    studySpecificDatasetsToDelete.Add(studySpecificDataset.DatasetId);
+                    studySpecificDatasetsToDelete.Add(studySpecificDataset);
                 }
             }          
 

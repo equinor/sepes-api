@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Service
 
         public StudyWbsValidationService(ILogger<StudyWbsValidationService> logger, IWbsValidationService wbsValidationService)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _wbsValidationService =
                 wbsValidationService ?? throw new ArgumentNullException(nameof(wbsValidationService));
         }

@@ -30,6 +30,7 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
+        readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
@@ -39,6 +40,7 @@ namespace Sepes.Infrastructure.Service
            IPublicIpService publicIpService,
            IStudyModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
+           ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationReadService cloudResourceOperationReadService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService)
@@ -50,6 +52,7 @@ namespace Sepes.Infrastructure.Service
             _publicIpService = publicIpService;
             _studyModelService = studyModelService;
             _cloudResourceCreateService = cloudResourceCreateService;
+            _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationReadService = cloudResourceOperationReadService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
@@ -144,6 +147,11 @@ namespace Sepes.Infrastructure.Service
             await ScheduleResourceGroupRoleAssignments(study, resourceGroupForDatasets, parentQueueItem);
 
             return resourceGroupForDatasets;
+        }
+
+        async Task<CloudResource> GetResourceGroupEntryForStudySpecificDatasetDeletionAsync(Study study)
+        {
+            return await _cloudResourceReadService.GetByStudyIdForDeletionNoAccessCheckAsync(study.Id);
         }
 
         CloudResource GetResourceGroupForStudySpecificDataset(Study study, bool includeDeleted = false)
@@ -275,7 +283,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                var resourceGroupEntry = GetResourceGroupForStudySpecificDataset(study, true);
+                var resourceGroupEntry = await GetResourceGroupEntryForStudySpecificDatasetDeletionAsync(study);
 
                 if (resourceGroupEntry != null)
                 {

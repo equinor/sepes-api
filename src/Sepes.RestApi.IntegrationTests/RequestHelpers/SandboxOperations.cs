@@ -1,4 +1,5 @@
-﻿using Sepes.Common.Dto.VirtualMachine;
+﻿using Microsoft.AspNetCore.Mvc;
+using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Response.Sandbox;
 using Sepes.RestApi.IntegrationTests.Constants;
 using Sepes.RestApi.IntegrationTests.Dto;
@@ -18,7 +19,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
         }
 
 
-        public static async Task<ApiConversation<VmRuleDto, TResponse>> OpenInternetForVm<TResponse>(RestHelper restHelper, string vmId = "1")
+        public static async Task<ApiConversation<VmRuleDto, TResponse>> OpenInternetForVm<TResponse>(RestHelper restHelper, int vmId)
         {
             var request = new VmRuleDto() { Name = "OpenInternet", Action = RuleAction.Allow, Description = "tests", Direction = RuleDirection.Outbound, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
             var response = await restHelper.Post<TResponse, VmRuleDto>($"api/virtualmachines/{vmId}/rules", request);
@@ -26,7 +27,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return new ApiConversation<VmRuleDto, TResponse>(request, response);
         }
 
-        public static async Task<ApiConversation<VmRuleDto, TResponse>> CloseInternetForVm<TResponse>(RestHelper restHelper, string vmId = "1")
+        public static async Task<ApiConversation<VmRuleDto, TResponse>> CloseInternetForVm<TResponse>(RestHelper restHelper, int vmId)
         {
             var request = new VmRuleDto() { Name = "OpenInternet", Action = RuleAction.Deny, Description = "tests", Direction = RuleDirection.Outbound, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
             var response = await restHelper.Post<TResponse, VmRuleDto>($"api/virtualmachines/{vmId}/rules", request);
@@ -34,7 +35,7 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return new ApiConversation<VmRuleDto, TResponse>(request, response);
         }
 
-        public static async Task<ApiConversation<SandboxDetails, TResponse>> MoveToNextPhase<TResponse>(RestHelper restHelper, string sandboxId = "1")
+        public static async Task<ApiConversation<SandboxDetails, TResponse>> MoveToNextPhase<TResponse>(RestHelper restHelper, int sandboxId)
         {
             var request = new SandboxDetails() {  };
             var response = await restHelper.Post<TResponse, SandboxDetails>($"api/sandboxes/{sandboxId}/nextPhase", request);
@@ -42,9 +43,9 @@ namespace Sepes.RestApi.IntegrationTests.RequestHelpers
             return new ApiConversation<SandboxDetails, TResponse>(request, response);
         }
 
-        public static async void DeleteVm<TResponse>(RestHelper restHelper, string vmId = "1")
-        {
-            await restHelper.Delete<VmDto>($"api/virtualmachine/{vmId}");
+        public static async Task<ApiConversation<NoContentResult>> DeleteVm(RestHelper restHelper, int vmId)
+        {            
+            return await GenericDeleter.DeleteAndExpectSuccess(restHelper, $"api/virtualmachines/{vmId}");             
         }
     }
 

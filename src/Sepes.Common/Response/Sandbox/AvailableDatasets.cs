@@ -12,5 +12,10 @@ namespace Sepes.Common.Response.Sandbox
         {
             Datasets = availableDatasets;
         }
+
+        public AvailableDatasets()
+        {
+            
+        }
     }  
 }

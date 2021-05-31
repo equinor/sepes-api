@@ -101,19 +101,20 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
 
             //OPEN INTERNET
-            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
+            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
 
             SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
 
-            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
+            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
 
             //MOVE TO NEXT PHASE
-            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
+            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, sandboxResponseWrapper.Content.Id);
 
             SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
+            
             //DELETE VM
-
-            SandboxOperations.DeleteVm<SandboxDetails>(_restHelper, "1");
+            var deleteVmConversation = await SandboxOperations.DeleteVm(_restHelper, virtualMachineResponseWrapper.Content.Id);
+            ApiResponseBasicAsserts.ExpectNoContent(deleteVmConversation.Response);
 
             //RUN WORKER
             await ProcessWorkQueue();
