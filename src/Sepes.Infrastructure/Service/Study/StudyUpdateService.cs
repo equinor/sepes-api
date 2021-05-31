@@ -11,17 +11,28 @@ using Sepes.Common.Util;
 using System;
 using System.Threading.Tasks;
 
-
 namespace Sepes.Infrastructure.Service
 {
     public class StudyUpdateService : StudyServiceBase, IStudyUpdateService
     {
+        readonly IStudyLogoCreateService _studyLogoCreateService;
+        readonly IStudyLogoDeleteService _studyLogoDeleteService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
         
-        public StudyUpdateService(SepesDbContext db, IMapper mapper, ILogger<StudyUpdateService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService,
-            IStudyWbsValidationService studyWbsValidationService)
-            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
+        public StudyUpdateService(SepesDbContext db,
+            IMapper mapper,
+            ILogger<StudyUpdateService> logger,
+            IUserService userService,
+            IStudyEfModelService studyEfModelService,
+            IStudyLogoReadService studyLogoReadService,
+            IStudyLogoCreateService studyLogoCreateService,
+            IStudyLogoDeleteService studyLogoDeleteService,
+            IStudyWbsValidationService studyWbsValidationService
+          )
+            : base(db, mapper, logger, userService, studyEfModelService, studyLogoReadService)
         {
+            _studyLogoCreateService = studyLogoCreateService;
+            _studyLogoDeleteService = studyLogoDeleteService;
             _studyWbsValidationService = studyWbsValidationService;
         }
 
@@ -68,12 +79,12 @@ namespace Sepes.Infrastructure.Service
                 if (!String.IsNullOrWhiteSpace(studyFromDb.LogoUrl))
                 {
                     studyFromDb.LogoUrl = "";
-                    await _studyLogoService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
+                    await _studyLogoDeleteService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
                 }                
             }
             else if (logo != null)
             {
-                studyFromDb.LogoUrl = await _studyLogoService.AddLogoAsync(studyFromDb.Id, logo);          
+                studyFromDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyFromDb.Id, logo);          
             }
 
             studyFromDb.Updated = DateTime.UtcNow;

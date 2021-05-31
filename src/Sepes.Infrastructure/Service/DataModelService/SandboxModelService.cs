@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -16,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class SandboxModelService : ModelServiceBase<Sandbox>, ISandboxModelService
+    public class SandboxModelService : EfModelServiceBase<Sandbox>, ISandboxModelService
     {
         public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService)
             : base(configuration, db, logger, userService)

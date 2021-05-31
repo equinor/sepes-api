@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -17,29 +18,39 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class ModelServiceBase
+    public abstract class ModelServiceBase
     {
         protected readonly IConfiguration _configuration;
-        protected readonly SepesDbContext _db;
+       
         protected readonly ILogger _logger;
         protected readonly IUserService _userService;
 
-        public ModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
+        public ModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService)
         {
-            _configuration = configuration;
-            _db = db;
+            _configuration = configuration;           
             _logger = logger;
             _userService = userService;
+        }
+    }
+
+    public class DapperModelServiceBase : ModelServiceBase
+    {
+        public DapperModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService)
+            : base(configuration, logger, userService)
+        {
+
         }
 
         protected string GetDbConnectionString()
         {
-            return _db.Database.GetDbConnection().ConnectionString;
-        }       
+            var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
-        protected async Task CheckAccesAndThrowIfNotAllowed(Study study, UserOperation operation)
-        {
-            await StudyAccessUtil.VerifyAccessOrThrow(_userService, study, operation);
+            if (isIntegrationTest)
+            {
+                return _configuration[ConfigConstants.DB_INTEGRATION_TEST_CONNECTION_STRING];
+            }
+
+            return _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
         }
 
         protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query, object parameters = null)
@@ -96,13 +107,26 @@ namespace Sepes.Infrastructure.Service.DataModelService
         }
     }
 
-    public class ModelServiceBase<TModel> : ModelServiceBase where TModel : BaseModel
+    public class EfModelServiceBase : ModelServiceBase
     {
-        public ModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
+        protected readonly SepesDbContext _db;
+
+        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
+                   : base(configuration, logger, userService)
+        {
+            _db = db;
+        }
+    }
+
+        public class EfModelServiceBase<TModel> : EfModelServiceBase where TModel : BaseModel
+    {
+       
+
+        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
             : base(configuration, db, logger, userService)
         {
-
-        }
+           
+        }       
 
         public async Task<TModel> AddAsync(TModel entity)
         {
@@ -144,6 +168,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             return true;
+        }
+
+        protected string GetDbConnectionString()
+        {
+            return _db.Database.GetDbConnection().ConnectionString;
+        }
+
+        protected async Task CheckAccesAndThrowIfNotAllowed(Study study, UserOperation operation)
+        {
+            await StudyAccessUtil.VerifyAccessOrThrow(_userService, study, operation);
         }
     }
 }

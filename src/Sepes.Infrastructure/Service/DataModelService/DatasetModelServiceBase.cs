@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class DatasetModelServiceBase : ModelServiceBase<Dataset>
+    public class DatasetModelServiceBase : EfModelServiceBase<Dataset>
     {
         public DatasetModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
             : base(configuration, db, logger, userService)

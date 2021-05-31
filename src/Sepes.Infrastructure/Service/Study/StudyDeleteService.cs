@@ -15,11 +15,16 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyDeleteService : StudyServiceBase, IStudyDeleteService
     {
-       readonly IStudySpecificDatasetService _studySpecificDatasetService;
+        readonly IStudyLogoDeleteService _studyLogoDeleteService;
+        readonly IStudySpecificDatasetService _studySpecificDatasetService;  
 
-        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService, IStudySpecificDatasetService studySpecificDatasetService)
-            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
+        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyEfModelService studyModelService,            
+            IStudyLogoReadService studyLogoReadService,
+            IStudyLogoDeleteService studyLogoDeleteService,
+            IStudySpecificDatasetService studySpecificDatasetService)
+            : base(db, mapper, logger, userService, studyModelService, studyLogoReadService)
         {
+            _studyLogoDeleteService = studyLogoDeleteService;
             _studySpecificDatasetService = studySpecificDatasetService;
         }       
 
@@ -46,7 +51,7 @@ namespace Sepes.Infrastructure.Service
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
-            await _studyLogoService.DeleteAsync(studyFromDb);
+            await _studyLogoDeleteService.DeleteAsync(studyFromDb);
 
             await _studySpecificDatasetService.HardDeleteAllStudySpecificDatasetsAsync(studyFromDb);
             await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);

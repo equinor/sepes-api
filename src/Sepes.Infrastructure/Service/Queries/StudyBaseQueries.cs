@@ -81,25 +81,6 @@ namespace Sepes.Infrastructure.Service.Queries
             return StudyDatasetsQueryable(db)
                 .Include(s => s.Resources)
                 .ThenInclude(r=> r.Operations);
-        }
-
-        public static IQueryable<Study> ActiveStudiesMinimalIncludesQueryable(SepesDbContext db)
-        {
-            return ActiveStudiesWithParticipantsQueryable(db)            
-             .Include(s => s.Sandboxes);
-        }       
-
-        public static IQueryable<Study> ActiveStudiesWithIncludesQueryable(SepesDbContext db)
-        {
-            return ActiveStudiesBaseQueryable(db)
-                .Include(s => s.Resources)
-                  .ThenInclude(s => s.ChildResources)
-                 .Include(s => s.StudyDatasets)
-                    .ThenInclude(sd => sd.Dataset)                   
-                .Include(s => s.StudyParticipants)                   
-                .Include(s => s.Sandboxes)
-                    .ThenInclude(sb => sb.Resources)
-                         .ThenInclude(cr => cr.Operations);
-        } 
+        }     
     }
 }

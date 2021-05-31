@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyServiceTests : StudyServiceTestBase
+    public class StudyReadServiceTests : StudyServiceTestBase
     {
 
         [Theory]
@@ -16,7 +16,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             await ClearTestDatabase();
-            var studyService = StudyServiceMockFactory.ReadService(_serviceProvider);
+            var studyService = StudyServiceMockFactory.StudyEfReadService(_serviceProvider);
 
             await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
         }       

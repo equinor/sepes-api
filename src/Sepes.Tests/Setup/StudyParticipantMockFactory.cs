@@ -19,7 +19,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyParticipantLookupService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelService = StudyServiceMockFactory.StudyModelService(serviceProvider);
+            var studyModelService = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
 
             var azureUserService = new Mock<IAzureUserService>();
 

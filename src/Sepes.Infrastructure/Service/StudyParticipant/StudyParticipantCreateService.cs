@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             ILogger<StudyParticipantCreateService> logger,    
             IUserService userService,
-            IStudyModelService studyModelService,
+            IStudyEfModelService studyModelService,
             IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,

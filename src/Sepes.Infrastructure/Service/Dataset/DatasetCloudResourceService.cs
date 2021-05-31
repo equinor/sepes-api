@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
 
         readonly IUserService _userService;
         readonly IPublicIpService _publicIpService;
-        readonly IStudyModelService _studyModelService;
+        readonly IStudyEfModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
         readonly ICloudResourceReadService _cloudResourceReadService;
@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
         public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
            IUserService userService,
            IPublicIpService publicIpService,
-           IStudyModelService studyModelService,
+           IStudyEfModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
            ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationReadService cloudResourceOperationReadService,

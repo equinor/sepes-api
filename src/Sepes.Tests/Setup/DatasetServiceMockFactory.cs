@@ -67,7 +67,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);            
 
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
 
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
@@ -88,7 +88,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             studyModelServiceMock.Setup(x => x.GetForDatasetCreationAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             

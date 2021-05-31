@@ -18,7 +18,7 @@ namespace Sepes.Tests.Setup
         public static ISandboxService ForSandboxCreate(ServiceProvider serviceProvider, string userAppRole, int userId, IStudyWbsValidationService studyWbsValidationService, List<Study> studies = null, List<Sandbox> sandboxForSandboxDetails = null)
         {
             //STUDY MODEL SERVICE
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             
             studyModelServiceMock
                 .Setup(x => 
@@ -31,7 +31,7 @@ namespace Sepes.Tests.Setup
             return Create(serviceProvider, userAppRole, userId, studyModelServiceMock.Object, sandboxModelServiceMock.Object, studyWbsValidationService);
         }
         
-        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId, IStudyModelService studyModelService, ISandboxModelService sandboxModelService, IStudyWbsValidationService studyWbsValidationServiceMock)
+        public static ISandboxService Create(ServiceProvider serviceProvider, string userAppRole, int userId, IStudyEfModelService studyModelService, ISandboxModelService sandboxModelService, IStudyWbsValidationService studyWbsValidationServiceMock)
         {
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<SandboxService>>();

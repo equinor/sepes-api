@@ -77,7 +77,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                     configuration = scopedServices.GetRequiredService<IConfiguration>();
                 }
 
-                var dbConnectionString = ConnectionStringUtil.GetDatabaseConnectionString(configuration);
+                var dbConnectionString = IntegrationTestConnectionStringUtil.GetDatabaseConnectionString(configuration);
 
                 services.AddDbContext<SepesDbContext>(options =>
                     options.UseSqlServer(
