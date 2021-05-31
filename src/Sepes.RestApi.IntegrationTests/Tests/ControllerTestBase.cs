@@ -20,8 +20,7 @@ namespace Sepes.RestApi.IntegrationTests
         public ControllerTestBase(TestHostFixture testHostFixture)
         {
             Trace.WriteLine("ControllerTestBase Constructor");
-            _testHostFixture = testHostFixture;
-            //_restHelper = new RestHelper(testHostFixture.Client);
+            _testHostFixture = testHostFixture;        
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
