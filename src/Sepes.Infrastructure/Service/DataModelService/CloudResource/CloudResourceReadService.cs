@@ -88,6 +88,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await resourceGroupsQueryable.ToListAsync();          
         }
 
-       
+        public async Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId) {
+
+            var queryable =  _db.CloudResources
+                .Include(r => r.Operations)
+                .ThenInclude(o=> o.DependsOnOperation)
+                .Where(r => r.SandboxId == sandboxId && !r.Deleted);
+
+            return await queryable.ToListAsync();
+        }
+
+
     }
 }

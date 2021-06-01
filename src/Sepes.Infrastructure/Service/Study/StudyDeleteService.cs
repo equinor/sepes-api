@@ -16,21 +16,24 @@ namespace Sepes.Infrastructure.Service
     public class StudyDeleteService : StudyServiceBase, IStudyDeleteService
     {
         readonly IStudyLogoDeleteService _studyLogoDeleteService;
-        readonly IStudySpecificDatasetService _studySpecificDatasetService;  
+        readonly IStudySpecificDatasetService _studySpecificDatasetService;
+        readonly ICloudResourceReadService _cloudResourceReadService;
 
-        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyEfModelService studyModelService,            
+        public StudyDeleteService(SepesDbContext db, IMapper mapper, ILogger<StudyDeleteService> logger, IUserService userService, IStudyEfModelService studyModelService,
             IStudyLogoReadService studyLogoReadService,
             IStudyLogoDeleteService studyLogoDeleteService,
-            IStudySpecificDatasetService studySpecificDatasetService)
+            IStudySpecificDatasetService studySpecificDatasetService,
+            ICloudResourceReadService cloudResourceReadService)
             : base(db, mapper, logger, userService, studyModelService, studyLogoReadService)
         {
             _studyLogoDeleteService = studyLogoDeleteService;
             _studySpecificDatasetService = studySpecificDatasetService;
-        }       
+            _cloudResourceReadService = cloudResourceReadService;
+        }
 
         public async Task CloseStudyAsync(int studyId)
         {
-            var studyFromDb = await _studyModelService.GetForCloseAsync(studyId, UserOperation.Study_Close);         
+            var studyFromDb = await _studyModelService.GetForCloseAsync(studyId, UserOperation.Study_Close);
 
             ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
 
@@ -76,7 +79,9 @@ namespace Sepes.Infrastructure.Service
         {
             foreach (var curSandbox in studyFromDb.Sandboxes)
             {
-                foreach (var curResource in curSandbox.Resources)
+                var sandboxResources = await _cloudResourceReadService.GetSandboxResourcesForDeletion(curSandbox.Id);
+
+                foreach (var curResource in sandboxResources)
                 {
                     foreach (var curOperation in curResource.Operations)
                     {
