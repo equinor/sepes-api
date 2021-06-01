@@ -113,7 +113,7 @@ namespace Sepes.Tests.Services.Infrastructure
             var studies = new List<Study>() { study };
             
             //STUDY MODEL SERVICE
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             
             studyModelServiceMock
                 .Setup(x => 
@@ -144,7 +144,7 @@ namespace Sepes.Tests.Services.Infrastructure
         
         class SandboxServicesAndMocks
         {
-            public SandboxServicesAndMocks(ISandboxService sandboxService, Mock<IStudyModelService> studyModelServiceMock, Mock<ISandboxModelService> sandboxModelServiceMock)
+            public SandboxServicesAndMocks(ISandboxService sandboxService, Mock<IStudyEfModelService> studyModelServiceMock, Mock<ISandboxModelService> sandboxModelServiceMock)
             {
                 SandboxService = sandboxService;
                 StudyModelServiceMock = studyModelServiceMock;
@@ -153,7 +153,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
             public ISandboxService SandboxService { get; private set; }
             
-            public Mock<IStudyModelService> StudyModelServiceMock{ get; private set; }
+            public Mock<IStudyEfModelService> StudyModelServiceMock{ get; private set; }
             
             public Mock<ISandboxModelService> SandboxModelServiceMock{ get; private set; }
         }

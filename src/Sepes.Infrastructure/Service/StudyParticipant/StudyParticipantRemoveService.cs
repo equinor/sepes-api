@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             ILogger<StudyParticipantRemoveService> logger,
             IUserService userService,
-            IStudyModelService studyModelService,
+            IStudyEfModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,

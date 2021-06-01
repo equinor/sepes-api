@@ -19,17 +19,21 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyCreateService : StudyServiceBase, IStudyCreateService
     {
+        readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
 
         public StudyCreateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateService> logger,
             IUserService userService,
-            IStudyModelService studyModelService,
-            IStudyLogoService studyLogoService,
+            IStudyEfModelService studyModelService,
+            IStudyLogoCreateService studyLogoCreateService,
+            IStudyLogoReadService studyLogoReadService,
             IDatasetCloudResourceService datasetCloudResourceService,
-            IStudyWbsValidationService studyWbsValidationService)
-            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
+            IStudyWbsValidationService studyWbsValidationService
+           )
+            : base(db, mapper, logger, userService, studyModelService, studyLogoReadService)
         {
+            _studyLogoCreateService = studyLogoCreateService;
             _datasetCloudResourceService = datasetCloudResourceService;
             _studyWbsValidationService = studyWbsValidationService;
         }      
@@ -52,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
             if (logo != null)
             {
-                studyDb.LogoUrl = await _studyLogoService.AddLogoAsync(studyDb.Id, logo);               
+                studyDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyDb.Id, logo);               
                 await _db.SaveChangesAsync();
             }
 

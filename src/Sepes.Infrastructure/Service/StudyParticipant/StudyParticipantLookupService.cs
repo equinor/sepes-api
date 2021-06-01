@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             IUserService userService,
             IAzureUserService azureUserService,
-            IStudyModelService studyModelService,
+            IStudyEfModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,

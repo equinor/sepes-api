@@ -22,14 +22,14 @@ namespace Sepes.Provisioning.Service
     public class RoleProvisioningService : IRoleProvisioningService
     {
         readonly IProvisioningLogService _provisioningLogService;
-        readonly IStudyModelService _studyModelService;
+        readonly IStudyEfModelService _studyModelService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
         readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
 
         readonly EventId _roleAssignmentEventId = new EventId(50, "Sepes-Event-RoleAssignment-Operations");
 
-        public RoleProvisioningService(IProvisioningLogService provisioningLogService, IStudyModelService studyModelService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
+        public RoleProvisioningService(IProvisioningLogService provisioningLogService, IStudyEfModelService studyModelService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
         {
             _provisioningLogService = provisioningLogService;
             _studyModelService = studyModelService;

@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+﻿using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -196,7 +195,8 @@ namespace Sepes.RestApi
             services.AddScoped<IHealthService, HealthService>();
 
             //Data model services v2
-            services.AddTransient<IStudyModelService, StudyModelService>();
+            services.AddTransient<IStudyEfModelService, StudyEfModelService>();
+            services.AddTransient<IStudyRawQueryModelService, StudyRawQueryModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
             services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
@@ -205,7 +205,8 @@ namespace Sepes.RestApi
             services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();            
 
             //Domain Model Services
-            services.AddTransient<IStudyReadService, StudyReadService>();
+            services.AddTransient<IStudyRawQueryReadService, StudyRawQueryReadService>();
+            services.AddTransient<IStudyEfReadService, StudyEfReadService>();
             services.AddTransient<IStudyCreateService, StudyCreateService>();
             services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
@@ -249,7 +250,9 @@ namespace Sepes.RestApi
             //Ext System Facade Services
             services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
             services.AddTransient<IDatasetFileService, DatasetFileService>();
-            services.AddTransient<IStudyLogoService, StudyLogoService>();
+            services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();
+            services.AddTransient<IStudyLogoReadService, StudyLogoReadService>();
+            services.AddTransient<IStudyLogoDeleteService, StudyLogoDeleteService>();
             services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();

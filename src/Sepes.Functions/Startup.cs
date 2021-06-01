@@ -86,10 +86,10 @@ namespace Sepes.Functions
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
-            builder.Services.AddTransient<IStudyModelService, StudyModelService>();
+            builder.Services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
-            builder.Services.AddTransient<IStudyReadService, StudyReadService>();
+            builder.Services.AddTransient<IStudyEfReadService, StudyEfReadService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();

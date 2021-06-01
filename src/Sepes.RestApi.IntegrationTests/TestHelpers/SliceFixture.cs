@@ -46,7 +46,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             WithReseed = true
         };
 
-        public static Task ResetCheckpoint() => _checkpoint.Reset(ConnectionStringUtil.GetDatabaseConnectionString(_configuration));
+        public static Task ResetCheckpoint() => _checkpoint.Reset(IntegrationTestConnectionStringUtil.GetDatabaseConnectionString(_configuration));
 
         public static async Task ExecuteScopeAsync(Func<IServiceProvider, Task> action)
         {

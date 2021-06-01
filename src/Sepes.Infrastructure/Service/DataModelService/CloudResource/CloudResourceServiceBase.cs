@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class CloudResourceServiceBase : ModelServiceBase<CloudResource>
+    public class CloudResourceServiceBase : EfModelServiceBase<CloudResource>
     {
         protected readonly IMapper _mapper;
 

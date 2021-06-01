@@ -21,8 +21,6 @@ namespace Sepes.Infrastructure.Service
             _wbsCodeCacheModelService = wbsCodeCacheModelService;
         }
 
-
-
         public async Task<bool> IsValidWithAccessCheck(string wbsCode, CancellationToken cancellation = default)
         {
             StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserAsync(), UserOperation.Study_Create);

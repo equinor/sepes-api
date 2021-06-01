@@ -14,9 +14,9 @@ namespace Sepes.Infrastructure.Service
         public SepesDbContext _db;
         public IMapper _mapper;
         public IUserService _userService;
-        public IStudyModelService _studyModelService;
+        public IStudyEfModelService _studyModelService;
 
-        public LookupService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyModelService studyModelService)
+        public LookupService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyEfModelService studyModelService)
         {
             _mapper = mapper;
             _userService = userService;

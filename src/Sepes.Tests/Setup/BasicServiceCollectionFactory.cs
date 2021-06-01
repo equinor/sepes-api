@@ -46,7 +46,8 @@ namespace Sepes.Tests.Setup
 
             //Sepes Services           
             services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyReadService, StudyReadService>();
+            services.AddTransient<IStudyEfReadService, StudyEfReadService>();
+            services.AddTransient<IStudyRawQueryReadService, StudyRawQueryReadService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();

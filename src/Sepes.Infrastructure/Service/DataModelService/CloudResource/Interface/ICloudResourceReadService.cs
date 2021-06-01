@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<List<CloudResource>> GetAllActiveResources();
 
-        Task<bool> ResourceIsDeleted(int resourceId);    
-
+        Task<bool> ResourceIsDeleted(int resourceId);
+        Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId);
     }
 }
