@@ -8,8 +8,6 @@ namespace Sepes.Tests.Services.DomainServices
 {
     public class StudyDeleteServiceTests : StudyServiceTestBase
     {
-      
-
         public StudyDeleteServiceTests()
             :base()
         {

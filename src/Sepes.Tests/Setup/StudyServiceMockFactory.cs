@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -108,7 +109,16 @@ namespace Sepes.Tests.Setup
             var logoReadServiceMock = new Mock<IStudyLogoReadService>();
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>();
 
-            return new StudyDeleteService(db, mapper, logger, userService.Object, studyEfModelService, logoReadServiceMock.Object, logoDeleteServiceMock.Object, studySpecificDatasetService);
+            var resourceReadServiceMock = new Mock<ICloudResourceReadService>();
+            //Todo: add some real resources to delete
+            resourceReadServiceMock.Setup(service => service.GetSandboxResourcesForDeletion(It.IsAny<int>())).ReturnsAsync(new List<CloudResource>());
+
+            return new StudyDeleteService(db, mapper, logger, userService.Object,
+                studyEfModelService,
+                logoReadServiceMock.Object,
+                logoDeleteServiceMock.Object,
+                studySpecificDatasetService,
+                resourceReadServiceMock.Object);
         }
     }
 }
