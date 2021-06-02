@@ -1,61 +1,26 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util.Auth;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class StudyModelService : ModelServiceBase<Study>, IStudyModelService
+    public class StudyEfModelService : EfModelServiceBase<Study>, IStudyEfModelService
     {
-        readonly IMapper _mapper;
+       
 
-        public StudyModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyModelService> logger, IUserService userService, IMapper mapper)
+        public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IUserService userService)
             : base(configuration, db, logger, userService)
         {
-            _mapper = mapper;
-        }      
-
-        public async Task<IEnumerable<StudyListItemDto>> GetListAsync()
-        {
-            IEnumerable<StudyListItemDto> studies;
-
-            var user = await _userService.GetCurrentUserAsync();
-
-            var studiesQuery = "SELECT DISTINCT [Id], [Name], [Description], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s";
-                studiesQuery += " INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId";
-                studiesQuery += " WHERE s.Closed = 0";
-
-            var studiesAccessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(user, UserOperation.Study_Read);
-
-            if (!string.IsNullOrWhiteSpace(studiesAccessWherePart))
-            {
-                studiesQuery += $" AND ({studiesAccessWherePart})";
-            }
-
-            studies = await RunDapperQueryMultiple<StudyListItemDto>(studiesQuery);
-            return studies;
-        }
-
-        public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
-        {  
-            var user = await _userService.GetCurrentUserAsync();
-
-            var resultsAndLearningsQuery = "SELECT DISTINCT [Id] as [StudyId], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";           
-
-            var responseFromDbService = await RunSingleEntityQuery<StudyResultsAndLearnings>(user, resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });           
-
-            return new StudyResultsAndLearningsDto() { ResultsAndLearnings = responseFromDbService.ResultsAndLearnings };
-        }
+          
+        }        
 
         public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation)
         {

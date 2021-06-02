@@ -20,15 +20,14 @@ namespace Sepes.RestApi.IntegrationTests
         public ControllerTestBase(TestHostFixture testHostFixture)
         {
             Trace.WriteLine("ControllerTestBase Constructor");
-            _testHostFixture = testHostFixture;
-            //_restHelper = new RestHelper(testHostFixture.Client);
+            _testHostFixture = testHostFixture;        
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
             Trace.WriteLine("ControllerTestBase SetScenario");
-            _testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
-            _restHelper = new RestHelper(_testHostFixture.Client);
+            //_testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+            _restHelper = _testHostFixture.GetRestHelperForScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
         }
 
         public Task InitializeAsync() => SliceFixture.ResetCheckpoint();

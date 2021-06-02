@@ -13,7 +13,7 @@ namespace Sepes.Tests.Setup
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();          
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
-            var studyModelServiceMock = StudyServiceMockFactory.StudyModelService(serviceProvider);
+            var studyModelServiceMock = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
             return new LookupService(db, mapper, userService.Object, studyModelServiceMock);
         }
     }

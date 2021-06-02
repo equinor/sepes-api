@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class SandboxDatasetModelService : ModelServiceBase, ISandboxDatasetModelService
+    public class SandboxDatasetModelService : EfModelServiceBase, ISandboxDatasetModelService
     {          
 
         public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService)

@@ -88,7 +88,7 @@ namespace Sepes.Tests.Services.DomainServices
             adUserServiceMock.Setup(service => service.GetUserAsync(It.IsAny<string>())).ReturnsAsync(new AzureUserDto() { DisplayName = userFullName, Mail = userEmail });
 
             //Study model service
-            var studyModelService = StudyServiceMockFactory.StudyModelService(_serviceProvider);
+            var studyModelService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
 
             //Used to get current user
             var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);

@@ -1,22 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class VirtualMachineDiskSizeService : ModelServiceBase, IVirtualMachineDiskSizeService
+    public class VirtualMachineDiskSizeService : DapperModelServiceBase, IVirtualMachineDiskSizeService
     { 
-        public VirtualMachineDiskSizeService(IConfiguration configuration, SepesDbContext db, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService)
-            :base(configuration, db, logger, userService)
+        public VirtualMachineDiskSizeService(IConfiguration configuration, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService)
+            :base(configuration, logger, userService)
         {  
           
         }
