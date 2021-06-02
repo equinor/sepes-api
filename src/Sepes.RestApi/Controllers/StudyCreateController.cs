@@ -16,12 +16,14 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyCreateController : ControllerBase
     {     
-        readonly IStudyCreateService _studyCreateService;   
-       
+        readonly IStudyCreateService _studyCreateService;
+        readonly IStudyDetailsService _studyDetailsService;
 
-        public StudyCreateController(IStudyCreateService studyCreateService)
+
+        public StudyCreateController(IStudyCreateService studyCreateService, IStudyDetailsService studyDetailsService)
         {           
-            _studyCreateService = studyCreateService;                     
+            _studyCreateService = studyCreateService;
+            _studyDetailsService = studyDetailsService;
         }         
 
         [HttpPost]
@@ -29,9 +31,10 @@ namespace Sepes.RestApi.Controller
             [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyCreateDto study,
             IFormFile image = null)
         {
-            var createdStudy = await _studyCreateService.CreateAsync(study, image);          
+            var createdStudy = await _studyCreateService.CreateAsync(study, image);
+            var studyDetails = await _studyDetailsService.Get(createdStudy.Id);
 
-            return new JsonResult(createdStudy);
+            return new JsonResult(studyDetails);
         }
     }
 }

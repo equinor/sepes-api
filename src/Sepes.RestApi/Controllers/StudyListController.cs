@@ -13,18 +13,18 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyListController : ControllerBase
     {
-        readonly IStudyRawQueryReadService _studyRawQueryReadService;
+        readonly IStudyListService _studyListService;
      
 
-        public StudyListController(IStudyRawQueryReadService studyRawQueryReadService)
+        public StudyListController(IStudyListService studyListService)
         {
-            _studyRawQueryReadService = studyRawQueryReadService;
+            _studyListService = studyListService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetStudiesAsync()
         {
-            var studies = await _studyRawQueryReadService.GetStudyListAsync();
+            var studies = await _studyListService.GetStudyListAsync();
             return new JsonResult(studies);
         }
 

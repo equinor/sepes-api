@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Dto.Interfaces;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class SandboxResourceExternalLinkResolver : IValueResolver<CloudResource, IHasLinkToExtSystem, string>
     {

@@ -27,12 +27,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
             IMapper mapper,
             ILogger<CloudResourceDeleteService> logger,
             IUserService userService,
+            IStudyPermissionService studyPermissionService,
             ISandboxModelService sandboxModelService,
             ICloudResourceOperationReadService cloudResourceOperationService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-         : base(db, config, mapper, logger, userService, sandboxModelService)
+         : base(db, config, mapper, logger, userService, studyPermissionService, sandboxModelService)
         {
             _cloudResourceOperationReadService = cloudResourceOperationService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;

@@ -22,8 +22,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     {
         readonly IRequestIdService _requestIdService;
 
-        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, ISandboxModelService sandboxModelService, IRequestIdService requestIdService)
-         : base(db, config, mapper, logger, userService, sandboxModelService)
+        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IStudyPermissionService studyPermissionService, ISandboxModelService sandboxModelService, IRequestIdService requestIdService)
+         : base(db, config, mapper, logger, userService, studyPermissionService, sandboxModelService)
         {
             _requestIdService = requestIdService;
 

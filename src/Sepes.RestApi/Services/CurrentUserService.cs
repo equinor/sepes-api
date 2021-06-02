@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Common.Interface;
 
-namespace Sepes.RestApi
+namespace Sepes.RestApi.Services
 {
     public class CurrentUserService : ICurrentUserService
     {

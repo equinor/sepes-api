@@ -28,7 +28,9 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<PreApprovedDatasetModelService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var service = new PreApprovedDatasetModelService(config, db, logger, userService.Object);
+            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+
+            var service = new PreApprovedDatasetModelService(config, db, logger, userService.Object, studyPermissionService);
             return service;
         }
 
@@ -55,9 +57,11 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<DatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
+            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+
             var preApprovedDatasetModelService = GetPreApprovedDatasetModelService(datasets);
 
-            return new DatasetService(db, mapper, logger, userService.Object, preApprovedDatasetModelService.Object);
+            return new DatasetService(db, mapper, logger, userService.Object, studyPermissionService, preApprovedDatasetModelService.Object);
         }
 
         public static IStudyDatasetService GetStudyDatasetService(ServiceProvider serviceProvider, List<Study> studies = null, List<Dataset> datasets = null)
@@ -70,9 +74,11 @@ namespace Sepes.Tests.Setup
             var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
 
+            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
 
-            return new StudyDatasetService(db, mapper, logger, userService.Object, studyModelServiceMock.Object, studySpecificDatasetModelService.Object);          
+            return new StudyDatasetService(db, mapper, logger, userService.Object, studyPermissionService, studyModelServiceMock.Object, studySpecificDatasetModelService.Object);          
         }
 
         public static IStudySpecificDatasetService GetStudySpecificDatasetService(ServiceProvider serviceProvider, List<Study> studies = null, List<Dataset> datasets = null)
@@ -88,6 +94,8 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
+            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+
             var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             studyModelServiceMock.Setup(x => x.GetForDatasetCreationAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
@@ -99,7 +107,7 @@ namespace Sepes.Tests.Setup
 
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(serviceProvider, true, false);
 
-            return new StudySpecificDatasetService(db, mapper, logger, userService.Object, studyModelServiceMock.Object, studyWbsValidationService, studySpecificDatasetModelService.Object, dsCloudResourceServiceMock.Object);
+            return new StudySpecificDatasetService(db, mapper, logger, userService.Object, studyPermissionService,  studyModelServiceMock.Object, studyWbsValidationService, studySpecificDatasetModelService.Object, dsCloudResourceServiceMock.Object);
         }
     }
 }

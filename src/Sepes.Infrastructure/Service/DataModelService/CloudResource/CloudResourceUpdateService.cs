@@ -14,8 +14,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     public class CloudResourceUpdateService : CloudResourceServiceBase, ICloudResourceUpdateService
     {       
 
-        public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService, ISandboxModelService sandboxModelService)
-         : base(db, config, mapper, logger, userService, sandboxModelService)
+        public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService, IStudyPermissionService studyPermissionService, ISandboxModelService sandboxModelService)
+         : base(db, config, mapper, logger, userService, studyPermissionService, sandboxModelService)
         {           
            
         }     

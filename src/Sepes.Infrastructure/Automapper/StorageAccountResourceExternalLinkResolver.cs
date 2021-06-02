@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Azure.Util;
 using Sepes.Common.Interface;
+using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class StorageAccountResourceExternalLinkResolver : IValueResolver<CloudResource, IHasStorageAccountLink, string>
     {

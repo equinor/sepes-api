@@ -11,8 +11,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class VirtualMachineDiskSizeService : DapperModelServiceBase, IVirtualMachineDiskSizeService
     { 
-        public VirtualMachineDiskSizeService(IConfiguration configuration, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService)
-            :base(configuration, logger, userService)
+        public VirtualMachineDiskSizeService(IConfiguration configuration, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            :base(configuration, logger, userService, studyPermissionService)
         {  
           
         }

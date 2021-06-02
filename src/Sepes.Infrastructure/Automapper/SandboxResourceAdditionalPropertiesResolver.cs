@@ -2,10 +2,11 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Constants;
 using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util.Azure;
 using System.Collections.Generic;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class SandboxResourceAdditionalPropertiesResolver : IValueResolver<CloudResource, SandboxResourceLight, Dictionary<string, string>>
     {

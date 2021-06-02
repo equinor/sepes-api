@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IStudyRawQueryReadService
+    public interface IStudyListService
     {        
         Task<IEnumerable<StudyListItemDto>> GetStudyListAsync();          
     }

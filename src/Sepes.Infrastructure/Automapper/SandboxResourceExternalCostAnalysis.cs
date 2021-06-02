@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Response.Sandbox;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class SandboxResourceExternalCostAnalysis : IValueResolver<Sandbox, SandboxDetails, string>
     {

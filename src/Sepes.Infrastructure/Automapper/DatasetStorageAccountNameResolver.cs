@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Sepes.Common.Dto.Dataset;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class DatasetStorageAccountNameResolver : IValueResolver<Dataset, DatasetDto, string>
     {

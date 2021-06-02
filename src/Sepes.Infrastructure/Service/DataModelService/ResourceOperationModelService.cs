@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -9,15 +10,14 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System.Linq;
 using System.Threading.Tasks;
-using Sepes.Common.Constants.CloudResource;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class ResourceOperationModelService : DatasetModelServiceBase, IResourceOperationModelService
     {      
 
-        public ResourceOperationModelService(IConfiguration configuration, SepesDbContext db, ILogger<ResourceOperationModelService> logger, IUserService userService)
-            : base(configuration, db, logger, userService)
+        public ResourceOperationModelService(IConfiguration configuration, SepesDbContext db, ILogger<ResourceOperationModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, userService, studyPermissionService)
         {
           
         }

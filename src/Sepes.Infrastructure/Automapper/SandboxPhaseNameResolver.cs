@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Sepes.Common.Interface;
 using Sepes.Common.Model;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class SandboxPhaseNameResolver : IValueResolver<Sandbox, IHasCurrentPhase, SandboxPhase>
     {

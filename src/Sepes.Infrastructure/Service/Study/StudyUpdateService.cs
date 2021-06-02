@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
             _studyWbsValidationService = studyWbsValidationService;
         }
 
-        public async Task<StudyDetailsDto> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
+        public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
         {
             if (studyId <= 0)
             {
@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            return await GetStudyDetailsAsync(studyFromDb.Id);
+            return studyFromDb;
         }
 
         public async Task<StudyResultsAndLearningsDto> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)

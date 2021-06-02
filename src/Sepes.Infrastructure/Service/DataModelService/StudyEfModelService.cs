@@ -1,6 +1,8 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -13,11 +15,9 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyEfModelService : EfModelServiceBase<Study>, IStudyEfModelService
-    {
-       
-
-        public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IUserService userService)
-            : base(configuration, db, logger, userService)
+    { 
+        public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, userService, studyPermissionService)
         {
           
         }        
@@ -39,12 +39,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Study> GetWitParticipantsNoAccessCheck(int studyId)
         {
-            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsQueryable(_db), studyId);
+            return await GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsQueryable(_db), studyId);
         }
 
         public async Task<Study> GetWithParticipantsAndUsersNoAccessCheck(int studyId)
         {
-            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsAndUserQueryable(_db), studyId);
+            return await GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.ActiveStudiesWithParticipantsAndUserQueryable(_db), studyId);
         }
 
         public async Task<Study> GetForParticpantOperationsAsync(int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
@@ -74,12 +74,33 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Study> GetForDatasetCreationNoAccessCheckAsync(int studyId)
         {
-            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId);
+            return await GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId);
         }
 
         async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
-            return await StudyAccessUtil.GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation, roleBeingAddedOrRemoved);
-        }         
+            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation, roleBeingAddedOrRemoved);
+        }
+
+        async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
+        {
+            var study = await GetStudyFromQueryableThrowIfNotFound(queryable, studyId);
+
+            await _studyPermissionService.VerifyAccessOrThrow(study, operation, roleBeingAddedOrRemoved);
+
+            return study;
+        }
+
+        async Task<Study> GetStudyFromQueryableThrowIfNotFound(IQueryable<Study> queryable, int studyId)
+        {
+            var study = await queryable.SingleOrDefaultAsync(s => s.Id == studyId);
+
+            if (study == null)
+            {
+                throw NotFoundException.CreateForEntity("Study", studyId);
+            }
+
+            return study;
+        }
     }
 }

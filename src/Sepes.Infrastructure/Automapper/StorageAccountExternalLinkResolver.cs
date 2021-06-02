@@ -2,9 +2,10 @@
 using Microsoft.Extensions.Configuration;
 using Sepes.Azure.Util;
 using Sepes.Common.Dto.Dataset;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 
-namespace Sepes.Infrastructure.Model.Automapper
+namespace Sepes.Infrastructure.Automapper
 {
     public class StorageAccountExternalLinkResolver : IValueResolver<Dataset, DatasetDto, string>
     {

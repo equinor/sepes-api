@@ -6,6 +6,7 @@ using Sepes.Common.Exceptions;
 using Sepes.Common.Model;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Common.Util;
+using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -21,12 +22,13 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class SandboxDatasetModelService : EfModelServiceBase, ISandboxDatasetModelService
-    {          
+    {
+        IStudyPermissionService _studyPermissionService;
 
-        public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService)
+        public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(configuration, db, logger, userService)
         {
-         
+            _studyPermissionService = studyPermissionService;
         }           
 
         public async Task<AvailableDatasets> AllAvailable(int sandboxId)
@@ -135,7 +137,21 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         async Task<Sandbox> GetSandboxForDatasetOperationsAsync(int sandboxId, UserOperation operation, bool readOnly, bool includePhase)
         {
-            return await StudyAccessUtil.GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(_userService, SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
+            return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxForDatasetOperations(_db, includePhase), sandboxId, operation, readOnly);
+        }
+
+        async Task<Sandbox> GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Sandbox> queryable, int sandboxId, UserOperation operation, bool readOnly)
+        {
+            var sandbox = await queryable.Where(sb => sb.Id == sandboxId).If(readOnly, x => x.AsNoTracking()).SingleOrDefaultAsync();
+
+            if (sandbox == null)
+            {
+                throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
+            }
+
+            await _studyPermissionService.VerifyAccessOrThrow(sandbox.Study, operation);
+
+            return sandbox;
         }
     }
 }

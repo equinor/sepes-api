@@ -17,8 +17,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class SandboxModelService : EfModelServiceBase<Sandbox>, ISandboxModelService
     {
-        public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService)
-            : base(configuration, db, logger, userService)
+        public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, userService, studyPermissionService)
         {
 
         }

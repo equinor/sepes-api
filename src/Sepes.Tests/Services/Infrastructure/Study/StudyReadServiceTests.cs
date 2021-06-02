@@ -16,9 +16,9 @@ namespace Sepes.Tests.Services.DomainServices
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             await ClearTestDatabase();
-            var studyService = StudyServiceMockFactory.StudyEfReadService(_serviceProvider);
+            var studyService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
 
-            await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetStudyDtoByIdAsync(id, UserOperation.Study_Read));
+            await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetByIdAsync(id, UserOperation.Study_Read));
         }       
     }
 }

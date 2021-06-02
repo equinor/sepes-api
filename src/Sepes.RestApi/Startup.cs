@@ -13,7 +13,7 @@ using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
-using Sepes.Infrastructure.Model.Automapper;
+using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
@@ -193,10 +193,14 @@ namespace Sepes.RestApi
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
             services.AddScoped<IHealthService, HealthService>();
+            services.AddScoped<IStudyPermissionService, StudyPermissionService>();
+            
 
             //Data model services v2
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
-            services.AddTransient<IStudyRawQueryModelService, StudyRawQueryModelService>();
+            services.AddTransient<IStudyListModelService, StudyListModelService>();
+            services.AddTransient<IStudyDetailsModelService, StudyDetailsModelService>();
+            services.AddTransient<IStudyResultsAndLearningsModelService, StudyResultsAndLearningsModelService>();
             services.AddTransient<ISandboxModelService, SandboxModelService>();
             services.AddTransient<IPreApprovedDatasetModelService, PreApprovedDatasetModelService>();
             services.AddTransient<IStudySpecificDatasetModelService, StudySpecificDatasetModelService>();
@@ -205,8 +209,8 @@ namespace Sepes.RestApi
             services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();            
 
             //Domain Model Services
-            services.AddTransient<IStudyRawQueryReadService, StudyRawQueryReadService>();
-            services.AddTransient<IStudyEfReadService, StudyEfReadService>();
+            services.AddTransient<IStudyListService, StudyListService>();
+            services.AddTransient<IStudyDetailsService, StudyDetailsService>();        
             services.AddTransient<IStudyCreateService, StudyCreateService>();
             services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();

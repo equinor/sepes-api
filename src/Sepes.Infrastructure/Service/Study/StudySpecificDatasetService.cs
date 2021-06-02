@@ -30,12 +30,13 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
+            IStudyPermissionService studyPermissionService,
             IStudyEfModelService studyModelService,
             IStudyWbsValidationService studyWbsValidationService,
             IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
             )
-            : base(db, mapper, logger, userService)
+            : base(db, mapper, logger, userService, studyPermissionService)
         {
             _studyModelService = studyModelService ?? throw new ArgumentNullException(nameof(studyModelService));
             _studyWbsValidationService = studyWbsValidationService ?? throw new ArgumentNullException(nameof(studyWbsValidationService));
@@ -84,7 +85,7 @@ namespace Sepes.Infrastructure.Service
 
             var datasetDto = _mapper.Map<DatasetDto>(dataset);
 
-            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+            await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }
@@ -105,7 +106,7 @@ namespace Sepes.Infrastructure.Service
 
             var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
 
-            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+            await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }

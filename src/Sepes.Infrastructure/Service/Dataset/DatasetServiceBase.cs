@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
@@ -12,12 +13,14 @@ namespace Sepes.Infrastructure.Service
 {
     public class DatasetServiceBase : ServiceBase<Dataset>
     {
-        protected readonly ILogger _logger;       
+        protected readonly ILogger _logger;
+        protected readonly IStudyPermissionService _studyPermissionService;
 
-        public DatasetServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService)
+        public DatasetServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(db, mapper, userService)
         {
-            _logger = logger;         
+            _logger = logger;
+            _studyPermissionService = studyPermissionService;
         }      
 
         protected async Task SoftDeleteAsync(Dataset dataset)
@@ -47,6 +50,24 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new ArgumentException($"Field Dataset.Location is required. Current value: {datasetDto.Location}");
             }
-        }      
+        }
+
+        protected async Task DecorateDtoStudySpecific(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
+        {
+            var currentUser = await userService.GetCurrentUserAsync();
+            var studyPermissionDetails = _mapper.Map<IHasStudyPermissionDetails>(studyDb);
+
+            dto.EditDataset = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_AddRemove_Dataset);
+            dto.DeleteDataset = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_AddRemove_Dataset);
+        }
+
+        protected async Task DecorateDtoPreApproved(IUserService userService, Study studyDb, DatasetPermissionsDto dto)
+        {
+            var currentUser = await userService.GetCurrentUserAsync();
+            var studyPermissionDetails = _mapper.Map<IHasStudyPermissionDetails>(studyDb);
+
+            dto.EditDataset = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            dto.DeleteDataset = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+        }
     }
 }

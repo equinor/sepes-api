@@ -16,8 +16,8 @@ namespace Sepes.Infrastructure.Service
     {
         IPreApprovedDatasetModelService _preApprovedDatasetModelService;
 
-        public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService, IPreApprovedDatasetModelService preApprovedDatasetModelService)
-            : base(db, mapper, logger, userService)
+        public DatasetService(SepesDbContext db, IMapper mapper, ILogger<DatasetService> logger, IUserService userService, IStudyPermissionService studyPermissionService, IPreApprovedDatasetModelService preApprovedDatasetModelService)
+            : base(db, mapper, logger, userService, studyPermissionService)
         {
             _preApprovedDatasetModelService = preApprovedDatasetModelService;
         }
