@@ -24,5 +24,10 @@ namespace Sepes.Functions.Service
         {
             throw new System.NotImplementedException();
         }
+
+        public Task<bool> IsMockUser()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

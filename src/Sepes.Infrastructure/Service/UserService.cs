@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Util.Auth;
+using Sepes.Common.Constants;
 
 namespace Sepes.Infrastructure.Service
 {
@@ -61,6 +62,19 @@ namespace Sepes.Infrastructure.Service
             var userDto = _mapper.Map<UserDto>(user);  
             UserUtil.ApplyExtendedProps(_config, _principalService, userDto);
             return userDto;
-        }     
+        }
+
+        public async Task<bool> IsMockUser()
+        {
+            var currentUser = await GetCurrentUserAsync();
+            var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
+            if (currentUser.ObjectId.ToLowerInvariant() == cypressMockUser.ToLowerInvariant())
+            {
+                return true;
+            }
+            return false;
+        }
+
+        
     }
 }
