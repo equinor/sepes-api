@@ -32,6 +32,11 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
+            if (await _wbsCodeCacheModelService.Exists(wbsCode, cancellation))
+            {
+                return true;
+            }
+
             if (await _wbsApiService.Exists(wbsCode, cancellation)) //Found in api, means its valid
             {
                 await _wbsCodeCacheModelService.Add(wbsCode);
