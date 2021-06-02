@@ -7,9 +7,9 @@ using Xunit;
 namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
-    public class StudyControllerCreateTests : ControllerTestBase
+    public class StudyCreateControllerShould : ControllerTestBase
     {
-        public StudyControllerCreateTests(TestHostFixture testHostFixture)
+        public StudyCreateControllerShould(TestHostFixture testHostFixture)
             : base(testHostFixture)
         {
 
@@ -22,7 +22,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false, true)]
         [InlineData(true, true, false)]
         [InlineData(true, true, true)]
-        public async Task AddStudy_WithRequiredRole_ShouldSucceed(bool isEmployee, bool isAdmin, bool isSponsor)
+        public async Task AddStudy_IfUserHasRequiredRole(bool isEmployee, bool isAdmin, bool isSponsor)
         {
             SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
 
@@ -36,7 +36,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(true, true)]
-        public async Task AddStudy_WithoutRequiredRole_ShouldFail(bool isEmployee, bool isDatasetAdmin)
+        public async Task Throw_IfUserLacksRequiredRole(bool isEmployee, bool isDatasetAdmin)
         {
             SetScenario(isEmployee: isEmployee, isDatasetAdmin: isDatasetAdmin);
 

@@ -1,38 +1,29 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
-using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class StudyLogoService : IStudyLogoService
+    public class StudyLogoReadService : IStudyLogoReadService
     {
         readonly string _containerName = "studylogos";
 
-        readonly ILogger _logger;
-        readonly SepesDbContext _db;
-        readonly IStudyModelService _studyModelService;
+        readonly ILogger _logger;      
+    
         readonly IAzureBlobStorageService _azureBlobStorageService;
         readonly IAzureBlobStorageUriBuilderService _azureStorageAccountTokenService;
 
-        public StudyLogoService(ILogger<StudyLogoService> logger, SepesDbContext db,
-            IStudyModelService studyModelService,
+        public StudyLogoReadService(ILogger<StudyLogoReadService> logger,         
             IAzureBlobStorageService blobService,
             IAzureBlobStorageUriBuilderService azureStorageAccountTokenService)
         {
-            _logger = logger;
-            _db = db;        
-            _studyModelService = studyModelService;
+            _logger = logger;  
             _azureBlobStorageService = blobService;
             _azureStorageAccountTokenService = azureStorageAccountTokenService;
 
@@ -101,55 +92,6 @@ namespace Sepes.Infrastructure.Service
             {
                 hasLogo.LogoUrl = null;
             }
-        }
-
-        public async Task<string> AddLogoAsync(int studyId, IFormFile studyLogo)
-        {
-            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, UserOperation.Study_Update_Metadata);
-
-            if (!FileIsCorrectImageFormat(studyLogo))
-            {
-                throw new ArgumentException("Blob has invalid filename or is not of type png, jpg or bmp.");
-            }
-
-            string uniqueFileName = Guid.NewGuid().ToString("N") + studyLogo.FileName;
-
-            await _azureBlobStorageService.UploadFileToBlobContainer(_containerName, uniqueFileName, studyLogo);
-
-            string oldFileName = studyFromDb.LogoUrl;
-
-            studyFromDb.LogoUrl = uniqueFileName;
-
-            await _db.SaveChangesAsync();
-
-            if (!String.IsNullOrWhiteSpace(oldFileName))
-            {
-                _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, oldFileName);
-            }
-
-            return studyFromDb.LogoUrl;
-        }
-
-        public async Task DeleteAsync(Study study)
-        {
-            if (!String.IsNullOrWhiteSpace(study.LogoUrl))
-            {
-                _ = await _azureBlobStorageService.DeleteFileFromBlobContainer(_containerName, study.LogoUrl);
-            }
-        }        
-
-        bool FileIsCorrectImageFormat(IFormFile file)
-        {
-            string suppliedFileName = file.FileName;
-            string fileType = suppliedFileName.Split('.').Last();
-            return !String.IsNullOrWhiteSpace(fileType) &&
-                (fileType.Equals(ImageFormat.png.ToString())
-                || fileType.Equals(ImageFormat.jpeg.ToString())
-                || fileType.Equals(ImageFormat.jpg.ToString())
-                || fileType.Equals(ImageFormat.bmp.ToString())
-                );
-        }
-
-
+        } 
     }
 }

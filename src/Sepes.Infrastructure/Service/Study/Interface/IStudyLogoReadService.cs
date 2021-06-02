@@ -6,14 +6,10 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.Interface
 {
-    public interface IStudyLogoService
+    public interface IStudyLogoReadService
     {
         Task DecorateLogoUrlsWithSAS(IEnumerable<IHasLogoUrl> studyDtos);
 
-        Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);
-
-        Task DeleteAsync(Study study);      
-
-        Task<string> AddLogoAsync(int id, IFormFile studyLogo);    
+        Task DecorateLogoUrlWithSAS(IHasLogoUrl hasLogo);         
     }
 }

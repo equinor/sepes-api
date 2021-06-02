@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
         protected readonly IMapper _mapper;
         protected readonly ILogger _logger;
         protected readonly IUserService _userService;
-        protected readonly IStudyModelService _studyModelService;
+        protected readonly IStudyEfModelService _studyModelService;
         protected readonly IProvisioningQueueService _provisioningQueueService;
         protected readonly ICloudResourceReadService _cloudResourceReadService;
         protected readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             ILogger logger,
             IUserService userService,
-            IStudyModelService studyModelService,
+            IStudyEfModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,

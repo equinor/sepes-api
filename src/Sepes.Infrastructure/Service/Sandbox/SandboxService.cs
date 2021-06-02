@@ -14,7 +14,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxService : SandboxServiceBase, ISandboxService
     {
-        readonly IStudyModelService _studyModelService;
+        readonly IStudyEfModelService _studyModelService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
         readonly ISandboxResourceCreateService _sandboxResourceCreateService;
         readonly ISandboxResourceDeleteService _sandboxResourceDeleteService;
@@ -25,7 +25,7 @@ namespace Sepes.Infrastructure.Service
         public const string SandboxDelete = "Sandbox-Delete";
 
         public SandboxService(IMapper mapper, ILogger<SandboxService> logger,
-            IUserService userService, ISandboxModelService sandboxModelService, IStudyModelService studyModelService, IStudyWbsValidationService studyWbsValidationService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
+            IUserService userService, ISandboxModelService sandboxModelService, IStudyEfModelService studyModelService, IStudyWbsValidationService studyWbsValidationService, ISandboxResourceCreateService sandboxCloudResourceService, ISandboxResourceDeleteService sandboxResourceDeleteService)
             : base(mapper, logger, userService, sandboxModelService)
         {
             _studyModelService = studyModelService;

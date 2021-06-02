@@ -24,6 +24,7 @@
 
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwnerConnectionString";
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRWConnectionString";
+        public const string DB_INTEGRATION_TEST_CONNECTION_STRING = "SepesIntegrationTestConnectionString";
 
         public const string SUBSCRIPTION_ID = "SubscriptionId";
         public const string DISABLE_MIGRATIONS = "DisableMigrations";

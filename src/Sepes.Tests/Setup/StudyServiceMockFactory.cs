@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,29 +17,44 @@ namespace Sepes.Tests.Setup
 {
     public static class StudyServiceMockFactory
     {
-        public static IStudyModelService StudyModelService(ServiceProvider serviceProvider)
+        public static IStudyRawQueryModelService StudyRawQueryModelService(ServiceProvider serviceProvider)
+        {
+            var config = serviceProvider.GetService<IConfiguration>();         
+            var logger = serviceProvider.GetService<ILogger<StudyRawQueryModelService>>();           
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+
+            return new StudyRawQueryModelService(config, logger, userService.Object);
+        }
+
+        public static IStudyEfModelService StudyEfModelService(ServiceProvider serviceProvider)
         {
             var config = serviceProvider.GetService<IConfiguration>();
             var db = serviceProvider.GetService<SepesDbContext>();
-            var logger = serviceProvider.GetService<ILogger<StudyModelService>>();
-            var mapper = serviceProvider.GetService<IMapper>();
+            var logger = serviceProvider.GetService<ILogger<StudyEfModelService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);     
 
-            return new StudyModelService(config, db, logger, userService.Object, mapper);
+            return new StudyEfModelService(config, db, logger, userService.Object);
         }
 
-        public static IStudyReadService ReadService(ServiceProvider serviceProvider)
+        public static IStudyRawQueryReadService StudyRawQueryReadService(ServiceProvider serviceProvider)
+        {
+            var studyRawModelService = StudyRawQueryModelService(serviceProvider);
+
+            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
+
+            return new StudyRawQueryReadService(logoReadServiceMock.Object, studyRawModelService);
+        }
+
+        public static IStudyEfReadService StudyEfReadService(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<StudyReadService>>();
+            var logger = serviceProvider.GetService<ILogger<StudyEfReadService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var studyEfModelService = StudyEfModelService(serviceProvider);
+            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
 
-            var studyModelService = StudyModelService(serviceProvider);
-
-            var logoServiceMock = new Mock<IStudyLogoService>();
-
-            return new StudyReadService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object);
+            return new StudyEfReadService(db, mapper, logger, userService.Object, studyEfModelService, logoReadServiceMock.Object);
         }
 
         public static IStudyCreateService CreateService(ServiceProvider serviceProvider)
@@ -48,18 +64,17 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyCreateService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelService = StudyModelService(serviceProvider);
+            var studyModelService = StudyEfModelService(serviceProvider);
+           
+            var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
+            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
 
-            var logoServiceMock = new Mock<IStudyLogoService>();
-            
-            var studyWbsValidationService = new Mock<IStudyWbsValidationService>();
-            // studyWbsValidationService.Setup(s =>
-            //     s.CheckValidityIfNotReValidateOrThrow(It.IsAny<Study>()));
+            var studyWbsValidationService = new Mock<IStudyWbsValidationService>();       
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
             dsCloudResourceServiceMock.Setup(x => x.CreateResourceGroupForStudySpecificDatasetsAsync(It.IsAny<Study>(), default(CancellationToken))).Returns(Task.CompletedTask);
 
-            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
+            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoCreateServiceMock.Object, logoReadServiceMock.Object, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
         }
 
         public static IStudyUpdateService UpdateService(ServiceProvider serviceProvider)
@@ -69,13 +84,15 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyUpdateService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelService = StudyModelService(serviceProvider);
+            var studyModelService = StudyEfModelService(serviceProvider);
 
-            var logoServiceMock = new Mock<IStudyLogoService>();
-            
+            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
+            var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
+            var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>();
+
             var studyWbsValidationService = new Mock<IStudyWbsValidationService>();
 
-            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, studyWbsValidationService.Object);
+            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoReadServiceMock.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object);
         }
 
         public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)
@@ -85,13 +102,23 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyDeleteService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelService = StudyModelService(serviceProvider);
+            var studyEfModelService = StudyEfModelService(serviceProvider);
 
             var studySpecificDatasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(serviceProvider);
 
-            var logoServiceMock = new Mock<IStudyLogoService>();
+            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
+            var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>();
 
-            return new StudyDeleteService(db, mapper, logger, userService.Object, studyModelService, logoServiceMock.Object, studySpecificDatasetService);
+            var resourceReadServiceMock = new Mock<ICloudResourceReadService>();
+            //Todo: add some real resources to delete
+            resourceReadServiceMock.Setup(service => service.GetSandboxResourcesForDeletion(It.IsAny<int>())).ReturnsAsync(new List<CloudResource>());
+
+            return new StudyDeleteService(db, mapper, logger, userService.Object,
+                studyEfModelService,
+                logoReadServiceMock.Object,
+                logoDeleteServiceMock.Object,
+                studySpecificDatasetService,
+                resourceReadServiceMock.Object);
         }
     }
 }

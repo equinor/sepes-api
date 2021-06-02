@@ -1,22 +1,17 @@
 ﻿using Sepes.Common.Constants;
-using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
-    public interface IStudyModelService
+    public interface IStudyEfModelService
     {
-        Task<Study> AddAsync(Study study);
-
-        Task<IEnumerable<StudyListItemDto>> GetListAsync();
+        Task<Study> AddAsync(Study study);       
 
         Task<Study> GetByIdAsync(int studyId, UserOperation userOperation);        
 
-        Task<Study> GetForStudyDetailsAsync(int studyId);     
-
-        Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId);
+        Task<Study> GetForStudyDetailsAsync(int studyId); 
+     
         Task<Study> GetForDatasetsAsync(int studyId, UserOperation operation = UserOperation.Study_Read);
 
         Task<Study> GetForDatasetCreationAsync(int studyId, UserOperation operation);

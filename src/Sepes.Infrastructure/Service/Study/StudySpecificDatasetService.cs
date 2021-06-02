@@ -20,7 +20,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudySpecificDatasetService : DatasetServiceBase, IStudySpecificDatasetService
     {
-        readonly IStudyModelService _studyModelService;
+        readonly IStudyEfModelService _studyModelService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
@@ -30,7 +30,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             ILogger<StudySpecificDatasetService> logger,
             IUserService userService,
-            IStudyModelService studyModelService,
+            IStudyEfModelService studyModelService,
             IStudyWbsValidationService studyWbsValidationService,
             IStudySpecificDatasetModelService studySpecificDatasetModelService,
             IDatasetCloudResourceService datasetCloudResourceService
