@@ -1,11 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Exceptions;
+using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -20,6 +22,7 @@ namespace Sepes.Infrastructure.Service
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {
         readonly IAzureUserService _azureADUsersService;
+        //readonly IUserService _userService;
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
@@ -34,7 +37,8 @@ namespace Sepes.Infrastructure.Service
 
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureADUsersService = azureADUsersService;            
+            _azureADUsersService = azureADUsersService;
+            //_userService = userService;
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -118,7 +122,15 @@ namespace Sepes.Infrastructure.Service
 
         async Task<StudyParticipant> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
         {
-            var userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+            var userFromAzure = new AzureUserDto { };
+            if(await _userService.IsMockUser())
+            {
+                userFromAzure = new AzureUserDto { DisplayName = "Mock user", Mail = "Mock@User.com", UserPrincipalName = "Mock user" };
+            }
+            else
+            {
+                userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+            }
 
             if (userFromAzure == null)
             {
