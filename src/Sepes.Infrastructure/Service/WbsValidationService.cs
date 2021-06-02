@@ -32,7 +32,7 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
-            if (await _wbsCodeCacheModelService.Exists(wbsCode, cancellation))
+            if (await _wbsCodeCacheModelService.Exists(wbsCode, cancellation)) //Found in cache, means its valid
             {
                 return true;
             }
