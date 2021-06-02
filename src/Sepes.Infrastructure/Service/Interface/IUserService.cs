@@ -7,6 +7,7 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task<UserDto> GetUserByIdAsync(int userId);
 
-        Task<UserDto> GetCurrentUserAsync();            
+        Task<UserDto> GetCurrentUserAsync();
+        Task<bool> IsMockUser();
     }
 }

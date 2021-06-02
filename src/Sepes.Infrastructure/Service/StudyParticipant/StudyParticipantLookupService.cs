@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -16,6 +18,7 @@ namespace Sepes.Infrastructure.Service
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
     {
         readonly IAzureUserService _azureUserService;
+        readonly IConfiguration _configuration;
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
@@ -26,14 +29,29 @@ namespace Sepes.Infrastructure.Service
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService,
+            IConfiguration configuration)
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureUserService = azureUserService;
+            _configuration = configuration;
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
         {
+            if (await _userService.IsMockUser())
+            {
+                var listWithMockUser = new List<ParticipantLookupDto>();
+                listWithMockUser.Add(new ParticipantLookupDto
+                {
+                    ObjectId = _configuration[ConfigConstants.CYPRESS_MOCK_USER],
+                    FullName = "Mock user",
+                    UserName = "Mock User",
+                    EmailAddress = "Mock@user.com",
+                    Source = "Azure"
+                });
+                return listWithMockUser;
+            }
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 return new List<ParticipantLookupDto>();
