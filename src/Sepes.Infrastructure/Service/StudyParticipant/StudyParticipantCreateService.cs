@@ -22,7 +22,7 @@ namespace Sepes.Infrastructure.Service
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {
         readonly IAzureUserService _azureADUsersService;
-        readonly IUserService _userService;
+        //readonly IUserService _userService;
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
@@ -33,13 +33,12 @@ namespace Sepes.Infrastructure.Service
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService,
-            ICurrentUserService currentUserService)
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureADUsersService = azureADUsersService;
-            _userService = userService;
+            //_userService = userService;
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
