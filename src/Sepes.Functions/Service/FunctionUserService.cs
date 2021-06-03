@@ -20,7 +20,7 @@ namespace Sepes.Functions.Service
             return _cachedUser;
         }
 
-        public Task<UserDto> GetUserByIdAsync(int userId)
+        public Task<UserDto> GetByIdAsync(int userId)
         {
             throw new System.NotImplementedException();
         }

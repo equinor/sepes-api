@@ -15,12 +15,10 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class DapperModelServiceBase : ModelServiceBase
     {
-        IStudyPermissionService _studyPermissionService;
-
-        public DapperModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, logger, userService)
+        public DapperModelServiceBase(IConfiguration configuration, ILogger logger)
+            : base(configuration, logger)
         {
-            _studyPermissionService = studyPermissionService;
+          
         }
 
         protected string GetDbConnectionString()
@@ -48,7 +46,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
         }
 
-        protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null) where T : SingleEntityDapperResult
+        protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null)
         {
             using (var connection = new SqlConnection(GetDbConnectionString()))
             {
@@ -61,7 +59,52 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
         }
 
-        protected string WrapSingleEntityQuery(UserDto currentUser, string dataQuery, UserOperation operation)
+        protected async Task ExecuteAsync(string statement, object parameters = null)
+        {
+            using (var connection = new SqlConnection(GetDbConnectionString()))
+            {
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                await connection.ExecuteAsync(statement, parameters);
+            }
+        }
+
+     
+
+    }
+
+    public class DapperModelWithPermissionServiceBase : DapperModelServiceBase
+    {
+        protected readonly IUserService _userService;
+        readonly IStudyPermissionService _studyPermissionService;
+
+        public DapperModelWithPermissionServiceBase(IConfiguration configuration, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, logger)
+        {
+            _userService = userService;
+            _studyPermissionService = studyPermissionService;
+        }
+
+        protected async Task<T> RunSingleEntityQueryWithPermissionCheck<T>(string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+           return await RunSingleEntityQueryWithPermissionCheck<T>(currentUser, dataQuery, operation, parameters);
+        }
+
+        protected async Task<T> RunSingleEntityQueryWithPermissionCheck<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
+        {
+            var completeQuery = WrapSingleEntityQueryWithAccessProjection(currentUser, dataQuery, operation);
+            var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
+
+            _studyPermissionService.VerifyAccessOrThrow(singleEntity, currentUser, operation);
+
+            return singleEntity;
+        }
+
+        protected string WrapSingleEntityQueryWithAccessProjection(UserDto currentUser, string dataQuery, UserOperation operation)
         {
             var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
 
@@ -76,16 +119,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             completeQuery += " ) SELECT DISTINCT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.StudyId = a.Id ";
 
             return completeQuery;
-        }
-
-        protected async Task<T> RunSingleEntityQueryWithPermissionCheck<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
-        {
-            var completeQuery = WrapSingleEntityQuery(currentUser, dataQuery, operation);
-            var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
-
-            _studyPermissionService.VerifyAccessOrThrow(singleEntity, currentUser, operation);
-
-            return singleEntity;
         }
     }
 }

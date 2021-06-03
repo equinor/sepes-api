@@ -11,42 +11,33 @@ namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
     {  
-        public static User CreateDbUserFromAzureUser(string objectId, AzureUserDto azureUser)
-        {
-            var userDb = new User();
-            userDb.ObjectId = objectId;
-            userDb.FullName = azureUser.DisplayName;
-            userDb.UserName = azureUser.UserPrincipalName;
-            userDb.EmailAddress = azureUser.Mail;
-            userDb.CreatedBy = azureUser.UserPrincipalName;
-            return userDb;
-        }      
+           
 
-        public static void ApplyExtendedProps(IConfiguration config, IPrincipalService principalService, UserDto user)
-        {
-            if (principalService.IsAdmin())
-            {
-                user.Admin = true;
-                user.AppRoles.Add(AppRoles.Admin);
-            }
+        //public static void ApplyExtendedProps(IConfiguration config, IPrincipalService principalService, UserDto user)
+        //{
+        //    if (principalService.IsAdmin())
+        //    {
+        //        user.Admin = true;
+        //        user.AppRoles.Add(AppRoles.Admin);
+        //    }
 
-            if (principalService.IsSponsor())
-            {
-                user.Sponsor = true;
-                user.AppRoles.Add(AppRoles.Sponsor);
-            }
+        //    if (principalService.IsSponsor())
+        //    {
+        //        user.Sponsor = true;
+        //        user.AppRoles.Add(AppRoles.Sponsor);
+        //    }
 
-            if (principalService.IsDatasetAdmin())
-            {
-                user.DatasetAdmin = true;
-                user.AppRoles.Add(AppRoles.DatasetAdmin);
-            }
+        //    if (principalService.IsDatasetAdmin())
+        //    {
+        //        user.DatasetAdmin = true;
+        //        user.AppRoles.Add(AppRoles.DatasetAdmin);
+        //    }
 
-            if (principalService.IsEmployee())
-            {
-                user.Employee = true;          
-            }
-        }
+        //    if (principalService.IsEmployee())
+        //    {
+        //        user.Employee = true;          
+        //    }
+        //}
 
         public static bool UserHasAdminRole(IPrincipal principal)
         {

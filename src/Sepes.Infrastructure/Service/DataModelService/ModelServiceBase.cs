@@ -10,13 +10,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected readonly IConfiguration _configuration;
        
         protected readonly ILogger _logger;
-        protected readonly IUserService _userService;
+       
 
-        public ModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService)
+        public ModelServiceBase(IConfiguration configuration, ILogger logger)
         {
             _configuration = configuration;           
             _logger = logger;
-            _userService = userService;
+            
         }
     }
 
@@ -25,11 +25,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
     public class EfModelServiceBase : ModelServiceBase
     {
         protected readonly SepesDbContext _db;
+        protected readonly IUserService _userService;
 
         public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
-                   : base(configuration, logger, userService)
+                   : base(configuration, logger)
         {
             _db = db;
+            _userService = userService;
         }
     }
 

@@ -7,7 +7,6 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Exceptions;
-using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -21,8 +20,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {
-        readonly IAzureUserService _azureADUsersService;
-        //readonly IUserService _userService;
+        readonly IAzureUserService _azureADUsersService;       
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
@@ -96,7 +94,7 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
             }
 
-            var userFromDb = await _userService.GetUserByIdAsync(userId);
+            var userFromDb = await _userService.GetByIdAsync(userId);
 
             if (userFromDb == null)
             {

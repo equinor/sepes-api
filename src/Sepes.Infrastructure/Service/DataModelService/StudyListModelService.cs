@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class StudyListModelService : DapperModelServiceBase, IStudyListModelService
+    public class StudyListModelService : DapperModelWithPermissionServiceBase, IStudyListModelService
     {
         public StudyListModelService(IConfiguration configuration, ILogger<StudyListModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(configuration, logger, userService, studyPermissionService)

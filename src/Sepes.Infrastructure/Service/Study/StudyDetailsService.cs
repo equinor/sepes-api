@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
             dto.Permissions.UpdateMetadata = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Update_Metadata);
             dto.Permissions.CloseStudy = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Close);
-            dto.Permissions.DeleteStudy = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Delete);
+            dto.Permissions.DeleteStudy = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Close);
 
             dto.Permissions.ReadResulsAndLearnings = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Read_ResultsAndLearnings);
             dto.Permissions.UpdateResulsAndLearnings = _studyPermissionService.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, Common.Constants.UserOperation.Study_Update_ResultsAndLearnings);

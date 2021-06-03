@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class StudyDetailsModelService : DapperModelServiceBase, IStudyDetailsModelService
+    public class StudyDetailsModelService : DapperModelWithPermissionServiceBase, IStudyDetailsModelService
     {
         public StudyDetailsModelService(IConfiguration configuration, ILogger<StudyDetailsModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(configuration, logger, userService, studyPermissionService)
@@ -23,11 +23,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<StudyDetailsDapper> GetStudyDetailsAsync(int studyId)
         {
-            var user = await _userService.GetCurrentUserAsync();
+            var studyQuery = "SELECT DISTINCT [Id] as StudyId, [Name], [Description], [WbsCode], [WbsCodeValid], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
 
-            var resultsAndLearningsQuery = "SELECT DISTINCT [Id] as StudyId, [Name], [Description], [WbsCode], [WbsCodeValid], [Vendor], [Restricted], [LogoUrl] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
-
-            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyDetailsDapper>(user, resultsAndLearningsQuery, UserOperation.Study_Read, new { studyId });
+            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyDetailsDapper>(studyQuery, UserOperation.Study_Read, new { studyId });
 
             return responseFromDbService;
         }
@@ -102,11 +100,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<StudyResultsAndLearningsDto> GetResultsAndLearningsAsync(int studyId)
         {
-            var user = await _userService.GetCurrentUserAsync();
-
             var resultsAndLearningsQuery = "SELECT DISTINCT [Id] as [StudyId], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
 
-            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyResultsAndLearnings>(user, resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });
+            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyResultsAndLearnings>(resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });
 
             return new StudyResultsAndLearningsDto() { ResultsAndLearnings = responseFromDbService.ResultsAndLearnings };
         }

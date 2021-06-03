@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class StudyResultsAndLearningsModelService : DapperModelServiceBase, IStudyResultsAndLearningsModelService
+    public class StudyResultsAndLearningsModelService : DapperModelWithPermissionServiceBase, IStudyResultsAndLearningsModelService
     {
         public StudyResultsAndLearningsModelService(IConfiguration configuration, ILogger<StudyResultsAndLearningsModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(configuration, logger, userService, studyPermissionService)
@@ -19,11 +19,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<StudyResultsAndLearningsDto> GetAsync(int studyId)
         {
-            var user = await _userService.GetCurrentUserAsync();
-
             var resultsAndLearningsQuery = "SELECT DISTINCT [Id] as [StudyId], [ResultsAndLearnings] FROM [dbo].[Studies] s WHERE Id=@studyId AND s.Closed = 0";
 
-            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyResultsAndLearnings>(user, resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });
+            var responseFromDbService = await RunSingleEntityQueryWithPermissionCheck<StudyResultsAndLearnings>(resultsAndLearningsQuery, UserOperation.Study_Read_ResultsAndLearnings, new { studyId });
 
             return new StudyResultsAndLearningsDto() { ResultsAndLearnings = responseFromDbService.ResultsAndLearnings };
         }

@@ -194,9 +194,10 @@ namespace Sepes.RestApi
             services.AddSingleton<IPublicIpService, PublicIpService>();
             services.AddScoped<IHealthService, HealthService>();
             services.AddScoped<IStudyPermissionService, StudyPermissionService>();
-            
+
 
             //Data model services v2
+            services.AddSingleton<IUserModelService, UserModelService>();
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
             services.AddTransient<IStudyDetailsModelService, StudyDetailsModelService>();
