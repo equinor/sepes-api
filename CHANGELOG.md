@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.20](https://github.com/equinor/sepes-api/compare/0.4.19...0.4.20) (2021-06-03)
+
+
+### Features
+
+* **study:** validate wbs on save ([#680](https://github.com/equinor/sepes-api/issues/680)) ([adf647e](https://github.com/equinor/sepes-api/commit/adf647ea9b13befab06d835594b496f8b68c0a33)), closes [#681](https://github.com/equinor/sepes-api/issues/681)
+* add wbs validation from external api ([#677](https://github.com/equinor/sepes-api/issues/677)) ([f607cf9](https://github.com/equinor/sepes-api/commit/f607cf9e976888ec6e57297ff062181a57d3ba6a))
+
 ### [0.4.19](https://github.com/equinor/sepes-api/compare/0.4.18...0.4.19) (2021-05-19)
 
 
