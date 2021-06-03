@@ -3,16 +3,15 @@ using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
-using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests
-{
-    [Collection("Integration tests collection")]
+{    
     public class ControllerTestBase : IAsyncLifetime
     {
         protected readonly TestHostFixture _testHostFixture;
@@ -20,15 +19,15 @@ namespace Sepes.RestApi.IntegrationTests
 
         public ControllerTestBase(TestHostFixture testHostFixture)
         {
-            _testHostFixture = testHostFixture;
-            _restHelper = new RestHelper(testHostFixture.Client);
+            Trace.WriteLine("ControllerTestBase Constructor");
+            _testHostFixture = testHostFixture;        
         }
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            var azureServices = new MockedAzureServiceSets();
-            _testHostFixture.SetScenario(azureServices, isEmployee, isAdmin, isSponsor, isDatasetAdmin);
-            _restHelper = new RestHelper(_testHostFixture.Client);
+            Trace.WriteLine("ControllerTestBase SetScenario");
+            //_testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+            _restHelper = _testHostFixture.GetRestHelperForScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
         }
 
         public Task InitializeAsync() => SliceFixture.ResetCheckpoint();
@@ -119,16 +118,12 @@ namespace Sepes.RestApi.IntegrationTests
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue(int timesToRun = 1)
         {
-
             ApiResponseWrapper apiResponseWrapper = null;
 
             for (var counter = 0; counter < timesToRun; counter++)
             {
                 apiResponseWrapper = await _restHelper.Get("api/provisioningqueue/lookforwork");
-
-                Assert.Equal(System.Net.HttpStatusCode.OK, apiResponseWrapper.StatusCode);
-
-                
+                Assert.Equal(System.Net.HttpStatusCode.OK, apiResponseWrapper.StatusCode);                
             }
 
             return apiResponseWrapper;

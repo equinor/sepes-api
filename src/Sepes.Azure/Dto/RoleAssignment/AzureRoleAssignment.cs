@@ -14,6 +14,10 @@ namespace Sepes.Azure.Dto.RoleAssignment
 
     public class RoleAssignmentRequestProperties
     {
+        public RoleAssignmentRequestProperties()
+        {
+        }
+
         public RoleAssignmentRequestProperties(string roleDefinitionId, string principalId)
         {
             this.roleDefinitionId = roleDefinitionId;
@@ -28,6 +32,10 @@ namespace Sepes.Azure.Dto.RoleAssignment
 
     public class AzureRoleAssignment
     {
+        public AzureRoleAssignment()
+        {
+        }
+
         public string id { get; set; }
 
         public string type { get; set; }
@@ -40,26 +48,21 @@ namespace Sepes.Azure.Dto.RoleAssignment
 
 
 
-public class RoleAssignmentResponseProperties : RoleAssignmentRequestProperties
-{
-    public RoleAssignmentResponseProperties(string roleDefinitionId, string principalId, string scope, string createdBy, string updatedBy, DateTime createdOn, DateTime updatedOn) : base(roleDefinitionId, principalId)
+    public class RoleAssignmentResponseProperties : RoleAssignmentRequestProperties
     {
-        this.scope = scope;
-        this.createdBy = createdBy;
-        this.updatedBy = updatedBy;
-        this.createdOn = createdOn;
-        this.updatedOn = updatedOn;
-    }    
+        public RoleAssignmentResponseProperties()
+        {
+        }       
 
-    public string scope { get; set; }
+        public string scope { get; set; }
 
-    public string createdBy { get; set; }
+        public string createdBy { get; set; }
 
-    public string updatedBy { get; set; }
+        public string updatedBy { get; set; }
 
-    public DateTime createdOn { get; set; }
+        public DateTime createdOn { get; set; }
 
-    public DateTime updatedOn { get; set; }
+        public DateTime updatedOn { get; set; }
 
-}
+    }
 }

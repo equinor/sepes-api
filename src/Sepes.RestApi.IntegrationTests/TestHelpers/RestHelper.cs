@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Sepes.Common.Util;
 using Sepes.RestApi.IntegrationTests.Dto;
 using Sepes.RestApi.IntegrationTests.Extensions;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -74,15 +75,28 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
         public async Task<ApiResponseWrapper<T>> Put<T>(string requestUri)
         {
-            var response = await _client.PutAsync(requestUri, null);
+            var stringContent = new StringContent(string.Empty);
+            stringContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+            var response = await _client.PutAsJsonAsync(requestUri, stringContent);
             var responseWrapper = await CreateResponseWrapper<T>(response);
             return responseWrapper;
         }
 
         private async Task<T> GetResponseObject<T>(HttpResponseMessage response)
         {
+            if(response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            {
+                return default(T);
+            }
+
             var content = await response.Content.ReadAsStringAsync();
-            var deserializedObject = JsonConvert.DeserializeObject<T>(content);
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return default(T);
+            }
+
+            var deserializedObject = JsonSerializerUtil.Deserialize<T>(content);
             return deserializedObject;
         }
 

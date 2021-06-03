@@ -1,5 +1,4 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
@@ -8,6 +7,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.RestApi.IntegrationTests.Setup;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,14 +22,18 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
         static SliceFixture()
         {
+            Trace.WriteLine("SliceFixture Constructor");
+
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                //.AddJsonFile("appsettings.development.json", true, true)
+                .SetBasePath(Directory.GetCurrentDirectory())               
                 .AddUserSecrets<IntegrationTestsCollection>()
                 .AddEnvironmentVariables();
             _configuration = builder.Build();
 
+            Trace.WriteLine("SliceFixture Create Factory");
             var factory = new CustomWebApplicationFactory<Startup>();
+
+            Trace.WriteLine("SliceFixture Get Scope Factory");
             _scopeFactory = factory.Services.GetService<IServiceScopeFactory>();
         }
 
@@ -42,7 +46,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             WithReseed = true
         };
 
-        public static Task ResetCheckpoint() => _checkpoint.Reset(ConnectionStringUtil.GetDatabaseConnectionString(_configuration));
+        public static Task ResetCheckpoint() => _checkpoint.Reset(IntegrationTestConnectionStringUtil.GetDatabaseConnectionString(_configuration));
 
         public static async Task ExecuteScopeAsync(Func<IServiceProvider, Task> action)
         {

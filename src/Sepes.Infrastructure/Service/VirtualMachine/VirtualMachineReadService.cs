@@ -23,7 +23,7 @@ namespace Sepes.Infrastructure.Service
     public class VirtualMachineReadService : VirtualMachineServiceBase, IVirtualMachineReadService
     {  
         readonly IVirtualMachineSizeService _virtualMachineSizeService;
-        readonly IAzureVirtualMachineExtenedInfoService _azureVirtualMachineExtenedInfoService;
+        readonly IAzureVirtualMachineExtendedInfoService _azureVirtualMachineExtenedInfoService;
 
         public VirtualMachineReadService(
             IConfiguration config,
@@ -33,7 +33,7 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,               
             ICloudResourceReadService cloudResourceReadService,
             IVirtualMachineSizeService virtualMachineSizeService,
-            IAzureVirtualMachineExtenedInfoService azureVirtualMachineExtenedInfoService
+            IAzureVirtualMachineExtendedInfoService azureVirtualMachineExtenedInfoService
 
           )
            : base(config, db, logger, mapper, userService, cloudResourceReadService)
@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
 
             var sandbox = vmList.FirstOrDefault().Sandbox;
 
-            await StudyAccessUtil.CheckAccesAndThrowIfMissing(_userService, sandbox.Study, UserOperation.Study_Read);
+            await StudyAccessUtil.VerifyAccessOrThrow(_userService, sandbox.Study, UserOperation.Study_Read);
             
             return vmList;
         }

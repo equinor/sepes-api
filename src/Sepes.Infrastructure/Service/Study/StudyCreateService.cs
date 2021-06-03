@@ -19,16 +19,23 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyCreateService : StudyServiceBase, IStudyCreateService
     {
+        readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
+        readonly IStudyWbsValidationService _studyWbsValidationService;
 
         public StudyCreateService(SepesDbContext db, IMapper mapper, ILogger<StudyCreateService> logger,
             IUserService userService,
-            IStudyModelService studyModelService,
-            IStudyLogoService studyLogoService,
-            IDatasetCloudResourceService datasetCloudResourceService)
-            : base(db, mapper, logger, userService, studyModelService, studyLogoService)
+            IStudyEfModelService studyModelService,
+            IStudyLogoCreateService studyLogoCreateService,
+            IStudyLogoReadService studyLogoReadService,
+            IDatasetCloudResourceService datasetCloudResourceService,
+            IStudyWbsValidationService studyWbsValidationService
+           )
+            : base(db, mapper, logger, userService, studyModelService, studyLogoReadService)
         {
+            _studyLogoCreateService = studyLogoCreateService;
             _datasetCloudResourceService = datasetCloudResourceService;
+            _studyWbsValidationService = studyWbsValidationService;
         }      
 
         public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
@@ -40,19 +47,21 @@ namespace Sepes.Infrastructure.Service
 
             var currentUser = await _userService.GetCurrentUserAsync();
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
+            
+            await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyDb);
 
             studyDb = await _studyModelService.AddAsync(studyDb);
-                     
+
             await _datasetCloudResourceService.CreateResourceGroupForStudySpecificDatasetsAsync(studyDb, cancellation);
 
             if (logo != null)
             {
-                studyDb.LogoUrl = await _studyLogoService.AddLogoAsync(studyDb.Id, logo);               
+                studyDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyDb.Id, logo);               
                 await _db.SaveChangesAsync();
             }
 
             return await GetStudyDetailsAsync(studyDb.Id);
-        }        
+        }
 
         void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)
         {

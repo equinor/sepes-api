@@ -1,17 +1,19 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {
     public class AzureDiskPriceService : AzureApiServiceBase, IAzureDiskPriceService
     {
-        public AzureDiskPriceService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition) : base(config, logger, tokenAcquisition)
+        public AzureDiskPriceService(IConfiguration config, ILogger<AzureDiskPriceService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
+            : base(config, logger, tokenAcquisition, httpClient)
         {
         }
 
@@ -40,14 +42,13 @@ namespace Sepes.Azure.Service
                             relevantRegionItem = diskPriceByRegion[regionName] = new AzureDiskPriceForRegion();
                         }
 
-                        relevantRegionItem.Types.Add(curOffer.Key,  new DiskType() { size = curOffer.Value.size, price = curSize.Value.value } );
+                        relevantRegionItem.Types.Add(curOffer.Key, new DiskType() { size = curOffer.Value.size, price = curSize.Value.value });
                     }
 
                 }
             }
 
             return diskPriceByRegion;
-                
         }
-        }
+    }
 }

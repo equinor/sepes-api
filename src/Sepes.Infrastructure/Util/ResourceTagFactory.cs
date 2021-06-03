@@ -1,12 +1,11 @@
-﻿using Sepes.Common.Constants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
+using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.Infrastructure.Util
 {

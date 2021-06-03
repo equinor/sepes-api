@@ -18,10 +18,10 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyDatasetService : DatasetServiceBase, IStudyDatasetService
     {
-       readonly IStudyModelService _studyModelService;
+       readonly IStudyEfModelService _studyModelService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
 
-        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService, IStudyModelService studyModelService, IStudySpecificDatasetModelService studySpecificDatasetModelService)
+        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService, IStudyEfModelService studyModelService, IStudySpecificDatasetModelService studySpecificDatasetModelService)
             : base(db, mapper, logger, userService)
         {
             _studyModelService = studyModelService;

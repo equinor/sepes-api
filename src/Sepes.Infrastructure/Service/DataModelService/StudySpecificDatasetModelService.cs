@@ -45,7 +45,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);
 
-            await CheckAccesAndThrowIfMissing(study, operation);
+            await CheckAccesAndThrowIfNotAllowed(study, operation);
 
             return dataset;
         }

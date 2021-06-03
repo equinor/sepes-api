@@ -15,15 +15,15 @@ namespace Sepes.Infrastructure.Service
     public class StudyServiceBase : ServiceBase<Study>
     {
         protected readonly ILogger _logger;
-        protected readonly IStudyModelService _studyModelService;
-        protected readonly IStudyLogoService _studyLogoService;
+        protected readonly IStudyEfModelService _studyModelService;
+        protected readonly IStudyLogoReadService _studyLogoReadService;
 
-        public StudyServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, IStudyModelService studyModelService, IStudyLogoService studyLogoService)
+        public StudyServiceBase(SepesDbContext db, IMapper mapper, ILogger logger, IUserService userService, IStudyEfModelService studyModelService, IStudyLogoReadService studyLogoReadService)
             : base(db, mapper, userService)
         {
-            _logger = logger;
-            _studyLogoService = studyLogoService;
+            _logger = logger;         
             _studyModelService = studyModelService;
+            _studyLogoReadService = studyLogoReadService;
         }      
 
         public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)
@@ -39,7 +39,7 @@ namespace Sepes.Infrastructure.Service
 
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);          
 
-            await _studyLogoService.DecorateLogoUrlWithSAS(studyDetailsDto);    
+            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);    
 
             await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);            
 

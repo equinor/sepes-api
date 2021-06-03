@@ -69,13 +69,22 @@ namespace Sepes.Infrastructure.Service.Queries
                     .Include(sb => sb.Resources);
         }
 
-        public static IQueryable<Sandbox> SandboxWithResourceAndOperations(SepesDbContext db)
+        public static IQueryable<Sandbox> SandboxWithStudyParticipantResourceAndOperations(SepesDbContext db)
         {
             return db.Sandboxes.Include(s => s.Study)
                 .ThenInclude(s => s.StudyParticipants)
                     .Include(sb => sb.Resources)
                     .ThenInclude(r => r.Operations);
         }
+
+        public static IQueryable<Sandbox> SandboxWithResourceAndOperations(SepesDbContext db)
+        {
+            return db.Sandboxes
+                    .Include(sb => sb.Resources)
+                    .ThenInclude(r => r.Operations);
+        }
+
+
 
         public static IQueryable<Sandbox> AllSandboxesBaseQueryable(SepesDbContext db)
         {

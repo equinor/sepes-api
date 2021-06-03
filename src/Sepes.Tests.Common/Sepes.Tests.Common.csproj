@@ -9,17 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ModelFactory\Sandbox\**" />
+    <Compile Remove="ModelFactory\Study\**" />
+    <EmbeddedResource Remove="ModelFactory\Sandbox\**" />
+    <EmbeddedResource Remove="ModelFactory\Study\**" />
+    <None Remove="ModelFactory\Sandbox\**" />
+    <None Remove="ModelFactory\Study\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sepes.Infrastructure\Sepes.Infrastructure.csproj" />
     <ProjectReference Include="..\Sepes.Provisioning\Sepes.Provisioning.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ModelFactory\Sandbox\" />
-    <Folder Include="ModelFactory\Study\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="Moq" Version="4.16.1" />
   </ItemGroup>
 
 </Project>

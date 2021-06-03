@@ -1,6 +1,4 @@
-﻿
-using AutoMapper;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+﻿using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -84,12 +82,14 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
             builder.Services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
+            builder.Services.AddSingleton<IHealthService, HealthService>();
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
+            builder.Services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();
-            builder.Services.AddTransient<IStudyReadService, StudyReadService>();
+            builder.Services.AddTransient<IStudyEfReadService, StudyEfReadService>();
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();

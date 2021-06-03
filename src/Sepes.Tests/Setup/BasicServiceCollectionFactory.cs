@@ -32,7 +32,7 @@ namespace Sepes.Tests.Setup
 
             //config.GetSection("ConnectionStrings").Bind(new ConnectionStrings());
             services.AddSingleton<IConfiguration>(config);
-            services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
+           
 
             if (!string.IsNullOrWhiteSpace(config[ConfigConstants.APPI_KEY]))
             {    //https://docs.microsoft.com/en-us/azure/azure-monitor/app/worker-service         
@@ -46,22 +46,14 @@ namespace Sepes.Tests.Setup
 
             //Sepes Services           
             services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyReadService, StudyReadService>();
+            services.AddTransient<IStudyEfReadService, StudyEfReadService>();
+            services.AddTransient<IStudyRawQueryReadService, StudyRawQueryReadService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
-            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
-
-            //Azure resource services
-            services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
-            services.AddTransient<IAzureBastionService, AzureBastionService>();
-            services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
-            services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
-            services.AddTransient<IAzureQueueService, AzureQueueServiceMock>();
-            services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();
-            services.AddTransient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
+            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();       
+         
 
             return services;
         } 

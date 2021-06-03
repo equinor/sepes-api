@@ -30,8 +30,8 @@ namespace Sepes.Azure.Service
         public async Task<QueueStorageItem> SendMessageAsync(string message, TimeSpan? visibilityTimeout = null, CancellationToken cancellationToken = default)
         {
             var client = await CreateQueueClient();
-            var base64Message = Base64Encode(message);
-            var sendResponse = await client.SendMessageAsync(base64Message, visibilityTimeout, cancellationToken: cancellationToken);
+            //var base64Message = Base64Encode(message);
+            var sendResponse = await client.SendMessageAsync(message, visibilityTimeout, cancellationToken: cancellationToken);
 
             return new QueueStorageItem() { MessageId = sendResponse.Value.MessageId, MessageText = message, PopReceipt = sendResponse.Value.PopReceipt, NextVisibleOn = sendResponse.Value.TimeNextVisible };          
         }       
@@ -45,7 +45,7 @@ namespace Sepes.Azure.Service
 
             if (firstMessage != null)
             {
-                return new QueueStorageItem() { MessageId = firstMessage.MessageId, MessageText = Base64Decode(firstMessage.MessageText), PopReceipt = firstMessage.PopReceipt, NextVisibleOn = firstMessage.NextVisibleOn };
+                return new QueueStorageItem() { MessageId = firstMessage.MessageId, MessageText = firstMessage.MessageText, PopReceipt = firstMessage.PopReceipt, NextVisibleOn = firstMessage.NextVisibleOn };
             }
 
             return null;
@@ -56,7 +56,7 @@ namespace Sepes.Azure.Service
         public async Task<QueueUpdateReceipt> UpdateMessageAsync(string messageId, string popReceipt, string updatedMessage, int timespan = 30)
         {
             var client = await CreateQueueClient();        
-            var updateReceipt = await client.UpdateMessageAsync(messageId, popReceipt, Base64Encode(updatedMessage), TimeSpan.FromSeconds(timespan));
+            var updateReceipt = await client.UpdateMessageAsync(messageId, popReceipt, updatedMessage, TimeSpan.FromSeconds(timespan));
             return new QueueUpdateReceipt(updateReceipt.Value.PopReceipt, updateReceipt.Value.NextVisibleOn);
         }
 
@@ -81,9 +81,14 @@ namespace Sepes.Azure.Service
                 throw new NullReferenceException("ConnectionString or Queue name is null. Remember to call Init() method, providing a connection string and queue name");
             }
 
-            // Instantiate a QueueClient which will be used to create and manipulate the queue
-            QueueClient queueClient = new QueueClient(_connectionString, _queueName);
+            var queueClientOptions = new QueueClientOptions()
+            {
+                MessageEncoding = QueueMessageEncoding.Base64
+            };
 
+            // Instantiate a QueueClient which will be used to create and manipulate the queue
+            QueueClient queueClient = new QueueClient(_connectionString, _queueName, queueClientOptions);
+            
             var logMessagePrefix = $"Ensuring queue '{queueClient.Name}' exists. ";
 
             if (await queueClient.ExistsAsync())
@@ -101,17 +106,17 @@ namespace Sepes.Azure.Service
             return queueClient;
         }
 
-        static string Base64Encode(string plainText)
-        {
-            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
-            return System.Convert.ToBase64String(plainTextBytes);
+        //static string Base64Encode(string plainText)
+        //{
+        //    var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+        //    return System.Convert.ToBase64String(plainTextBytes);
 
-        }
+        //}
 
-        static string Base64Decode(string encodedText)
-        {
-            var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
-            return System.Text.Encoding.UTF8.GetString(plainTextBytes);
-        }
+        //static string Base64Decode(string encodedText)
+        //{
+        //    var plainTextBytes = System.Convert.FromBase64String(encodedText); System.Text.Encoding.UTF8.GetBytes(encodedText);
+        //    return System.Text.Encoding.UTF8.GetString(plainTextBytes);
+        //}
     }
 }

@@ -8,13 +8,14 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using Sepes.Infrastructure.Util;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class SandboxModelService : ModelServiceBase<Sandbox>, ISandboxModelService
+    public class SandboxModelService : EfModelServiceBase<Sandbox>, ISandboxModelService
     {
         public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService)
             : base(configuration, db, logger, userService)
@@ -22,9 +23,50 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         }
 
-        public async Task<Sandbox> GetByIdWithoutPermissionCheckAsync(int sandboxId)
+        public async Task<bool> NameIsTaken(int studyId, string sandboxName)
         {
-            return await SandboxBaseQueries.AllSandboxesBaseQueryable(_db).SingleOrDefaultAsync(sb => sb.Id == sandboxId);
+            return await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Name == sandboxName && !sb.Deleted).AnyAsync();
+        }
+
+        public async Task HardDeleteAsync(int sandboxId)
+        {
+            var sandbox = await _db.Sandboxes.FirstOrDefaultAsync(sb => sb.Id == sandboxId);
+
+            if (sandbox != null)
+            {
+                _db.Sandboxes.Remove(sandbox);
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        public async Task SoftDeleteAsync(int sandboxId)
+        {            
+            var sandbox = await GetByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox, false);          
+
+            if (sandbox != null)
+            {
+                var user = await _userService.GetCurrentUserAsync();
+                SoftDeleteUtil.MarkAsDeleted(sandbox, user);
+                await _db.SaveChangesAsync();
+            }
+        }
+
+        public async Task<Sandbox> AddAsync(Study study, Sandbox newSandbox)
+        {
+            var user = await _userService.GetCurrentUserAsync();
+
+            newSandbox.CreatedBy = user.UserName;
+            newSandbox.TechnicalContactName = user.FullName;
+            newSandbox.TechnicalContactEmail = user.EmailAddress;
+
+            SandboxPhaseUtil.InitiatePhaseHistory(newSandbox, user);
+            
+            newSandbox.Study = study;
+            study.Sandboxes.Add(newSandbox);
+
+            await _db.SaveChangesAsync();
+
+            return newSandbox;
         }
 
         public async Task<Sandbox> GetByIdAsync(int id, UserOperation userOperation, bool withIncludes = false, bool disableTracking = false)
@@ -39,7 +81,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Sandbox> GetByIdForResourceCreationAsync(int id, UserOperation userOperation)
         {
-            var sandboxQueryable = SandboxBaseQueries.ForResourceCreation(_db);              
+            var sandboxQueryable = SandboxBaseQueries.ForResourceCreation(_db);
 
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
 
@@ -56,10 +98,10 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<Sandbox> GetByIdForResourcesAsync(int sandboxId)
         {
-            var sandboxQueryable = SandboxBaseQueries.SandboxWithResourceAndOperations(_db).AsNoTracking();
+            var sandboxQueryable = SandboxBaseQueries.SandboxWithStudyParticipantResourceAndOperations(_db).AsNoTracking();
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Read);
 
-            if(sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
+            if (sandbox.Deleted && sandbox.DeletedAt.HasValue && sandbox.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
@@ -73,12 +115,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
             var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, id, userOperation);
             return sandbox;
 
-        }        
+        }
 
         public async Task<Sandbox> GetByIdForReScheduleCreateAsync(int sandboxId)
         {
             var sandboxQueryable = SandboxBaseQueries.ActiveSandboxWithResourceAndOperations(_db);
-            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Crud_Sandbox);           
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(sandboxQueryable, sandboxId, UserOperation.Study_Crud_Sandbox);
 
             return sandbox;
         }
@@ -89,23 +131,36 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return sandbox.Region;
         }
 
-        async Task CheckAccesAndThrowIfMissing(Sandbox sandbox, UserOperation operation)
-        {
-            await CheckAccesAndThrowIfMissing(sandbox.Study, operation);
-        }
-
-        async Task<Sandbox> GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Sandbox> queryable, int sandboxId, UserOperation operation)
+        async Task<Sandbox> GetSandboxFromQueryableThrowIfNotFound(IQueryable<Sandbox> queryable, int sandboxId)
         {
             var sandbox = await queryable.SingleOrDefaultAsync(s => s.Id == sandboxId);
 
+            CheckExistenceAndThrowIfMissing(sandboxId, sandbox);           
+
+            return sandbox;
+        }
+
+
+        async Task<Sandbox> GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Sandbox> queryable, int sandboxId, UserOperation operation)
+        {
+            var sandbox = await GetSandboxFromQueryableThrowIfNotFound(queryable, sandboxId);
+
+            await CheckAccesAndThrowIfNotAllowed(sandbox, operation);
+
+            return sandbox;
+        }
+
+        void CheckExistenceAndThrowIfMissing(int sandboxId, Sandbox sandbox)
+        {
             if (sandbox == null)
             {
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
+        }
 
-            await CheckAccesAndThrowIfMissing(sandbox, operation);
-
-            return sandbox;
+        async Task CheckAccesAndThrowIfNotAllowed(Sandbox sandbox, UserOperation operation)
+        {
+            await CheckAccesAndThrowIfNotAllowed(sandbox.Study, operation);
         }
 
         public async Task<Sandbox> GetDetailsByIdAsync(int id)
@@ -113,6 +168,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetSandboxFromQueryableThrowIfNotFoundOrNoAccess(SandboxBaseQueries.SandboxDetailsQueryable(_db), id, UserOperation.Study_Read);
         }
 
-       
+        public async Task<Sandbox> GetWithResourcesNoPermissionCheckAsync(int sandboxId)
+        {
+            var queryable = SandboxBaseQueries.SandboxWithResourceAndOperations(_db);
+
+            return await GetSandboxFromQueryableThrowIfNotFound(queryable, sandboxId);
+        }
     }
 }

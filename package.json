@@ -2,12 +2,8 @@
   "name": "sepes",
   "version": "0.4.19",
   "private": true,
-  "scripts": {
-    "config": "node tools/config.js"
-  },
   "devDependencies": {
-    "cz-conventional-changelog": "^3.3.0",
-    "dotenv": "^8.2.0"
+    "cz-conventional-changelog": "^3.3.0"
   },
   "config": {
     "commitizen": {

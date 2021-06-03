@@ -2,9 +2,17 @@
     "version": "2.0",
   "logging": {
     "logLevel": {
-      "default": "Information",
+      "default": "Warning",
+      "Host.Results": "Error",
       "System": "Warning",
-      "Microsoft": "Warning"
+      "Microsoft": "Warning",
+      "Function.ResourceOperationsQueue": "Information",
+      "Function.SandboxResourceMonitoring": "Warning",
+      "Function.SelfCheck": "Warning",
+      "Function.UpdateAllCaches": "Warning",
+      "Sepes.Provisioning": "Information",
+      "Sepes.Infrastructure": "Information",
+      "Sepes.Common": "Information"
     },
     "applicationInsights": { 
       "samplingSettings": {

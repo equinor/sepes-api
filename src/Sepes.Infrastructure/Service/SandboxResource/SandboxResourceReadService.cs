@@ -1,32 +1,30 @@
 ﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
-using Sepes.Common.Dto;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Query;
+using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
+using Sepes.Infrastructure.Util;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Common.Response.Sandbox;
-using Sepes.Infrastructure.Util;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class SandboxResourceReadService : SandboxServiceBase, ISandboxResourceReadService
-    {       
-        
+    public class SandboxResourceReadService : ISandboxResourceReadService
+    {
+        protected readonly IMapper _mapper;
+        protected readonly IConfiguration _configuration;        
+        protected readonly ISandboxModelService _sandboxModelService;
 
-        public SandboxResourceReadService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxResourceDeleteService> logger, IUserService userService, ISandboxModelService sandboxModelService)
-              : base(config, db, mapper, logger, userService, sandboxModelService)
-        {          
-       
+        public SandboxResourceReadService(IMapper mapper, IConfiguration config, ISandboxModelService sandboxModelService)
+             
+        {
+            _mapper = mapper;
+            _configuration = config;            
+            _sandboxModelService = sandboxModelService;
         }
 
 
@@ -46,16 +44,8 @@ namespace Sepes.Infrastructure.Service
             var resourcesMapped = _mapper.Map<List<SandboxResourceLight>>(resourcesFiltered);            
 
             return resourcesMapped;
-        }      
-
-        public async Task<List<CloudResourceDto>> GetSandboxResources(int sandboxId, CancellationToken cancellation = default)
-        {
-            var queryable = CloudResourceQueries.GetSandboxResourcesQueryable(_db, sandboxId);
-
-            var resources = await queryable.ToListAsync(cancellation);
-
-            return _mapper.Map<List<CloudResourceDto>>(resources);
-        }
+        } 
+      
 
         public async Task<string> GetSandboxCostanlysis(int sandboxId, CancellationToken cancellation = default)
         {

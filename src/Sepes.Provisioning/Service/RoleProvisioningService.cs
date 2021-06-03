@@ -1,12 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
+using Sepes.Common.Constants;
 using Sepes.Common.Constants.Auth;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util.Auth;
 using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -17,17 +20,19 @@ using System.Threading.Tasks;
 namespace Sepes.Provisioning.Service
 {
     public class RoleProvisioningService : IRoleProvisioningService
-    {      
+    {
         readonly IProvisioningLogService _provisioningLogService;
+        readonly IStudyEfModelService _studyModelService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
         readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
 
         readonly EventId _roleAssignmentEventId = new EventId(50, "Sepes-Event-RoleAssignment-Operations");
 
-        public RoleProvisioningService(IProvisioningLogService provisioningLogService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
+        public RoleProvisioningService(IProvisioningLogService provisioningLogService, IStudyEfModelService studyModelService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
         {
             _provisioningLogService = provisioningLogService;
+            _studyModelService = studyModelService;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
             _azureRoleAssignmentService = roleAssignmentService;
@@ -49,9 +54,9 @@ namespace Sepes.Provisioning.Service
                     throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                 }
 
-                var desiredRolesFromOperation = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
-
-                var currentRoleAssignmentTask = SetRoleAssignments(operation, desiredRolesFromOperation, cancellation.Token);
+                var operationStateDeserialized = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
+                var study = await _studyModelService.GetWithParticipantsAndUsersNoAccessCheck(operationStateDeserialized.StudyId);
+                var currentRoleAssignmentTask = SetRoleAssignments(operation, study, cancellation.Token);
 
                 while (!currentRoleAssignmentTask.IsCompleted)
                 {
@@ -79,7 +84,7 @@ namespace Sepes.Provisioning.Service
                     {
                         throw currentRoleAssignmentTask.Exception;
                     }
-                }               
+                }
             }
             catch (Exception ex)
             {
@@ -94,27 +99,38 @@ namespace Sepes.Provisioning.Service
             }
         }
 
-        async Task SetRoleAssignments(CloudResourceOperationDto operation, List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments, CancellationToken cancellationToken = default)
-        {
-            _provisioningLogService.OperationInformation(operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);
+        async Task SetRoleAssignments(CloudResourceOperationDto operation, Study study, CancellationToken cancellationToken = default)
+        {           
+            _provisioningLogService.OperationInformation(operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);           
 
+            List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments = null;
+            
+            if(operation.Resource.Purpose == CloudResourcePurpose.SandboxResourceGroup)
+            {
+                desiredRoleAssignments = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList());
+            }
+            else if (operation.Resource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+            {
+                desiredRoleAssignments = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(study.StudyParticipants.ToList());
+            }               
+           
             var existingRoleAssignments = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
-
+            
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {
                 var sameRoleFromExisting = existingRoleAssignments.Where(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
 
-                    if (sameRoleFromExisting != null)
-                    {
+                if (sameRoleFromExisting != null)
+                {
                     _provisioningLogService.OperationInformation(operation, $"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}", eventId: _roleAssignmentEventId);
-                    }
-                    else
-                    {
-                        var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(operation.Resource.ResourceId, curDesired.RoleId);
+                }
+                else
+                {
+                    var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(operation.Resource.ResourceId, curDesired.RoleId);
                     _provisioningLogService.OperationInformation(operation, $"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}", eventId: _roleAssignmentEventId);
-                        await _azureRoleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
-                    }
+                    await _azureRoleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
+                }
             }
 
             //Find out what roles are allready in place, and delete those that are no longer needed
@@ -139,7 +155,7 @@ namespace Sepes.Provisioning.Service
                     await _azureRoleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
                 }
             }
-        }       
-        
+        }
+
     }
 }

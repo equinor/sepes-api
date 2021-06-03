@@ -26,15 +26,16 @@ namespace Sepes.RestApi.Controller
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> CreateSandboxAsync(int studyId, SandboxCreateDto newSandbox)
         {
-            var updatedStudy = await _sandboxService.CreateAsync(studyId, newSandbox);
-            return new JsonResult(updatedStudy);
+            var createdSandbox = await _sandboxService.CreateAsync(studyId, newSandbox);
+            var sandboxDetails = await _sandboxService.GetSandboxDetailsAsync(createdSandbox.Id);
+            return new JsonResult(sandboxDetails);
         }          
 
         [HttpGet("sandboxes/{sandboxId}")]
         public async Task<IActionResult> GetSandboxAsync(int sandboxId)
         {
-            var sandboxes = await _sandboxService.GetSandboxDetailsAsync(sandboxId);
-            return new JsonResult(sandboxes);
+            var sandboxDetails = await _sandboxService.GetSandboxDetailsAsync(sandboxId);
+            return new JsonResult(sandboxDetails);
         }  
 
         [HttpDelete("sandboxes/{sandboxId}")]

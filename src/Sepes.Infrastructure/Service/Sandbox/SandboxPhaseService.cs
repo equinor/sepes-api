@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
@@ -22,6 +21,8 @@ namespace Sepes.Infrastructure.Service
 {
     public class SandboxPhaseService : SandboxServiceBase, ISandboxPhaseService
     {
+        readonly SepesDbContext _db;
+
         readonly ISandboxDatasetModelService _sandboxDatasetModelService;
 
         readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
@@ -33,11 +34,13 @@ namespace Sepes.Infrastructure.Service
 
         readonly EventId _sandboxNextPhaseEventId = new EventId(33, "Sepes-Event-Sandbox-NextPhase");     
 
-        public SandboxPhaseService(IConfiguration config, SepesDbContext db, IMapper mapper, ILogger<SandboxService> logger,
+        public SandboxPhaseService(SepesDbContext db, IMapper mapper, ILogger<SandboxPhaseService> logger,
             IUserService userService, ISandboxModelService sandboxModelService, ISandboxDatasetModelService sandboxDatasetModelService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
             IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
-            : base(config, db, mapper, logger, userService, sandboxModelService)
+            : base(mapper, logger, userService, sandboxModelService)
         {
+            _db = db;
+
             _sandboxDatasetModelService = sandboxDatasetModelService;          
             _cloudResourceOperationReadService = sandboxResourceOperationService;
             _virtualMachineRuleService = virtualMachineRuleService;
@@ -65,7 +68,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (currentPhaseItem == null)
                 {
-                    InitiatePhaseHistory(sandboxFromDb, user);
+                    SandboxPhaseUtil.InitiatePhaseHistory(sandboxFromDb, user);
                     currentPhaseItem = SandboxPhaseUtil.GetCurrentPhaseHistoryItem(sandboxFromDb);
                 }
 
@@ -238,7 +241,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     if (phaseToRemove.Id > 0)
                     {
-                        var sandboxFromDb = await GetOrThrowAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
+                        var sandboxFromDb = await _sandboxModelService.GetByIdAsync(sandboxId, UserOperation.Sandbox_IncreasePhase, true);
 
                         if (sandboxFromDb.PhaseHistory.Count > 0 && sandboxFromDb.PhaseHistory.Contains(phaseToRemove))
                         {

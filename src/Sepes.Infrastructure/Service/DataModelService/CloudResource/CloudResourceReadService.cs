@@ -30,6 +30,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetInternalWithoutAccessCheckAsync(id);
         }
 
+        public Task<CloudResource> GetByStudyIdForDeletionNoAccessCheckAsync(int id)
+        {
+          return _db.CloudResources.Where(r => r.StudyId == id && !r.Deleted).Include(r => r.ChildResources).FirstOrDefaultAsync();
+        }
+
         public async Task<CloudResource> GetByIdAsync(int id, UserOperation operation)
         {
             return await GetInternalAsync(id, operation, throwIfNotFound: true);
@@ -57,6 +62,42 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             return SoftDeleteUtil.IsMarkedAsDeleted(resource);
-        }      
+        }
+
+        public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
+        {
+            var resourceGroupsQueryable =
+             _db.CloudResources.Where(r => r.StudyId == studyId
+             && r.Deleted == false
+             && r.ResourceType == AzureResourceType.ResourceGroup
+             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+             .Select(r => r.Id);
+
+            return await resourceGroupsQueryable.ToListAsync();
+        }
+
+        public async Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId)
+        {
+            var resourceGroupsQueryable =
+                _db.Sandboxes
+                .Where(sb => sb.StudyId == studyId && sb.Deleted == false)
+                .SelectMany(sb => sb.Resources)
+                .Where(r => r.Deleted == false && r.ResourceType == AzureResourceType.ResourceGroup && (r.SandboxControlled || r.Purpose == CloudResourcePurpose.SandboxResourceGroup))
+                .Select(r => r.Id);
+
+            return await resourceGroupsQueryable.ToListAsync();          
+        }
+
+        public async Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId) {
+
+            var queryable =  _db.CloudResources
+                .Include(r => r.Operations)
+                .ThenInclude(o=> o.DependsOnOperation)
+                .Where(r => r.SandboxId == sandboxId && !r.Deleted);
+
+            return await queryable.ToListAsync();
+        }
+
+
     }
 }

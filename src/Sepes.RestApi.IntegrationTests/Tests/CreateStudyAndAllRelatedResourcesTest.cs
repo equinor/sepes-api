@@ -9,6 +9,7 @@ using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -29,6 +30,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         //[InlineData(true, true)]
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
+            Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
             await WithBasicSeeds();
 
             SetScenario(isEmployee: true, isAdmin: isAdmin, isSponsor: isSponsor);
@@ -99,19 +101,20 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
 
             //OPEN INTERNET
-            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, "1");
+            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
 
             SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
 
-            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, "1");
+            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
 
             //MOVE TO NEXT PHASE
-            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, "1");
+            var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, sandboxResponseWrapper.Content.Id);
 
             SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
+            
             //DELETE VM
-
-            SandboxOperations.DeleteVm<SandboxDetails>(_restHelper, "1");
+            var deleteVmConversation = await SandboxOperations.DeleteVm(_restHelper, virtualMachineResponseWrapper.Content.Id);
+            ApiResponseBasicAsserts.ExpectNoContent(deleteVmConversation.Response);
 
             //RUN WORKER
             await ProcessWorkQueue();
@@ -130,7 +133,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //DELETE STUDY
 
             await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
-
+            Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
         }
     }
 }

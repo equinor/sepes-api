@@ -34,7 +34,7 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var study = await GetStudyFromQueryableThrowIfNotFound(queryable, studyId);          
 
-            await CheckAccesAndThrowIfMissing(userService, study, operation, roleBeingAddedOrRemoved);
+            await VerifyAccessOrThrow(userService, study, operation, roleBeingAddedOrRemoved);
 
             return study;
         }
@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Util.Auth
                 throw NotFoundException.CreateForEntity("Sandbox", sandboxId);
             }
 
-            await CheckAccesAndThrowIfMissing(userService, sandbox.Study, operation);
+            await VerifyAccessOrThrow(userService, sandbox.Study, operation);
 
             return sandbox;
         }
@@ -79,7 +79,7 @@ namespace Sepes.Infrastructure.Util.Auth
             return false;
         }
 
-        static void CheckAccesAndThrowIfMissing(UserDto currentUser, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
+        static void VerifyAccessOrThrow(UserDto currentUser, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
             if (!HasAccessToOperationForStudy(currentUser, study, operation, roleBeingAddedOrRemoved))
             {
@@ -87,7 +87,7 @@ namespace Sepes.Infrastructure.Util.Auth
             }
         }
 
-        public static void CheckAccesAndThrowIfMissing(SingleEntityDapperResult result, UserDto currentUser, UserOperation operation)
+        public static void VerifyAccessOrThrow(SingleEntityDapperResult result, UserDto currentUser, UserOperation operation)
         {
             if (!result.Authorized)
             {
@@ -95,17 +95,17 @@ namespace Sepes.Infrastructure.Util.Auth
             }
         }
 
-        public static async Task CheckAccesAndThrowIfMissing(IUserService userService, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
+        public static async Task VerifyAccessOrThrow(IUserService userService, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
             var currentUser = await userService.GetCurrentUserAsync();
 
-            CheckAccesAndThrowIfMissing(currentUser, study, operation, roleBeingAddedOrRemoved);
+            VerifyAccessOrThrow(currentUser, study, operation, roleBeingAddedOrRemoved);
         }
 
 
         public static Study HasAccessToOperationForStudyOrThrow(UserDto currentUser, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
-            CheckAccesAndThrowIfMissing(currentUser, study, operation, roleBeingAddedOrRemoved);
+            VerifyAccessOrThrow(currentUser, study, operation, roleBeingAddedOrRemoved);
 
             return study;
         }

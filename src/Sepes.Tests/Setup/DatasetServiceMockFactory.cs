@@ -10,6 +10,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Common.ServiceMockFactories.Infrastructure;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -66,7 +67,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);            
 
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
 
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
@@ -87,17 +88,18 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelServiceMock = new Mock<IStudyModelService>();
+            var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             studyModelServiceMock.Setup(x => x.GetForDatasetCreationAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);
             
-
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
             dsCloudResourceServiceMock.Setup(x => x.CreateResourcesForStudySpecificDatasetAsync(It.IsAny<Study>(), It.IsAny<Dataset>(), "192.168.1.1", default(CancellationToken))).Returns(default(Task));
 
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
 
-            return new StudySpecificDatasetService(db, mapper, logger, userService.Object, studyModelServiceMock.Object, studySpecificDatasetModelService.Object, dsCloudResourceServiceMock.Object);
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(serviceProvider, true, false);
+
+            return new StudySpecificDatasetService(db, mapper, logger, userService.Object, studyModelServiceMock.Object, studyWbsValidationService, studySpecificDatasetModelService.Object, dsCloudResourceServiceMock.Object);
         }
     }
 }

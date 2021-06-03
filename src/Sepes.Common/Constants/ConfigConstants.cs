@@ -16,7 +16,7 @@
         public const string RADIX_SECRET_AZ_CLIENT_SECRET = "AzureAd__ClientSecret";
 
         public const string AZ_SWAGGER_CLIENT_ID = "Swagger:ClientId";
-        public const string AZ_SWAGGER_CLIENT_SECRET = "Swagger:ClientSecret";       
+        public const string AZ_SWAGGER_CLIENT_SECRET = "Swagger:ClientSecret";
         public const string APPI_KEY = "ApplicationInsightsInstrumentationKey";
         public const string KEY_VAULT = "KeyVault_Url";
 
@@ -24,9 +24,10 @@
 
         public const string DB_OWNER_CONNECTION_STRING = "SepesOwnerConnectionString";
         public const string DB_READ_WRITE_CONNECTION_STRING = "SepesRWConnectionString";
+        public const string DB_INTEGRATION_TEST_CONNECTION_STRING = "SepesIntegrationTestConnectionString";
 
         public const string SUBSCRIPTION_ID = "SubscriptionId";
-        public const string DISABLE_MIGRATIONS = "DisableMigrations";       
+        public const string DISABLE_MIGRATIONS = "DisableMigrations";
 
         public const string RESOURCE_PROVISIONING_QUEUE_CONSTRING = "ResourceProvisioningQueueConnectionString";
 
@@ -38,6 +39,7 @@
         public const string COST_ALLOCATION_CODE_TAG_NAME = "CostAllocationCodeTagName";
 
         public const string DISABLE_MONITORING = "DisableMonitoring";
+        public const string DISABLE_CACHE_UPDATE = "DisableCacheUpdate";
 
         public const string EMPLOYEE_ROLE = "EmployeeRole";
 
@@ -46,5 +48,10 @@
         public const string SENSITIVE_DATA_LOGGING = "EnableSensitiveDataLogging";
 
         public const string CYPRESS_MOCK_USER = "CypressMockUser";
+
+        //WBS SEARCH
+        public const string WBS_SEARCH_API_URL = "WbsSearchBaseUrl";
+        public const string WBS_SEARCH_API_SCOPE = "WbsSearchScope";
+        public const string WBS_SEARCH_APIM_SUBSCRIPTION = "WbsSearchApimSubscriptionKey";
     }
 }

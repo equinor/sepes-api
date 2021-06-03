@@ -5,7 +5,7 @@
       <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>cobertura</Format>
-          <Exclude>[Sepes.RestApi.Database]*,[Sepes.Tests.Common]*,[*]Sepes.Infrastructure.Dto.*,[*]Sepes.Infrastructure.Response.*,[*]Sepes.Infrastructure.Service.Azure.*,[*]Sepes.Infrastructure.Model.*,[*]Sepes.Infrastructure.Constants.*,[*]Sepes.Infrastructure.Exceptions.*,[*]Sepes.Infrastructure.Migrations.*,[*]Sepes.Infrastructure.Extensions.*,[*]Microsoft.AspNetCore.Authentication.*</Exclude>     
+          <Exclude>[*]Sepes.Azure.Dto.*,[*]Sepes.Common.Dto.*,[*]Sepes.Common.Constants.*,[*]Sepes.Common.Exceptions.*,[*]Sepes.Common.Interface.*,[*]Sepes.Common.Model.*,[*]Sepes.Common.Response.*,[*]Sepes.RestApi.Database.*,[*]Sepes.Tests.Common.*,[*]Sepes.Infrastructure.Dto.*,[*]Sepes.Infrastructure.Model.*,[*]Sepes.Infrastructure.Migrations.*,[*]Sepes.Infrastructure.Extensions.*,[*]Microsoft.AspNetCore.Authentication.*</Exclude>     
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
           <SingleHit>true</SingleHit>
           <UseSourceLink>true</UseSourceLink>

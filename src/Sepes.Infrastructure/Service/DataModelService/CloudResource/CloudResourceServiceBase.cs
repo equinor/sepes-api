@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class CloudResourceServiceBase : ModelServiceBase<CloudResource>
+    public class CloudResourceServiceBase : EfModelServiceBase<CloudResource>
     {
         protected readonly IMapper _mapper;
 
@@ -80,7 +80,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             var resource = await GetInternalWithoutAccessCheckAsync(id, readOnly, onlyNonDeleted, throwIfNotFound, true);
 
-            await CheckAccesAndThrowIfMissing(resource.Sandbox.Study, userOperation);
+            await CheckAccesAndThrowIfNotAllowed(resource.Sandbox.Study, userOperation);
 
             return resource;
         }        
