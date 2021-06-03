@@ -19,10 +19,10 @@ namespace Sepes.Infrastructure.Service
 
         readonly IUserModelService _userModelService;
         readonly ICurrentUserService _currentUserService;
-        readonly IPrincipalService _principalService;
+        readonly IContextUserService _principalService;
         readonly IAzureUserService _azureUserService;
 
-        public UserService(IConfiguration config, IUserModelService userModelService, ICurrentUserService currentUserService, IPrincipalService principalService, IAzureUserService azureUserService)
+        public UserService(IConfiguration config, IUserModelService userModelService, ICurrentUserService currentUserService, IContextUserService principalService, IAzureUserService azureUserService)
         {
             _config = config;            
             _userModelService = userModelService;
@@ -33,10 +33,8 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<UserDto> GetByIdAsync(int userId)
         {
-            var currentUserDb = await _userModelService.GetByIdAsync(userId);
-            return currentUserDb;
-            //return _mapper.Map<UserDto>(currentUserDb);
-        }
+            return await _userModelService.GetByIdAsync(userId);
+        }       
 
         public async Task<UserDto> GetCurrentUserAsync()
         {

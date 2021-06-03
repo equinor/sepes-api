@@ -50,7 +50,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
                 services.Remove(descriptor);
                
-                services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
+                services.AddSingleton<IContextUserService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
                 services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
 

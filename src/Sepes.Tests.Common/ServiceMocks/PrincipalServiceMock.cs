@@ -2,7 +2,7 @@
 
 namespace Sepes.RestApi.IntegrationTests.Services
 {
-    public class PrincipalServiceMock : IPrincipalService
+    public class PrincipalServiceMock : IContextUserService
     {
         readonly bool _isEmployee;
         readonly bool _isAdmin;

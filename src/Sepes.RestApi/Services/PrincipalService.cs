@@ -6,7 +6,7 @@ using Sepes.Infrastructure.Util.Auth;
 
 namespace Sepes.RestApi.Services
 {
-    public class PrincipalService : IPrincipalService
+    public class PrincipalService : IContextUserService
     {
         readonly IConfiguration _config;
         readonly IHttpContextAccessor _contextAccessor;

@@ -85,14 +85,14 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
-        protected async Task CreateRoleUpdateOperationsAsync(StudyParticipant studyParticipant)
+        protected async Task CreateRoleUpdateOperationsAsync(int studyId)
         {
-            var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyParticipant.StudyId);
-            resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyParticipant.StudyId));
+            var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyId);
+            resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyId));
 
             foreach (var currentResourceId in resourcesToUpdate)
             {
-                var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyParticipant.StudyId));
+                var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyId));
                 var updateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);
                 await _provisioningQueueService.CreateItemAndEnqueue(updateOperation);
             }

@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Common.Interface
 {
-    public interface IPrincipalService
+    public interface IContextUserService
     {
         public bool IsEmployee();
 

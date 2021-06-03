@@ -10,34 +10,10 @@ using Sepes.Common.Util;
 namespace Sepes.Infrastructure.Util.Auth
 {
     public static class UserUtil
-    {  
-           
+    {       
 
         //public static void ApplyExtendedProps(IConfiguration config, IPrincipalService principalService, UserDto user)
-        //{
-        //    if (principalService.IsAdmin())
-        //    {
-        //        user.Admin = true;
-        //        user.AppRoles.Add(AppRoles.Admin);
-        //    }
-
-        //    if (principalService.IsSponsor())
-        //    {
-        //        user.Sponsor = true;
-        //        user.AppRoles.Add(AppRoles.Sponsor);
-        //    }
-
-        //    if (principalService.IsDatasetAdmin())
-        //    {
-        //        user.DatasetAdmin = true;
-        //        user.AppRoles.Add(AppRoles.DatasetAdmin);
-        //    }
-
-        //    if (principalService.IsEmployee())
-        //    {
-        //        user.Employee = true;          
-        //    }
-        //}
+       
 
         public static bool UserHasAdminRole(IPrincipal principal)
         {

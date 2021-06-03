@@ -187,7 +187,7 @@ namespace Sepes.RestApi
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
-            services.AddScoped<IPrincipalService, PrincipalService>();
+            services.AddScoped<IContextUserService, PrincipalService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();

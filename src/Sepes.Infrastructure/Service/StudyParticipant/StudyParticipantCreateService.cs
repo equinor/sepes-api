@@ -35,8 +35,7 @@ namespace Sepes.Infrastructure.Service
 
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureADUsersService = azureADUsersService;
-            //_userService = userService;
+            _azureADUsersService = azureADUsersService;         
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -49,7 +48,7 @@ namespace Sepes.Infrastructure.Service
 
                 var studyFromDb = await GetStudyForParticipantOperation(studyId, role);                         
 
-                StudyParticipant newlyAddedParticipant = null;
+                StudyParticipantDto newlyAddedParticipant = null;
 
                 if (user.Source == ParticipantSource.Db)
                 {                  
@@ -64,9 +63,9 @@ namespace Sepes.Infrastructure.Service
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
                                   
-                await CreateRoleUpdateOperationsAsync(newlyAddedParticipant);
+                await CreateRoleUpdateOperationsAsync(newlyAddedParticipant.StudyId);
 
-                return _mapper.Map<StudyParticipantDto>(newlyAddedParticipant);
+                return newlyAddedParticipant;
             }
             catch (Exception ex)
             {
@@ -87,7 +86,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipant> AddDbUserAsync(Study studyFromDb, int userId, string role)
+        async Task<StudyParticipantDto> AddDbUserAsync(Study studyFromDb, int userId, string role)
         {
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
@@ -101,11 +100,11 @@ namespace Sepes.Infrastructure.Service
                 throw NotFoundException.CreateForEntity("User", userId);
             }
 
-            StudyParticipant createdStudyParticipant = null;
+            StudyParticipantDto createdStudyParticipant = null;
 
             try
             {
-                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
+                createdStudyParticipant = new StudyParticipantDto { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
 
@@ -118,9 +117,10 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipant> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        async Task<StudyParticipantDto> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
         {
-            var userFromAzure = new AzureUserDto { };
+            var userFromAzure;
+
             if(await _userService.IsMockUser())
             {
                 userFromAzure = new AzureUserDto { DisplayName = "Mock user", Mail = "Mock@User.com", UserPrincipalName = "Mock user" };
@@ -134,6 +134,8 @@ namespace Sepes.Infrastructure.Service
             {
                 throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
             }
+
+            _user
 
             var userDb = await _db.Users.FirstOrDefaultAsync(p => p.ObjectId == user.ObjectId);
 
@@ -152,11 +154,11 @@ namespace Sepes.Infrastructure.Service
                 throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyFromDb.Id}");
             }
 
-            StudyParticipant createdStudyParticipant = null;
+            StudyParticipantDto createdStudyParticipant = null;
 
             try
             {
-                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };
+                createdStudyParticipant = new StudyParticipantDto { StudyId = studyFromDb.Id, RoleName = role };
                 userDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
 
                 await _db.SaveChangesAsync();
@@ -173,19 +175,19 @@ namespace Sepes.Infrastructure.Service
         }
 
 
-        async Task RemoveIfExist(StudyParticipant participant)
+        async Task RemoveIfExist(StudyParticipantDto participant)
         {
             if (participant != null)
             {
                 var sameParticipantFromDb = await _db.StudyParticipants
                     .Where(sp => sp.StudyId == participant.StudyId
                     && sp.UserId == participant.UserId
-                    && sp.RoleName == participant.RoleName)
+                    && sp.RoleName == participant.Role)
                     .FirstOrDefaultAsync();
 
                 if (sameParticipantFromDb != null)
                 {
-                    _db.StudyParticipants.Remove(participant);
+                    _db.StudyParticipants.Remove(sameParticipantFromDb);
                     await _db.SaveChangesAsync();
                 }
             }
