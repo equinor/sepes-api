@@ -74,7 +74,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<CloudResourceOperation> CreateBasicOperationAsync()
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
+            var currentUser = await _userService.GetCurrentUserAsync(false);
 
             var newOperation = new CloudResourceOperation()
             {

@@ -113,7 +113,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<bool> IsMockUser()
         {
-            var currentUser = await GetCurrentUserAsync();
+            var currentUser = await GetCurrentUserAsync(false);
             var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
 
             if (currentUser.ObjectId.ToLowerInvariant() == cypressMockUser.ToLowerInvariant())

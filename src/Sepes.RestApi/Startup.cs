@@ -183,20 +183,19 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
-            //Plumbing           
+            //Plumbing
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IUserPermissionService, UserPermissionService>();
-            services.AddScoped<IContextUserService, ContextUserService>();
-            services.AddTransient<IRequestIdService, RequestIdService>();
+            services.AddTransient<IContextUserService, ContextUserService>();
+            services.AddTransient<IRequestIdService, RequestIdService>();            
+            services.AddTransient<IStudyPermissionService, StudyPermissionService>();
+            services.AddTransient<IUserPermissionService, UserPermissionService>();  
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
-            services.AddScoped<IHealthService, HealthService>();
-            services.AddScoped<IStudyPermissionService, StudyPermissionService>();
-
+            services.AddTransient<IHealthService, HealthService>();
 
             //Data model services v2
-            services.AddSingleton<IUserModelService, UserModelDapperService>();
+            services.AddTransient<IUserModelService, UserModelDapperService>();
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
             services.AddTransient<IStudyDetailsModelService, StudyDetailsModelService>();
@@ -230,8 +229,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
             services.AddTransient<IWbsValidationService, WbsValidationService>();
-            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();
-            
+            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();            
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();

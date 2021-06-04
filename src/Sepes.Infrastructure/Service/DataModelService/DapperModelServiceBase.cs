@@ -71,9 +71,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 await connection.ExecuteAsync(statement, parameters);
             }
         }
-
-     
-
     }
 
     public class DapperModelWithPermissionServiceBase : DapperModelServiceBase
