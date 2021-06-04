@@ -183,11 +183,10 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
-            //Plumbing
-            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            //Plumbing           
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IUserPermissionService, UserPermissionService>();
-            services.AddScoped<IContextUserService, PrincipalService>();
+            services.AddScoped<IContextUserService, ContextUserService>();
             services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
@@ -197,7 +196,7 @@ namespace Sepes.RestApi
 
 
             //Data model services v2
-            services.AddSingleton<IUserModelService, UserModelService>();
+            services.AddSingleton<IUserModelService, UserModelDapperService>();
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
             services.AddTransient<IStudyDetailsModelService, StudyDetailsModelService>();

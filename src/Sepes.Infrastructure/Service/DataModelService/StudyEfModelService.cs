@@ -8,18 +8,19 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
-using Sepes.Infrastructure.Util.Auth;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyEfModelService : EfModelServiceBase<Study>, IStudyEfModelService
-    { 
+    {
+        readonly IUserService _userService;
+
         public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService, studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
         {
-          
+            _userService = userService;
         }        
 
         public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation)

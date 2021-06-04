@@ -17,8 +17,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     {
         protected readonly IStudyPermissionService _studyPermissionService;
 
-        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService)
+        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger)
         {
             _studyPermissionService = studyPermissionService;
         }

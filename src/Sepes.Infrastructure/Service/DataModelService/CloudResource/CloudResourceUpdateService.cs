@@ -12,12 +12,13 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceUpdateService : CloudResourceServiceBase, ICloudResourceUpdateService
-    {       
+    {
+        readonly IUserService _userService;
 
         public CloudResourceUpdateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceUpdateService> logger, IUserService userService, IStudyPermissionService studyPermissionService, ISandboxModelService sandboxModelService)
-         : base(db, config, mapper, logger, userService, studyPermissionService, sandboxModelService)
-        {           
-           
+         : base(db, config, mapper, logger, studyPermissionService)
+        {
+            _userService = userService;
         }     
 
         public async Task<CloudResourceDto> UpdateResourceGroup(int resourceId, CloudResourceDto updated)

@@ -17,49 +17,73 @@ namespace Sepes.Infrastructure.Service
        
         readonly IConfiguration _config;
 
-        readonly IUserModelService _userModelService;
-        readonly ICurrentUserService _currentUserService;
-        readonly IContextUserService _principalService;
+        readonly IUserModelService _userModelService;      
+        readonly IContextUserService _contextUserService;
         readonly IAzureUserService _azureUserService;
 
-        public UserService(IConfiguration config, IUserModelService userModelService, ICurrentUserService currentUserService, IContextUserService principalService, IAzureUserService azureUserService)
+        public UserService(IConfiguration config, IUserModelService userModelService, IContextUserService contextUserService, IAzureUserService azureUserService)
         {
             _config = config;            
-            _userModelService = userModelService;
-            _currentUserService = currentUserService;
-            _principalService = principalService;
+            _userModelService = userModelService;         
+            _contextUserService = contextUserService;
             _azureUserService = azureUserService;
         }
 
-        public async Task<UserDto> GetByIdAsync(int userId)
+        public async Task<UserDto> GetByDbIdAsync(int userId)
         {
             return await _userModelService.GetByIdAsync(userId);
-        }       
+        }
 
-        public async Task<UserDto> GetCurrentUserAsync()
+        public async Task<UserDto> GetByObjectIdAsync(string objectId)
+        {
+            return await _userModelService.GetByObjectIdAsync(objectId);
+        }
+
+        public async Task<UserDto> EnsureExists(UserDto user)
+        {
+            await EnsureDbUserExistsAndSetDbIdOnDto(user);
+
+            if(user.Id == 0)
+            {
+                throw new Exception($"Unable to ensure user {user.ObjectId} exists in DB");
+            }
+
+            return user;
+        }
+
+        public async Task<UserDto> GetCurrentUserAsync(bool includeDbId = true)
         {
             if (_cachedUser == null)
             {
-                _cachedUser = await EnsureDbUserExists();
+                _cachedUser = _contextUserService.GetUser();
+
+                if (includeDbId)
+                {
+                    await EnsureDbUserExistsAndSetDbIdOnDto(_cachedUser);
+                }             
+               
+            }
+            else if(includeDbId && _cachedUser.Id == 0)
+            {
+                await EnsureDbUserExistsAndSetDbIdOnDto(_cachedUser);
             }
 
             return _cachedUser;
         }
 
-        async Task<UserDto> EnsureDbUserExists()
-        {
-            var loggedInUserObjectId = _currentUserService.GetUserId();
+       
 
-            var userFromDb = await _userModelService.GetByObjectIdAsync(loggedInUserObjectId);
+        async Task EnsureDbUserExistsAndSetDbIdOnDto(UserDto user)
+        {
+            var userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
 
             if (userFromDb == null)
-            {
-
+            { 
                 var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
 
                 AzureUserDto userFromAzure;
 
-                if (!String.IsNullOrWhiteSpace(cypressMockUser) && loggedInUserObjectId.Equals(cypressMockUser))
+                if (!String.IsNullOrWhiteSpace(cypressMockUser) && user.ObjectId.Equals(cypressMockUser))
                 {
                     userFromAzure = new AzureUserDto
                     {
@@ -70,49 +94,22 @@ namespace Sepes.Infrastructure.Service
                 }
                 else
                 {
-                    userFromAzure = await _azureUserService.GetUserAsync(loggedInUserObjectId);
+                    userFromAzure = await _azureUserService.GetUserAsync(user.ObjectId);
 
                     if (userFromAzure == null)
                     {
-                        throw new Exception($"Unable to get info on logged in user from Azure. User id: {loggedInUserObjectId}");
+                        throw new Exception($"Unable to get info on logged in user from Azure. User id: {user.ObjectId}");
                     }
                 }
 
-                await _userModelService.TryCreate(loggedInUserObjectId, userFromAzure.UserPrincipalName, userFromAzure.Mail, userFromAzure.DisplayName, userFromAzure.UserPrincipalName);
+                await _userModelService.TryCreate(user.ObjectId, userFromAzure.UserPrincipalName, userFromAzure.Mail, userFromAzure.DisplayName, userFromAzure.UserPrincipalName);
 
-                userFromDb = await _userModelService.GetByObjectIdAsync(loggedInUserObjectId);
-
+                userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
             }
 
-            ApplyExtendedProps(userFromDb);
-            return userFromDb;
+            user.Id = userFromDb.Id;
         }
-
-        void ApplyExtendedProps(UserDto user)
-        {
-            if (_principalService.IsAdmin())
-            {
-                user.Admin = true;
-                user.AppRoles.Add(AppRoles.Admin);
-            }
-
-            if (_principalService.IsSponsor())
-            {
-                user.Sponsor = true;
-                user.AppRoles.Add(AppRoles.Sponsor);
-            }
-
-            if (_principalService.IsDatasetAdmin())
-            {
-                user.DatasetAdmin = true;
-                user.AppRoles.Add(AppRoles.DatasetAdmin);
-            }
-
-            if (_principalService.IsEmployee())
-            {
-                user.Employee = true;
-            }
-        }
+       
 
         public async Task<bool> IsMockUser()
         {
@@ -126,5 +123,7 @@ namespace Sepes.Infrastructure.Service
 
             return false;
         }
+
+       
     }
 }

@@ -19,8 +19,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     {
         public readonly IConfiguration _config;
 
-        public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IUserService userService, IStudyPermissionService studyPermissionService, ISandboxModelService sandboxModelService)
-         : base(db, config, mapper, logger, userService, studyPermissionService, sandboxModelService)
+        public CloudResourceReadService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceReadService> logger, IStudyPermissionService studyPermissionService)
+         : base(db, config, mapper, logger, studyPermissionService)
         {
             _config = config;
         }

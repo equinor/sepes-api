@@ -16,8 +16,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     public class ResourceOperationModelService : DatasetModelServiceBase, IResourceOperationModelService
     {      
 
-        public ResourceOperationModelService(IConfiguration configuration, SepesDbContext db, ILogger<ResourceOperationModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService, studyPermissionService)
+        public ResourceOperationModelService(IConfiguration configuration, SepesDbContext db, ILogger<ResourceOperationModelService> logger, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
         {
           
         }

@@ -53,14 +53,12 @@ namespace Sepes.Tests.Services.DomainServices
             var config = _serviceProvider.GetService<IConfiguration>();
 
             var userModelServiceMock = new Mock<IUserModelService>();
-            userModelServiceMock.Setup(s => s.GetByObjectIdAsync(It.IsAny<string>())).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, UserName = TestUserConstants.COMMON_CUR_USER_UPN });
+            userModelServiceMock.Setup(s => s.GetByObjectIdAsync(It.IsAny<string>())).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, UserName = TestUserConstants.COMMON_CUR_USER_UPN });          
           
-
-            var currentUserServiceMock = CurrentUserServiceMock.GetService();
-            var principalServiceMock = PrincipalServiceMock.GetService(admin: admin, sponsor: sponsor, datasetAdmin: datasetAdmin, employee: employee);
+            var principalServiceMock = ContextUserServiceMock.GetService(admin: admin, sponsor: sponsor, datasetAdmin: datasetAdmin, employee: employee);
             var azureUserServiceMock = AzureUserServiceMock.GetService();
 
-            return new UserService(config, userModelServiceMock.Object, currentUserServiceMock.Object, principalServiceMock.Object, azureUserServiceMock.Object);
+            return new UserService(config, userModelServiceMock.Object, principalServiceMock.Object, azureUserServiceMock.Object);
         }
     }
 }

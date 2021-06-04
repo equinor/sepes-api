@@ -14,8 +14,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudySpecificDatasetModelService : DatasetModelServiceBase, IStudySpecificDatasetModelService
     {
-        public StudySpecificDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudySpecificDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService, studyPermissionService)
+        public StudySpecificDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudySpecificDatasetModelService> logger, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
         {
 
         }

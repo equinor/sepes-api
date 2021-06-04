@@ -1,15 +1,17 @@
-﻿namespace Sepes.Common.Interface
+﻿using Sepes.Common.Dto;
+
+namespace Sepes.Common.Interface
 {
     public interface IContextUserService
     {
-        public bool IsEmployee();
+        UserDto GetUser();
 
-        public bool IsAdmin();
+        bool IsEmployee();
 
-        public bool IsSponsor();
+        bool IsAdmin();
 
-        public bool IsDatasetAdmin();
+        bool IsSponsor();
 
-       
+        bool IsDatasetAdmin();    
     }
 }

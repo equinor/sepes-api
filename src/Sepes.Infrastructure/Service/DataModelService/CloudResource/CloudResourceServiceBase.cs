@@ -18,8 +18,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
     {
         protected readonly IMapper _mapper;
 
-        public CloudResourceServiceBase(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService, ISandboxModelService sandboxModelService)
-         : base(config, db, logger, userService, studyPermissionService)
+        public CloudResourceServiceBase(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger logger, IStudyPermissionService studyPermissionService)
+         : base(config, db, logger, studyPermissionService)
         {
             _mapper = mapper;
         }

@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class UserModelService : DapperModelServiceBase, IUserModelService
+    public class UserModelDapperService : DapperModelServiceBase, IUserModelService
     {
-        public UserModelService(IConfiguration configuration, ILogger<UserModelService> logger)
+        public UserModelDapperService(IConfiguration configuration, ILogger<UserModelDapperService> logger)
             : base(configuration, logger)
         {
 

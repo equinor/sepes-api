@@ -12,8 +12,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class DatasetModelServiceBase : EfModelServiceBase<Dataset>
     {
-        public DatasetModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService, studyPermissionService)
+        public DatasetModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
         {
 
         }

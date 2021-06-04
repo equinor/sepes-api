@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
+using Sepes.Common.Dto.Study;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -96,6 +97,15 @@ namespace Sepes.Infrastructure.Service
                 var updateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);
                 await _provisioningQueueService.CreateItemAndEnqueue(updateOperation);
             }
-        }             
+        }
+
+        protected StudyParticipantDto ConvertToDto(StudyParticipant studyParticipant, UserDto user)
+        {
+            var dto = _mapper.Map<StudyParticipantDto>(studyParticipant);
+            dto.FullName = user.FullName;
+            dto.UserName = user.UserName;
+            dto.EmailAddress = user.EmailAddress;
+            return dto;
+        }
     }
 }

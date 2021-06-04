@@ -13,7 +13,6 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,11 +22,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class SandboxDatasetModelService : EfModelServiceBase, ISandboxDatasetModelService
     {
+        IUserService _userService;
         IStudyPermissionService _studyPermissionService;
 
         public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService)
+            : base(configuration, db, logger)
         {
+            _userService = userService;
             _studyPermissionService = studyPermissionService;
         }           
 

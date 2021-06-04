@@ -15,10 +15,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class PreApprovedDatasetModelService : DatasetModelServiceBase, IPreApprovedDatasetModelService
     {
-        public PreApprovedDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<PreApprovedDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, db, logger, userService, studyPermissionService)
-        {
+        readonly IUserService _userService;
 
+        public PreApprovedDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<PreApprovedDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
+        {
+            _userService = userService;
         }
 
 

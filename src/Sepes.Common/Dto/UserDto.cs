@@ -26,7 +26,7 @@ namespace Sepes.Common.Dto
           
         }
 
-        public UserDto(string objectId, string userName, string fullName, string email, bool admin = false, bool sponsor = false, bool datasetAdmin = false)
+        public UserDto(string objectId, string userName, string fullName, string email, bool admin = false, bool sponsor = false, bool datasetAdmin = false, bool employee = false)
         {          
             ObjectId = objectId;
             UserName = userName;
@@ -36,6 +36,7 @@ namespace Sepes.Common.Dto
             Admin = admin;
             Sponsor = sponsor;
             DatasetAdmin = datasetAdmin;
+            Employee = employee;
         }  
     }
 }
