@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants;
+﻿using Sepes.Common.Constants;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
@@ -14,7 +12,8 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
         readonly IWbsApiService _wbsApiService;
         readonly IWbsCodeCacheModelService _wbsCodeCacheModelService;
-        public WbsValidationService(ILogger<WbsValidationService> logger, IUserService userService, IWbsApiService wbsApiService, IWbsCodeCacheModelService wbsCodeCacheModelService)
+
+        public WbsValidationService(IUserService userService, IWbsApiService wbsApiService, IWbsCodeCacheModelService wbsCodeCacheModelService)
         {
             _userService = userService;
             _wbsApiService = wbsApiService;
@@ -27,9 +26,10 @@ namespace Sepes.Infrastructure.Service
             OperationAccessUtil.HasAccessToOperationOrThrow(currentUser, UserOperation.Study_Create);
             return await IsValid(wbsCode, cancellation);
         }
+
         public async Task<bool> IsValid(string wbsCode, CancellationToken cancellation = default)
         {
-            if (await _userService.IsMockUser())
+            if (_userService.IsMockUser())
             {
                 return true;
             }

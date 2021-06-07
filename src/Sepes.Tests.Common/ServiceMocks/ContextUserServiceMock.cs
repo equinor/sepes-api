@@ -20,7 +20,7 @@ namespace Sepes.RestApi.IntegrationTests.Services
             _isDatasetAdmin = isDatasetAdmin;
         }
 
-        public UserDto GetUser()
+        public UserDto GetCurrentUser()
         {
            var user = new UserDto(TestUserConstants.COMMON_CUR_USER_OBJECTID, TestUserConstants.COMMON_CUR_USER_UPN, TestUserConstants.COMMON_CUR_USER_FULL_NAME, TestUserConstants.COMMON_CUR_USER_EMAIL,
                 IsAdmin(), IsSponsor(), IsDatasetAdmin(), IsEmployee());
@@ -74,6 +74,11 @@ namespace Sepes.RestApi.IntegrationTests.Services
             {
                 user.Employee = true;
             }
+        }
+
+        public string GetCurrentUserObjectId()
+        {
+           return TestUserConstants.COMMON_CUR_USER_OBJECTID;
         }
     }
 }

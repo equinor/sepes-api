@@ -12,28 +12,34 @@ namespace Sepes.RestApi.Services
     public class ContextUserService : IContextUserService
     {
         readonly IConfiguration _config;
-        readonly IHttpContextAccessor _httpContextAccessor;
+        readonly IHttpContextAccessor _httpContextAccessor;       
 
         public ContextUserService(IConfiguration config, IHttpContextAccessor contextAccessor)
         {
             _config = config;
-            _httpContextAccessor = contextAccessor;
+            _httpContextAccessor = contextAccessor;         
         }
 
-        public UserDto GetUser()
+        public string GetCurrentUserObjectId()
+        {
+            var claimsIdentity = GetIdentity();
+            return GetUserId(claimsIdentity);
+        }
+
+        public UserDto GetCurrentUser()
         {
             var claimsIdentity = GetIdentity();
 
-            var user = new UserDto(
-                GetUserId(claimsIdentity)
-                , GetUsername(claimsIdentity)
-                , GetFullName(claimsIdentity)
-                , GetEmail(claimsIdentity)
-                );
+            var user = new UserDto();
+            user.ObjectId = GetUserId(claimsIdentity);
+            user.UserName = GetUsername(claimsIdentity);
+            user.FullName = GetFullName(claimsIdentity);
+            user.EmailAddress = GetEmail(claimsIdentity);
 
             ApplyExtendedProps(user);
 
             return user;
+
         }
 
         string GetUserId(ClaimsIdentity claimsIdentity)
@@ -55,8 +61,8 @@ namespace Sepes.RestApi.Services
         }
 
         string GetFullName(ClaimsIdentity claimsIdentity)
-        {        
-            return GetClaimValue(claimsIdentity, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");     
+        {
+            return GetClaimValue(claimsIdentity, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
         }
 
         public bool IsEmployee()
@@ -104,7 +110,7 @@ namespace Sepes.RestApi.Services
             var claimValue = claimsIdentity.FindFirst(claimType).Value;
             return claimValue;
         }
-
+     
         void ApplyExtendedProps(UserDto user)
         {
             if (IsAdmin())

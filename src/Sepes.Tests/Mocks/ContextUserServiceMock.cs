@@ -10,7 +10,7 @@ namespace Sepes.Tests.Mocks
         {
             var currentUserServiceMock = new Mock<IContextUserService>();           
 
-            currentUserServiceMock.Setup(us => us.GetUser()).Returns(new Sepes.Common.Dto.UserDto(
+            currentUserServiceMock.Setup(us => us.GetCurrentUser()).Returns(new Sepes.Common.Dto.UserDto(
                 TestUserConstants.COMMON_CUR_USER_OBJECTID,
                 TestUserConstants.COMMON_CUR_USER_UPN,
                 TestUserConstants.COMMON_CUR_USER_FULL_NAME,

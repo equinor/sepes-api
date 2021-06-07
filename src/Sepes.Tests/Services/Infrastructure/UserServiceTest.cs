@@ -1,9 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Sepes.Common.Dto;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Tests.Common.Constants;
@@ -55,10 +53,9 @@ namespace Sepes.Tests.Services.DomainServices
             var userModelServiceMock = new Mock<IUserModelService>();
             userModelServiceMock.Setup(s => s.GetByObjectIdAsync(It.IsAny<string>())).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, UserName = TestUserConstants.COMMON_CUR_USER_UPN });          
           
-            var principalServiceMock = ContextUserServiceMock.GetService(admin: admin, sponsor: sponsor, datasetAdmin: datasetAdmin, employee: employee);
-            var azureUserServiceMock = AzureUserServiceMock.GetService();
+            var contextUserServiceMock = ContextUserServiceMock.GetService(admin: admin, sponsor: sponsor, datasetAdmin: datasetAdmin, employee: employee);         
 
-            return new UserService(config, userModelServiceMock.Object, principalServiceMock.Object, azureUserServiceMock.Object);
+            return new UserService(config, userModelServiceMock.Object, contextUserServiceMock.Object);
         }
     }
 }

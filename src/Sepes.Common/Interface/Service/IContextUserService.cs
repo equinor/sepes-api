@@ -4,7 +4,9 @@ namespace Sepes.Common.Interface
 {
     public interface IContextUserService
     {
-        UserDto GetUser();
+        UserDto GetCurrentUser();
+
+        string GetCurrentUserObjectId();
 
         bool IsEmployee();
 
@@ -12,6 +14,6 @@ namespace Sepes.Common.Interface
 
         bool IsSponsor();
 
-        bool IsDatasetAdmin();    
+        bool IsDatasetAdmin();     
     }
 }

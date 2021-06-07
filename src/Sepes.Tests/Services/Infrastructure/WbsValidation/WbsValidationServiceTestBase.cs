@@ -121,8 +121,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>()));
 
-            return new WbsValidationService(
-                 _serviceProvider.GetService<ILogger<WbsValidationService>>(),
+            return new WbsValidationService(                
                  UserFactory.GetUserServiceMockForAdmin(1).Object,
                  wbsApiServiceMock.Object,
                  wbsCacheServiceMock.Object

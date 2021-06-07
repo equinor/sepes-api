@@ -108,7 +108,7 @@ namespace Sepes.Tests.Services.DomainServices
 
             var operationUpdateServiceMock = new Mock<ICloudResourceOperationUpdateService>();
 
-            var configuration = _serviceProvider.GetService<IConfiguration>();
+            var configuration = _serviceProvider.GetService<IConfiguration>();           
 
             var studyParticipantService = new StudyParticipantCreateService(db, mapper, logger, userServiceMock.Object, studyModelService, adUserServiceMock.Object, queueServiceMock.Object, resourceReadServiceMock.Object, operationCreateServiceMock.Object, operationUpdateServiceMock.Object);
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);

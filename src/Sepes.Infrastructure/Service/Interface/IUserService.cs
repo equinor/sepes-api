@@ -13,6 +13,8 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<UserDto> EnsureExists(UserDto user);
 
-        Task<bool> IsMockUser();
+        bool IsMockUser();
+
+        bool IsMockUser(out UserDto mockUser);
     }
 }

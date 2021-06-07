@@ -16,12 +16,7 @@ namespace Sepes.Functions.Service
         public async Task<UserDto> GetByDbIdAsync(int userId)
         {
             return await Task.FromResult(_cachedUser);
-        }
-
-        public async Task<bool> IsMockUser()
-        {
-            return await Task.FromResult(false);
-        }
+        }        
 
         public async Task<UserDto> GetByObjectIdAsync(string objectId)
         {
@@ -36,6 +31,17 @@ namespace Sepes.Functions.Service
         public async Task<UserDto> EnsureExists(UserDto user)
         {
             return await Task.FromResult(_cachedUser);
+        }
+
+        public bool IsMockUser()
+        {
+            return false;
+        }
+
+        public bool IsMockUser(out UserDto mockUser)
+        {
+            mockUser = null;
+            return false;
         }
     }
 }

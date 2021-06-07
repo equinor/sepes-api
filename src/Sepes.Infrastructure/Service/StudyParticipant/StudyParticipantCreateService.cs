@@ -20,14 +20,14 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {      
-        readonly IAzureUserService _azureADUsersService;
+        readonly IAzureUserService _azureADUsersService;    
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
             ILogger<StudyParticipantCreateService> logger,
             IUserService userService,
             IStudyEfModelService studyModelService,
-            IAzureUserService azureADUsersService,
+            IAzureUserService azureADUsersService,           
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
 
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {        
-            _azureADUsersService = azureADUsersService;
+            _azureADUsersService = azureADUsersService;       
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -46,17 +46,17 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-                var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
+               
 
                 StudyParticipantDto newlyAddedParticipant = null;
 
                 if (user.Source == ParticipantSource.Db)
                 {
-                    newlyAddedParticipant = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);
+                    newlyAddedParticipant = await AddDbUserAsync(studyId, user.DatabaseId.Value, role);
                 }
                 else if (user.Source == ParticipantSource.Azure)
                 {
-                    newlyAddedParticipant = await AddAzureUserAsync(studyFromDb, user, role);
+                    newlyAddedParticipant = await AddAzureUserAsync(studyId, user, role);
                 }
                 else
                 {
@@ -86,8 +86,10 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipantDto> AddDbUserAsync(Study studyFromDb, int userId, string role)
+        async Task<StudyParticipantDto> AddDbUserAsync(int studyId, int userId, string role)
         {
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
+
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
                 throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
@@ -117,27 +119,28 @@ namespace Sepes.Infrastructure.Service
             }
         }      
 
-        async Task<StudyParticipantDto> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        async Task<StudyParticipantDto> AddAzureUserAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            AzureUserDto userFromAzure;
-
-            if (await _userService.IsMockUser())
+            if (_userService.IsMockUser(out UserDto addedUser)) //If mock user, he can only add him self
             {
-                userFromAzure = new AzureUserDto { DisplayName = "Mock user", Mail = "Mock@User.com", UserPrincipalName = "Mock user" };
+                await _userService.EnsureExists(addedUser);
             }
             else
             {
-                userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+                var newUserFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+
+                if (newUserFromAzure == null)
+                {
+                    throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
+                }
+
+                addedUser = await _userService.EnsureExists(new UserDto(user.ObjectId, newUserFromAzure.UserPrincipalName, newUserFromAzure.DisplayName, newUserFromAzure.Mail));
             }
 
-            if (userFromAzure == null)
-            {
-                throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
-            }
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
+           
 
-            var userDb = await _userService.EnsureExists(new UserDto(user.ObjectId, userFromAzure.UserPrincipalName, userFromAzure.DisplayName, userFromAzure.Mail));
-
-            if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
+            if (RoleAllreadyExistsForUser(studyFromDb, addedUser.Id, role))
             {
                 throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyFromDb.Id}");
             }
@@ -146,7 +149,7 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };
+                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };                
                 studyFromDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
 
                 await _db.SaveChangesAsync();

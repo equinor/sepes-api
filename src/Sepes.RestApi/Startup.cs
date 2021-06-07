@@ -163,6 +163,8 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
+              
+                
 
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
@@ -183,19 +185,21 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
-            //Plumbing
-            services.AddScoped<IUserService, UserService>();
-            services.AddTransient<IContextUserService, ContextUserService>();
-            services.AddTransient<IRequestIdService, RequestIdService>();            
-            services.AddTransient<IStudyPermissionService, StudyPermissionService>();
-            services.AddTransient<IUserPermissionService, UserPermissionService>();  
+            //Plumbing          
+            services.AddTransient<IRequestIdService, RequestIdService>();          
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
             services.AddTransient<IHealthService, HealthService>();
 
-            //Data model services v2
+            //Authentication and Authorization
+            services.AddScoped<IUserService, UserService>();
+            services.AddTransient<IContextUserService, ContextUserService>();            
             services.AddTransient<IUserModelService, UserModelDapperService>();
+            services.AddTransient<IStudyPermissionService, StudyPermissionService>();
+            services.AddTransient<IUserPermissionService, UserPermissionService>();
+
+            //Data model services v2
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
             services.AddTransient<IStudyDetailsModelService, StudyDetailsModelService>();

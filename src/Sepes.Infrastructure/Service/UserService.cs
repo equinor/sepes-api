@@ -1,11 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Sepes.Azure.Dto;
-using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Threading.Tasks;
 
@@ -14,19 +13,16 @@ namespace Sepes.Infrastructure.Service
     public class UserService : IUserService
     {
         UserDto _cachedUser;
-       
-        readonly IConfiguration _config;
 
-        readonly IUserModelService _userModelService;      
+        readonly IConfiguration _configuration;
+        readonly IUserModelService _userModelService;
         readonly IContextUserService _contextUserService;
-        readonly IAzureUserService _azureUserService;
 
-        public UserService(IConfiguration config, IUserModelService userModelService, IContextUserService contextUserService, IAzureUserService azureUserService)
+        public UserService(IConfiguration configuration, IUserModelService userModelService, IContextUserService contextUserService)
         {
-            _config = config;            
-            _userModelService = userModelService;         
+            _configuration = configuration;
+            _userModelService = userModelService;
             _contextUserService = contextUserService;
-            _azureUserService = azureUserService;
         }
 
         public async Task<UserDto> GetByDbIdAsync(int userId)
@@ -41,89 +37,102 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<UserDto> EnsureExists(UserDto user)
         {
-            await EnsureDbUserExistsAndSetDbIdOnDto(user);
+            await EnsureUserHasDbEntryAndSetDbIdOnDto(user);
 
-            if(user.Id == 0)
+            return user;
+        }
+
+        void VerifyDbUserCreatedOrThrow(UserDto user)
+        {
+            if (user.Id == 0)
             {
                 throw new Exception($"Unable to ensure user {user.ObjectId} exists in DB");
             }
-
-            return user;
         }
 
         public async Task<UserDto> GetCurrentUserAsync(bool includeDbId = true)
         {
             if (_cachedUser == null)
             {
-                _cachedUser = _contextUserService.GetUser();
+                _cachedUser = GetCurrentUserInternal();
 
                 if (includeDbId)
                 {
-                    await EnsureDbUserExistsAndSetDbIdOnDto(_cachedUser);
-                }             
-               
+                    await EnsureUserHasDbEntryAndSetDbIdOnDto(_cachedUser);
+                }
+
             }
-            else if(includeDbId && _cachedUser.Id == 0)
+            else if (includeDbId && _cachedUser.Id == 0)
             {
-                await EnsureDbUserExistsAndSetDbIdOnDto(_cachedUser);
+                await EnsureUserHasDbEntryAndSetDbIdOnDto(_cachedUser);
             }
 
             return _cachedUser;
         }
 
-       
+        public UserDto GetCurrentUserInternal()
+        {
+            UserDto user;
 
-        async Task EnsureDbUserExistsAndSetDbIdOnDto(UserDto user)
+            if (IsMockUser())
+            {
+                var currentUserObjectId = _contextUserService.GetCurrentUserObjectId();
+                user = MockUserFactory.CreateMockUser(currentUserObjectId);
+            }
+            else
+            {
+                user = _contextUserService.GetCurrentUser();
+            }
+
+            return user;
+        }
+
+        async Task EnsureUserHasDbEntryAndSetDbIdOnDto(UserDto user)
         {
             var userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
 
             if (userFromDb == null)
-            { 
-                var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
-
-                AzureUserDto userFromAzure;
-
-                if (!String.IsNullOrWhiteSpace(cypressMockUser) && user.ObjectId.Equals(cypressMockUser))
-                {
-                    userFromAzure = new AzureUserDto
-                    {
-                        DisplayName = "Mock User",
-                        UserPrincipalName = "mock@user.com",
-                        Mail = "mock@user.com"
-                    };
-                }
-                else
-                {
-                    userFromAzure = await _azureUserService.GetUserAsync(user.ObjectId);
-
-                    if (userFromAzure == null)
-                    {
-                        throw new Exception($"Unable to get info on logged in user from Azure. User id: {user.ObjectId}");
-                    }
-                }
-
-                await _userModelService.TryCreate(user.ObjectId, userFromAzure.UserPrincipalName, userFromAzure.Mail, userFromAzure.DisplayName, userFromAzure.UserPrincipalName);
+            {
+                await _userModelService.TryCreate(user.ObjectId, user.UserName, user.EmailAddress, user.FullName, user.UserName);
 
                 userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
             }
 
             user.Id = userFromDb.Id;
+
+            VerifyDbUserCreatedOrThrow(user);
         }
-       
 
-        public async Task<bool> IsMockUser()
+        public bool IsMockUser()
         {
-            var currentUser = await GetCurrentUserAsync(false);
-            var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
+            var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
 
-            if (currentUser.ObjectId.ToLowerInvariant() == cypressMockUser.ToLowerInvariant())
+            if (string.IsNullOrWhiteSpace(cypressMockUserIdFromConfig))
             {
+                return false;
+            }
+
+            var currentUserObjectId = _contextUserService.GetCurrentUserObjectId();
+
+            return currentUserObjectId.Equals(cypressMockUserIdFromConfig);
+        }
+
+        public bool IsMockUser(out UserDto mockUser)
+        {
+            if (IsMockUser())
+            {
+                mockUser = CreateMockUser();
                 return true;
             }
 
+            mockUser = null;
             return false;
         }
 
-       
+        UserDto CreateMockUser()
+        {
+            var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
+            return MockUserFactory.CreateMockUser(cypressMockUserIdFromConfig);
+        }
     }
 }
