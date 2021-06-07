@@ -137,8 +137,7 @@ namespace Sepes.Infrastructure.Service
                 addedUser = await _userService.EnsureExists(new UserDto(user.ObjectId, newUserFromAzure.UserPrincipalName, newUserFromAzure.DisplayName, newUserFromAzure.Mail));
             }
 
-            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
-            //await _studyModelService.Reload(studyFromDb);
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);        
 
             if (RoleAllreadyExistsForUser(studyFromDb, addedUser.Id, role))
             {

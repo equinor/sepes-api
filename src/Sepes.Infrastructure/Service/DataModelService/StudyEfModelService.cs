@@ -102,10 +102,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             return study;
-        }
-        public async Task Reload(Study study)
-        {
-            await Reload<Study>(study);
-        }
+        }     
     }
 }

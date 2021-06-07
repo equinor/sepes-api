@@ -73,11 +73,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected async Task CheckAccesAndThrowIfNotAllowed(Study study, UserOperation operation)
         {
             await _studyPermissionService.VerifyAccessOrThrow(study, operation);
-        }
-
-        protected async Task Reload<TEntity>(TEntity entity)
-        {
-            await _db.Entry(entity).ReloadAsync();
-        }
+        }       
     }
 }
