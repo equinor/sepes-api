@@ -74,5 +74,10 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             await _studyPermissionService.VerifyAccessOrThrow(study, operation);
         }
+
+        protected async Task Reload<TEntity>(TEntity entity)
+        {
+            await _db.Entry(entity).ReloadAsync();
+        }
     }
 }

@@ -138,7 +138,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
-           
+            //await _studyModelService.Reload(studyFromDb);
 
             if (RoleAllreadyExistsForUser(studyFromDb, addedUser.Id, role))
             {
@@ -148,13 +148,13 @@ namespace Sepes.Infrastructure.Service
             StudyParticipant createdStudyParticipant = null;
 
             try
-            {
-                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };                
+            {               
+                createdStudyParticipant = new StudyParticipant { UserId = addedUser.Id, StudyId = studyFromDb.Id, RoleName = role };                
                 studyFromDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
 
                 await _db.SaveChangesAsync();
 
-                return _mapper.Map<StudyParticipantDto>(createdStudyParticipant);
+                return ConvertToDto(createdStudyParticipant, addedUser);
             }
             catch (Exception)
             {

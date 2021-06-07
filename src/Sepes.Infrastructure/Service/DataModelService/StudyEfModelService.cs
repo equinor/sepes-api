@@ -95,13 +95,17 @@ namespace Sepes.Infrastructure.Service.DataModelService
         async Task<Study> GetStudyFromQueryableThrowIfNotFound(IQueryable<Study> queryable, int studyId)
         {
             var study = await queryable.SingleOrDefaultAsync(s => s.Id == studyId);
-
+           
             if (study == null)
             {
                 throw NotFoundException.CreateForEntity("Study", studyId);
             }
 
             return study;
+        }
+        public async Task Reload(Study study)
+        {
+            await Reload<Study>(study);
         }
     }
 }
