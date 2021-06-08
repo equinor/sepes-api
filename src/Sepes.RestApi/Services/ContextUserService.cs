@@ -38,16 +38,21 @@ namespace Sepes.RestApi.Services
                 DecorateMockUser(user);
             }
             else
-            {              
-                user.UserName = GetUsername(claimsIdentity);
-                user.FullName = GetFullName(claimsIdentity);
-                user.EmailAddress = GetEmail(claimsIdentity);
+            {
+                DecorateNormalUser(claimsIdentity, user);
             }          
 
             ApplyExtendedProps(user);
 
             return user;
 
+        }
+
+        void DecorateNormalUser(ClaimsIdentity claimsIdentity, UserDto user)
+        {
+            user.UserName = GetUsername(claimsIdentity);
+            user.FullName = GetFullName(claimsIdentity);
+            user.EmailAddress = GetEmail(claimsIdentity);
         }
 
         void DecorateMockUser(UserDto user)
