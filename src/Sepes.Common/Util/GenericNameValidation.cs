@@ -12,7 +12,7 @@ namespace Sepes.Common.Util
                 throw new ArgumentException("Name can not be empty");
             }
 
-            var onlyLettersAndNumbers = new Regex(@"^[a-zA-Z0-9]+$");
+            var onlyLettersAndNumbers = new Regex(@"^[a-zA-Z0-9-]+$");
             var nameWithoutSpaces = name.Replace(" ", "").Trim();
             if(!onlyLettersAndNumbers.IsMatch(nameWithoutSpaces) || nameWithoutSpaces.Length < minimumLength)
             {

@@ -168,7 +168,7 @@ namespace Sepes.Azure.Util
         {
 
             var alphaNummericString = new string((from c in str
-                                                  where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                  where (char.IsLetterOrDigit(c) || c.Equals('-')) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
                                                   select c).ToArray()).ToLower();
 
             return EnsureMaxLength(alphaNummericString, limit);
