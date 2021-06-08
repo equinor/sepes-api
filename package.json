@@ -1,13 +1,5 @@
 {
   "name": "sepes",
   "version": "0.4.17",
-  "private": true,
-  "devDependencies": {
-    "cz-conventional-changelog": "^3.3.0"
-  },
-  "config": {
-    "commitizen": {
-      "path": "./node_modules/cz-conventional-changelog"
-    }
-  }
+  "private": true
 }
