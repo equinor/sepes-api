@@ -19,23 +19,23 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
-    {      
-        readonly IAzureUserService _azureADUsersService;    
+    {
+        readonly IAzureUserService _azureADUsersService;
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
             ILogger<StudyParticipantCreateService> logger,
             IUserService userService,
             IStudyEfModelService studyModelService,
-            IAzureUserService azureADUsersService,           
+            IAzureUserService azureADUsersService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
-        {        
-            _azureADUsersService = azureADUsersService;       
+        {
+            _azureADUsersService = azureADUsersService;
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -46,7 +46,7 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-               
+
 
                 StudyParticipantDto newlyAddedParticipant = null;
 
@@ -109,7 +109,7 @@ namespace Sepes.Infrastructure.Service
                 createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, UserId = userId, RoleName = role };
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
-                    
+
                 return ConvertToDto(createdStudyParticipant, userFromDb);
             }
             catch (Exception)
@@ -117,12 +117,15 @@ namespace Sepes.Infrastructure.Service
                 await RemoveIfExist(createdStudyParticipant);
                 throw;
             }
-        }      
+        }
 
         async Task<StudyParticipantDto> AddAzureUserAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            if (_userService.IsMockUser(out UserDto addedUser)) //If mock user, he can only add him self
+            UserDto addedUser;
+
+            if (_userService.IsMockUser()) //If mock user, he can only add him self
             {
+                addedUser = await _userService.GetCurrentUserAsync();
                 await _userService.EnsureExists(addedUser);
             }
             else
@@ -137,7 +140,7 @@ namespace Sepes.Infrastructure.Service
                 addedUser = await _userService.EnsureExists(new UserDto(user.ObjectId, newUserFromAzure.UserPrincipalName, newUserFromAzure.DisplayName, newUserFromAzure.Mail));
             }
 
-            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);        
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
 
             if (RoleAllreadyExistsForUser(studyFromDb, addedUser.Id, role))
             {
@@ -147,8 +150,8 @@ namespace Sepes.Infrastructure.Service
             StudyParticipant createdStudyParticipant = null;
 
             try
-            {               
-                createdStudyParticipant = new StudyParticipant { UserId = addedUser.Id, StudyId = studyFromDb.Id, RoleName = role };                
+            {
+                createdStudyParticipant = new StudyParticipant { UserId = addedUser.Id, StudyId = studyFromDb.Id, RoleName = role };
                 studyFromDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
 
                 await _db.SaveChangesAsync();

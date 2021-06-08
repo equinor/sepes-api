@@ -18,11 +18,7 @@ namespace Sepes.Tests.Mocks
                 admin,
                 sponsor, 
                 datasetAdmin,
-                employee));
-            currentUserServiceMock.Setup(us => us.IsAdmin()).Returns(admin);
-            currentUserServiceMock.Setup(us => us.IsSponsor()).Returns(sponsor);
-            currentUserServiceMock.Setup(us => us.IsDatasetAdmin()).Returns(datasetAdmin);
-            currentUserServiceMock.Setup(us => us.IsEmployee()).Returns(employee);
+                employee));           
 
             return currentUserServiceMock;
         }

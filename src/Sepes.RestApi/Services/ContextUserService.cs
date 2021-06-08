@@ -11,12 +11,12 @@ namespace Sepes.RestApi.Services
 {
     public class ContextUserService : IContextUserService
     {
-        readonly IConfiguration _config;
+        readonly IConfiguration _configuration;
         readonly IHttpContextAccessor _httpContextAccessor;       
 
-        public ContextUserService(IConfiguration config, IHttpContextAccessor contextAccessor)
+        public ContextUserService(IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
-            _config = config;
+            _configuration = configuration;
             _httpContextAccessor = contextAccessor;         
         }
 
@@ -30,16 +30,52 @@ namespace Sepes.RestApi.Services
         {
             var claimsIdentity = GetIdentity();
 
-            var user = new UserDto();
-            user.ObjectId = GetUserId(claimsIdentity);
-            user.UserName = GetUsername(claimsIdentity);
-            user.FullName = GetFullName(claimsIdentity);
-            user.EmailAddress = GetEmail(claimsIdentity);
+            var user = new UserDto
+            {
+                ObjectId = GetUserId(claimsIdentity)
+            };
+
+            if (IsMockUser())
+            {
+                DecorateMockUser(user);
+            }
+            else
+            {
+                DecorateNormalUser(claimsIdentity, user);
+            }          
 
             ApplyExtendedProps(user);
 
             return user;
 
+        }
+
+        void DecorateNormalUser(ClaimsIdentity claimsIdentity, UserDto user)
+        {
+            user.UserName = GetUsername(claimsIdentity);
+            user.FullName = GetFullName(claimsIdentity);
+            user.EmailAddress = GetEmail(claimsIdentity);
+        }
+
+        void DecorateMockUser(UserDto user)
+        {
+            user.UserName = "mock@user.com";
+            user.EmailAddress = "mock@user.com";
+            user.FullName = "Mock User";
+        }
+
+        public bool IsMockUser()
+        {
+            var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
+
+            if (string.IsNullOrWhiteSpace(cypressMockUserIdFromConfig))
+            {
+                return false;
+            }
+
+            var currentUserObjectId = GetCurrentUserObjectId();
+
+            return currentUserObjectId.Equals(cypressMockUserIdFromConfig);
         }
 
         string GetUserId(ClaimsIdentity claimsIdentity)
@@ -67,7 +103,7 @@ namespace Sepes.RestApi.Services
 
         public bool IsEmployee()
         {
-            var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_config, ConfigConstants.EMPLOYEE_ROLE);
+            var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.EMPLOYEE_ROLE);
 
             foreach (var curEmployeeAdGroup in employeeAdGroups)
             {
@@ -80,17 +116,17 @@ namespace Sepes.RestApi.Services
             return false;
         }
 
-        public bool IsAdmin()
+        bool IsAdmin()
         {
             return GetPrincipal().IsInRole(AppRoles.Admin);
         }
 
-        public bool IsDatasetAdmin()
+        bool IsDatasetAdmin()
         {
             return GetPrincipal().IsInRole(AppRoles.DatasetAdmin);
         }
 
-        public bool IsSponsor()
+        bool IsSponsor()
         {
             return GetPrincipal().IsInRole(AppRoles.Sponsor);
         }

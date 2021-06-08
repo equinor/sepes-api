@@ -34,17 +34,19 @@ namespace Sepes.Infrastructure.Service
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
-        {
-            if (_userService.IsMockUser(out UserDto mockUser))
+        { 
+            if (_userService.IsMockUser()) //If mock user, he can only add him self
             {
+                var currentUser = await _userService.GetCurrentUserAsync();
+
                 var listWithMockUser = new List<ParticipantLookupDto>
                 {
                     new ParticipantLookupDto
                     {
-                        ObjectId = mockUser.ObjectId,
-                        FullName = mockUser.FullName,
-                        UserName = mockUser.UserName,
-                        EmailAddress = mockUser.EmailAddress,
+                        ObjectId = currentUser.ObjectId,
+                        FullName = currentUser.FullName,
+                        UserName = currentUser.UserName,
+                        EmailAddress = currentUser.EmailAddress,
                         Source = "Azure"
                     }
                 };

@@ -23,54 +23,35 @@ namespace Sepes.RestApi.IntegrationTests.Services
         public UserDto GetCurrentUser()
         {
            var user = new UserDto(TestUserConstants.COMMON_CUR_USER_OBJECTID, TestUserConstants.COMMON_CUR_USER_UPN, TestUserConstants.COMMON_CUR_USER_FULL_NAME, TestUserConstants.COMMON_CUR_USER_EMAIL,
-                IsAdmin(), IsSponsor(), IsDatasetAdmin(), IsEmployee());
+                _isAdmin, _isSponsor, _isDatasetAdmin, _isEmployee);
 
             ApplyExtendedProps(user);
 
             return user;
         }
-
-        public bool IsEmployee()
-        {
-            return _isEmployee;
-        }
-
-        public bool IsAdmin()
-        {
-            return _isAdmin;
-        }
-
-        public bool IsSponsor()
-        {
-            return _isSponsor;
-        }
-
-        public bool IsDatasetAdmin()
-        {
-            return _isDatasetAdmin;
-        }
+       
 
         void ApplyExtendedProps(UserDto user)
         {
-            if (IsAdmin())
+            if (_isAdmin)
             {
                 user.Admin = true;
                 user.AppRoles.Add(AppRoles.Admin);
             }
 
-            if (IsSponsor())
+            if (_isSponsor)
             {
                 user.Sponsor = true;
                 user.AppRoles.Add(AppRoles.Sponsor);
             }
 
-            if (IsDatasetAdmin())
+            if (_isDatasetAdmin)
             {
                 user.DatasetAdmin = true;
                 user.AppRoles.Add(AppRoles.DatasetAdmin);
             }
 
-            if (IsEmployee())
+            if (_isEmployee)
             {
                 user.Employee = true;
             }
@@ -79,6 +60,11 @@ namespace Sepes.RestApi.IntegrationTests.Services
         public string GetCurrentUserObjectId()
         {
            return TestUserConstants.COMMON_CUR_USER_OBJECTID;
+        }
+
+        public bool IsMockUser()
+        {
+            return false;
         }
     }
 }

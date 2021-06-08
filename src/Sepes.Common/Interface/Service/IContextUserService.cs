@@ -6,14 +6,7 @@ namespace Sepes.Common.Interface
     {
         UserDto GetCurrentUser();
 
-        string GetCurrentUserObjectId();
-
-        bool IsEmployee();
-
-        bool IsAdmin();
-
-        bool IsSponsor();
-
-        bool IsDatasetAdmin();     
+        string GetCurrentUserObjectId();   
+        bool IsMockUser();
     }
 }
