@@ -6,8 +6,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -24,31 +22,6 @@ namespace Sepes.Infrastructure.Service
             _logger = logger;         
             _studyModelService = studyModelService;
             _studyLogoReadService = studyLogoReadService;
-        }      
-
-        public async Task<StudyDto> GetStudyDtoByIdAsync(int studyId, UserOperation userOperation)
-        {
-            var studyFromDb = await _studyModelService.GetByIdAsync(studyId, userOperation);
-            var studyDto = _mapper.Map<StudyDto>(studyFromDb);
-            return studyDto;
-        }
-
-        public async Task<StudyDetailsDto> GetStudyDetailsAsync(int studyId)
-        {         
-            var studyFromDb = await _studyModelService.GetForStudyDetailsAsync(studyId);         
-
-            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDb);          
-
-            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);    
-
-            await StudyPermissionsUtil.DecorateDto(_userService, studyFromDb, studyDetailsDto.Permissions);            
-
-            foreach (var curDs in studyDetailsDto.Datasets)
-            {
-                curDs.Sandboxes = curDs.Sandboxes.Where(sd => sd.StudyId == studyId).ToList();
-            }       
-
-            return studyDetailsDto;
-        }
+        }              
     }
 }

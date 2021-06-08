@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -30,11 +29,9 @@ namespace Sepes.Tests.Setup
 
             var cloudResourceOperationCreateService = new Mock<ICloudResourceOperationCreateService>();
 
-            var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();
+            var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();       
 
-            var configuration = serviceProvider.GetService<IConfiguration>();
-
-            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object, configuration);
+            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
         }
     }
 }

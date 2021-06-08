@@ -53,7 +53,7 @@ namespace Sepes.Infrastructure.Service
 
                 studyFromDb.StudyParticipants.Remove(studyParticipantFromDb);
 
-                await CreateRoleUpdateOperationsAsync(studyParticipantFromDb);            
+                await CreateRoleUpdateOperationsAsync(studyParticipantFromDb.StudyId);            
 
                 await _db.SaveChangesAsync();
 

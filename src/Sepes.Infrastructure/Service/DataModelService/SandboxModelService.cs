@@ -17,10 +17,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class SandboxModelService : EfModelServiceBase<Sandbox>, ISandboxModelService
     {
-        public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService)
-            : base(configuration, db, logger, userService)
-        {
+        readonly IUserService _userService;
 
+        public SandboxModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
+        {
+            _userService = userService;
         }
 
         public async Task<bool> NameIsTaken(int studyId, string sandboxName)

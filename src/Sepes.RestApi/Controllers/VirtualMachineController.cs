@@ -17,19 +17,16 @@ namespace Sepes.RestApi.Controllers
     {
         readonly IVirtualMachineCreateService _virtualMachineCreateService;
         readonly IVirtualMachineReadService _virtualMachineReadService;
-        readonly IVirtualMachineDeleteService _virtualMachineDeleteService;
-        readonly IVirtualMachineValidationService _virtualMachineValidationService;
+        readonly IVirtualMachineDeleteService _virtualMachineDeleteService;    
 
         public VirtualMachineController(
             IVirtualMachineCreateService virtualMachineCreateService,
             IVirtualMachineReadService virtualMachineReadService,
-            IVirtualMachineDeleteService virtualMachineDeleteService,
-            IVirtualMachineValidationService virtualMachineValidationService)
+            IVirtualMachineDeleteService virtualMachineDeleteService)
         {
             _virtualMachineCreateService = virtualMachineCreateService;
             _virtualMachineReadService = virtualMachineReadService;
-            _virtualMachineDeleteService = virtualMachineDeleteService;
-            _virtualMachineValidationService = virtualMachineValidationService;
+            _virtualMachineDeleteService = virtualMachineDeleteService;          
         }
 
         [HttpPost("{sandboxId}")]
@@ -65,20 +62,6 @@ namespace Sepes.RestApi.Controllers
         {
             var virtualMachinesForSandbox = await _virtualMachineReadService.GetExternalLink(vmId);
             return new JsonResult(virtualMachinesForSandbox);
-        }
-
-        [HttpPost("validateUsername")]
-        public IActionResult ValidateUsername(VmUsernameDto input)
-        {
-            var usernameValidationResult = _virtualMachineValidationService.CheckIfUsernameIsValidOrThrow(input);
-            return new JsonResult(usernameValidationResult);
-
-        }
-
-        [HttpPost("calculateName")]
-        public string CalculateName(VmCalculateNameDto input)
-        {
-            return _virtualMachineValidationService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
-        }
+        }     
     }
 }

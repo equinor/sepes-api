@@ -14,19 +14,19 @@ namespace Sepes.RestApi.Controller
     [Authorize]
     public class StudyResultsAndLearningsController : ControllerBase
     {
-        readonly IStudyRawQueryModelService _studyRawQueryModelService;      
+        readonly IStudyResultsAndLearningsModelService _studyResultsAndLearningsModelService;      
 
-        public StudyResultsAndLearningsController(IStudyRawQueryModelService studyRawQueryModelService)
+        public StudyResultsAndLearningsController(IStudyResultsAndLearningsModelService studyResultsAndLearningsModelService)
         {
-            _studyRawQueryModelService = studyRawQueryModelService;          
+            _studyResultsAndLearningsModelService = studyResultsAndLearningsModelService;          
         }        
 
         [HttpGet("{studyId}/resultsandlearnings")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetResultsAndLearningsAsync(int studyId)
         {
-            var resultsAndLearningsFromDb = await _studyRawQueryModelService.GetResultsAndLearningsAsync(studyId);
-            return new JsonResult(resultsAndLearningsFromDb);
+            var resultsAndLearnings = await _studyResultsAndLearningsModelService.GetAsync(studyId);
+            return new JsonResult(resultsAndLearnings);
         }       
     }
 }

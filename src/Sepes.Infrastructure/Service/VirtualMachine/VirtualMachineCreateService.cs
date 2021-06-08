@@ -32,8 +32,7 @@ namespace Sepes.Infrastructure.Service
 
         readonly IProvisioningQueueService _provisioningQueueService;
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
-        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
-      
+        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;     
 
 
         public VirtualMachineCreateService(

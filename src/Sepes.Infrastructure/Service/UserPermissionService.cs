@@ -7,11 +7,11 @@ namespace Sepes.Infrastructure.Service
 {
     public class UserPermissionService : IUserPermissionService
     {
-        readonly IUserService _userService;      
-        
+        readonly IUserService _userService;     
+
         public UserPermissionService(IUserService userService)
         {
-            _userService = userService;
+            _userService = userService;          
         }      
 
         public  async Task<UserPermissionDto> GetUserPermissionsAsync()
@@ -30,9 +30,9 @@ namespace Sepes.Infrastructure.Service
 
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            result.CanCreateStudy = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.Study_Create);
-            result.CanRead_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Read);
-            result.CanEdit_PreApproved_Datasets = StudyAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            result.CanCreateStudy = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.Study_Create);
+            result.CanRead_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Read);
+            result.CanEdit_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
 
             return result;
         } 

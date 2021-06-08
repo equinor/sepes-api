@@ -13,21 +13,35 @@ namespace Sepes.Functions.Service
             _cachedUser = new UserDto("9b0c65cf-9f14-4476-8796-b2de016e1af1", "workeruser@equinor.com", "Worker User", "workeruser@equinor.com", admin: true, false, false);
         }
 
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-        public async Task<UserDto> GetCurrentUserAsync()
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+        public async Task<UserDto> GetByDbIdAsync(int userId)
         {
-            return _cachedUser;
+            return await Task.FromResult(_cachedUser);
+        }        
+
+        public async Task<UserDto> GetByObjectIdAsync(string objectId)
+        {
+            return await Task.FromResult(_cachedUser);
         }
 
-        public Task<UserDto> GetUserByIdAsync(int userId)
+        public async Task<UserDto> GetCurrentUserAsync(bool includeDbId = true)
         {
-            throw new System.NotImplementedException();
+            return await Task.FromResult(_cachedUser);
         }
 
-        public Task<bool> IsMockUser()
+        public async Task<UserDto> EnsureExists(UserDto user)
         {
-            throw new System.NotImplementedException();
+            return await Task.FromResult(_cachedUser);
+        }
+
+        public bool IsMockUser()
+        {
+            return false;
+        }
+
+        public bool IsMockUser(out UserDto mockUser)
+        {
+            mockUser = null;
+            return false;
         }
     }
 }

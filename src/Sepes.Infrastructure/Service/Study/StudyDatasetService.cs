@@ -8,7 +8,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,8 +20,10 @@ namespace Sepes.Infrastructure.Service
        readonly IStudyEfModelService _studyModelService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
 
-        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService, IStudyEfModelService studyModelService, IStudySpecificDatasetModelService studySpecificDatasetModelService)
-            : base(db, mapper, logger, userService)
+        public StudyDatasetService(SepesDbContext db, IMapper mapper, ILogger<StudyDatasetService> logger, IUserService userService,
+            IStudyPermissionService studyPermissionService,
+            IStudyEfModelService studyModelService, IStudySpecificDatasetModelService studySpecificDatasetModelService)
+            : base(db, mapper, logger, userService, studyPermissionService)
         {
             _studyModelService = studyModelService;
             _studySpecificDatasetModelService = studySpecificDatasetModelService;
@@ -40,7 +41,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
-            await StudyPermissionsUtil.DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+            await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }

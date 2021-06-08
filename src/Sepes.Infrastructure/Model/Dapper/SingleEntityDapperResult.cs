@@ -2,7 +2,7 @@
 {
     public class SingleEntityDapperResult
     {
-        public int StudyId{ get; set; }
+        public int StudyId { get; set; }
         public bool Authorized { get; set; }
     }
 }

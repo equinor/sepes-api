@@ -5,9 +5,16 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IUserService
     {
-        Task<UserDto> GetUserByIdAsync(int userId);
+        Task<UserDto> GetByDbIdAsync(int userId);
 
-        Task<UserDto> GetCurrentUserAsync();
-        Task<bool> IsMockUser();
+        Task<UserDto> GetByObjectIdAsync(string objectId);
+
+        Task<UserDto> GetCurrentUserAsync(bool includeDbId = true);
+
+        Task<UserDto> EnsureExists(UserDto user);
+
+        bool IsMockUser();
+
+        bool IsMockUser(out UserDto mockUser);
     }
 }

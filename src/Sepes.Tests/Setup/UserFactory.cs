@@ -116,9 +116,8 @@ namespace Sepes.Tests.Setup
         static Mock<IUserService> SetupUserServiceMock(UserDto user)
         {
             var mock = new Mock<IUserService>();
-            mock.Setup(us => us.GetCurrentUserAsync()).ReturnsAsync(user);
-            mock.Setup(us => us.GetCurrentUserAsync()).ReturnsAsync(user);
-
+            mock.Setup(us => us.GetCurrentUserAsync(It.IsAny<bool>())).ReturnsAsync(user);
+            mock.Setup(us => us.EnsureExists(It.IsAny<UserDto>())).ReturnsAsync(user);
             return mock;
         }       
     }

@@ -17,13 +17,14 @@ namespace Sepes.Tests.Setup
 {
     public static class StudyServiceMockFactory
     {
-        public static IStudyRawQueryModelService StudyRawQueryModelService(ServiceProvider serviceProvider)
+        public static IStudyListModelService StudyListModelService(ServiceProvider serviceProvider)
         {
             var config = serviceProvider.GetService<IConfiguration>();         
-            var logger = serviceProvider.GetService<ILogger<StudyRawQueryModelService>>();           
+            var logger = serviceProvider.GetService<ILogger<StudyListModelService>>();           
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var studyPermissionService = StudyPermissionService(serviceProvider);
 
-            return new StudyRawQueryModelService(config, logger, userService.Object);
+            return new StudyListModelService(config, logger, userService.Object, studyPermissionService);
         }
 
         public static IStudyEfModelService StudyEfModelService(ServiceProvider serviceProvider)
@@ -31,31 +32,12 @@ namespace Sepes.Tests.Setup
             var config = serviceProvider.GetService<IConfiguration>();
             var db = serviceProvider.GetService<SepesDbContext>();
             var logger = serviceProvider.GetService<ILogger<StudyEfModelService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);     
-
-            return new StudyEfModelService(config, db, logger, userService.Object);
-        }
-
-        public static IStudyRawQueryReadService StudyRawQueryReadService(ServiceProvider serviceProvider)
-        {
-            var studyRawModelService = StudyRawQueryModelService(serviceProvider);
-
-            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
-
-            return new StudyRawQueryReadService(logoReadServiceMock.Object, studyRawModelService);
-        }
-
-        public static IStudyEfReadService StudyEfReadService(ServiceProvider serviceProvider)
-        {
-            var db = serviceProvider.GetService<SepesDbContext>();
-            var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<StudyEfReadService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
-            var studyEfModelService = StudyEfModelService(serviceProvider);
-            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
 
-            return new StudyEfReadService(db, mapper, logger, userService.Object, studyEfModelService, logoReadServiceMock.Object);
-        }
+            var studyPermissionService = StudyPermissionService(serviceProvider);
+
+            return new StudyEfModelService(config, db, logger, userService.Object, studyPermissionService);
+        }            
 
         public static IStudyCreateService CreateService(ServiceProvider serviceProvider)
         {
@@ -93,6 +75,13 @@ namespace Sepes.Tests.Setup
             var studyWbsValidationService = new Mock<IStudyWbsValidationService>();
 
             return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoReadServiceMock.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object);
+        }
+
+        public static IStudyPermissionService StudyPermissionService(ServiceProvider serviceProvider, IUserService userService = null) {
+
+            var mapper = serviceProvider.GetService<IMapper>();            
+
+            return new StudyPermissionService(mapper, userService == null ? UserFactory.GetUserServiceMockForAdmin(1).Object : userService);
         }
 
         public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)

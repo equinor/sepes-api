@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
+using Sepes.Common.Dto.Study;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -85,17 +86,26 @@ namespace Sepes.Infrastructure.Service
             return studyFromDb;
         }
 
-        protected async Task CreateRoleUpdateOperationsAsync(StudyParticipant studyParticipant)
+        protected async Task CreateRoleUpdateOperationsAsync(int studyId)
         {
-            var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyParticipant.StudyId);
-            resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyParticipant.StudyId));
+            var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyId);
+            resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyId));
 
             foreach (var currentResourceId in resourcesToUpdate)
             {
-                var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyParticipant.StudyId));
+                var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(studyId));
                 var updateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(currentResourceId, CloudResourceOperationType.ENSURE_ROLES, desiredState: desiredState);
                 await _provisioningQueueService.CreateItemAndEnqueue(updateOperation);
             }
-        }             
+        }
+
+        protected StudyParticipantDto ConvertToDto(StudyParticipant studyParticipant, UserDto user)
+        {
+            var dto = _mapper.Map<StudyParticipantDto>(studyParticipant);
+            dto.FullName = user.FullName;
+            dto.UserName = user.UserName;
+            dto.EmailAddress = user.EmailAddress;
+            return dto;
+        }
     }
 }
