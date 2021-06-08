@@ -14,11 +14,6 @@ namespace Sepes.Infrastructure.Util.Auth
                 );
         }
 
-        public static void DecorateMockUser(UserDto user)
-        {
-            user.UserName = "mock@user.com";
-            user.EmailAddress = "mock@user.com";
-            user.FullName = "Mock User";
-        }
+       
     }
 }

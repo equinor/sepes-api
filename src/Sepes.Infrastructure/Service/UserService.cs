@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Sepes.Common.Constants;
-using Sepes.Common.Dto;
+﻿using Sepes.Common.Dto;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Threading.Tasks;
 
@@ -13,14 +10,12 @@ namespace Sepes.Infrastructure.Service
     public class UserService : IUserService
     {
         UserDto _cachedUser;
-
-        readonly IConfiguration _configuration;
+       
         readonly IUserModelService _userModelService;
         readonly IContextUserService _contextUserService;
 
-        public UserService(IConfiguration configuration, IUserModelService userModelService, IContextUserService contextUserService)
-        {
-            _configuration = configuration;
+        public UserService(IUserModelService userModelService, IContextUserService contextUserService)
+        {       
             _userModelService = userModelService;
             _contextUserService = contextUserService;
         }
@@ -54,7 +49,7 @@ namespace Sepes.Infrastructure.Service
         {
             if (_cachedUser == null)
             {
-                _cachedUser = _contextUserService.GetCurrentUser();
+                _cachedUser = GetCurrentUserInternal();
 
                 if (includeDbId)
                 {
@@ -68,7 +63,12 @@ namespace Sepes.Infrastructure.Service
             }
 
             return _cachedUser;
-        } 
+        }
+
+        public UserDto GetCurrentUserInternal()
+        {
+            return _contextUserService.GetCurrentUser();
+        }
 
         async Task EnsureUserHasDbEntryAndSetDbIdOnDto(UserDto user)
         {
@@ -88,34 +88,7 @@ namespace Sepes.Infrastructure.Service
 
         public bool IsMockUser()
         {
-            var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
-
-            if (string.IsNullOrWhiteSpace(cypressMockUserIdFromConfig))
-            {
-                return false;
-            }
-
-            var currentUserObjectId = _contextUserService.GetCurrentUserObjectId();
-
-            return currentUserObjectId.Equals(cypressMockUserIdFromConfig);
+            return _contextUserService.IsMockUser();
         }
-
-        //public bool IsMockUser(out UserDto mockUser)
-        //{
-        //    if (IsMockUser())
-        //    {
-        //        mockUser = GetCurrentUserAsync(true);
-        //        return true;
-        //    }
-
-        //    mockUser = null;
-        //    return false;
-        //}
-
-        //UserDto CreateMockUser()
-        //{
-        //    var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
-        //    return MockUserFactory.CreateMockUser(cypressMockUserIdFromConfig);
-        //}
     }
 }
