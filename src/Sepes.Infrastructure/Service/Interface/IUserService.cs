@@ -15,6 +15,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         bool IsMockUser();
 
-        bool IsMockUser(out UserDto mockUser);
+        //bool IsMockUser(out UserDto mockUser);
     }
 }

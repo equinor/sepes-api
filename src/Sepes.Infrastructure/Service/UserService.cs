@@ -54,7 +54,7 @@ namespace Sepes.Infrastructure.Service
         {
             if (_cachedUser == null)
             {
-                _cachedUser = GetCurrentUserInternal();
+                _cachedUser = _contextUserService.GetCurrentUser();
 
                 if (includeDbId)
                 {
@@ -68,24 +68,7 @@ namespace Sepes.Infrastructure.Service
             }
 
             return _cachedUser;
-        }
-
-        public UserDto GetCurrentUserInternal()
-        {
-            UserDto user;
-
-            if (IsMockUser())
-            {
-                var currentUserObjectId = _contextUserService.GetCurrentUserObjectId();
-                user = MockUserFactory.CreateMockUser(currentUserObjectId);
-            }
-            else
-            {
-                user = _contextUserService.GetCurrentUser();
-            }
-
-            return user;
-        }
+        } 
 
         async Task EnsureUserHasDbEntryAndSetDbIdOnDto(UserDto user)
         {
@@ -117,22 +100,22 @@ namespace Sepes.Infrastructure.Service
             return currentUserObjectId.Equals(cypressMockUserIdFromConfig);
         }
 
-        public bool IsMockUser(out UserDto mockUser)
-        {
-            if (IsMockUser())
-            {
-                mockUser = CreateMockUser();
-                return true;
-            }
+        //public bool IsMockUser(out UserDto mockUser)
+        //{
+        //    if (IsMockUser())
+        //    {
+        //        mockUser = GetCurrentUserAsync(true);
+        //        return true;
+        //    }
 
-            mockUser = null;
-            return false;
-        }
+        //    mockUser = null;
+        //    return false;
+        //}
 
-        UserDto CreateMockUser()
-        {
-            var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
-            return MockUserFactory.CreateMockUser(cypressMockUserIdFromConfig);
-        }
+        //UserDto CreateMockUser()
+        //{
+        //    var cypressMockUserIdFromConfig = _configuration[ConfigConstants.CYPRESS_MOCK_USER];
+        //    return MockUserFactory.CreateMockUser(cypressMockUserIdFromConfig);
+        //}
     }
 }
