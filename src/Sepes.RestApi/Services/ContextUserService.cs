@@ -30,8 +30,10 @@ namespace Sepes.RestApi.Services
         {
             var claimsIdentity = GetIdentity();
 
-            var user = new UserDto();
-            user.ObjectId = GetUserId(claimsIdentity);
+            var user = new UserDto
+            {
+                ObjectId = GetUserId(claimsIdentity)
+            };
 
             if (IsMockUser())
             {
