@@ -32,8 +32,7 @@ namespace Sepes.Functions
 
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
             var aiOptions = new ApplicationInsightsServiceOptions
-            {
-                // Disables adaptive sampling.
+            {               
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = appiKey,
                 EnableDebugLogger = true
@@ -54,10 +53,9 @@ namespace Sepes.Functions
                       maxRetryCount: 3,
                       maxRetryDelay: TimeSpan.FromSeconds(30),
                       errorNumbersToAdd: null);
-                  }
-                  )
-
+                  })
               );
+
             // This is configuration from environment variables, settings.json etc.
             var configuration = builder.GetContext().Configuration;
 
@@ -74,7 +72,6 @@ namespace Sepes.Functions
             builder.Services.AddHttpContextAccessor();
 
             Log("Function - Startup - Configure - Adding Services");
-
 
             //Plumbing
             builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
@@ -93,11 +90,16 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();            
+            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
 
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+
+            //Business logic services
+            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
 
             //Provisioning service            
             builder.Services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
@@ -112,15 +114,10 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IFirewallService, FirewallService>();
             builder.Services.AddTransient<IOperationCheckService, OperationCheckService>();
             builder.Services.AddTransient<IOperationCompletedService, OperationCompletedService>();
-            
-            
-            //Ext System Facade Services  
-            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
-            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
-            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+
+            //Ext System Facade Services          
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
-
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
