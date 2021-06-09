@@ -51,8 +51,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 query += " FROM [StudyDatasets] sds";
                 query += " left join [dbo].[Datasets] ds on sds.DatasetId = ds.Id";
                 query += " left join [dbo].[SandboxDatasets] sbds on ds.Id = sbds.DatasetId";
-                query += " left join [dbo].[Sandboxes] sb on sbds.SandboxId = sb.Id";
-                query += " WHERE sds.[StudyId] = @studyId and ds.[Deleted] = 0 and sb.[StudyId] = @studyId and sb.[Deleted] = 0";
+                query += " left join [dbo].[Sandboxes] sb on sbds.SandboxId = sb.Id and sb.[StudyId] = @studyId and sb.[Deleted] = 0";
+                query += " WHERE sds.[StudyId] = @studyId and ds.[Deleted] = 0";
 
                 var entityDictionary = new Dictionary<int, DatasetForStudyDetailsDapper>();
 
@@ -67,7 +67,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
                              entityDictionary.Add(dataset.DatasetId, datasetEntry);
                          }
 
-                         datasetEntry.Sandboxes.Add(sandbox);
+                         if(sandbox != null && sandbox.SandboxId > 0)
+                         {
+                             datasetEntry.Sandboxes.Add(sandbox);
+                         }
+                       
 
                          return datasetEntry;
                      },
