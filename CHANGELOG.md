@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.20](https://github.com/equinor/sepes-api/compare/0.4.19...0.4.20) (2021-06-03)
+
+
+### Features
+
+* **study:** validate wbs on save ([#680](https://github.com/equinor/sepes-api/issues/680)) ([adf647e](https://github.com/equinor/sepes-api/commit/adf647ea9b13befab06d835594b496f8b68c0a33)), closes [#681](https://github.com/equinor/sepes-api/issues/681)
+* add wbs validation from external api ([#677](https://github.com/equinor/sepes-api/issues/677)) ([f607cf9](https://github.com/equinor/sepes-api/commit/f607cf9e976888ec6e57297ff062181a57d3ba6a))
+
+### [0.4.19](https://github.com/equinor/sepes-api/compare/0.4.18...0.4.19) (2021-05-19)
+
+
+### Bug Fixes
+
+* **function:** updated managed by ids for dev and prod ([#663](https://github.com/equinor/sepes-api/issues/663)) ([03d44d6](https://github.com/equinor/sepes-api/commit/03d44d6f5dfbc51507b454dd292de166f49fc01c))
+* **logging:** clean up appi event ids ([#670](https://github.com/equinor/sepes-api/issues/670)) ([869ccca](https://github.com/equinor/sepes-api/commit/869ccca26774791556506cae752d37740ba21cb6))
+* **participant:** remove created by filter on existing role assignments before add ([#667](https://github.com/equinor/sepes-api/issues/667)) ([47c8663](https://github.com/equinor/sepes-api/commit/47c8663c6add37b6f2b6a2399f59a70af8c49888))
+* **study:** add and remove participant did not save ([a78d8e4](https://github.com/equinor/sepes-api/commit/a78d8e47abded38395a065bc6a60ebf831317271))
+* **study:** fix slow study close due to include ([#668](https://github.com/equinor/sepes-api/issues/668)) ([e1628fd](https://github.com/equinor/sepes-api/commit/e1628fd1a738c26d352da41e2ee7f496b1208929))
+
+### [0.4.18](https://github.com/equinor/sepes-api/compare/0.4.17...0.4.18) (2021-04-29)
+
+
+### Bug Fixes
+
+* **api:** enable cors for only configured domains, used to be open for all ([#652](https://github.com/equinor/sepes-api/issues/652)) ([06bd5ea](https://github.com/equinor/sepes-api/commit/06bd5ea0031c34413f268fccb33e90b5e0f00562))
+* **auth:** convert to PKCE auth flow ([#656](https://github.com/equinor/sepes-api/issues/656)) ([8cd0b19](https://github.com/equinor/sepes-api/commit/8cd0b1959e5c64f1e780ede969d5e13049c0e62d))
+* **dataset:** add properties key and last modified to filelist ([#655](https://github.com/equinor/sepes-api/issues/655)) ([db73634](https://github.com/equinor/sepes-api/commit/db73634a13b2b548da2e4ca678242bb57bc34096))
+* **dataset:** delete not working ([#654](https://github.com/equinor/sepes-api/issues/654)) ([32f6de9](https://github.com/equinor/sepes-api/commit/32f6de9ebea4ce7819552fb841e16c520f5b6992))
+* **keyvault:** clean old passwords, changed created filter to use utc ([a31feb8](https://github.com/equinor/sepes-api/commit/a31feb8d371d4d3432be885aa11e95058ff80e56))
+* **sandbox:** attempt to prevent fail of role assignment update task ([#649](https://github.com/equinor/sepes-api/issues/649)) ([fe12b58](https://github.com/equinor/sepes-api/commit/fe12b58e70bb7e7d6246303139d779c33b578a73))
+* **study:** now sponsor and sponsor rep are allowed to soft delete st… ([#653](https://github.com/equinor/sepes-api/issues/653)) ([1801f72](https://github.com/equinor/sepes-api/commit/1801f72cc9dbce3fd0c5ed6761c39589d0f2f986))
+* prevent timeout when getting studies ([#645](https://github.com/equinor/sepes-api/issues/645)) ([44e329b](https://github.com/equinor/sepes-api/commit/44e329b13348fd87ec306792f4199c3f4444d24f))
+
 ### [0.4.17](https://github.com/equinor/sepes-api/compare/0.4.16...0.4.17) (2021-04-07)
 
 ### [0.4.16](https://github.com/equinor/sepes-api/compare/0.4.15...0.4.16) (2021-04-07)

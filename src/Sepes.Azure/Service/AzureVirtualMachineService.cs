@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Sepes.Azure.Dto;
 using Sepes.Azure.Util;
 using Sepes.Azure.Util.Provisioning;
+using Microsoft.Azure.Management.Network.Fluent.Models;
 
 namespace Sepes.Azure.Service
 {
@@ -324,13 +325,23 @@ namespace Sepes.Azure.Service
 
             AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
+            var publicIpName = AzureResourceNameUtil.VirtualMachinePublicIp(vmName);
+
+            var pip = await _azure.PublicIPAddresses.Define(publicIpName)
+             .WithRegion(region)
+             .WithExistingResourceGroup(resourceGroupName)
+             .WithStaticIP()
+             .WithSku(PublicIPSkuType.Standard)
+             .WithTags(tags)
+             .CreateAsync(cancellationToken);
+
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
                                     .WithRegion(region)
                                     .WithExistingResourceGroup(resourceGroupName)
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
-                                    .WithoutPrimaryPublicIPAddress();
+                                    .WithExistingPrimaryPublicIPAddress(pip);
 
 
             IWithCreate vmWithOS;

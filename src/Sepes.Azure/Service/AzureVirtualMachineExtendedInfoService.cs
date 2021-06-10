@@ -60,7 +60,7 @@ namespace Sepes.Azure.Service
             {
                 if (primaryNic.PrimaryIPConfiguration != null)
                 {
-                    var pip = await _azure.PublicIPAddresses.GetByResourceGroupAsync(vm.ResourceGroupName, primaryNic.PrimaryIPConfiguration.Name, cancellationToken);
+                    var pip = await _azure.PublicIPAddresses.GetByIdAsync(primaryNic.PrimaryIPConfiguration.PublicIPAddressId, cancellationToken);
 
                     if (pip != null)
                     {
