@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.21](https://github.com/equinor/sepes-api/compare/0.4.20...0.4.21) (2021-06-10)
+
+
+### Bug Fixes
+
+* **cypress:** use group access from token for mock user ([#691](https://github.com/equinor/sepes-api/issues/691)) ([7c84d67](https://github.com/equinor/sepes-api/commit/7c84d675e9c0c321c74edaa8c91a6d3482f05a01))
+* **study:** details response also including datasets not in any sandbox ([#695](https://github.com/equinor/sepes-api/issues/695)) ([c3a972a](https://github.com/equinor/sepes-api/commit/c3a972a7756e8e5eab1f3bb0072463ac10daf6af)), closes [#694](https://github.com/equinor/sepes-api/issues/694)
+* **vm:** no public IP was created for VM ([#696](https://github.com/equinor/sepes-api/issues/696)) ([11f84e8](https://github.com/equinor/sepes-api/commit/11f84e89a2f4014f147715dc7ac184f1355f9d97)), closes [#693](https://github.com/equinor/sepes-api/issues/693)
+
 ### [0.4.20](https://github.com/equinor/sepes-api/compare/0.4.19...0.4.20) (2021-06-03)
 
 
