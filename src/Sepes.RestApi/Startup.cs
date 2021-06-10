@@ -163,9 +163,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
-              
                 
-
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
                 services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();

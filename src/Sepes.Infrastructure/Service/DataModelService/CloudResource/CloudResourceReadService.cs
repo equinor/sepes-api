@@ -64,16 +64,21 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return SoftDeleteUtil.IsMarkedAsDeleted(resource);
         }
 
-        public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
+        IQueryable<CloudResource> DatasetResourceGroupQueryable(int studyId)
         {
-            var resourceGroupsQueryable =
-             _db.CloudResources.Where(r => r.StudyId == studyId
+            return _db.CloudResources.Where(r => r.StudyId == studyId
              && r.Deleted == false
              && r.ResourceType == AzureResourceType.ResourceGroup
-             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
+             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer);
+        }
+
+        public async Task<List<int>> GetDatasetResourceGroupIdsForStudy(int studyId)
+        {
+            var resourceGroupIdsQueryable =
+             DatasetResourceGroupQueryable(studyId)
              .Select(r => r.Id);
 
-            return await resourceGroupsQueryable.ToListAsync();
+            return await resourceGroupIdsQueryable.ToListAsync();
         }
 
         public async Task<List<int>> GetSandboxResourceGroupIdsForStudy(int studyId)
@@ -86,6 +91,18 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 .Select(r => r.Id);
 
             return await resourceGroupsQueryable.ToListAsync();          
+        }
+        public async Task<List<int>> GetDatasetStorageAccountIdsForStudy(int studyId)
+        {
+            var datasetQueryable = DatasetResourceGroupQueryable(studyId)
+             .SelectMany(r => r.ChildResources)
+             .Where(r =>
+             r.Deleted == false
+             && r.ResourceType == AzureResourceType.StorageAccount
+             && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount)
+             .Select(r=> r.Id);
+
+            return await datasetQueryable.ToListAsync();
         }
 
         public async Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId) {

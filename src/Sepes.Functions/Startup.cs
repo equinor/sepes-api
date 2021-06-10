@@ -104,6 +104,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             builder.Services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             builder.Services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
+            builder.Services.AddTransient<IParticipantRoleTranslatorService, ParticipantRoleTranslatorService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             builder.Services.AddTransient<ICorsRuleProvisioningService, CorsRuleProvisioningService>();

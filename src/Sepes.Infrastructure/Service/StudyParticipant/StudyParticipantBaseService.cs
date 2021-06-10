@@ -89,6 +89,7 @@ namespace Sepes.Infrastructure.Service
         protected async Task CreateRoleUpdateOperationsAsync(int studyId)
         {
             var resourcesToUpdate = await _cloudResourceReadService.GetDatasetResourceGroupIdsForStudy(studyId);
+            //resourcesToUpdate.AddRange(await _cloudResourceReadService.GetDatasetStorageAccountIdsForStudy(studyId)); //As of now, permissions are granted on the resource group for the storage accounts.
             resourcesToUpdate.AddRange(await _cloudResourceReadService.GetSandboxResourceGroupIdsForStudy(studyId));
 
             foreach (var currentResourceId in resourcesToUpdate)
