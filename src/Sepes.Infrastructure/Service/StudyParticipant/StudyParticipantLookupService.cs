@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
-using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -16,9 +14,9 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
-    {
+    {      
         readonly IAzureUserService _azureUserService;
-        readonly IConfiguration _configuration;
+       
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
@@ -29,34 +27,40 @@ namespace Sepes.Infrastructure.Service
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService,
-            IConfiguration configuration)
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureUserService = azureUserService;
-            _configuration = configuration;
+            _azureUserService = azureUserService;            
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
-        {
-            if (await _userService.IsMockUser())
+        { 
+            if (_userService.IsMockUser()) //If mock user, he can only add him self
             {
-                var listWithMockUser = new List<ParticipantLookupDto>();
-                listWithMockUser.Add(new ParticipantLookupDto
+                var currentUser = await _userService.GetCurrentUserAsync();
+
+                var listWithMockUser = new List<ParticipantLookupDto>
                 {
-                    ObjectId = _configuration[ConfigConstants.CYPRESS_MOCK_USER],
-                    FullName = "Mock user",
-                    UserName = "Mock User",
-                    EmailAddress = "Mock@user.com",
-                    Source = "Azure"
-                });
+                    new ParticipantLookupDto
+                    {
+                        ObjectId = currentUser.ObjectId,
+                        FullName = currentUser.FullName,
+                        UserName = currentUser.UserName,
+                        EmailAddress = currentUser.EmailAddress,
+                        Source = "Azure"
+                    }
+                };
+
                 return listWithMockUser;
             }
+
             if (string.IsNullOrWhiteSpace(searchText))
             {
                 return new List<ParticipantLookupDto>();
             }
+
             Task<List<Microsoft.Graph.User>> usersFromAzureAdTask = null;
+
             try
             {
                 usersFromAzureAdTask = _azureUserService.SearchUsersAsync(searchText, limit, cancellationToken);

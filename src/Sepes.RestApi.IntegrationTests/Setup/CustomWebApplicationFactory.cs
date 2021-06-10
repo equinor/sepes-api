@@ -13,7 +13,6 @@ using Sepes.RestApi.IntegrationTests.Services;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
 using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
-using Sepes.Tests.Common.ServiceMocks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,8 +49,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
 
                 services.Remove(descriptor);
                
-                services.AddSingleton<IPrincipalService>(new PrincipalServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));
-                services.AddScoped<ICurrentUserService, CurrentUserServiceMock>();
+                services.AddSingleton<IContextUserService>(new ContextUserServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));             
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
 
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();

@@ -100,6 +100,8 @@ namespace Sepes.Infrastructure.Service.Queries
         public static IQueryable<Sandbox> SandboxForDatasetOperations(SepesDbContext db, bool includePhase = false)
         {
             return ActiveSandboxesBaseQueryable(db)
+                    .Include(sb => sb.Study)
+                 .ThenInclude(s => s.StudyParticipants)
                 .Include(sb => sb.Study)
                  .ThenInclude(s => s.StudyDatasets)
                      .ThenInclude(sd => sd.Dataset)

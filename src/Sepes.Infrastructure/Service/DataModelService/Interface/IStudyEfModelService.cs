@@ -22,6 +22,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
         Task<Study> GetWitParticipantsNoAccessCheck(int studyId);
         Task<Study> GetForDeleteAsync(int studyId, UserOperation operation);
         Task<Study> GetForCloseAsync(int studyId, UserOperation operation);
-        Task<Study> GetWithParticipantsAndUsersNoAccessCheck(int studyId);
+        Task<Study> GetWithParticipantsAndUsersNoAccessCheck(int studyId); 
     }
 }

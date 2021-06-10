@@ -1,18 +1,14 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sepes.Azure.Service;
-using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
-using Sepes.Infrastructure.Model.Automapper;
+using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
-using Sepes.Tests.Common.Mocks.Azure;
 using Sepes.Tests.Mocks;
 
 namespace Sepes.Tests.Setup
@@ -46,8 +42,7 @@ namespace Sepes.Tests.Setup
 
             //Sepes Services           
             services.AddTransient<IVariableService, VariableService>();
-            services.AddTransient<IStudyEfReadService, StudyEfReadService>();
-            services.AddTransient<IStudyRawQueryReadService, StudyRawQueryReadService>();
+            services.AddTransient<IStudyListService, StudyListService>();
 
             //Resource provisioning services
             services.AddSingleton<IProvisioningQueueService, ProvisioningQueueService>();

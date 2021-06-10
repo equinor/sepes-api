@@ -7,7 +7,6 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Exceptions;
-using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -22,11 +21,10 @@ namespace Sepes.Infrastructure.Service
     public class StudyParticipantCreateService : StudyParticipantBaseService, IStudyParticipantCreateService
     {
         readonly IAzureUserService _azureADUsersService;
-        //readonly IUserService _userService;
 
         public StudyParticipantCreateService(SepesDbContext db,
             IMapper mapper,
-            ILogger<StudyParticipantCreateService> logger,    
+            ILogger<StudyParticipantCreateService> logger,
             IUserService userService,
             IStudyEfModelService studyModelService,
             IAzureUserService azureADUsersService,
@@ -38,7 +36,6 @@ namespace Sepes.Infrastructure.Service
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
             _azureADUsersService = azureADUsersService;
-            //_userService = userService;
         }
 
         public async Task<StudyParticipantDto> AddAsync(int studyId, ParticipantLookupDto user, string role)
@@ -47,56 +44,58 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                ValidateRoleNameThrowIfInvalid(role);              
+                ValidateRoleNameThrowIfInvalid(role);
 
-                var studyFromDb = await GetStudyForParticipantOperation(studyId, role);                         
 
-                StudyParticipant newlyAddedParticipant = null;
+
+                StudyParticipantDto newlyAddedParticipant = null;
 
                 if (user.Source == ParticipantSource.Db)
-                {                  
-                    newlyAddedParticipant = await AddDbUserAsync(studyFromDb, user.DatabaseId.Value, role);                
+                {
+                    newlyAddedParticipant = await AddDbUserAsync(studyId, user.DatabaseId.Value, role);
                 }
                 else if (user.Source == ParticipantSource.Azure)
-                {                 
-                    newlyAddedParticipant = await AddAzureUserAsync(studyFromDb, user, role);                   
+                {
+                    newlyAddedParticipant = await AddAzureUserAsync(studyId, user, role);
                 }
                 else
                 {
                     throw new ArgumentException($"Unknown source for user {user.UserName}");
                 }
-                                  
-                await CreateRoleUpdateOperationsAsync(newlyAddedParticipant);
 
-                return _mapper.Map<StudyParticipantDto>(newlyAddedParticipant);
+                await CreateRoleUpdateOperationsAsync(newlyAddedParticipant.StudyId);
+
+                return newlyAddedParticipant;
             }
             catch (Exception ex)
             {
-                if(updateOperations != null)
+                if (updateOperations != null)
                 {
-                    foreach(var curOperation in updateOperations)
+                    foreach (var curOperation in updateOperations)
                     {
                         await _cloudResourceOperationUpdateService.AbortAndAllowDependentOperationsToRun(curOperation.Id, ex.Message);
                     }
                 }
 
-                if(ex is ForbiddenException)
+                if (ex is ForbiddenException)
                 {
                     throw;
                 }
 
-                throw new Exception($"Add participant failed: {ex.Message}", ex);               
+                throw new Exception($"Add participant failed: {ex.Message}", ex);
             }
         }
 
-        async Task<StudyParticipant> AddDbUserAsync(Study studyFromDb, int userId, string role)
+        async Task<StudyParticipantDto> AddDbUserAsync(int studyId, int userId, string role)
         {
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
+
             if (RoleAllreadyExistsForUser(studyFromDb, userId, role))
             {
                 throw new ArgumentException($"Role {role} allready granted for user {userId} on study {studyFromDb.Id}");
             }
 
-            var userFromDb = await _userService.GetUserByIdAsync(userId);
+            var userFromDb = await _userService.GetByDbIdAsync(userId);
 
             if (userFromDb == null)
             {
@@ -111,7 +110,7 @@ namespace Sepes.Infrastructure.Service
                 await _db.StudyParticipants.AddAsync(createdStudyParticipant);
                 await _db.SaveChangesAsync();
 
-                return createdStudyParticipant;
+                return ConvertToDto(createdStudyParticipant, userFromDb);
             }
             catch (Exception)
             {
@@ -120,36 +119,30 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<StudyParticipant> AddAzureUserAsync(Study studyFromDb, ParticipantLookupDto user, string role)
+        async Task<StudyParticipantDto> AddAzureUserAsync(int studyId, ParticipantLookupDto user, string role)
         {
-            var userFromAzure = new AzureUserDto { };
-            if(await _userService.IsMockUser())
+            UserDto addedUser;
+
+            if (_userService.IsMockUser()) //If mock user, he can only add him self
             {
-                userFromAzure = new AzureUserDto { DisplayName = "Mock user", Mail = "Mock@User.com", UserPrincipalName = "Mock user" };
+                addedUser = await _userService.GetCurrentUserAsync();
+                await _userService.EnsureExists(addedUser);
             }
             else
             {
-                userFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+                var newUserFromAzure = await _azureADUsersService.GetUserAsync(user.ObjectId);
+
+                if (newUserFromAzure == null)
+                {
+                    throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
+                }
+
+                addedUser = await _userService.EnsureExists(new UserDto(user.ObjectId, newUserFromAzure.UserPrincipalName, newUserFromAzure.DisplayName, newUserFromAzure.Mail));
             }
 
-            if (userFromAzure == null)
-            {
-                throw new NotFoundException($"AD User with id {user.ObjectId} not found!");
-            }
+            var studyFromDb = await GetStudyForParticipantOperation(studyId, role);
 
-            var userDb = await _db.Users.FirstOrDefaultAsync(p => p.ObjectId == user.ObjectId);
-
-            if (userDb == null)
-            {
-                userDb = new User { ObjectId = user.ObjectId, UserName = userFromAzure.Mail, EmailAddress = userFromAzure.Mail, FullName = userFromAzure.DisplayName };
-                _db.Users.Add(userDb);
-            }
-            else
-            {
-                return await AddDbUserAsync(studyFromDb, userDb.Id, role);
-            }
-
-            if (RoleAllreadyExistsForUser(studyFromDb, userDb.Id, role))
+            if (RoleAllreadyExistsForUser(studyFromDb, addedUser.Id, role))
             {
                 throw new ArgumentException($"Role {role} allready granted for user {user.DatabaseId.Value} on study {studyFromDb.Id}");
             }
@@ -158,13 +151,12 @@ namespace Sepes.Infrastructure.Service
 
             try
             {
-                createdStudyParticipant = new StudyParticipant { StudyId = studyFromDb.Id, RoleName = role };
-                userDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
+                createdStudyParticipant = new StudyParticipant { UserId = addedUser.Id, StudyId = studyFromDb.Id, RoleName = role };
+                studyFromDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
 
                 await _db.SaveChangesAsync();
 
-                return createdStudyParticipant;
-
+                return ConvertToDto(createdStudyParticipant, addedUser);
             }
             catch (Exception)
             {
@@ -174,23 +166,28 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-
-        async Task RemoveIfExist(StudyParticipant participant)
+        async Task RemoveIfExist(StudyParticipant studyParticipant)
         {
-            if (participant != null)
+            if (studyParticipant != null)
             {
-                var sameParticipantFromDb = await _db.StudyParticipants
-                    .Where(sp => sp.StudyId == participant.StudyId
-                    && sp.UserId == participant.UserId
-                    && sp.RoleName == participant.RoleName)
-                    .FirstOrDefaultAsync();
-
-                if (sameParticipantFromDb != null)
-                {
-                    _db.StudyParticipants.Remove(participant);
-                    await _db.SaveChangesAsync();
-                }
+                await RemoveIfExist(studyParticipant.StudyId, studyParticipant.UserId, studyParticipant.RoleName);
             }
-        }      
+        }
+
+
+        async Task RemoveIfExist(int studyId, int userId, string role)
+        {
+            var sameParticipantFromDb = await _db.StudyParticipants
+                .Where(sp => sp.StudyId == studyId
+                && sp.UserId == userId
+                && sp.RoleName == role)
+                .FirstOrDefaultAsync();
+
+            if (sameParticipantFromDb != null)
+            {
+                _db.StudyParticipants.Remove(sameParticipantFromDb);
+                await _db.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -20,11 +20,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceCreateService : CloudResourceServiceBase, ICloudResourceCreateService
     {
+        readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
 
-        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, ISandboxModelService sandboxModelService, IRequestIdService requestIdService)
-         : base(db, config, mapper, logger, userService, sandboxModelService)
+        public CloudResourceCreateService(SepesDbContext db, IConfiguration config, IMapper mapper, ILogger<CloudResourceCreateService> logger, IUserService userService, IStudyPermissionService studyPermissionService, IRequestIdService requestIdService)
+         : base(db, config, mapper, logger, studyPermissionService)
         {
+            _userService = userService;
             _requestIdService = requestIdService;
 
         }      
@@ -74,8 +76,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             return resourceEntry;
         }
-
-
         public async Task<CloudResource> CreateSandboxResourceGroupEntryAsync(SandboxResourceCreationAndSchedulingDto dto, string resourceGroupName)
         {
             await ValidateThatNameDoesNotExistThrowIfInvalid(resourceGroupName);

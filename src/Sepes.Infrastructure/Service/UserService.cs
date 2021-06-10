@@ -1,80 +1,94 @@
-﻿using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Sepes.Common.Dto;
-using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Interface;
-using System.Threading.Tasks;
-using Sepes.Azure.Service.Interface;
+﻿using Sepes.Common.Dto;
 using Sepes.Common.Interface;
-using Sepes.Infrastructure.Util.Auth;
-using Sepes.Common.Constants;
+using Sepes.Infrastructure.Service.DataModelService.Interface;
+using Sepes.Infrastructure.Service.Interface;
+using System;
+using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
     public class UserService : IUserService
     {
         UserDto _cachedUser;
+       
+        readonly IUserModelService _userModelService;
+        readonly IContextUserService _contextUserService;
 
-        readonly IConfiguration _config;
-        readonly SepesDbContext _db;
-        readonly IMapper _mapper;
-
-        readonly ICurrentUserService _currentUserService;
-        readonly IPrincipalService _principalService;
-        readonly IAzureUserService _azureUserService;
-
-        public UserService(IConfiguration config, SepesDbContext db, IMapper mapper, ICurrentUserService currentUserService, IPrincipalService principalService, IAzureUserService azureUserService)
-        {
-            _config = config;
-            _db = db;           
-            _mapper = mapper;
-            _currentUserService = currentUserService;
-            _principalService = principalService;
-            _azureUserService = azureUserService;
+        public UserService(IUserModelService userModelService, IContextUserService contextUserService)
+        {       
+            _userModelService = userModelService;
+            _contextUserService = contextUserService;
         }
-        public async Task<UserDto> GetCurrentUserAsync()
+
+        public async Task<UserDto> GetByDbIdAsync(int userId)
+        {
+            return await _userModelService.GetByIdAsync(userId);
+        }
+
+        public async Task<UserDto> GetByObjectIdAsync(string objectId)
+        {
+            return await _userModelService.GetByObjectIdAsync(objectId);
+        }
+
+        public async Task<UserDto> EnsureExists(UserDto user)
+        {
+            await EnsureUserHasDbEntryAndSetDbIdOnDto(user);
+
+            return user;
+        }
+
+        void VerifyDbUserCreatedOrThrow(UserDto user)
+        {
+            if (user.Id == 0)
+            {
+                throw new Exception($"Unable to ensure user {user.ObjectId} exists in DB");
+            }
+        }
+
+        public async Task<UserDto> GetCurrentUserAsync(bool includeDbId = true)
         {
             if (_cachedUser == null)
             {
-                var userFromDb = await EnsureDbUserExists();
-                _cachedUser = MapToDtoAndPersistRelevantProperties(userFromDb);
+                _cachedUser = GetCurrentUserInternal();
+
+                if (includeDbId)
+                {
+                    await EnsureUserHasDbEntryAndSetDbIdOnDto(_cachedUser);
+                }
+
+            }
+            else if (includeDbId && _cachedUser.Id == 0)
+            {
+                await EnsureUserHasDbEntryAndSetDbIdOnDto(_cachedUser);
             }
 
             return _cachedUser;
-        }        
-
-        public async Task<UserDto> GetUserByIdAsync(int userId)
-        {
-            var userFromDb = await _db.Users.FirstOrDefaultAsync(p => p.Id == userId);
-            var userDto = _mapper.Map<UserDto>(userFromDb);
-            return userDto;
         }
 
-        async Task<User> EnsureDbUserExists()
-        {           
-            return await ThreadSafeUserCreatorUtil.EnsureDbUserExistsAsync(_config, _db, _currentUserService, _azureUserService);           
-        }     
-
-        UserDto MapToDtoAndPersistRelevantProperties(User user)
+        public UserDto GetCurrentUserInternal()
         {
-            var userDto = _mapper.Map<UserDto>(user);  
-            UserUtil.ApplyExtendedProps(_config, _principalService, userDto);
-            return userDto;
+            return _contextUserService.GetCurrentUser();
         }
 
-        public async Task<bool> IsMockUser()
+        async Task EnsureUserHasDbEntryAndSetDbIdOnDto(UserDto user)
         {
-            var currentUser = await GetCurrentUserAsync();
-            var cypressMockUser = _config[ConfigConstants.CYPRESS_MOCK_USER];
-            if (currentUser.ObjectId.ToLowerInvariant() == cypressMockUser.ToLowerInvariant())
+            var userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
+
+            if (userFromDb == null)
             {
-                return true;
+                await _userModelService.TryCreate(user.ObjectId, user.UserName, user.EmailAddress, user.FullName, user.UserName);
+
+                userFromDb = await _userModelService.GetByObjectIdAsync(user.ObjectId);
             }
-            return false;
+
+            user.Id = userFromDb.Id;
+
+            VerifyDbUserCreatedOrThrow(user);
         }
 
-        
+        public bool IsMockUser()
+        {
+            return _contextUserService.IsMockUser();
+        }
     }
 }

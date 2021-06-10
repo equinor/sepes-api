@@ -45,8 +45,8 @@ namespace Sepes.Tests.Services.DomainServices
            
             await studyDeleteService.CloseStudyAsync(createdStudy.Id);
          
-            var studyReadService = StudyServiceMockFactory.StudyEfReadService(_serviceProvider);
-            _ = await Assert.ThrowsAsync<NotFoundException>(() => studyReadService.GetStudyDtoByIdAsync(createdStudy.Id, UserOperation.Study_Read));
+            var studyReadService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
+            _ = await Assert.ThrowsAsync<NotFoundException>(() => studyReadService.GetByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
         }  
     }

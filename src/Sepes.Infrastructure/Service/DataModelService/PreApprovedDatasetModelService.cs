@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -16,10 +15,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class PreApprovedDatasetModelService : DatasetModelServiceBase, IPreApprovedDatasetModelService
     {
-        public PreApprovedDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<PreApprovedDatasetModelService> logger, IUserService userService)
-            : base(configuration, db, logger, userService)
-        {
+        readonly IUserService _userService;
 
+        public PreApprovedDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<PreApprovedDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(configuration, db, logger, studyPermissionService)
+        {
+            _userService = userService;
         }
 
 
@@ -63,11 +64,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         async Task ThrowIfOperationNotAllowed(UserOperation operation)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
-
-            if (!StudyAccessUtil.HasAccessToOperation(currentUser, operation))
-            {
-                throw new ForbiddenException($"User {currentUser.EmailAddress} does not have permission to perform operation {operation}");
-            }
+            OperationAccessUtil.HasAccessToOperationOrThrow(currentUser, operation);
         }
 
         IQueryable<Dataset> AddBasicFilters(IQueryable<Dataset> queryable)

@@ -16,14 +16,14 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class StudyUpdateController : ControllerBase
-    {     
-        readonly IStudyCreateService _studyCreateService;
+    { 
         readonly IStudyUpdateService _studyUpdateService;
-        readonly IStudyDeleteService _studyDeleteService;
+        readonly IStudyDetailsService _studyDetailsService;
 
-        public StudyUpdateController(IStudyCreateService studyCreateService, IStudyUpdateService studyUpdateService, IStudyDeleteService studyDeleteService)
+        public StudyUpdateController(IStudyUpdateService studyUpdateService, IStudyDetailsService studyDetailsService)
         { 
-            _studyUpdateService = studyUpdateService;                     
+            _studyUpdateService = studyUpdateService;
+            _studyDetailsService = studyDetailsService;
         } 
        
 
@@ -33,7 +33,8 @@ namespace Sepes.RestApi.Controller
                IFormFile image = null)
         {
             var updatedStudy = await _studyUpdateService.UpdateMetadataAsync(studyId, study, image);
-            return new JsonResult(updatedStudy);
+            var studyDetails = await _studyDetailsService.Get(studyId);
+            return new JsonResult(studyDetails);
         }
 
         [HttpPut("{studyId}/resultsandlearnings")]

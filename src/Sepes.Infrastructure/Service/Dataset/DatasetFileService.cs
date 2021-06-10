@@ -22,11 +22,13 @@ namespace Sepes.Infrastructure.Service
         readonly IAzureBlobStorageUriBuilderService _azureStorageAccountTokenService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
-        public DatasetFileService(SepesDbContext db, IMapper mapper, ILogger<DatasetFileService> logger, IUserService userService, IStudySpecificDatasetModelService studySpecificDatasetModelService, 
+        public DatasetFileService(SepesDbContext db, IMapper mapper, ILogger<DatasetFileService> logger, IUserService userService,
+            IStudyPermissionService studyPermissionService,
+            IStudySpecificDatasetModelService studySpecificDatasetModelService, 
             IAzureBlobStorageService storageService,
             IDatasetCloudResourceService datasetCloudResourceService,
             IAzureBlobStorageUriBuilderService azureStorageAccountTokenService)
-            : base(db, mapper, logger, userService)
+            : base(db, mapper, logger, userService, studyPermissionService)
         {
             _storageService = storageService;
             _studySpecificDatasetModelService = studySpecificDatasetModelService;

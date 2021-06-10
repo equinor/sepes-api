@@ -21,7 +21,8 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineReadService : VirtualMachineServiceBase, IVirtualMachineReadService
-    {  
+    {
+        readonly IStudyPermissionService _studyPermissionService;
         readonly IVirtualMachineSizeService _virtualMachineSizeService;
         readonly IAzureVirtualMachineExtendedInfoService _azureVirtualMachineExtenedInfoService;
 
@@ -30,7 +31,8 @@ namespace Sepes.Infrastructure.Service
             SepesDbContext db,
             ILogger<VirtualMachineReadService> logger,
             IMapper mapper,
-            IUserService userService,               
+            IUserService userService,
+            IStudyPermissionService studyPermissionService,
             ICloudResourceReadService cloudResourceReadService,
             IVirtualMachineSizeService virtualMachineSizeService,
             IAzureVirtualMachineExtendedInfoService azureVirtualMachineExtenedInfoService
@@ -38,6 +40,7 @@ namespace Sepes.Infrastructure.Service
           )
            : base(config, db, logger, mapper, userService, cloudResourceReadService)
         {
+            _studyPermissionService = studyPermissionService;
             _virtualMachineSizeService = virtualMachineSizeService;             
             _azureVirtualMachineExtenedInfoService = azureVirtualMachineExtenedInfoService;
         }
@@ -95,7 +98,7 @@ namespace Sepes.Infrastructure.Service
 
             var sandbox = vmList.FirstOrDefault().Sandbox;
 
-            await StudyAccessUtil.VerifyAccessOrThrow(_userService, sandbox.Study, UserOperation.Study_Read);
+            await _studyPermissionService.VerifyAccessOrThrow(sandbox.Study, UserOperation.Study_Read);
             
             return vmList;
         }

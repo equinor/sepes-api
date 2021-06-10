@@ -1,183 +1,29 @@
-﻿using Dapper;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants;
-using Sepes.Common.Dto;
-using Sepes.Common.Util;
-using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public abstract class ModelServiceBase
     {
-        protected readonly IConfiguration _configuration;
-       
         protected readonly ILogger _logger;
-        protected readonly IUserService _userService;
+        protected readonly IConfiguration _configuration;       
 
-        public ModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService)
+        public ModelServiceBase(IConfiguration configuration, ILogger logger)
         {
             _configuration = configuration;           
-            _logger = logger;
-            _userService = userService;
+            _logger = logger;            
         }
-    }
-
-    public class DapperModelServiceBase : ModelServiceBase
-    {
-        public DapperModelServiceBase(IConfiguration configuration, ILogger logger, IUserService userService)
-            : base(configuration, logger, userService)
-        {
-
-        }
-
-        protected string GetDbConnectionString()
-        {
-            var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
-
-            if (isIntegrationTest)
-            {
-                return _configuration[ConfigConstants.DB_INTEGRATION_TEST_CONNECTION_STRING];
-            }
-
-            return _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
-        }
-
-        protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query, object parameters = null)
-        {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
-            {
-                if (connection.State != System.Data.ConnectionState.Open)
-                {
-                    await connection.OpenAsync();
-                }
-
-                return await connection.QueryAsync<T>(query, parameters);
-            }
-        }
-
-        protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null) where T : SingleEntityDapperResult
-        {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
-            {
-                if (connection.State != System.Data.ConnectionState.Open)
-                {
-                    await connection.OpenAsync();
-                }
-
-                return await connection.QuerySingleOrDefaultAsync<T>(query, parameters);
-            }
-        }
-
-        protected string WrapSingleEntityQuery(UserDto currentUser, string dataQuery, UserOperation operation)
-        {
-            var accessWherePart = StudyAccessQueryBuilder.CreateAccessWhereClause(currentUser, operation);
-
-            var completeQuery = $"WITH dataCte AS ({dataQuery})";
-            completeQuery += " ,accessCte as (SELECT [Id] FROM Studies s INNER JOIN [dbo].[StudyParticipants] sp on s.Id = sp.StudyId WHERE s.Id=@studyId";
-
-            if (!string.IsNullOrWhiteSpace(accessWherePart))
-            {
-                completeQuery += $" AND ({accessWherePart})";
-            }
-
-            completeQuery += " ) SELECT DISTINCT d.*, (CASE WHEN a.Id IS NOT NULL THEN 1 ELSE 0 END) As Authorized from dataCte d LEFT JOIN accessCte a on d.StudyId = a.Id ";
-
-            return completeQuery;
-        }
-
-        protected async Task<T> RunSingleEntityQuery<T>(UserDto currentUser, string dataQuery, UserOperation operation, object parameters = null) where T : SingleEntityDapperResult
-        {
-            var completeQuery = WrapSingleEntityQuery(currentUser, dataQuery, operation);
-            var singleEntity = await RunDapperQuerySingleAsync<T>(completeQuery, parameters);
-
-            StudyAccessUtil.VerifyAccessOrThrow(singleEntity, currentUser, operation);
-
-            return singleEntity;
-        }
-    }
+    }   
 
     public class EfModelServiceBase : ModelServiceBase
     {
-        protected readonly SepesDbContext _db;
+        protected readonly SepesDbContext _db;      
 
-        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
-                   : base(configuration, logger, userService)
+        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger)
+                   : base(configuration, logger)
         {
-            _db = db;
+            _db = db;          
         }
-    }
-
-        public class EfModelServiceBase<TModel> : EfModelServiceBase where TModel : BaseModel
-    {
-       
-
-        public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger, IUserService userService)
-            : base(configuration, db, logger, userService)
-        {
-           
-        }       
-
-        public async Task<TModel> AddAsync(TModel entity)
-        {
-            Validate(entity);
-
-            var dbSet = _db.Set<TModel>();
-
-            dbSet.Add(entity);
-            await _db.SaveChangesAsync();
-            return entity;
-        }       
-
-        public async Task Remove(TModel entity)
-        {
-            var dbSet = _db.Set<TModel>();
-
-            dbSet.Remove(entity);
-            await _db.SaveChangesAsync();
-        }
-
-        public bool Validate(TModel entity)
-        {
-            var validationErrors = new List<ValidationResult>();
-            var context = new ValidationContext(entity, null, null);
-            var isValid = Validator.TryValidateObject(entity, context, validationErrors);
-
-            if (!isValid)
-            {
-                var errorBuilder = new StringBuilder();
-
-                errorBuilder.AppendLine("Invalid data: ");
-
-                foreach (var error in validationErrors)
-                {
-                    errorBuilder.AppendLine(error.ErrorMessage);
-                }
-
-                throw new ArgumentException(errorBuilder.ToString());
-            }
-
-            return true;
-        }
-
-        protected string GetDbConnectionString()
-        {
-            return _db.Database.GetDbConnection().ConnectionString;
-        }
-
-        protected async Task CheckAccesAndThrowIfNotAllowed(Study study, UserOperation operation)
-        {
-            await StudyAccessUtil.VerifyAccessOrThrow(_userService, study, operation);
-        }
-    }
+    }     
 }

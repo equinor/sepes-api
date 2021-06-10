@@ -38,14 +38,15 @@ namespace Sepes.Infrastructure.Service
             _studyWbsValidationService = studyWbsValidationService;
         }      
 
-        public async Task<StudyDetailsDto> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
-        {           
-            StudyAccessUtil.HasAccessToOperationOrThrow(await _userService.GetCurrentUserAsync(), UserOperation.Study_Create);
+        public async Task<Study> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
+            OperationAccessUtil.HasAccessToOperationOrThrow(currentUser, UserOperation.Study_Create);
             GenericNameValidation.ValidateName(newStudyDto.Name);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
 
-            var currentUser = await _userService.GetCurrentUserAsync();
+       
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
             
             await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyDb);
@@ -60,7 +61,7 @@ namespace Sepes.Infrastructure.Service
                 await _db.SaveChangesAsync();
             }
 
-            return await GetStudyDetailsAsync(studyDb.Id);
+            return studyDb;
         }
 
         void MakeCurrentUserOwnerOfStudy(Study study, UserDto user)

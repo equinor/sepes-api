@@ -32,7 +32,7 @@ namespace Sepes.Azure.Util
         public static string BastionPublicIp(string bastionName) => EnsureMaxLength($"pip-{bastionName}", 64);
 
 
-
+      
         // Storage account names must be between 3 and 24 characters in length and may contain numbers and lowercase letters only.
         // Your storage account name must be unique within Azure. No two storage accounts can have the same name.
         // StorageAccount names needs to be unique in Azure scope.
@@ -63,6 +63,8 @@ namespace Sepes.Azure.Util
 
             return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, addUniqueEnding: true, avoidDash: true);
         }
+
+        public static string VirtualMachinePublicIp(string vmName) => EnsureMaxLength($"pip-{vmName}", 64);
 
         public static string VirtualMachine(string studyName, string sandboxName, string userSuffix)
         {
@@ -152,9 +154,7 @@ namespace Sepes.Azure.Util
             else
             {
                 return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}";
-            }
-
-         
+            }         
         }
 
         static string Normalize(string input, int limit = 0)
@@ -168,7 +168,7 @@ namespace Sepes.Azure.Util
         {
 
             var alphaNummericString = new string((from c in str
-                                                  where char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                  where (char.IsLetterOrDigit(c) || c.Equals('-')) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
                                                   select c).ToArray()).ToLower();
 
             return EnsureMaxLength(alphaNummericString, limit);

@@ -8,7 +8,7 @@ using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Functions.Service;
-using Sepes.Infrastructure.Model.Automapper;
+using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
@@ -88,8 +88,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ILookupService, LookupService>();
             builder.Services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
-            builder.Services.AddTransient<ISandboxService, SandboxService>();
-            builder.Services.AddTransient<IStudyEfReadService, StudyEfReadService>();
+            builder.Services.AddTransient<ISandboxService, SandboxService>();         
             builder.Services.AddScoped<IVariableService, VariableService>();
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();

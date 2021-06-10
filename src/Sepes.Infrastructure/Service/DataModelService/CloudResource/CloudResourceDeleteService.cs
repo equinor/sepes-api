@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class CloudResourceDeleteService : CloudResourceServiceBase, ICloudResourceDeleteService
     {
+        readonly IUserService _userService;
         readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
@@ -27,13 +28,14 @@ namespace Sepes.Infrastructure.Service.DataModelService
             IMapper mapper,
             ILogger<CloudResourceDeleteService> logger,
             IUserService userService,
-            ISandboxModelService sandboxModelService,
+            IStudyPermissionService studyPermissionService,
             ICloudResourceOperationReadService cloudResourceOperationService,
             ICloudResourceOperationCreateService cloudResourceOperationCreateService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService
             )
-         : base(db, config, mapper, logger, userService, sandboxModelService)
+         : base(db, config, mapper, logger, studyPermissionService)
         {
+            _userService = userService;
             _cloudResourceOperationReadService = cloudResourceOperationService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;

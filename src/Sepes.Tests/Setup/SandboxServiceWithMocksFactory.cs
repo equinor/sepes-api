@@ -12,7 +12,6 @@ using System.Linq;
 
 namespace Sepes.Tests.Setup
 {
-
     public static class SandboxServiceWithMocksFactory
     {
         public static ISandboxService ForSandboxCreate(ServiceProvider serviceProvider, string userAppRole, int userId, IStudyWbsValidationService studyWbsValidationService, List<Study> studies = null, List<Sandbox> sandboxForSandboxDetails = null)
@@ -41,7 +40,9 @@ namespace Sepes.Tests.Setup
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            return new SandboxService(mapper, logger, userService.Object, sandboxModelService, studyModelService, studyWbsValidationServiceMock, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
+            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+
+            return new SandboxService(mapper, logger, userService.Object, studyPermissionService, sandboxModelService, studyModelService, studyWbsValidationServiceMock, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      
     }
 }

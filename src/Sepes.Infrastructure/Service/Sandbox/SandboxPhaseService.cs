@@ -35,9 +35,16 @@ namespace Sepes.Infrastructure.Service
         readonly EventId _sandboxNextPhaseEventId = new EventId(33, "Sepes-Event-Sandbox-NextPhase");     
 
         public SandboxPhaseService(SepesDbContext db, IMapper mapper, ILogger<SandboxPhaseService> logger,
-            IUserService userService, ISandboxModelService sandboxModelService, ISandboxDatasetModelService sandboxDatasetModelService, ICloudResourceOperationReadService sandboxResourceOperationService, IVirtualMachineRuleService virtualMachineRuleService,
-            IAzureVirtualNetworkService azureVNetService, IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService, IAzureNetworkSecurityGroupRuleService nsgRuleService)
-            : base(mapper, logger, userService, sandboxModelService)
+            IUserService userService,
+            IStudyPermissionService studyPermissionService,
+            ISandboxModelService sandboxModelService,
+            ISandboxDatasetModelService sandboxDatasetModelService,
+            ICloudResourceOperationReadService sandboxResourceOperationService,
+            IVirtualMachineRuleService virtualMachineRuleService,
+            IAzureVirtualNetworkService azureVNetService,
+            IAzureStorageAccountNetworkRuleService azureStorageAccountNetworkRuleService,
+            IAzureNetworkSecurityGroupRuleService nsgRuleService)
+            : base(mapper, logger, userService, studyPermissionService , sandboxModelService)
         {
             _db = db;
 
