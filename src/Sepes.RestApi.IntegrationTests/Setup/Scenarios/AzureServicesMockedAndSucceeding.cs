@@ -13,11 +13,13 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
         {
             //NON-AZURE, BUT EXTERNAL
             serviceCollection.SwapTransient<IWbsApiService>(provider => WbsApiMockServiceFactory.GetService(true, false));
-
             serviceCollection.SwapTransient<IAzureRoleAssignmentService>(provider => AzureRoleAssignmentMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureKeyVaultSecretService>(provider => AzureKeyVaultSecretMockServiceFactory.CreateBasicForResourceCreate().Object);
+            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object); 
+            
+            //USER SERVICES
 
-            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);            
+
 
             //NETWORK
             serviceCollection.SwapTransient<IAzureNetworkSecurityGroupService>(provider => AzureNetworkSecurityGroupMockServiceFactory.CreateBasicForCreate().Object);

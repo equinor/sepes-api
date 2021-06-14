@@ -11,14 +11,14 @@ namespace Sepes.Azure.Service
     {
         readonly string _scope;
         readonly IGraphServiceProvider _graphServiceProvider;
-        
+
         public UserFromGroupLookupService(string scope, IGraphServiceProvider graphServiceProvider)
         {
             _scope = scope;
-            _graphServiceProvider = graphServiceProvider; 
+            _graphServiceProvider = graphServiceProvider;
         }
 
-       protected async Task<Dictionary<string, AzureUserDto>> SearchInternalAsync(string groupId, string search, int limit, CancellationToken cancellationToken = default)
+        protected async Task<Dictionary<string, AzureUserDto>> SearchInternalAsync(string groupId, string search, int limit, CancellationToken cancellationToken = default)
         {
             var userList = new Dictionary<string, AzureUserDto>();
 
@@ -30,23 +30,28 @@ namespace Sepes.Azure.Service
             // Initialize the GraphServiceClient.            
             var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { _scope });
 
+            var queryOptions = new List<QueryOption>()
+            {
+                new QueryOption("$count", "true"),
+                new QueryOption("$search", $"\"displayName:{search}\" OR \"surname:{search}\" OR \"mail:{search}\" OR \"userPrincipalName:{search}\"")
+            };
+
             var graphRequest = graphClient.Groups[groupId].Members
-                .Request()
-                .Top(limit)
-                .Filter($"startswith(displayName,'{search}') or startswith(givenName,'{search}') or startswith(surname,'{search}') or startswith(mail,'{search}') or startswith(userPrincipalName,'{search}')")
-                ;
-              
-                        
+                .Request(queryOptions)
+                .Header("ConsistencyLevel", "eventual")
+                .Select("displayName,id,mail,userPrincipalName")
+                .Top(limit);
+
             while (true)
             {
-                if(graphRequest == null || userList.Count > limit)
+                if (graphRequest == null || userList.Count > limit)
                 {
                     break;
                 }
 
-                var response = await graphRequest.GetAsync(cancellationToken: cancellationToken);              
+                var response = await graphRequest.GetAsync(cancellationToken: cancellationToken);
 
-                foreach(var curItem in response.CurrentPage)
+                foreach (var curItem in response.CurrentPage)
                 {
                     var itemAsUser = curItem as User;
 
@@ -55,14 +60,14 @@ namespace Sepes.Azure.Service
                         if (!userList.ContainsKey(itemAsUser.Id))
                         {
                             userList.Add(itemAsUser.Id, new AzureUserDto() { Id = itemAsUser.Id, Mail = itemAsUser.Mail, DisplayName = itemAsUser.DisplayName, UserPrincipalName = itemAsUser.UserPrincipalName });
-                        }                      
-                    }                  
-                }                                 
-                
+                        }
+                    }
+                }
+
                 graphRequest = response.NextPageRequest;
-            } 
+            }
 
             return userList;
-        }            
+        }
     }
 }
