@@ -42,6 +42,8 @@
         public const string DISABLE_CACHE_UPDATE = "DisableCacheUpdate";
 
         public const string EMPLOYEE_ROLE = "EmployeeRole";
+        public const string EMPLOYEE_GROUP_ID = "CompanyEmployeeGroupId";
+        public const string AFFILIATE_GROUP_ID = "AffiliateGroupId";
 
         public const string SERVER_PUBLIC_IP_URLS = "GetServerPublicIpServiceUrls";
 

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model.Context;
@@ -15,14 +16,14 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
     {      
-        readonly IAzureUserService _azureUserService;
+        readonly ICombinedUserLookupService _combinedUserLookupService;
        
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
             IMapper mapper,
             IUserService userService,
-            IAzureUserService azureUserService,
+            ICombinedUserLookupService combinedUserLookupService,
             IStudyEfModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
@@ -30,7 +31,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureUserService = azureUserService;            
+            _combinedUserLookupService = combinedUserLookupService;            
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
@@ -59,11 +60,11 @@ namespace Sepes.Infrastructure.Service
                 return new List<ParticipantLookupDto>();
             }
 
-            Task<List<Microsoft.Graph.User>> usersFromAzureAdTask = null;
+            Task<Dictionary<string, AzureUserDto>> usersFromAzureAdTask = null;
 
             try
             {
-                usersFromAzureAdTask = _azureUserService.SearchUsersAsync(searchText, limit, cancellationToken);
+                usersFromAzureAdTask = _combinedUserLookupService.SearchAsync(searchText, limit, cancellationToken);
             }
             catch (System.Exception ex)
             {
@@ -92,13 +93,11 @@ namespace Sepes.Infrastructure.Service
 
             if (usersFromAzureAdTask.IsCompletedSuccessfully)
             {
-                var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
-
-                foreach (var curAzureUser in usersFromAzureAd)
+                foreach (var curAzureUser in usersFromAzureAdTask.Result)
                 {
-                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId))
+                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.Key))
                     {
-                        usersFromDbAsDictionary.Add(curAzureUser.ObjectId, curAzureUser);
+                        usersFromDbAsDictionary.Add(curAzureUser.Key, _mapper.Map<ParticipantLookupDto>(curAzureUser.Value));
                     }
                 }
             }

@@ -163,10 +163,12 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
-              
-                
 
                 //Azure Services
+                services.AddTransient<IAzureUserService, AzureUserService>();
+                services.AddTransient<ICompanyUserLookupService, CompanyUserLookupService>();
+                services.AddTransient<ICombinedUserLookupService, CombinedUserLookupService>();
+                services.AddTransient<IAffiliateUserLookupService, AffiliateUserLookupService>();
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
                 services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
                 services.AddTransient<IAzureBastionService, AzureBastionService>();
@@ -181,7 +183,7 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
                 services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-                services.AddTransient<IAzureUserService, AzureUserService>();
+               
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
