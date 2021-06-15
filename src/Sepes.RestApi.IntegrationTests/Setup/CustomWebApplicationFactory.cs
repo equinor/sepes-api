@@ -51,6 +51,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                
                 services.AddSingleton<IContextUserService>(new ContextUserServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));             
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
+                services.AddScoped<ICombinedUserLookupService, AzureCombinedUserLookupServiceMock>();              
 
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
 

@@ -45,7 +45,6 @@ namespace Sepes.Infrastructure.Service
             GenericNameValidation.ValidateName(newStudyDto.Name);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
-
        
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
             

@@ -4,20 +4,20 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
+using System;
 using System.Security.Claims;
-using System.Security.Principal;
 
 namespace Sepes.RestApi.Services
 {
     public class ContextUserService : IContextUserService
     {
         readonly IConfiguration _configuration;
-        readonly IHttpContextAccessor _httpContextAccessor;       
+        readonly IHttpContextAccessor _httpContextAccessor;
 
         public ContextUserService(IConfiguration configuration, IHttpContextAccessor contextAccessor)
         {
             _configuration = configuration;
-            _httpContextAccessor = contextAccessor;         
+            _httpContextAccessor = contextAccessor;
         }
 
         public string GetCurrentUserObjectId()
@@ -42,7 +42,7 @@ namespace Sepes.RestApi.Services
             else
             {
                 DecorateNormalUser(claimsIdentity, user);
-            }          
+            }
 
             ApplyExtendedProps(user);
 
@@ -86,8 +86,16 @@ namespace Sepes.RestApi.Services
 
         string GetUsername(ClaimsIdentity claimsIdentity)
         {
-            var userId = GetClaimValue(claimsIdentity, "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn");
-            return userId;
+            if (TryGetClaimValue(claimsIdentity, "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn", out string userNameFromClaim))
+            {
+                return userNameFromClaim;
+            }
+            else if (TryGetClaimValue(claimsIdentity, "preferred_username", out userNameFromClaim))
+            {
+                return userNameFromClaim;
+            }
+
+            throw new Exception($"Unable to resolve username for user {claimsIdentity.Name}");
         }
 
         string GetEmail(ClaimsIdentity claimsIdentity)
@@ -98,42 +106,55 @@ namespace Sepes.RestApi.Services
 
         string GetFullName(ClaimsIdentity claimsIdentity)
         {
-            return GetClaimValue(claimsIdentity, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+            return GetClaimValue(claimsIdentity, "name");
         }
 
-        public bool IsEmployee()
+        public bool IsEmployee(ClaimsPrincipal principal)
         {
             var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.EMPLOYEE_ROLE);
 
             foreach (var curEmployeeAdGroup in employeeAdGroups)
             {
-                if (GetPrincipal().IsInRole(curEmployeeAdGroup))
+                if (principal.IsInRole(curEmployeeAdGroup))
                 {
                     return true;
                 }
             }
 
             return false;
-        }
+        }       
 
-        bool IsAdmin()
+        void ApplyExtendedProps(UserDto user)
         {
-            return GetPrincipal().IsInRole(AppRoles.Admin);
-        }
+            var principal = GetPrincipal();
 
-        bool IsDatasetAdmin()
-        {
-            return GetPrincipal().IsInRole(AppRoles.DatasetAdmin);
-        }
+            if (principal.IsInRole(AppRoles.Admin))
+            {
+                user.Admin = true;
+                user.AppRoles.Add(AppRoles.Admin);
+            }
 
-        bool IsSponsor()
-        {
-            return GetPrincipal().IsInRole(AppRoles.Sponsor);
-        }
+            if (principal.IsInRole(AppRoles.Sponsor))
+            {
+                user.Sponsor = true;
+                user.AppRoles.Add(AppRoles.Sponsor);
+            }
 
-        IPrincipal GetPrincipal()
-        {
-            return _httpContextAccessor.HttpContext.User;
+            if (principal.IsInRole(AppRoles.DatasetAdmin))
+            {
+                user.DatasetAdmin = true;
+                user.AppRoles.Add(AppRoles.DatasetAdmin);
+            }
+
+            if (principal.IsInRole(AppRoles.External))
+            {
+                user.External = true;
+            }
+
+            if (IsEmployee(principal))
+            {
+                user.Employee = true;
+            }           
         }
 
         ClaimsIdentity GetIdentity()
@@ -141,36 +162,29 @@ namespace Sepes.RestApi.Services
             return _httpContextAccessor.HttpContext?.User?.Identity as ClaimsIdentity;
         }
 
+        ClaimsPrincipal GetPrincipal()
+        {
+            return _httpContextAccessor.HttpContext.User;
+        }    
+
         string GetClaimValue(ClaimsIdentity claimsIdentity, string claimType)
         {
             var claimValue = claimsIdentity.FindFirst(claimType).Value;
             return claimValue;
         }
-     
-        void ApplyExtendedProps(UserDto user)
+
+        bool TryGetClaimValue(ClaimsIdentity claimsIdentity, string claimType, out string claimValue)
         {
-            if (IsAdmin())
+            var claim = claimsIdentity.FindFirst(claimType);
+
+            if (claim != null && !string.IsNullOrWhiteSpace(claim.Value))
             {
-                user.Admin = true;
-                user.AppRoles.Add(AppRoles.Admin);
+                claimValue = claim.Value;
+                return true;
             }
 
-            if (IsSponsor())
-            {
-                user.Sponsor = true;
-                user.AppRoles.Add(AppRoles.Sponsor);
-            }
-
-            if (IsDatasetAdmin())
-            {
-                user.DatasetAdmin = true;
-                user.AppRoles.Add(AppRoles.DatasetAdmin);
-            }
-
-            if (IsEmployee())
-            {
-                user.Employee = true;
-            }
+            claimValue = null;
+            return false;
         }
     }
 }
