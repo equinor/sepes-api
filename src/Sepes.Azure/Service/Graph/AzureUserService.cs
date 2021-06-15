@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using Microsoft.Graph;
 using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System.Linq;

@@ -166,9 +166,8 @@ namespace Sepes.RestApi
 
                 //Azure Services
                 services.AddTransient<IAzureUserService, AzureUserService>();
-                services.AddTransient<ICompanyUserLookupService, CompanyUserLookupService>();
-                services.AddTransient<ICombinedUserLookupService, CombinedUserLookupService>();
-                services.AddTransient<IAffiliateUserLookupService, AffiliateUserLookupService>();
+                services.AddTransient<IUserFromGroupLookupService, UserFromGroupLookupService>();
+                services.AddTransient<ICombinedUserLookupService, CombinedUserLookupService>();               
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
                 services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
                 services.AddTransient<IAzureBastionService, AzureBastionService>();

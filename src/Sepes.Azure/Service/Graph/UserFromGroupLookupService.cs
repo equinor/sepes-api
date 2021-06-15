@@ -7,18 +7,17 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class UserFromGroupLookupService
+    public class UserFromGroupLookupService : IUserFromGroupLookupService
     {
-        readonly string _scope;
+        const string SCOPE = "GroupMember.Read.All";
         readonly IGraphServiceProvider _graphServiceProvider;
 
-        public UserFromGroupLookupService(string scope, IGraphServiceProvider graphServiceProvider)
+        public UserFromGroupLookupService(IGraphServiceProvider graphServiceProvider)
         {
-            _scope = scope;
             _graphServiceProvider = graphServiceProvider;
         }
 
-        protected async Task<Dictionary<string, AzureUserDto>> SearchInternalAsync(string groupId, string search, int limit, CancellationToken cancellationToken = default)
+        public async Task<Dictionary<string, AzureUserDto>> SearchInGroupAsync(string groupId, string search, int limit, CancellationToken cancellationToken = default)
         {
             var userList = new Dictionary<string, AzureUserDto>();
 
@@ -28,7 +27,7 @@ namespace Sepes.Azure.Service
             }
 
             // Initialize the GraphServiceClient.            
-            var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { _scope });
+            var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { SCOPE });
 
             var queryOptions = new List<QueryOption>()
             {
