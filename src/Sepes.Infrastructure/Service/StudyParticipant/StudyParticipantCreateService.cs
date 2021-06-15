@@ -45,8 +45,6 @@ namespace Sepes.Infrastructure.Service
             {
                 ValidateRoleNameThrowIfInvalid(role);
 
-
-
                 StudyParticipantDto newlyAddedParticipant = null;
 
                 if (user.Source == ParticipantSource.Db)

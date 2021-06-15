@@ -108,7 +108,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                                [ConfigConstants.IS_INTEGRATION_TEST] = "true",
                                ["AllowCorsDomains"] = "http://localhost:80",
                                ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
-                               ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode"
+                               ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode",
+                               ["DatasetStorageAccountRoleAssignmentId"] = "9145904e-a892-473a-b559-8d87b9858407" 
                            });
             });
         }
