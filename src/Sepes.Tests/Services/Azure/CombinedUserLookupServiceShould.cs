@@ -58,29 +58,11 @@ namespace Sepes.Tests.Services.Azure
         {
             var service = GetServiceWithMocks(false, false, TestUserConstants.SOME_EMPLOYEE, TestUserConstants.SOME_AFFILIATE);
 
-            var result = await service.SearchAsync("someuser", 10);
+            var result = await service.SearchAsync("someuser", 10);          
 
-            Assert.NotEmpty(result);
-            Assert.Equal(2, result.Count);
-
-            var idx = 0;
-
-            foreach(var curKeys in result.Keys)
-            {
-                var currentUser = result[curKeys];
-
-                if (idx == 0)
-                {
-                    Assert.Equal(TestUserConstants.SOME_EMPLOYEE.Id, currentUser.Id);
-                 
-                }
-                else if (idx == 1)
-                {
-                    Assert.Equal(TestUserConstants.SOME_AFFILIATE.Id, currentUser.Id);
-                }               
-
-                idx++;
-            }
+            Assert.Collection(result.Values,
+                 item => Assert.Equal(TestUserConstants.SOME_EMPLOYEE.Id, item.Id),
+                 item => Assert.Equal(TestUserConstants.SOME_AFFILIATE.Id, item.Id));          
         }
 
         CombinedUserLookupService GetServiceWithMocks(bool companyLookupThrows, bool affiliateLookupThrows, AzureUserDto companyUserResult, AzureUserDto affiliateUserResult)
