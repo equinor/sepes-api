@@ -41,7 +41,8 @@ namespace Sepes.Infrastructure.Service.Queries
         public static IQueryable<Study> StudyParticipantOperationsQueryable(SepesDbContext db)
         {
             return ActiveStudiesBaseQueryable(db)
-                .Include(s => s.StudyParticipants);             
+                .Include(s => s.StudyParticipants)
+                  .ThenInclude(sp => sp.User);             
         }
 
         public static IQueryable<Study> StudyDatasetsQueryable(SepesDbContext db)

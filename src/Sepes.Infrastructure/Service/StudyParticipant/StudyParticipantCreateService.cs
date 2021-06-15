@@ -149,7 +149,13 @@ namespace Sepes.Infrastructure.Service
             try
             {
                 createdStudyParticipant = new StudyParticipant { UserId = addedUser.Id, StudyId = studyFromDb.Id, RoleName = role };
-                studyFromDb.StudyParticipants = new List<StudyParticipant> { createdStudyParticipant };
+
+                if (studyFromDb.StudyParticipants == null)
+                {
+                    studyFromDb.StudyParticipants = new List<StudyParticipant>();
+                }
+
+                studyFromDb.StudyParticipants.Add(createdStudyParticipant);
 
                 await _db.SaveChangesAsync();
 
