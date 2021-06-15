@@ -13,8 +13,7 @@ using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.Azure
-{
-    public class CombinedUserLookupServiceShould : ServiceTestBase
+{    public class CombinedUserLookupServiceShould : ServiceTestBase
     {
         [Theory]
         [InlineData(false, true)]
