@@ -13,5 +13,6 @@ namespace Sepes.Azure.Service.Interface
         
         Task<AzureRoleAssignment> DeleteRoleAssignment(string roleAssignmentId, CancellationToken cancellationToken = default);
         Task<List<AzureRoleAssignment>> GetResourceGroupRoleAssignments(string resourceGroupId, string resourceGroupName, CancellationToken cancellation = default);
+        Task<List<AzureRoleAssignment>> GetStorageAccountRoleAssignments(string resourceGroupId, string resourceGroupName, string storageAccountId, string storageAccountName, CancellationToken cancellation = default);
     }
 }

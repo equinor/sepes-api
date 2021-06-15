@@ -163,9 +163,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
-              
                 
-
                 //Azure Services
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
                 services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
@@ -244,7 +242,7 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
             services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
             services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
-            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
+            services.AddTransient<IParticipantRoleTranslatorService, ParticipantRoleTranslatorService>();
             services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
             services.AddTransient<ICorsRuleProvisioningService, CorsRuleProvisioningService>();
             services.AddTransient<ICreateAndUpdateService, CreateAndUpdateService>();
@@ -253,15 +251,13 @@ namespace Sepes.RestApi
             services.AddTransient<IOperationCheckService, OperationCheckService>();
             services.AddTransient<IOperationCompletedService, OperationCompletedService>();
 
-            //Ext System Facade Services
-            services.AddTransient<IRoleProvisioningService, RoleProvisioningService>();
+            //Ext System Facade Services           
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();
             services.AddTransient<IStudyLogoReadService, StudyLogoReadService>();
             services.AddTransient<IStudyLogoDeleteService, StudyLogoDeleteService>();
-            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
-            services.AddTransient<IProvisioningQueueService, ProvisioningQueueService>();
-            services.AddTransient<IResourceProvisioningService, ResourceProvisioningService>();
+            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();          
+         
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();

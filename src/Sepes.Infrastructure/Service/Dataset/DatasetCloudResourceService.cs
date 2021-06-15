@@ -208,8 +208,8 @@ namespace Sepes.Infrastructure.Service
 
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
 
-                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
-
+                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry); 
+                
                 var serverPublicIp = await _publicIpService.GetIp();
 
                 DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_logger, currentUser, dataset, clientIp, serverPublicIp);

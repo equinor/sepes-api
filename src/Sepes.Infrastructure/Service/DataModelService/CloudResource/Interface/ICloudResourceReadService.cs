@@ -24,5 +24,6 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 
         Task<bool> ResourceIsDeleted(int resourceId);
         Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId);
+        Task<List<int>> GetDatasetStorageAccountIdsForStudy(int studyId);
     }
 }
