@@ -13,6 +13,10 @@ namespace Sepes.Common.Dto
         public string EmailAddress { get; set; }
 
         public HashSet<string> AppRoles { get; set; } = new HashSet<string>();
+
+        public bool External { get; set; }
+
+
         public bool Employee { get; set; }
 
         public bool Admin { get; set; }
@@ -26,7 +30,7 @@ namespace Sepes.Common.Dto
           
         }
 
-        public UserDto(string objectId, string userName, string fullName, string email, bool admin = false, bool sponsor = false, bool datasetAdmin = false, bool employee = false)
+        public UserDto(string objectId, string userName, string fullName, string email, bool admin = false, bool sponsor = false, bool datasetAdmin = false, bool employee = false, bool external = false)
         {          
             ObjectId = objectId;
             UserName = userName;

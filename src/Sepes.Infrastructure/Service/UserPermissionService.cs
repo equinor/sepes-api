@@ -16,23 +16,22 @@ namespace Sepes.Infrastructure.Service
 
         public  async Task<UserPermissionDto> GetUserPermissionsAsync()
         {
-            var userFromDb = await _userService.GetCurrentUserAsync();
-
-            var result = new UserPermissionDto();
-
-            result.FullName = userFromDb.FullName;
-            result.EmailAddress = userFromDb.EmailAddress;
-            result.UserName = userFromDb.UserName;
-
-            result.Admin = userFromDb.Admin;
-            result.Sponsor = userFromDb.Sponsor;
-            result.DatasetAdmin = userFromDb.DatasetAdmin;
-
             var currentUser = await _userService.GetCurrentUserAsync();
 
-            result.CanCreateStudy = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.Study_Create);
-            result.CanRead_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Read);
-            result.CanEdit_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete);
+            var result = new UserPermissionDto
+            {
+                FullName = currentUser.FullName,
+                EmailAddress = currentUser.EmailAddress,
+                UserName = currentUser.UserName,
+
+                Admin = currentUser.Admin,
+                Sponsor = currentUser.Sponsor,
+                DatasetAdmin = currentUser.DatasetAdmin,
+
+                CanCreateStudy = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.Study_Create),
+                CanRead_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Read),
+                CanEdit_PreApproved_Datasets = OperationAccessUtil.HasAccessToOperation(currentUser, Common.Constants.UserOperation.PreApprovedDataset_Create_Update_Delete)
+            };
 
             return result;
         } 

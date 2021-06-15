@@ -42,6 +42,8 @@
         public const string DISABLE_CACHE_UPDATE = "DisableCacheUpdate";
 
         public const string EMPLOYEE_ROLE = "EmployeeRole";
+        public const string EMPLOYEE_GROUP_ID = "CompanyEmployeeGroupId";
+        public const string AFFILIATE_GROUP_ID = "AffiliateGroupId";
 
         public const string SERVER_PUBLIC_IP_URLS = "GetServerPublicIpServiceUrls";
 
@@ -53,5 +55,7 @@
         public const string WBS_SEARCH_API_URL = "WbsSearchBaseUrl";
         public const string WBS_SEARCH_API_SCOPE = "WbsSearchScope";
         public const string WBS_SEARCH_APIM_SUBSCRIPTION = "WbsSearchApimSubscriptionKey";
+
+        public const string DATASET_STORAGEACCOUNT_ROLE_ASSIGNMENT_ID = "DatasetStorageAccountRoleAssignmentId";
     }
 }

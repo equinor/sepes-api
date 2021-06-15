@@ -2,25 +2,35 @@
 using Sepes.Common.Constants.Auth;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
+using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using Sepes.Common.Util;
 
-namespace Sepes.Infrastructure.Util.Auth
+namespace Sepes.Provisioning.Service
 {
-    public static class ParticipantRoleToAzureRoleTranslator
+    public class ParticipantRoleTranslatorService : IParticipantRoleTranslatorService
     {
-        public static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForStudyResourceGroup(List<StudyParticipant> participants)
+        readonly IConfiguration _configuration;
+
+        public ParticipantRoleTranslatorService(IConfiguration configuration)
         {
-            return CreateDesiredRolesWithTranslator(participants, TranslateForStudyResourceGroup);
+            _configuration = configuration;
         }
 
-        public static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForSandboxResourceGroup(List<StudyParticipant> participants)
+        public List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForStudyDatasetResourceGroup(List<StudyParticipant> participants)
+        {
+            return CreateDesiredRolesWithTranslator(participants, TranslateForStudyDatasetResourceGroup);
+        }
+
+        public List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesForSandboxResourceGroup(List<StudyParticipant> participants)
         {
             return CreateDesiredRolesWithTranslator(participants, TranslateForSandboxResourceGroup);            
         }      
 
-        static List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesWithTranslator(List<StudyParticipant> participants, Func<string, string> translator)
+        List<CloudResourceDesiredRoleAssignmentDto> CreateDesiredRolesWithTranslator(List<StudyParticipant> participants, Func<string, string> translator)
         {
             var desiredRolesLookup = new Dictionary<Tuple<string, string>, CloudResourceDesiredRoleAssignmentDto>();
 
@@ -42,22 +52,25 @@ namespace Sepes.Infrastructure.Util.Auth
             return desiredRolesLookup.Values.ToList();
         }
 
-        static Tuple<string, string> CreateAssignmentLookupKey(string principalId, string roleId)
+        Tuple<string, string> CreateAssignmentLookupKey(string principalId, string roleId)
         {
             return new Tuple<string, string>(principalId, roleId);
         }
 
-        public static string TranslateForStudyResourceGroup(string studyParticipantRole)
+        string TranslateForStudyDatasetResourceGroup(string studyParticipantRole)
         {
+            var roleIdFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(_configuration,
+                ConfigConstants.DATASET_STORAGEACCOUNT_ROLE_ASSIGNMENT_ID);
+            
             return studyParticipantRole switch
             {
-                StudyRoles.StudyOwner => AzureRoleIds.READ,
-                StudyRoles.SponsorRep => AzureRoleIds.READ,
+                StudyRoles.StudyOwner => roleIdFromConfig,
+                StudyRoles.SponsorRep => roleIdFromConfig,
                 _ => null,
             };
         }
 
-        public static string TranslateForSandboxResourceGroup(string studyParticipantRole)
+        string TranslateForSandboxResourceGroup(string studyParticipantRole)
         {
             return studyParticipantRole switch
             {

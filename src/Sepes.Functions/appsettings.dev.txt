@@ -12,4 +12,5 @@
 "ResourceProvisioningQueueConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/ResourceProvisioningQueueConnectionString)"
 "SepesRWConnectionString=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/sepesrw-connectionstring)"
 "SubscriptionId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/SubscriptionId)"
+"DatasetStorageAccountRoleAssignmentId=@Microsoft.KeyVault(SecretUri=https://#{KeyvaultName}#.vault.azure.net/secrets/DatasetStorageAccountRoleAssignmentId)"
 "FUNCTIONS_WORKER_RUNTIME=dotnet"

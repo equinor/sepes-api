@@ -15,7 +15,6 @@ using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using Sepes.Infrastructure.Util.Azure;
-using System;
 using System.Linq;
 
 namespace Sepes.Infrastructure.Automapper
@@ -153,10 +152,10 @@ namespace Sepes.Infrastructure.Automapper
 
             CreateMap<Microsoft.Graph.User, AzureUserDto>();
 
-            CreateMap<Microsoft.Graph.User, ParticipantLookupDto>()
-                    .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))
-                    .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail))
+            CreateMap<AzureUserDto, ParticipantLookupDto>()
                     .ForMember(dest => dest.ObjectId, source => source.MapFrom(x => x.Id))
+                    .ForMember(dest => dest.FullName, source => source.MapFrom(x => x.DisplayName))
+                    .ForMember(dest => dest.EmailAddress, source => source.MapFrom(x => x.Mail))                   
                     .ForMember(dest => dest.UserName, source => source.MapFrom(x => x.UserPrincipalName))
                     .ForMember(dest => dest.Source, source => source.MapFrom(s => ParticipantSource.Azure));
 

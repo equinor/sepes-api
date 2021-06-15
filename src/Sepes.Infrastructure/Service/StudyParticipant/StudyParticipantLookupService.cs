@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,14 +18,13 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
     {      
-        readonly IAzureUserService _azureUserService;
-       
+        readonly ICombinedUserLookupService _combinedUserLookupService;       
 
         public StudyParticipantLookupService(SepesDbContext db,
             ILogger<StudyParticipantLookupService> logger,
             IMapper mapper,
             IUserService userService,
-            IAzureUserService azureUserService,
+            ICombinedUserLookupService combinedUserLookupService,
             IStudyEfModelService studyModelService,
             IProvisioningQueueService provisioningQueueService,
             ICloudResourceReadService cloudResourceReadService,
@@ -30,7 +32,7 @@ namespace Sepes.Infrastructure.Service
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
             : base(db, mapper, logger, userService, studyModelService, provisioningQueueService, cloudResourceReadService, cloudResourceOperationCreateService, cloudResourceOperationUpdateService)
         {
-            _azureUserService = azureUserService;            
+            _combinedUserLookupService = combinedUserLookupService;            
         }
 
         public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
@@ -59,11 +61,11 @@ namespace Sepes.Infrastructure.Service
                 return new List<ParticipantLookupDto>();
             }
 
-            Task<List<Microsoft.Graph.User>> usersFromAzureAdTask = null;
+            Task<Dictionary<string, AzureUserDto>> usersFromAzureAdTask = null;
 
             try
             {
-                usersFromAzureAdTask = _azureUserService.SearchUsersAsync(searchText, limit, cancellationToken);
+                usersFromAzureAdTask = _combinedUserLookupService.SearchAsync(searchText, limit, cancellationToken);
             }
             catch (System.Exception ex)
             {
@@ -72,35 +74,30 @@ namespace Sepes.Infrastructure.Service
 
             var usersFromDbTask = _db.Users.Where(u => u.EmailAddress.StartsWith(searchText) || u.FullName.StartsWith(searchText) || u.ObjectId.Equals(searchText)).ToListAsync(cancellationToken);
 
+           return await MergeSearchResults(usersFromDbTask, usersFromAzureAdTask);
+           
+        }
+
+        async Task<IEnumerable<ParticipantLookupDto>> MergeSearchResults(Task<List<User>> usersFromDbTask, Task<Dictionary<string, AzureUserDto>> usersFromAzureAdTask)
+        {
             await Task.WhenAll(usersFromDbTask, usersFromAzureAdTask);
 
             var usersFromDb = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromDbTask.Result);
-            var usersFromDbAsDictionary = new Dictionary<string, ParticipantLookupDto>();
-
-            foreach (var curUserFromDb in usersFromDb)
-            {
-                if (string.IsNullOrWhiteSpace(curUserFromDb.ObjectId))
-                {
-                    continue;
-                }
-
-                if (!usersFromDbAsDictionary.ContainsKey(curUserFromDb.ObjectId))
-                {
-                    usersFromDbAsDictionary.Add(curUserFromDb.ObjectId, curUserFromDb);
-                }
-            }
+            var usersFromDbAsDictionary = usersFromDb.ToDictionary(u => u.ObjectId, u => u); 
 
             if (usersFromAzureAdTask.IsCompletedSuccessfully)
             {
-                var usersFromAzureAd = _mapper.Map<IEnumerable<ParticipantLookupDto>>(usersFromAzureAdTask.Result).ToList();
-
-                foreach (var curAzureUser in usersFromAzureAd)
+                foreach (var curAzureUser in usersFromAzureAdTask.Result)
                 {
-                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.ObjectId))
+                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.Key))
                     {
-                        usersFromDbAsDictionary.Add(curAzureUser.ObjectId, curAzureUser);
+                        usersFromDbAsDictionary.Add(curAzureUser.Key, _mapper.Map<ParticipantLookupDto>(curAzureUser.Value));
                     }
                 }
+            }
+            else
+            {
+                _logger.LogError($"User lookup from AD failed", usersFromAzureAdTask.Exception);
             }
 
             return usersFromDbAsDictionary.OrderBy(o => o.Value.FullName).Select(o => o.Value);

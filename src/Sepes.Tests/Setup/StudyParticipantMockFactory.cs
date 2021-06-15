@@ -7,6 +7,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using System.Threading;
 
 namespace Sepes.Tests.Setup
 {
@@ -21,7 +22,8 @@ namespace Sepes.Tests.Setup
 
             var studyModelService = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
 
-            var azureUserService = new Mock<IAzureUserService>();
+            var azureUserLookupService = new Mock<ICombinedUserLookupService>();
+            azureUserLookupService.Setup(s => s.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new System.Collections.Generic.Dictionary<string, Azure.Dto.AzureUserDto>());
 
             var provisioningQueueService = new Mock<IProvisioningQueueService>();
 
@@ -31,7 +33,7 @@ namespace Sepes.Tests.Setup
 
             var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();       
 
-            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
+            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserLookupService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
         }
     }
 }
