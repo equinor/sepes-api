@@ -21,7 +21,7 @@ namespace Sepes.Tests.Services.Azure
         [InlineData(true, true)]
         public async Task ReturnEmptyListIfBackingSytemFailsError(bool companyLookupThrows, bool affiliateLookupThrows)
         {
-            var service = GetServiceWithMocks(companyLookupThrows, affiliateLookupThrows, TestUserConstants.SOME_EMPLOYEE, TestUserConstants.SOME_EMPLOYEE);
+            var service = GetServiceWithMocks(companyLookupThrows, affiliateLookupThrows, null, null);
 
             var result = await service.SearchAsync("someuser", 10);
 
