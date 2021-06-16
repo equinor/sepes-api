@@ -102,6 +102,8 @@ namespace Sepes.Tests.Services.Infrastructure
 
         protected IWbsValidationService GetWbsValidationService(bool foundInCache, bool foundInApi, out Mock<IWbsApiService> wbsApiServiceMock, out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock)
         {
+            var configuration = _serviceProvider.GetService<IConfiguration>();
+
             wbsApiServiceMock = new Mock<IWbsApiService>();
             wbsApiServiceMock.Setup(m =>
             m.Exists(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -121,7 +123,8 @@ namespace Sepes.Tests.Services.Infrastructure
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>()));
 
-            return new WbsValidationService(                
+            return new WbsValidationService(
+                configuration,
                  UserFactory.GetUserServiceMockForAdmin(1).Object,
                  wbsApiServiceMock.Object,
                  wbsCacheServiceMock.Object
