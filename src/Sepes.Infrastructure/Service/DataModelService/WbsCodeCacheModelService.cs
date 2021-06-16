@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         DateTime GetNewExpires()
         {
-            return DateTime.UtcNow.AddMinutes(10);
+            return DateTime.UtcNow.AddMinutes(20);
         }
 
         IQueryable<WbsCodeCache> GetItemQueryable(string wbsCode)

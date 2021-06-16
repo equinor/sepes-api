@@ -48,7 +48,7 @@ namespace Sepes.Infrastructure.Service
        
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
             
-            await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyDb);
+            await _studyWbsValidationService.ValidateForStudyCreate(studyDb);
 
             studyDb = await _studyModelService.AddAsync(studyDb);
 

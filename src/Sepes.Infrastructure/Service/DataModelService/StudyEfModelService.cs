@@ -78,6 +78,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return await GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId);
         }
 
+        public async Task<bool> HasActiveDatasetsAsync(int studyId)
+        {
+            return await _db.StudyDatasets.Where(sds => sds.StudyId == studyId && sds.Dataset.Deleted && sds.Dataset.StudySpecific).AnyAsync();
+        }
+
+        public async Task<bool> HasActiveSandboxesAsync(int studyId)
+        {
+            return await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Deleted).AnyAsync();
+        }
+
         async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
             return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation, roleBeingAddedOrRemoved);

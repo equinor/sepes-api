@@ -5,10 +5,13 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudyWbsValidationService
     {
-        Task ValidateForStudyCreateOrUpdate(Study study);
-        
+        Task ValidateForStudyCreate(Study study);
+
+        Task ValidateForStudyUpdate(Study study, bool hasSandboxOrDataset);
+
         Task ValidateForSandboxCreationOrThrow(Study study);
 
         Task ValidateForDatasetCreationOrThrow(Study study);
+    
     }
 }

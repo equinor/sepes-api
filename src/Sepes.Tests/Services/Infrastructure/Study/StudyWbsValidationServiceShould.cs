@@ -9,26 +9,36 @@ using Xunit;
 namespace Sepes.Tests.Services.Infrastructure
 {
     public class StudyWbsValidationServiceShould : ServiceTestBase
-    {
-        //TODO: Add study tests
+    {        
         [Fact]
         public async Task AllowStudyCreation_OnValidWbs()
         {
             var study = CreateStudyValidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, true, false);
 
-            await studyWbsValidationService.ValidateForStudyCreateOrUpdate(study);
+            await studyWbsValidationService.ValidateForStudyCreate(study);
 
             Assert.True(study.WbsCodeValid);
         }
 
         [Fact]
-        public async Task AllowStudyCreation_OnInValidWbs_AndSetRelevantProperties()
+        public async Task AllowStudyCreation_OnInvalidWbs_AndSetRelevantProperties()
         {
             var study = CreateStudyInvalidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, false);
 
-            await studyWbsValidationService.ValidateForStudyCreateOrUpdate(study);
+            await studyWbsValidationService.ValidateForStudyCreate(study);
+
+            Assert.False(study.WbsCodeValid);
+        }
+
+        [Fact]
+        public async Task AllowStudyUpdate_OnInvalidWbs_AndSetRelevantProperties()
+        {
+            var study = CreateStudyInvalidWbs();
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, false);
+
+            await studyWbsValidationService.ValidateForStudyUpdate(study, false);
 
             Assert.False(study.WbsCodeValid);
         }
@@ -39,9 +49,29 @@ namespace Sepes.Tests.Services.Infrastructure
             var study = CreateStudyInvalidWbs();
             var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, true, true);
 
-            await studyWbsValidationService.ValidateForStudyCreateOrUpdate(study);
+            await studyWbsValidationService.ValidateForStudyCreate(study);
 
             Assert.False(study.WbsCodeValid);
+        }
+
+        [Fact]
+        public async Task AllowStudyUpdate_OnFailedWbsValidation_AndSetRelevantProperties()
+        {
+            var study = CreateStudyInvalidWbs();
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, true, true);
+
+            await studyWbsValidationService.ValidateForStudyUpdate(study, false);
+
+            Assert.False(study.WbsCodeValid);
+        }       
+
+        [Fact]
+        public async Task Throw_If_StudyHasSandboxOrDataset_AndInvalidWbsIsEntered()
+        {
+            var study = CreateStudyValidWbs();
+            var studyWbsValidationService = StudyWbsValidationMockServiceFactory.GetService(_serviceProvider, false, false);
+
+            await Assert.ThrowsAsync<InvalidWbsException>(() => studyWbsValidationService.ValidateForStudyUpdate(study, true));
         }
 
         [Fact]
