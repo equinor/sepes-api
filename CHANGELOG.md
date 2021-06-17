@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.22](https://github.com/equinor/sepes-api/compare/0.4.21...0.4.22) (2021-06-17)
+
+
+### Bug Fixes
+
+* participant search from employees and affiliates ([#701](https://github.com/equinor/sepes-api/issues/701)) ([35f8a80](https://github.com/equinor/sepes-api/commit/35f8a80b82d2afc74a436a2338a140976414bd44))
+* **dataset:** assign custom role for dataset resource group ([#699](https://github.com/equinor/sepes-api/issues/699)) ([9a4d9af](https://github.com/equinor/sepes-api/commit/9a4d9af4e5c1389ac3b2b6039307cbc9fddb4c8d)), closes [#692](https://github.com/equinor/sepes-api/issues/692)
+
 ### [0.4.21](https://github.com/equinor/sepes-api/compare/0.4.20...0.4.21) (2021-06-10)
 
 
