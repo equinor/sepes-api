@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto.RoleAssignment;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.Auth;
@@ -25,16 +26,24 @@ namespace Sepes.Provisioning.Service
         readonly IStudyEfModelService _studyModelService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
+        readonly IParticipantRoleTranslatorService _participantRoleTranslatorService;
         readonly IAzureRoleAssignmentService _azureRoleAssignmentService;
 
         readonly EventId _roleAssignmentEventId = new EventId(50, "Sepes-Event-RoleAssignment-Operations");
 
-        public RoleProvisioningService(IProvisioningLogService provisioningLogService, IStudyEfModelService studyModelService, ICloudResourceReadService cloudResourceReadService, ICloudResourceOperationUpdateService cloudResourceOperationUpdateService, IAzureRoleAssignmentService roleAssignmentService)
+        public RoleProvisioningService(IProvisioningLogService provisioningLogService,
+            IStudyEfModelService studyModelService,
+            ICloudResourceReadService cloudResourceReadService,
+            ICloudResourceOperationUpdateService cloudResourceOperationUpdateService,
+            IParticipantRoleTranslatorService participantRoleTranslatorService,
+            IAzureRoleAssignmentService roleAssignmentService
+            )
         {
             _provisioningLogService = provisioningLogService;
             _studyModelService = studyModelService;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationUpdateService = cloudResourceOperationUpdateService;
+            _participantRoleTranslatorService = participantRoleTranslatorService;
             _azureRoleAssignmentService = roleAssignmentService;
         }
 
@@ -104,22 +113,33 @@ namespace Sepes.Provisioning.Service
             _provisioningLogService.OperationInformation(operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);           
 
             List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments = null;
-            
-            if(operation.Resource.Purpose == CloudResourcePurpose.SandboxResourceGroup)
+            List<AzureRoleAssignment> existingRoleAssignmentsForResource = null;
+
+            if (operation.Resource.Purpose == CloudResourcePurpose.SandboxResourceGroup)
             {
-                desiredRoleAssignments = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList());
+                desiredRoleAssignments = _participantRoleTranslatorService.CreateDesiredRolesForSandboxResourceGroup(study.StudyParticipants.ToList());
+                existingRoleAssignmentsForResource = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
             }
             else if (operation.Resource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
             {
-                desiredRoleAssignments = ParticipantRoleToAzureRoleTranslator.CreateDesiredRolesForStudyResourceGroup(study.StudyParticipants.ToList());
-            }               
-           
-            var existingRoleAssignments = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
+                desiredRoleAssignments = _participantRoleTranslatorService.CreateDesiredRolesForStudyDatasetResourceGroup(study.StudyParticipants.ToList());
+                existingRoleAssignmentsForResource = await _azureRoleAssignmentService.GetResourceGroupRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
+            }
+            //Disabled for now. If roles must be differentiated for different datasets i same study, this will become relevant. As now now, roles are assigned on the resource group containing all dataset storage accounts
+            // else if (operation.Resource.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount)
+            // {
+            //     desiredRoleAssignments = TranslateParticipantToAzureRoleService.CreateDesiredRolesForStudyDatasetStorageAccountGroup(study.StudyParticipants.ToList());
+            //     existingRoleAssignmentsForResource = await _azureRoleAssignmentService.GetStorageAccountRoleAssignments(operation.Resource.ResourceId, operation.Resource.ResourceGroupName, operation.Resource.ResourceId, operation.Resource.ResourceName, cancellationToken);
+            // }     
+            else
+            {
+                throw new Exception($"Unable to determine role assignments, unknown purpose {operation.Resource.Purpose} for resource {operation.Resource.Id}");
+            }
             
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {
-                var sameRoleFromExisting = existingRoleAssignments.Where(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId)).FirstOrDefault();
+                var sameRoleFromExisting = existingRoleAssignmentsForResource.FirstOrDefault(ra => ra.properties.principalId == curDesired.PrincipalId && ra.properties.roleDefinitionId.Contains(curDesired.RoleId));
 
                 if (sameRoleFromExisting != null)
                 {
@@ -134,7 +154,7 @@ namespace Sepes.Provisioning.Service
             }
 
             //Find out what roles are allready in place, and delete those that are no longer needed
-            foreach (var curExisting in existingRoleAssignments)
+            foreach (var curExisting in existingRoleAssignmentsForResource)
             {
                 var curExistingRoleId = AzureRoleIds.GetRoleIdFromDefinition(curExisting.properties.roleDefinitionId);
 

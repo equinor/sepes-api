@@ -4,13 +4,13 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
-using Sepes.Azure.Util;
-using Sepes.Common.Constants.CloudResource;
 
 
 namespace Sepes.Azure.Service
@@ -39,7 +39,7 @@ namespace Sepes.Azure.Service
             _credentials = new AzureCredentialsFactory().FromServicePrincipal(clientId, clientSecret, tenantId, AzureEnvironment.AzureGlobalCloud).WithDefaultSubscription(_subscriptionId);
 
             _azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
-                .WithLogLevel(Microsoft.Azure.Management.ResourceManager.Fluent.Core.HttpLoggingDelegatingHandler.Level.Basic)
+                .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
                 .Authenticate(_credentials).WithSubscription(_subscriptionId);  
         }
 
@@ -91,8 +91,7 @@ namespace Sepes.Azure.Service
             catch (Exception ex)
             {
                 throw new Exception($"Attempting to modify Azure resource not managed by this instance: {resourceName} ", ex);
-            }
-          
+            }          
         }
 
         protected string GetSharedVariableThrowIfNotFoundOrEmpty(ResourceProvisioningParameters parameters, string variableName, string descriptionForErrorMessage)
