@@ -18,6 +18,7 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IStudyLogoDeleteService _studyLogoDeleteService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
+        readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
         public StudyUpdateService(SepesDbContext db,
             IMapper mapper,
@@ -27,13 +28,15 @@ namespace Sepes.Infrastructure.Service
             IStudyLogoReadService studyLogoReadService,
             IStudyLogoCreateService studyLogoCreateService,
             IStudyLogoDeleteService studyLogoDeleteService,
-            IStudyWbsValidationService studyWbsValidationService
+            IStudyWbsValidationService studyWbsValidationService,
+             IDatasetCloudResourceService datasetCloudResourceService
           )
             : base(db, mapper, logger, userService, studyEfModelService, studyLogoReadService)
         {
             _studyLogoCreateService = studyLogoCreateService;
             _studyLogoDeleteService = studyLogoDeleteService;
             _studyWbsValidationService = studyWbsValidationService;
+            _datasetCloudResourceService = datasetCloudResourceService;
         }
 
         public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
@@ -72,7 +75,13 @@ namespace Sepes.Infrastructure.Service
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
 
                 await _studyWbsValidationService.ValidateForStudyUpdate(studyFromDb, await _studyModelService.HasActiveDatasetsAsync(studyFromDb.Id)
-                        || await _studyModelService.HasActiveSandboxesAsync(studyFromDb.Id));             
+                        || await _studyModelService.HasActiveSandboxesAsync(studyFromDb.Id));
+
+
+                await _datasetCloudResourceService.UpdateTagsForStudySpecificDatasetsAsync(studyFromDb);
+               
+
+                //TODO: Update for sandboxes
             }
 
             if (updatedStudy.DeleteLogo)

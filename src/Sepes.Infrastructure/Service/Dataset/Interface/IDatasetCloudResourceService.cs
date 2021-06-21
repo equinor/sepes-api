@@ -8,6 +8,8 @@ namespace Sepes.Infrastructure.Service.Interface
     {
         Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
 
+        Task UpdateTagsForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
+
         Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default);
 
         Task EnsureFirewallExistsAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default);      

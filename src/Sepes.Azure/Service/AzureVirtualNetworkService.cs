@@ -174,14 +174,23 @@ namespace Sepes.Azure.Service
             return TagUtils.TagReadOnlyDictionaryToDictionary(vNet.Tags);
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
         {
             var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
 
             EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
-            _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
-            _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
+            _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync(cancellationToken);
+            _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync(cancellationToken);
+        }
+
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
+
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.Update().WithTags(tags).ApplyAsync(cancellationToken);
         }
 
         public Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)

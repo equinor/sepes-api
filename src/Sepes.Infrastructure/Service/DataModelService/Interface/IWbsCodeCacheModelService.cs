@@ -5,8 +5,8 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
 {
     public interface IWbsCodeCacheModelService
     {
-        Task Add(string wbsCode);
+        Task Add(string wbsCode, bool valid);
         Task Clean();
-        Task<bool> Exists(string wbsCode, CancellationToken cancellation = default);
+        Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default);
     }
 }

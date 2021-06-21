@@ -21,11 +21,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             _sepesDbContext = sepesDbContext;
         }
 
-        public async Task<bool> Exists(string wbsCode, CancellationToken cancellation = default)
+        public async Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default)
         {
             try
             {
-                var wbsFromDbQueryable = GetItemQueryable(wbsCode).Where(w => w.Expires > DateTime.UtcNow);
+                var wbsFromDbQueryable = GetItemQueryable(wbsCode).Where(w => w.Valid && w.Expires > DateTime.UtcNow);
 
                 return await wbsFromDbQueryable.AnyAsync();
 
@@ -38,18 +38,23 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return false;
         }       
 
-        public async Task Add(string wbsCode)
+        public async Task Add(string wbsCode, bool valid)
         {
             var queryable = GetItemQueryable(wbsCode);
 
             if (queryable.Any())
             {
                 var existingItem = await queryable.SingleOrDefaultAsync();
-                existingItem.Expires = GetNewExpires();
+                existingItem.Valid = valid;
+
+                if (valid)
+                {
+                    existingItem.Expires = GetNewExpires(valid);
+                }            
             }
             else
             {
-                _sepesDbContext.WbsCodeCache.Add(new WbsCodeCache(wbsCode.ToLowerInvariant(), GetNewExpires()));
+                _sepesDbContext.WbsCodeCache.Add(new WbsCodeCache(wbsCode.ToLowerInvariant(), valid, GetNewExpires(valid)));
             }
 
             await _sepesDbContext.SaveChangesAsync();
@@ -62,9 +67,9 @@ namespace Sepes.Infrastructure.Service.DataModelService
             await _sepesDbContext.SaveChangesAsync();
         }
 
-        DateTime GetNewExpires()
+        DateTime GetNewExpires(bool valid)
         {
-            return DateTime.UtcNow.AddMinutes(20);
+            return DateTime.UtcNow.AddMinutes(valid ? 20 : 3);
         }
 
         IQueryable<WbsCodeCache> GetItemQueryable(string wbsCode)

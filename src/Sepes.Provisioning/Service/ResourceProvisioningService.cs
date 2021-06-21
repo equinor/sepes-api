@@ -1,21 +1,20 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
+using Sepes.Common.Interface;
+using Sepes.Common.Util.Provisioning;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util.Provisioning;
-using System;
-using System.Threading.Tasks;
-using Sepes.Azure.Service.Interface;
-using Sepes.Azure.Util;
-using Sepes.Common.Constants;
 using Sepes.Infrastructure.Util;
 using Sepes.Provisioning.Service.Interface;
-using Sepes.Common.Interface;
+using System;
+using System.Threading.Tasks;
 
 namespace Sepes.Provisioning.Service
 {
@@ -36,6 +35,7 @@ namespace Sepes.Provisioning.Service
         readonly ICreateAndUpdateService _createAndUpdateService;
         readonly IRoleProvisioningService _roleProvisioningService;
         readonly ICorsRuleProvisioningService _corsRuleProvisioningService;
+        readonly ITagProvisioningService _tagProvisioningService;
         readonly IFirewallService _firewallService;
 
         readonly IDeleteOperationService _deleteOperationService;
@@ -55,6 +55,7 @@ namespace Sepes.Provisioning.Service
             ICreateAndUpdateService createAndUpdateService,
             IDeleteOperationService deleteOperationService,
             IRoleProvisioningService roleProvisioningService,
+            ITagProvisioningService tagProvisioningService,
             ICorsRuleProvisioningService corsRuleProvisioningService,
             IFirewallService firewallService)
         {
@@ -79,6 +80,7 @@ namespace Sepes.Provisioning.Service
             _deleteOperationService  = deleteOperationService ?? throw new ArgumentNullException(nameof(deleteOperationService));
             _roleProvisioningService = roleProvisioningService ?? throw new ArgumentNullException(nameof(roleProvisioningService));
             _corsRuleProvisioningService = corsRuleProvisioningService ?? throw new ArgumentNullException(nameof(corsRuleProvisioningService));
+            _tagProvisioningService = tagProvisioningService ?? throw new ArgumentNullException(nameof(tagProvisioningService));
             _firewallService = firewallService ?? throw new ArgumentNullException(nameof(firewallService));
         }
 
@@ -235,6 +237,22 @@ namespace Sepes.Provisioning.Service
                                 throw new ProvisioningException($"Service {corsRuleService.GetType().Name} does not support CORS operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
                             }
                         }
+                        else if (_tagProvisioningService.CanHandle(currentOperation))
+                        {
+                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE CORS RULES");
+                            var tagServiceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, currentOperation.Resource.ResourceType);
+                            currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
+
+                            if (tagServiceForResource is IServiceForTaggedResource)
+                            {
+                                await _tagProvisioningService.Handle(currentOperation, tagServiceForResource);
+                                await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
+                            }
+                            else
+                            {
+                                throw new ProvisioningException($"Service {tagServiceForResource.GetType().Name} does not support tag update operations", CloudResourceOperationState.ABORTED, deleteFromQueue: true);
+                            }
+                        }
                         else
                         {
                             throw new ProvisioningException("Unknown operation type", CloudResourceOperationState.ABORTED);
@@ -317,7 +335,7 @@ namespace Sepes.Provisioning.Service
                     }
                 }
             }
-            catch (Exception ex) //Outer loop catch 2
+            catch (Exception) //Outer loop catch 2
             {
                 _provisioningLogService.QueueParentProgressError(queueParentItem, "Unhandled exception occured");
                 await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
@@ -376,8 +394,6 @@ namespace Sepes.Provisioning.Service
             {
                 _provisioningLogService.QueueParentProgressError(queueParentItem, $"Failed when moving up relevant dependent operations. ", ex);
             }
-        }
-
-       
+        }       
     }
 }

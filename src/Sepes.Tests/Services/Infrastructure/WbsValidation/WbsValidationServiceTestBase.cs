@@ -66,11 +66,11 @@ namespace Sepes.Tests.Services.Infrastructure
             return sbResponse.ToString();
         }
 
-        protected async Task<IWbsCodeCacheModelService> GetCacheService(string wbsCode, int expiresInSeconds)
+        protected async Task<IWbsCodeCacheModelService> GetCacheService(string wbsCode, bool valid, int expiresInSeconds)
         {
             return await GetCacheService(
                 new List<WbsCodeCache>() {
-                    new WbsCodeCache(wbsCode.ToLowerInvariant(), DateTime.UtcNow.AddSeconds(expiresInSeconds))
+                    new WbsCodeCache(wbsCode.ToLowerInvariant(), valid, DateTime.UtcNow.AddSeconds(expiresInSeconds))
                 });
         }
 
@@ -100,7 +100,7 @@ namespace Sepes.Tests.Services.Infrastructure
         }
 
 
-        protected IWbsValidationService GetWbsValidationService(bool foundInCache, bool foundInApi, out Mock<IWbsApiService> wbsApiServiceMock, out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock)
+        protected IWbsValidationService GetWbsValidationService(bool foundInCache, bool validInCache, bool foundInApi, out Mock<IWbsApiService> wbsApiServiceMock, out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock)
         {
             var configuration = _serviceProvider.GetService<IConfiguration>();
 
@@ -115,13 +115,13 @@ namespace Sepes.Tests.Services.Infrastructure
             wbsCacheServiceMock = new Mock<IWbsCodeCacheModelService>();
 
             wbsCacheServiceMock.Setup(m =>
-          m.Exists(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+          m.ExistsAndValid(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((string wbsCode, CancellationToken cancellation) =>
               {
-                  return foundInCache;
+                  return foundInCache && validInCache;
               });
 
-            wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>()));
+            wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));
 
             return new WbsValidationService(
                 configuration,

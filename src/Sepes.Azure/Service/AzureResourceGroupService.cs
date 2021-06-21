@@ -136,20 +136,30 @@ namespace Sepes.Azure.Service
             return TagUtils.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
         {
-            var rg = await GetResourceGroupAsync(resourceGroupName);
+            var resourceGroup = await GetResourceGroupAsync(resourceGroupName);
+        
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resourceGroup.Tags);
 
-            //Ensure resource is is managed by this instance
-            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, rg.Tags);
+            _ = await resourceGroup.Update().WithoutTag(tag.Key).ApplyAsync(cancellationToken);
+            _ = await resourceGroup.Update().WithTag(tag.Key, tag.Value).ApplyAsync(cancellationToken);
+        }    
 
-            _ = await rg.Update().WithoutTag(tag.Key).ApplyAsync();
-            _ = await rg.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var resourceGroup = await GetResourceGroupAsync(resourceGroupName);
+        
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resourceGroup.Tags);
+
+            _ = await resourceGroup.Update().WithTags(tags).ApplyAsync(cancellationToken);
         }
 
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
             throw new System.NotImplementedException();
         }
+
+     
     }
 }

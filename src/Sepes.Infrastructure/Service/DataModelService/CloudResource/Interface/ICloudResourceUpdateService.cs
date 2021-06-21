@@ -1,5 +1,6 @@
 ﻿using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService.Interface
@@ -19,5 +20,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
         Task<CloudResourceDto> UpdateResourceIdAndName(int resourceId, string azureId, string azureName);
 
         Task UpdateProvisioningState(int resourceId, string newProvisioningState);
+
+        Task UpdateTagsAsync(int resourceId, Dictionary<string, string> tags);
     }
 }

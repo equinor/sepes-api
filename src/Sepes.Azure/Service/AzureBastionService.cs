@@ -58,12 +58,7 @@ namespace Sepes.Azure.Service
             return result;
         }
 
-        ResourceProvisioningResult CreateResult(BastionHost bastion)
-        {
-            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(bastion);
-            crudResult.CurrentProvisioningState = bastion.ProvisioningState.ToString();
-            return crudResult;
-        }
+
 
         public async Task<ResourceProvisioningResult> EnsureDeleted(ResourceProvisioningParameters parameters)
         {
@@ -112,24 +107,67 @@ namespace Sepes.Azure.Service
             }
         }
 
-        async Task DeleteInternal(string resourceGroupName, string bastionHostName)
+
+        public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
         {
             var bastion = await GetResourceInternalAsync(resourceGroupName, bastionHostName, false);
 
             if (bastion == null)
             {
-                //Allready deleted
-                _logger.LogWarning($"Deleting resource {bastionHostName} failed because it was not found. Assuming allready deleted");
-                return;
+                return null;
             }
 
-            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            return bastion.ProvisioningState;
+        }
+
+        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
+        {
+            var rg = await GetResourceInternalAsync(resourceGroupName, resourceName);
+            return rg.Tags;
+        }
+
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
+        {
+            var bastion = await GetResourceInternalAsync(resourceGroupName, resourceName);
+
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
+
+            bastion.Tags[tag.Key] = tag.Value;
+
+            await UpdateResourceInternal(resourceGroupName, bastion, cancellationToken);
+        }
+
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var bastion = await GetResourceInternalAsync(resourceGroupName, resourceName);
+
+            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
+
+            bastion.Tags = tags;
+
+            await UpdateResourceInternal(resourceGroupName, bastion, cancellationToken);
+        }
+
+        async Task UpdateResourceInternal(string resourceGroupName, BastionHost bastion, CancellationToken cancellationToken = default)
+        {
+            using (var client = new NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
-                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
-                await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
+                await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastion.Name, bastion, cancellationToken);
             }
-        }      
+        }
+
+        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        ResourceProvisioningResult CreateResult(BastionHost bastion)
+        {
+            var crudResult = ResourceProvisioningResultUtil.CreateFromIResource(bastion);
+            crudResult.CurrentProvisioningState = bastion.ProvisioningState.ToString();
+            return crudResult;
+        }
 
         async Task<BastionHost> GetResourceInternalAsync(string resourceGroupName, string bastionHostName, bool failIfNotFound = true)
         {
@@ -159,40 +197,26 @@ namespace Sepes.Azure.Service
                 throw;
             }
         }
-
-
-        public async Task<string> GetProvisioningState(string resourceGroupName, string bastionHostName)
+        async Task DeleteInternal(string resourceGroupName, string bastionHostName)
         {
             var bastion = await GetResourceInternalAsync(resourceGroupName, bastionHostName, false);
 
             if (bastion == null)
             {
-                return null;
+                //Allready deleted
+                _logger.LogWarning($"Deleting resource {bastionHostName} failed because it was not found. Assuming allready deleted");
+                return;
             }
 
-            return bastion.ProvisioningState;
-        }       
-
-        public async Task<IDictionary<string, string>> GetTagsAsync(string resourceGroupName, string resourceName)
-        {
-            var rg = await GetResourceInternalAsync(resourceGroupName, resourceName);
-            return rg.Tags;
+            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            {
+                client.SubscriptionId = _subscriptionId;
+                CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
+                await client.BastionHosts.DeleteAsync(resourceGroupName, bastionHostName);
+            }
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
-        {
-            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
-            //Ensure resource is is managed by this instance
-            CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, resource.Tags);
-            // TODO: A bit unsure if this actually updates azure resource...
-            resource.Tags[tag.Key] = tag.Value;
-
-        }
-
-        public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
+       
     }
 
 }

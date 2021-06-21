@@ -11,9 +11,9 @@ namespace Sepes.Tests.Services.Infrastructure
         [InlineData("SOMEWBS", 60)]
         public async Task ReturnTrueForSingleValidWbs(string wbsCode, int expiresInSeconds)
         {
-            var service = await GetCacheService(wbsCode, expiresInSeconds);
+            var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
-            var codeExists = await service.Exists(wbsCode);
+            var codeExists = await service.ExistsAndValid(wbsCode);
 
             Assert.True(codeExists);
         }
@@ -23,7 +23,7 @@ namespace Sepes.Tests.Services.Infrastructure
         {
             var service = await GetCacheService();
 
-            var codeExists = await service.Exists("somewbs");
+            var codeExists = await service.ExistsAndValid("somewbs");
 
             Assert.False(codeExists);
         }
@@ -31,9 +31,9 @@ namespace Sepes.Tests.Services.Infrastructure
         [Fact]
         public async Task ReturnFalseIfNoRelevantMatches()
         {
-            var service = await GetCacheService("someOtherWbs", 10);
+            var service = await GetCacheService("someOtherWbs", true, 10);
 
-            var codeExists = await service.Exists("somewbs");
+            var codeExists = await service.ExistsAndValid("somewbs");
 
             Assert.False(codeExists);
         }
@@ -44,10 +44,10 @@ namespace Sepes.Tests.Services.Infrastructure
         [InlineData("SOMEWBS", 60)]
         public async Task KeepNonExpiredCodesOnClean(string wbsCode, int expiresInSeconds)
         {
-            var service = await GetCacheService(wbsCode, expiresInSeconds);
+            var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
             await service.Clean();
-            var codeExists = await service.Exists(wbsCode);
+            var codeExists = await service.ExistsAndValid(wbsCode);
 
             Assert.True(codeExists);
         }
@@ -58,10 +58,10 @@ namespace Sepes.Tests.Services.Infrastructure
         [InlineData("SOMEWBS", -1)]
         public async Task DeleteExpiredCodesOnClean(string wbsCode, int expiresInSeconds)
         {
-            var service = await GetCacheService(wbsCode, expiresInSeconds);
+            var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
             await service.Clean();
-            var codeExists = await service.Exists(wbsCode);
+            var codeExists = await service.ExistsAndValid(wbsCode);
 
             Assert.False(codeExists);
         }
