@@ -239,7 +239,7 @@ namespace Sepes.Provisioning.Service
                         }
                         else if (_tagProvisioningService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE CORS RULES");
+                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE TAGS");
                             var tagServiceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 

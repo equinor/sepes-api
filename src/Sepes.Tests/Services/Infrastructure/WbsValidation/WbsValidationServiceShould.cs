@@ -42,7 +42,7 @@ namespace Sepes.Tests.Services.Infrastructure
         [Fact]
         public async Task ReturnTrueIfPresentInCacheAndApi()
         {
-            var service = GetWbsValidationService(foundInCache: true, validInCache: true
+            var service = GetWbsValidationService(foundInCache: true, validInCache: true,
                 foundInApi: true,
                 out Mock<IWbsApiService> wbsApiServiceMock,
                 out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock

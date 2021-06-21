@@ -1,9 +1,7 @@
 ﻿using Sepes.Azure.Service.Interface;
-using Sepes.Azure.Util;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Exceptions;
-using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Provisioning.Service.Interface;
@@ -31,7 +29,7 @@ namespace Sepes.Provisioning.Service
         }
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
+            if (operation.OperationType == CloudResourceOperationType.ENSURE_TAGS)
             {
                 return true;
             }
@@ -47,56 +45,49 @@ namespace Sepes.Provisioning.Service
             {
                 var cancellation = new CancellationTokenSource();
 
-                if (string.IsNullOrWhiteSpace(operation.DesiredState))
+                var setRulesTask = tagService.SetTagsAsync(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, operation.Resource.Tags, cancellation.Token);
+
+                while (!setRulesTask.IsCompleted)
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
-                }
+                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
 
-                var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredCorsRules(operation.DesiredState);
-
-                    var setRulesTask = tagService.SetTagsAsync(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, operation.Resource.Tags, cancellation.Token);
-
-                    while (!setRulesTask.IsCompleted)
+                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
-
-                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
-                        {
-                            _provisioningLogService.OperationWarning(operation, $"Operation aborted, cors rule assignment will be aborted");
-                            cancellation.Cancel();
-                            break;
-                        }
-
-                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                        _provisioningLogService.OperationWarning(operation, $"Operation aborted, ensuring tags task will be aborted");
+                        cancellation.Cancel();
+                        break;
                     }
 
-                    if (setRulesTask.IsCompletedSuccessfully)
-                    {
+                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                }
 
+                if (setRulesTask.IsCompletedSuccessfully)
+                {
+
+                }
+                else
+                {
+                    if (setRulesTask.Exception == null)
+                    {
+                        throw new Exception("ensuring tags task failed");
                     }
                     else
                     {
-                        if (setRulesTask.Exception == null)
-                        {
-                            throw new Exception("cors rule assignment task failed");
-                        }
-                        else
-                        {
-                            throw setRulesTask.Exception;
-                        }
+                        throw setRulesTask.Exception;
                     }
+                }
 
-                
+
             }
             catch (Exception ex)
             {
                 if (ex.InnerException != null && ex.InnerException.Message.Contains("A task was canceled"))
                 {
-                    throw new ProvisioningException($"Resource provisioning (Ensure cors rules) aborted.", logAsWarning: true, innerException: ex.InnerException);
+                    throw new ProvisioningException($"Resource provisioning (Ensure tags) aborted.", logAsWarning: true, innerException: ex.InnerException);
                 }
                 else
                 {
-                    throw new ProvisioningException($"Resource provisioning (Ensure cors rules) failed.", CloudResourceOperationState.FAILED, postponeQueueItemFor: 10, innerException: ex);
+                    throw new ProvisioningException($"Resource provisioning (Ensure tags) failed.", CloudResourceOperationState.FAILED, postponeQueueItemFor: 10, innerException: ex);
                 }
             }
         }

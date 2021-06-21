@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Common.Exceptions;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
@@ -92,8 +93,9 @@ namespace Sepes.Tests.Setup
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>();
 
             var studyWbsValidationService = GetStudyWbsValidationServiceMock(wbsValidationSucceeds);
+            var updateStudyWbsHandler = new Mock<IUpdateStudyWbsHandler>();
 
-            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoReadServiceMock.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object);
+            return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoReadServiceMock.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object, updateStudyWbsHandler.Object);
         }
 
         public static IStudyPermissionService StudyPermissionService(ServiceProvider serviceProvider, IUserService userService = null) {

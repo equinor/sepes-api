@@ -146,6 +146,8 @@ namespace Sepes.Azure.Service
             bastion.Tags = tags;
 
             await UpdateResourceInternal(resourceGroupName, bastion, cancellationToken);
+
+            await UpdatePublicIpTags(resourceGroupName, bastion, tags, cancellationToken);
         }
 
         async Task UpdateResourceInternal(string resourceGroupName, BastionHost bastion, CancellationToken cancellationToken = default)
@@ -154,6 +156,27 @@ namespace Sepes.Azure.Service
             {
                 client.SubscriptionId = _subscriptionId;
                 await client.BastionHosts.CreateOrUpdateAsync(resourceGroupName, bastion.Name, bastion, cancellationToken);
+            }
+        }
+
+        async Task UpdatePublicIpTags(string resourceGroupName, BastionHost bastion, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            foreach (var currentIpConfig in bastion.IpConfigurations)
+            {
+                try
+                {
+                    var pip = await _azure.PublicIPAddresses.GetByIdAsync(currentIpConfig.PublicIPAddress.Id, cancellationToken);
+
+                    if (pip != null)
+                    {
+                        await _azure.PublicIPAddresses.Inner.UpdateTagsWithHttpMessagesAsync(resourceGroupName, pip.Name, tags, cancellationToken: cancellationToken);
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Unable to update public IP tags for Bastion {bastion.Name}");
+                }
             }
         }
 
@@ -208,7 +231,7 @@ namespace Sepes.Azure.Service
                 return;
             }
 
-            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            using (var client = new NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
                 CheckIfResourceHasCorrectManagedByTagThrowIfNot(resourceGroupName, bastion.Tags);
@@ -216,7 +239,7 @@ namespace Sepes.Azure.Service
             }
         }
 
-       
+
     }
 
 }

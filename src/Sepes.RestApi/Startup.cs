@@ -14,6 +14,8 @@ using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Automapper;
+using Sepes.Infrastructure.Handlers;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
@@ -239,6 +241,10 @@ namespace Sepes.RestApi
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
+
+            //Use cases and handlers
+            services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();
+            
 
             //Provisioning service
             services.AddTransient<IProvisioningLogService, ProvisioningLogService>();

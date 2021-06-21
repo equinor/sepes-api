@@ -4,11 +4,13 @@ using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Util;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -18,7 +20,7 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IStudyLogoDeleteService _studyLogoDeleteService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
-        readonly IDatasetCloudResourceService _datasetCloudResourceService;
+        readonly IUpdateStudyWbsHandler _updateStudyWbsHandler;
 
         public StudyUpdateService(SepesDbContext db,
             IMapper mapper,
@@ -29,17 +31,18 @@ namespace Sepes.Infrastructure.Service
             IStudyLogoCreateService studyLogoCreateService,
             IStudyLogoDeleteService studyLogoDeleteService,
             IStudyWbsValidationService studyWbsValidationService,
-             IDatasetCloudResourceService datasetCloudResourceService
+            IUpdateStudyWbsHandler updateStudyWbsHandler
           )
             : base(db, mapper, logger, userService, studyEfModelService, studyLogoReadService)
         {
             _studyLogoCreateService = studyLogoCreateService;
             _studyLogoDeleteService = studyLogoDeleteService;
             _studyWbsValidationService = studyWbsValidationService;
-            _datasetCloudResourceService = datasetCloudResourceService;
+
+            _updateStudyWbsHandler = updateStudyWbsHandler;
         }
 
-        public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
+        public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null, CancellationToken cancellationToken = default)
         {
             if (studyId <= 0)
             {
@@ -77,11 +80,7 @@ namespace Sepes.Infrastructure.Service
                 await _studyWbsValidationService.ValidateForStudyUpdate(studyFromDb, await _studyModelService.HasActiveDatasetsAsync(studyFromDb.Id)
                         || await _studyModelService.HasActiveSandboxesAsync(studyFromDb.Id));
 
-
-                await _datasetCloudResourceService.UpdateTagsForStudySpecificDatasetsAsync(studyFromDb);
-               
-
-                //TODO: Update for sandboxes
+                await _updateStudyWbsHandler.Handle(studyFromDb, cancellationToken);
             }
 
             if (updatedStudy.DeleteLogo)

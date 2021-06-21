@@ -80,22 +80,7 @@ namespace Sepes.Infrastructure.Service
             await ScheduleResourceGroupRoleAssignments(studyForCreation, resourceGroupForDatasets, parentQueueItem);
 
             await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
-        }
-
-        public async Task UpdateTagsForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
-        {
-            var studyFromDb = await _studyModelService.GetForDatasetCreationNoAccessCheckAsync(study.Id);
-            var resourceGroupForDatasets = GetResourceGroupForStudySpecificDataset(studyFromDb);
-
-            var parentQueueItem = QueueItemFactory.CreateParent("Ensure tags on resource group and storage accounts for Study specific datasets");
-
-            var resourceGroupTags = ResourceTagFactory.StudySpecificDatasourceResourceGroupTags(_config, studyFromDb);
-
-            _clo
-
-            //Resource group
-            //Storage accounts
-        }
+        }       
 
 
         public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
