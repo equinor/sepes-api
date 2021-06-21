@@ -43,9 +43,11 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
-            if (await _wbsCodeCacheModelService.ExistsAndValid(wbsCode, cancellation)) //Found in cache, means its valid
+            var cachedItem = await _wbsCodeCacheModelService.Get(wbsCode, cancellation);
+
+            if (cachedItem != null) //Found in cache, means its valid
             {
-                return true;
+                return cachedItem.Valid;
             }
 
             if (await _wbsApiService.Exists(wbsCode, cancellation)) //Found in api, means its valid

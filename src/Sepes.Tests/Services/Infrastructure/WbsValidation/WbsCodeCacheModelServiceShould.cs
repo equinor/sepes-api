@@ -9,33 +9,31 @@ namespace Sepes.Tests.Services.Infrastructure
         [InlineData("someWbs", 60)]
         [InlineData("somewbs", 60)]
         [InlineData("SOMEWBS", 60)]
-        public async Task ReturnTrueForSingleValidWbs(string wbsCode, int expiresInSeconds)
+        public async Task ReturnItemForSingleValidWbs(string wbsCode, int expiresInSeconds)
         {
             var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
-            var codeExists = await service.ExistsAndValid(wbsCode);
-
-            Assert.True(codeExists);
+            var cachedItem = await service.Get(wbsCode);
+            Assert.NotNull(cachedItem);
+            Assert.True(cachedItem.Valid);
         }
 
         [Fact]
-        public async Task ReturnFalseIfCacheIsEmpty()
+        public async Task ReturnNullIfCacheIsEmpty()
         {
             var service = await GetCacheService();
 
-            var codeExists = await service.ExistsAndValid("somewbs");
-
-            Assert.False(codeExists);
+            var cachedItem = await service.Get("somewbs");
+            Assert.Null(cachedItem);         
         }
 
         [Fact]
-        public async Task ReturnFalseIfNoRelevantMatches()
+        public async Task ReturnNullIfNoRelevantMatches()
         {
             var service = await GetCacheService("someOtherWbs", true, 10);
 
-            var codeExists = await service.ExistsAndValid("somewbs");
-
-            Assert.False(codeExists);
+            var cachedItem = await service.Get("somewbs");
+            Assert.Null(cachedItem);          
         }
 
         [Theory]
@@ -47,9 +45,9 @@ namespace Sepes.Tests.Services.Infrastructure
             var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
             await service.Clean();
-            var codeExists = await service.ExistsAndValid(wbsCode);
+            var cachedItem = await service.Get(wbsCode);
 
-            Assert.True(codeExists);
+            Assert.NotNull(cachedItem);
         }
 
         [Theory]
@@ -61,9 +59,9 @@ namespace Sepes.Tests.Services.Infrastructure
             var service = await GetCacheService(wbsCode, true, expiresInSeconds);
 
             await service.Clean();
-            var codeExists = await service.ExistsAndValid(wbsCode);
+            var cachedItem = await service.Get(wbsCode);
 
-            Assert.False(codeExists);
+            Assert.Null(cachedItem);
         }
     }
 }

@@ -259,7 +259,8 @@ namespace Sepes.RestApi
             services.AddTransient<IFirewallService, FirewallService>();
             services.AddTransient<IOperationCheckService, OperationCheckService>();
             services.AddTransient<IOperationCompletedService, OperationCompletedService>();
-
+            services.AddTransient<ITagProvisioningService, TagProvisioningService>();
+           
             //Ext System Facade Services           
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();

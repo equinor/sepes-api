@@ -115,10 +115,17 @@ namespace Sepes.Tests.Services.Infrastructure
             wbsCacheServiceMock = new Mock<IWbsCodeCacheModelService>();
 
             wbsCacheServiceMock.Setup(m =>
-          m.ExistsAndValid(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+          m.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((string wbsCode, CancellationToken cancellation) =>
               {
-                  return foundInCache && validInCache;
+                  if (foundInCache)
+                  {
+                      return new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10));
+                  }
+                  else
+                  {
+                      return null;
+                  }
               });
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));

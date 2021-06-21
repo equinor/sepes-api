@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using Sepes.Infrastructure.Model;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService.Interface
@@ -7,6 +8,7 @@ namespace Sepes.Infrastructure.Service.DataModelService.Interface
     {
         Task Add(string wbsCode, bool valid);
         Task Clean();
-        Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default);
+        //Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default);
+        Task<WbsCodeCache> Get(string wbsCode, CancellationToken cancellation = default);
     }
 }

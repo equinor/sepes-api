@@ -69,7 +69,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
             Assert.False(wbsFound);
             Assert.Equal(1, wbsCacheServiceMock.Invocations.Count);
-            Assert.Equal(1, wbsApiServiceMock.Invocations.Count);
+            Assert.Equal(0, wbsApiServiceMock.Invocations.Count);
 
         }
 
@@ -85,7 +85,7 @@ namespace Sepes.Tests.Services.Infrastructure
             var wbsFound = await service.IsValid("somewbs");
 
             Assert.False(wbsFound);
-            Assert.Equal(1, wbsCacheServiceMock.Invocations.Count);
+            Assert.Equal(2, wbsCacheServiceMock.Invocations.Count);
             Assert.Equal(1, wbsApiServiceMock.Invocations.Count);
            
         }

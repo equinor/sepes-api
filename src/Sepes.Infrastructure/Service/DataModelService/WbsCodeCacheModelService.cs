@@ -21,13 +21,30 @@ namespace Sepes.Infrastructure.Service.DataModelService
             _sepesDbContext = sepesDbContext;
         }
 
-        public async Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default)
+        //public async Task<bool> ExistsAndValid(string wbsCode, CancellationToken cancellation = default)
+        //{
+        //    try
+        //    {
+        //        var wbsFromDbQueryable = GetItemQueryable(wbsCode).Where(w => w.Valid && w.Expires > DateTime.UtcNow);
+
+        //        return await wbsFromDbQueryable.AnyAsync(cancellation);
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"WbsCode cache lookup failed for code {wbsCode}");
+        //    }
+
+        //    return false;
+        //}
+
+        public async Task<WbsCodeCache> Get(string wbsCode, CancellationToken cancellation = default)
         {
             try
             {
-                var wbsFromDbQueryable = GetItemQueryable(wbsCode).Where(w => w.Valid && w.Expires > DateTime.UtcNow);
+                var wbsFromDbQueryable = GetItemQueryable(wbsCode).Where(w => w.Expires > DateTime.UtcNow);
 
-                return await wbsFromDbQueryable.AnyAsync();
+                return await wbsFromDbQueryable.SingleOrDefaultAsync(cancellation);
 
             }
             catch (Exception ex)
@@ -35,8 +52,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 _logger.LogError(ex, $"WbsCode cache lookup failed for code {wbsCode}");
             }
 
-            return false;
-        }       
+            return null;
+        }
 
         public async Task Add(string wbsCode, bool valid)
         {
