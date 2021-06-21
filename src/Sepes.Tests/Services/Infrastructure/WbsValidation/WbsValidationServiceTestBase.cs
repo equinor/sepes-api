@@ -66,11 +66,11 @@ namespace Sepes.Tests.Services.Infrastructure
             return sbResponse.ToString();
         }
 
-        protected async Task<IWbsCodeCacheModelService> GetCacheService(string wbsCode, int expiresInSeconds)
+        protected async Task<IWbsCodeCacheModelService> GetCacheService(string wbsCode, bool valid, int expiresInSeconds)
         {
             return await GetCacheService(
                 new List<WbsCodeCache>() {
-                    new WbsCodeCache(wbsCode.ToLowerInvariant(), DateTime.UtcNow.AddSeconds(expiresInSeconds))
+                    new WbsCodeCache(wbsCode.ToLowerInvariant(), valid, DateTime.UtcNow.AddSeconds(expiresInSeconds))
                 });
         }
 
@@ -100,8 +100,10 @@ namespace Sepes.Tests.Services.Infrastructure
         }
 
 
-        protected IWbsValidationService GetWbsValidationService(bool foundInCache, bool foundInApi, out Mock<IWbsApiService> wbsApiServiceMock, out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock)
+        protected IWbsValidationService GetWbsValidationService(bool foundInCache, bool validInCache, bool foundInApi, out Mock<IWbsApiService> wbsApiServiceMock, out Mock<IWbsCodeCacheModelService> wbsCacheServiceMock)
         {
+            var configuration = _serviceProvider.GetService<IConfiguration>();
+
             wbsApiServiceMock = new Mock<IWbsApiService>();
             wbsApiServiceMock.Setup(m =>
             m.Exists(It.IsAny<string>(), It.IsAny<CancellationToken>()))
@@ -113,15 +115,23 @@ namespace Sepes.Tests.Services.Infrastructure
             wbsCacheServiceMock = new Mock<IWbsCodeCacheModelService>();
 
             wbsCacheServiceMock.Setup(m =>
-          m.Exists(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+          m.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
               .ReturnsAsync((string wbsCode, CancellationToken cancellation) =>
               {
-                  return foundInCache;
+                  if (foundInCache)
+                  {
+                      return new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10));
+                  }
+                  else
+                  {
+                      return null;
+                  }
               });
 
-            wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>()));
+            wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));
 
-            return new WbsValidationService(                
+            return new WbsValidationService(
+                configuration,
                  UserFactory.GetUserServiceMockForAdmin(1).Object,
                  wbsApiServiceMock.Object,
                  wbsCacheServiceMock.Object

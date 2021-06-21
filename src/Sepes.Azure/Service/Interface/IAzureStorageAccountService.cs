@@ -7,7 +7,7 @@ using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service.Interface
 {
-    public interface IAzureStorageAccountService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
+    public interface IAzureStorageAccountService : IHasProvisioningState, IServiceForTaggedResource, IPerformResourceProvisioning
     {
         Task Delete(string resourceGroupName, string storageAccountName, CancellationToken cancellationToken = default);
 

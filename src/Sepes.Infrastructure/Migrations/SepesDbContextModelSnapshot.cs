@@ -880,6 +880,9 @@ namespace Sepes.Infrastructure.Migrations
                     b.Property<DateTime>("Expires")
                         .HasColumnType("datetime2");
 
+                    b.Property<bool>("Valid")
+                        .HasColumnType("bit");
+
                     b.HasKey("WbsCode");
 
                     b.ToTable("WbsCodeCache");

@@ -153,16 +153,24 @@ namespace Sepes.Azure.Service
             return TagUtils.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
         {
             var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
-
-            //Ensure resource is is managed by this instance
+        
             EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
-        }        
+        }
+
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
+
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.Update().WithTags(tags).ApplyAsync(cancellationToken);
+        }
 
         public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
         {

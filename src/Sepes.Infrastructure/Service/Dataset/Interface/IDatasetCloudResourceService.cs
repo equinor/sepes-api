@@ -6,7 +6,7 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IDatasetCloudResourceService
     {
-        Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
+        Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);       
 
         Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default);
 

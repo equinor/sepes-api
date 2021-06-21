@@ -2,7 +2,7 @@
 
 namespace Sepes.Azure.Service.Interface
 {
-    public interface IAzureVirtualMachineService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
+    public interface IAzureVirtualMachineService : IHasProvisioningState, IServiceForTaggedResource, IPerformResourceProvisioning
     {     
 
         

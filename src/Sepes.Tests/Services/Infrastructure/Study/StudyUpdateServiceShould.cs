@@ -5,9 +5,9 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyUpdateServiceTest : StudyServiceTestBase
+    public class StudyUpdateServiceShould : StudyServiceTestBase
     {
-        public StudyUpdateServiceTest()
+        public StudyUpdateServiceShould()
             :base()
         {
            
@@ -20,7 +20,7 @@ namespace Sepes.Tests.Services.DomainServices
         [InlineData("", "Bouvet")]
         [InlineData("TestStudy", null)]
         [InlineData("TestStudy", "")]
-        public async void UpdatingStudyDetailsWithoutRequiredFieldsShouldBeWellHandled(string name, string vendor)
+        public async void ThrowOnMissingRequiredFields(string name, string vendor)
         {
             await ClearTestDatabase();
 
@@ -42,6 +42,6 @@ namespace Sepes.Tests.Services.DomainServices
 
             var studyUpdateService = StudyServiceMockFactory.UpdateService(_serviceProvider);
             await Assert.ThrowsAsync<ArgumentException>(() => studyUpdateService.UpdateMetadataAsync(createdStudy.Id, studyWithoutReqFields));
-        }
+        }        
     }
 }

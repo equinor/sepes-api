@@ -93,11 +93,17 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();            
+            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();           
 
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
+
+            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
+            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
+            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+            builder.Services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();
+
 
             //Provisioning service            
             builder.Services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
@@ -113,12 +119,10 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IFirewallService, FirewallService>();
             builder.Services.AddTransient<IOperationCheckService, OperationCheckService>();
             builder.Services.AddTransient<IOperationCompletedService, OperationCompletedService>();
-            
-            
-            //Ext System Facade Services  
-            builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
-            builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
-            builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+            builder.Services.AddTransient<ITagProvisioningService, TagProvisioningService>();           
+
+
+            //IMPORT SERVICE
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 
