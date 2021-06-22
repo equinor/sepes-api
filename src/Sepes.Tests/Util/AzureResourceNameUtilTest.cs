@@ -74,5 +74,17 @@ namespace Sepes.Tests.Util
    
         }
 
+        [Fact]
+        public void AzureResourceNameConstructor_should_work_with_long_names()
+        {
+            var resourceName = AzureResourceNameUtil.AzureResourceNameConstructor("stdiag",
+                "loremipsumloremipsumdolorsitametconsecteturadipiscingeliloremipsumlloremipsumlloremipsumlloremipsumllorem",
+                "aasdasasdas11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", maxLength: 24, addUniqueEnding: true, avoidDash: true);
+            //Assert.InRange(resourceName.Length, 4, 24);
+
+            Assert.Contains("stdiagloremipsumloremip-aasdasasdas11111111111111111111111111111", resourceName);
+
         }
+
+    }
 }
