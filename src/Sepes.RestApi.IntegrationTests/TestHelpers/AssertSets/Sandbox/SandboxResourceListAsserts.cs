@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Response.Sandbox;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System.Collections.Generic;
 using Xunit;
 

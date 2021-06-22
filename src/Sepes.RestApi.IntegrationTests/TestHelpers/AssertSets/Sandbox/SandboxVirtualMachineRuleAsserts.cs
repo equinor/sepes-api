@@ -1,5 +1,5 @@
 ﻿using Sepes.Common.Dto.VirtualMachine;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System;
 using System.Collections.Generic;
 using System.Linq;

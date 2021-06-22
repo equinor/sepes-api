@@ -1,4 +1,4 @@
-﻿namespace Sepes.RestApi.IntegrationTests.Constants
+﻿namespace Sepes.RestApi.IntegrationTests.TestHelpers.Constants
 {
     public static class ApiUrls
     {

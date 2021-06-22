@@ -1,9 +1,8 @@
 ﻿using Sepes.Common.Dto.Study;
-using Sepes.RestApi.IntegrationTests.Dto;
-using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.IntegrationTests.RequestHelpers
+namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 {
     public static class StudyCreator
     {

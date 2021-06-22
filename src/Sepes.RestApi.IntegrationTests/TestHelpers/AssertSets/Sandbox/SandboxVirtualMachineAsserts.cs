@@ -1,6 +1,6 @@
 ﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto.VirtualMachine;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System.Collections.Generic;
 using Xunit;
 

@@ -1,4 +1,4 @@
-﻿using Sepes.RestApi.IntegrationTests.Dto;
+﻿using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System.Net;
 using Xunit;
 

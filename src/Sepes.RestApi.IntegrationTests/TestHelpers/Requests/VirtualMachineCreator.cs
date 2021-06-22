@@ -1,12 +1,11 @@
 ﻿using Sepes.Common.Dto.VirtualMachine;
-using Sepes.RestApi.IntegrationTests.Constants;
-using Sepes.RestApi.IntegrationTests.Dto;
-using Sepes.RestApi.IntegrationTests.TestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Constants;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Sepes.Tests.Common.ModelFactory.VirtualMachine;
 using System;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.IntegrationTests.RequestHelpers
+namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 {
     public static class VirtualMachineCreator
     {

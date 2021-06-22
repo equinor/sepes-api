@@ -11,6 +11,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="Setup\Mocks\Azure\**" />
+    <EmbeddedResource Remove="Setup\Mocks\Azure\**" />
+    <None Remove="Setup\Mocks\Azure\**" />
+  </ItemGroup>
+
   <ItemGroup>   
     <None Remove="appsettings.json" />  
   </ItemGroup>
@@ -68,10 +74,6 @@
 		<None Update="xunit.runner.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Mocks\Azure\" />
 	</ItemGroup>
 
 </Project>
