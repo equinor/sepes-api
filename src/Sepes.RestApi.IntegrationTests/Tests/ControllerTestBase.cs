@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;

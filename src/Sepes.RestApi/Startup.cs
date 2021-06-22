@@ -14,6 +14,8 @@ using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Automapper;
+using Sepes.Infrastructure.Handlers;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
@@ -240,6 +242,10 @@ namespace Sepes.RestApi
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
 
+            //Use cases and handlers
+            services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();
+            
+
             //Provisioning service
             services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
@@ -253,7 +259,8 @@ namespace Sepes.RestApi
             services.AddTransient<IFirewallService, FirewallService>();
             services.AddTransient<IOperationCheckService, OperationCheckService>();
             services.AddTransient<IOperationCompletedService, OperationCompletedService>();
-
+            services.AddTransient<ITagProvisioningService, TagProvisioningService>();
+           
             //Ext System Facade Services           
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();

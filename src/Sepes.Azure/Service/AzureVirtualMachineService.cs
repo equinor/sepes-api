@@ -529,15 +529,59 @@ namespace Sepes.Azure.Service
             return TagUtils.TagReadOnlyDictionaryToDictionary(resource.Tags);
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
         {
             var resource = await GetInternalAsync(resourceGroupName, resourceName);
 
             //Ensure resource is is managed by this instance
             EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
-            _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync();
-            _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync();
+            _ = await resource.Update().WithoutTag(tag.Key).ApplyAsync(cancellationToken);
+            _ = await resource.Update().WithTag(tag.Key, tag.Value).ApplyAsync(cancellationToken);
+        }
+
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            var resource = await GetInternalAsync(resourceGroupName, resourceName);
+
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
+
+            _ = await resource.Update().WithTags(tags).ApplyAsync(cancellationToken);
+
+            await UpdateRelatedResourcesTags(resourceGroupName, resource, tags, cancellationToken);
+        }
+
+        async Task UpdateRelatedResourcesTags(string resourceGroupName, IVirtualMachine virtualMachine, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
+        {
+            //Update NIC tags
+            var primaryNic = await _azure.NetworkInterfaces.GetByIdAsync(virtualMachine.PrimaryNetworkInterfaceId, cancellationToken);
+            await primaryNic.UpdateTags().WithTags(tags).ApplyTagsAsync(cancellationToken);
+
+            //Update public IP tags
+            if (primaryNic.PrimaryIPConfiguration != null)
+            {
+                var pip = await _azure.PublicIPAddresses.GetByIdAsync(primaryNic.PrimaryIPConfiguration.PublicIPAddressId, cancellationToken);
+
+                if (pip != null)
+                {
+                    await _azure.PublicIPAddresses.Inner.UpdateTagsWithHttpMessagesAsync(resourceGroupName, pip.Name, tags, cancellationToken: cancellationToken);
+                }
+            }
+
+            //Update disk tags
+            await UpdateDiskTags(virtualMachine.OSDiskId, tags);
+
+            foreach(var curDataDisk in virtualMachine.DataDisks)
+            {
+                await UpdateDiskTags(curDataDisk.Value.Id, tags);
+            }
+        }
+
+        async Task UpdateDiskTags(string diskId, Dictionary<string, string> tags)
+        {
+            var disk = await _azure.Disks.GetByIdAsync(diskId);
+
+            await disk.Update().WithTags(tags).ApplyAsync();
         }
 
         ResourceProvisioningResult CreateCRUDResult(IVirtualMachine vm)

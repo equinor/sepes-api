@@ -2,7 +2,7 @@
 
 namespace Sepes.Azure.Service.Interface
 {
-    public interface IAzureResourceGroupService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
+    public interface IAzureResourceGroupService : IHasProvisioningState, IServiceForTaggedResource, IPerformResourceProvisioning
     { 
     
     }
