@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Sepes.RestApi.IntegrationTests.Dto
+namespace Sepes.RestApi.IntegrationTests.TestHelpers.Dto
 {
 
     public class ApiConversation<TResponse>

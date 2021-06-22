@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.IntegrationTests.Extensions
+namespace Sepes.RestApi.IntegrationTests.Setup.Extensions
 {
     public static class HttpClientExtensions
     {      
