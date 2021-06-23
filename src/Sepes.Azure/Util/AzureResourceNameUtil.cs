@@ -104,48 +104,19 @@ namespace Sepes.Azure.Util
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
 
+      
+
         public static string AzureResourceNameConstructor(string prefix, string studyName, string sandboxName = null, string suffix = null, int maxLength = 64, bool addUniqueEnding = false, bool avoidDash = false)
         {
             var prefixLength = prefix.Length;
             var suffixLength = String.IsNullOrWhiteSpace(suffix) ? 0 : suffix.Length;
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
-            var availableSpaceForStudyAndSanboxName = maxLength - prefixLength - suffixLength - shortUniquePart.Length - (avoidDash ? 0 : 1);
+            var availableSpaceForStudyAndSandboxName = maxLength - prefixLength - suffixLength - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
             var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
             var alphanumericSandboxName = sandboxName != null ? MakeStringAlphanumericAndRemoveWhitespace(sandboxName) : null;
-            var alphanumericSandboxNameLength = alphanumericSandboxName != null ? alphanumericSandboxName.Length : 0;
 
-            var charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxNameLength);
-
-            if (charachtersLeft < 0)
-            {
-                var totalTrim = Math.Abs(charachtersLeft);
-
-                var nameLengthDiff = alphanumericStudyName.Length - alphanumericSandboxNameLength;
-                var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
-
-                if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
-                {
-                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - amountToTrimOff);
-                }
-                else // sandbox name is longer, trim it down to study length
-                {
-                    alphanumericSandboxName = alphanumericSandboxName.Substring(0, alphanumericSandboxNameLength - amountToTrimOff);
-                }
-
-                //Both names are now equal in length, now we can equally remove from both
-
-                charachtersLeft = availableSpaceForStudyAndSanboxName - (alphanumericStudyName.Length + alphanumericSandboxNameLength);
-
-                if (charachtersLeft < 0)
-                {
-                    var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
-                    var even = charachtersLeft % 2 == 0;
-                    alphanumericStudyName = alphanumericStudyName.Substring(0, alphanumericStudyName.Length - mustRemoveEach - (even ? 0 : 1));
-                    alphanumericSandboxName = EnsureMaxLength(alphanumericSandboxName, alphanumericSandboxNameLength - mustRemoveEach);
-                 
-                }
-            }
+            StripTextsEqually(availableSpaceForStudyAndSandboxName, ref alphanumericStudyName, ref alphanumericSandboxName);
 
             if (String.IsNullOrWhiteSpace(alphanumericSandboxName))
             {
@@ -155,6 +126,51 @@ namespace Sepes.Azure.Util
             {
                 return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}";
             }         
+        }
+
+        static void StripTextsEqually(int availableSpaceForStudyAndSandboxName, ref string text1, ref string text2)
+        {
+            var charachtersLeft = availableSpaceForStudyAndSandboxName - (text1.Length + GetLengthOfPotentiallyEmptyText(text2));
+
+            //Strip some characters off the names
+            if (charachtersLeft < 0)
+            {
+                var totalTrim = Math.Abs(charachtersLeft);
+
+                var nameLengthDiff = text1.Length - GetLengthOfPotentiallyEmptyText(text2);
+                var amountToTrimOff = Math.Abs(nameLengthDiff) > totalTrim ? totalTrim : Math.Abs(nameLengthDiff);
+
+                if (nameLengthDiff > 0) // study name is longer, trim it down to sandbox length
+                {
+                    text1 = text1.Substring(0, text1.Length - amountToTrimOff);
+                }
+                else // sandbox name is longer, trim it down to study length
+                {
+                    text2 = text2.Substring(0, GetLengthOfPotentiallyEmptyText(text2) - amountToTrimOff);
+                }
+
+                //Both names are now equal in length, now we can equally remove from both
+
+                charachtersLeft = availableSpaceForStudyAndSandboxName - (text1.Length + GetLengthOfPotentiallyEmptyText(text2));
+
+                if (charachtersLeft < 0)
+                {
+                    var mustRemoveEach = Math.Abs(charachtersLeft) / 2;
+                    var even = charachtersLeft % 2 == 0;
+                    text1 = EnsureMaxLength(text1, text1.Length - mustRemoveEach - (even ? 0 : 1));
+                    text2 = EnsureMaxLength(text2, GetLengthOfPotentiallyEmptyText(text2) - mustRemoveEach);
+                }
+            }
+        }
+
+        static int GetLengthOfPotentiallyEmptyText(string text)
+        {
+            if (String.IsNullOrWhiteSpace(text))
+            {
+                return 0;
+            }
+
+            return text.Length;
         }
 
         static string Normalize(string input, int limit = 0)
