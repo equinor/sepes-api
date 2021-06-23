@@ -74,5 +74,35 @@ namespace Sepes.Tests.Util
    
         }
 
+        [Theory]
+        [InlineData(24, false, false)]
+        [InlineData(128, false, false)]
+        [InlineData(256, false, false)]
+        [InlineData(24, false, true)]
+        [InlineData(128, false, true)]
+        [InlineData(256, false, true)]
+        [InlineData(24, true, false)]
+        [InlineData(128, true, false)]
+        [InlineData(256, true, false)]
+        public void AzureResourceNameConstructor_should_work_with_long_names(int maxLength, bool addUniqueEnding, bool avoidDash)
+        {
+            var resourceName = AzureResourceNameUtil.AzureResourceNameConstructor("stdiag",
+                "loremipsumbutwithgaghsfhasdfgdfghfgfjgfpioyjgjnkfgkgksdkasadsdfhkkgfhdfkhgdgkshkfghshshf",
+                "sbnamehsgasdfhhdghjhsdgdfhfgsdjdghjsgdgdfgsfdhasdfsdghdsfgjfgjdfgjpfgjåhgjgåfhåsdåfsdfåasdgdfhsfgjf", maxLength: maxLength, addUniqueEnding: addUniqueEnding, avoidDash: avoidDash);
+
+            Assert.InRange(resourceName.Length, 4, maxLength);
+            Assert.Contains("stdiag", resourceName);
+            Assert.Contains("lorem", resourceName);
+            Assert.Contains("sbname", resourceName);
+
+            if (avoidDash)
+            {
+                Assert.DoesNotContain("-", resourceName);
+            }
+            else
+            {
+                Assert.Contains("-", resourceName);
+            }        
         }
+    }
 }
