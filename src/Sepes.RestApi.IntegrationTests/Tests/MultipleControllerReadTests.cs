@@ -84,13 +84,21 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await ReadAllAndAssertExpectForbidden(virtualMachine);
         }
 
+        //Todo: ADD THE FOLLOWING
+        //api/sandbox/{sandboxId}/availabledatasets
+        //api/sandboxes/{sandboxId}/costanalysis
+        //api/studies/{studyId}/datasets
+        //api/studies/{studyId}/datasets/{datasetId}
+        //api/studies/{studyId}/datasets/{datasetId}/resources
+
+
         async Task ReadAllAndAssertExpectSuccess(CloudResource vm)
         {
             await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
             await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
+            await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id));
         }
 
         async Task ReadAllAndAssertExpectForbidden(CloudResource vm) {
@@ -98,7 +106,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); //Todo: Add this test, but remember to mock out azure vm service
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); 
+
         }       
     }
 }
