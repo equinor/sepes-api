@@ -1,12 +1,14 @@
 ﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -32,7 +34,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             Trace.WriteLine("START Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
             SetScenario(isAdmin: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy);
+            var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy, addDatasets: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);
             Trace.WriteLine("END Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
         }
@@ -44,7 +46,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isSponsor: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(true, restrictedStudy);
+            var virtualMachine = await WithVirtualMachine(true, restrictedStudy, addDatasets: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);
         }
 
@@ -63,7 +65,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, new List<string> { studyRole });
+            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, new List<string> { studyRole }, addDatasets: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);                  
         }     
 
@@ -79,35 +81,50 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SetScenario(isEmployee: employee, isSponsor: sponsor, isDatasetAdmin: datasetAdmin);
             await WithBasicSeeds();
 
-            var virtualMachine = await WithVirtualMachine(false, true);
+            var virtualMachine = await WithVirtualMachine(false, true, addDatasets: true);
 
             await ReadAllAndAssertExpectForbidden(virtualMachine);
-        }
-
-        //Todo: ADD THE FOLLOWING
-        //api/sandbox/{sandboxId}/availabledatasets
-        //api/sandboxes/{sandboxId}/costanalysis
-        //api/studies/{studyId}/datasets
-        //api/studies/{studyId}/datasets/{datasetId}
-        //api/studies/{studyId}/datasets/{datasetId}/resources
+        }       
 
 
-        async Task ReadAllAndAssertExpectSuccess(CloudResource vm)
+        async Task ReadAllAndAssertExpectSuccess(CloudResource vmResource)
         {
-            await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
-            await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyDetailsUrl(vmResource.Sandbox.StudyId));
+
+            //Study dataset
+            var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;           
+            await GenericReader.ReadAndAssertExpectSuccess<DatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));
+
+            await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxDetailsUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResourcesUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<string>(_restHelper, GenericReader.SandboxCostAnalysisUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<AvailableDatasets>(_restHelper, GenericReader.SandboxAvailableDatasetsUrl(vmResource.Sandbox.Id));            
+
+            await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<VmExtendedDto>(_restHelper, GenericReader.VirtualMachineExtendedInfoUrl(vmResource.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<VmExternalLink>(_restHelper, GenericReader.VirtualMachineExternalLinkUrl(vmResource.Id));
+            await GenericReader.ReadAndAssertExpectSuccess<List<VmRuleDto>>(_restHelper, GenericReader.VirtualMachineRulesUrl(vmResource.Id));
         }
 
-        async Task ReadAllAndAssertExpectForbidden(CloudResource vm) {
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyUrl(vm.Sandbox.StudyId));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxUrl(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxVirtualMachines(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxResources(vm.Sandbox.Id));
-            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfo(vm.Id)); 
+        async Task ReadAllAndAssertExpectForbidden(CloudResource vmResource) {
 
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyDetailsUrl(vmResource.Sandbox.StudyId));           
+
+            //Study dataset
+            var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));
+
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxDetailsUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxResourcesUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxCostAnalysisUrl(vmResource.Sandbox.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxAvailableDatasetsUrl(vmResource.Sandbox.Id));
+
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxVirtualMachinesUrl(vmResource.Sandbox.Id));         
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExtendedInfoUrl(vmResource.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineExternalLinkUrl(vmResource.Id));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.VirtualMachineRulesUrl(vmResource.Id));
         }       
     }
 }

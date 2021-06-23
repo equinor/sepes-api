@@ -73,7 +73,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SandboxResourceListAsserts.BeforeProvisioning(sandboxResourcesPreProvisioningResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
             //GET SANDBOX VM LIST AND ASSERT RESULT BEFORE CREATION
-            var virtualMachinesPreProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            var virtualMachinesPreProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.BeforeProvisioning(virtualMachinesPreProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
@@ -84,7 +84,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
             //TODO: GET SANDBOX VM LIST AND ASSERT RESULT
-            var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachines(sandboxResponse.Id));
+            var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
             //Add some participants

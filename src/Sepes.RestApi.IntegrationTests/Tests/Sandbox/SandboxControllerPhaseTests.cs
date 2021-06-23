@@ -100,7 +100,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestsExpectSuccess(int sandboxId)
         {
-            var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(sandboxId));
+            var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxDetailsUrl(sandboxId));
             SandboxDetailsAsserts.ReadyForPhaseShiftExpectSuccess(sandboxDetailsConversation.Response);
 
             var phaseShiftConversation = await GenericPoster.PostAndExpectSuccess<SandboxDetails>(_restHelper, GenericPoster.SandboxNextPhase(sandboxId));
