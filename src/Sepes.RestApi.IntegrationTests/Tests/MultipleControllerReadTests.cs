@@ -91,10 +91,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             await GenericReader.ReadAndAssertExpectSuccess<StudyDetailsDto>(_restHelper, GenericReader.StudyDetailsUrl(vmResource.Sandbox.StudyId));
 
-            //Study dataset
+            //Dataset
             var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;           
             await GenericReader.ReadAndAssertExpectSuccess<DatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
-            await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));          
+            await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
 
             await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxDetailsUrl(vmResource.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResourcesUrl(vmResource.Sandbox.Id));
@@ -115,6 +116,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
 
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxDetailsUrl(vmResource.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectForbidden(_restHelper, GenericReader.SandboxResourcesUrl(vmResource.Sandbox.Id));

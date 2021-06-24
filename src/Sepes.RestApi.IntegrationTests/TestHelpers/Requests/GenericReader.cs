@@ -48,6 +48,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
         public static string StudyDatasetSpecificUrl(int studyId, int datasetId) => $"api/studies/{studyId}/datasets/{datasetId}";
         public static string StudyDatasetResourcesUrl(int studyId, int datasetId) => $"api/studies/{studyId}/datasets/{datasetId}/resources ";
 
+        //DATASET FILE
+        public static string DatasetFileListUrl(int datasetId) => $"api/datasets/{datasetId}/files";
+
+        public static string DatasetFileUploadUrl(int datasetId) => $"api/datasets/{datasetId}/saskey";
+
+        public static string DatasetFileDeleteUrl(int datasetId) => $"api/datasets/{datasetId}/saskeydelete";
+
         //SANDBOX
         public static string SandboxDetailsUrl(int sandboxId) => $"api/sandboxes/{sandboxId}";
 
@@ -61,18 +68,10 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 
 
         public static string SandboxVirtualMachinesUrl(int sandboxId) => $"api/virtualmachines/forsandbox/{sandboxId}";
-
-
     
         public static string VirtualMachineExtendedInfoUrl(int vmId) => $"api/virtualmachines/{vmId}/extended";
         public static string VirtualMachineExternalLinkUrl(int vmId) => $"api/virtualmachines/{vmId}/externalLink";
 
-
-
-        public static string VirtualMachineRulesUrl(int vmId) => $"api/virtualmachines/{vmId}/rules";
-
-
-
-       
+        public static string VirtualMachineRulesUrl(int vmId) => $"api/virtualmachines/{vmId}/rules";       
     }
 }
