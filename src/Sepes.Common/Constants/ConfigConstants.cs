@@ -52,10 +52,13 @@
         public const string CYPRESS_MOCK_USER = "CypressMockUser";
 
         //WBS SEARCH
+        public const string WBS_DISABLE_ALL_VALIDATION = "WbsSearchDisabled";
         public const string WBS_SEARCH_API_URL = "WbsSearchBaseUrl";
         public const string WBS_SEARCH_API_SCOPE = "WbsSearchScope";
         public const string WBS_SEARCH_APIM_SUBSCRIPTION = "WbsSearchApimSubscriptionKey";
 
         public const string DATASET_STORAGEACCOUNT_ROLE_ASSIGNMENT_ID = "DatasetStorageAccountRoleAssignmentId";
+
+
     }
 }

@@ -6,8 +6,7 @@ using System.Collections.Generic;
 namespace Sepes.Common.Util
 {
     public static class CloudResourceConfigStringSerializer
-    {    
-
+    {
         public static VmSettingsDto VmSettings(string settingAsString)
         {
             return DeserializeInternal<VmSettingsDto>(settingAsString);

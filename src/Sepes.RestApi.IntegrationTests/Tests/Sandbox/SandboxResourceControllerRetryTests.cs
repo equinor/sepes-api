@@ -2,7 +2,7 @@
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.RequestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using System.Collections.Generic;

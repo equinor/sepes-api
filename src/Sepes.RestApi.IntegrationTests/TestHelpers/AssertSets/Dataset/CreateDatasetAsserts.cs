@@ -1,5 +1,5 @@
 ﻿using Sepes.Common.Dto.Dataset;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset
