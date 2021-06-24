@@ -90,19 +90,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             return study;
         }
 
-        //public static void AddDatasetsIfWanted(bool addDatasets, Study study)
-        //{
-        //    if (addDatasets)
-        //    {
-        //        for (var counter = 0; counter <= 2; counter++)
-        //        {                  
-        //            var datasetName = $"ds-{counter}";
-        //            var datasetClassification = (DatasetClassification)counter;
-
-        //            study.StudyDatasets.Add(DatasetFactory.CreateStudySpecificRelation(study, datasetName, TestConstants.REGION, datasetClassification.ToString()));
-        //        }
-        //    }
-        //}
+       
 
         public static void AddDatasetsIfWanted(bool addDatasets, Study study)
         {
@@ -141,9 +129,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
         static CloudResource StudySpecificDatasetResourceGroup(string studyName)
         {
             var resourceGroupName = AzureResourceNameUtil.StudySpecificDatasetResourceGroup(studyName);
-
             return CloudResourceFactory.CreateResourceGroup(TestConstants.REGION, resourceGroupName, purpose: CloudResourcePurpose.StudySpecificDatasetContainer);
-
         }
 
         public static void AddParticipant(Study study, int userId, string role)
