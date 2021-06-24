@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<bool> IsValidWithAccessCheck(string wbsCode, CancellationToken cancellation = default)
         {
-            await _operationPermissionService.HasAccessToOperationOrThrow(UserOperation.Study_Create);
+            await _operationPermissionService.HasAccessToAnyOperationOrThrow(UserOperation.Study_Create, UserOperation.Study_Update_Metadata);
             return await IsValid(wbsCode, cancellation);
         }
 

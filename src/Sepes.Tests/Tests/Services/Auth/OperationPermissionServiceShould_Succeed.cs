@@ -16,7 +16,17 @@ namespace Sepes.Tests.Services.DomainServices
         public async Task SucceedOn_StudyCreate_IfCorrectPermissions(bool admin, bool sponsor)
         {
             var userService = GetUserServiceMock(admin: admin, sponsor: sponsor);
-            await PerformSucceedingTest(userService, UserOperation.Study_Create);
+            await PerformSucceedingTestSingleOperation(userService, UserOperation.Study_Create);           
+        }
+
+        [Theory]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task SucceedOn_StudyCreateOrUpdate_IfCorrectPermissions(bool admin, bool sponsor)
+        {
+            var userService = GetUserServiceMock(admin: admin, sponsor: sponsor);
+            await PerformSucceedingTestMultipleOperation(userService, UserOperation.Study_Create, UserOperation.Study_Update_Metadata);        
         }
 
         [Theory]
@@ -26,7 +36,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async Task SucceedOn_StudyDelete_IfCorrectPermissions(bool employee, bool admin)
         {
             var userService = GetUserServiceMock(employee: employee, admin: admin);
-            await PerformSucceedingTest(userService, UserOperation.Study_Delete);
+            await PerformSucceedingTestSingleOperation(userService, UserOperation.Study_Delete);
         }
 
         [Fact]
@@ -34,7 +44,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async Task SucceedOn_ReadPreApprovedDataset_IfCorrectPermissions()
         {
             var userService = GetUserServiceMock(employee: true);
-            await PerformSucceedingTest(userService, UserOperation.PreApprovedDataset_Read);
+            await PerformSucceedingTestSingleOperation(userService, UserOperation.PreApprovedDataset_Read);
         }
 
 
@@ -49,18 +59,34 @@ namespace Sepes.Tests.Services.DomainServices
         public async Task SucceedOn_CreateOrUpdatePreApprovedDataset_IfCorrectPermissions(bool employee, bool admin, bool datasetAdmin)
         {
             var userService = GetUserServiceMock(employee: employee, admin: admin, datasetAdmin: datasetAdmin);
-            await PerformSucceedingTest(userService, UserOperation.PreApprovedDataset_Create_Update_Delete);
+            await PerformSucceedingTestSingleOperation(userService, UserOperation.PreApprovedDataset_Create_Update_Delete);
         }
 
-        async Task PerformSucceedingTest(Mock<IUserService> userService, UserOperation userOperation)
+        async Task PerformSucceedingTestSingleOperation(Mock<IUserService> userService, UserOperation userOperation)
         {
             var operationPermissionService = OperationPermissionServiceMockFactory.Create(userService.Object);
 
-            var allowed = await operationPermissionService.HasAccessToOperation(userOperation);
-            Assert.True(allowed);
+            await PerformBoolCheck(operationPermissionService, userOperation, true);
 
             await operationPermissionService.HasAccessToOperationOrThrow(userOperation);
         }
 
+        async Task PerformSucceedingTestMultipleOperation(Mock<IUserService> userService, params UserOperation[] userOperations)
+        {
+            var operationPermissionService = OperationPermissionServiceMockFactory.Create(userService.Object);
+
+            foreach(var curOperation in userOperations)
+            {
+                await PerformBoolCheck(operationPermissionService, curOperation, true);
+            }          
+
+            await operationPermissionService.HasAccessToAnyOperationOrThrow(userOperations);
+        }
+
+        async Task PerformBoolCheck(IOperationPermissionService operationPermissionService, UserOperation userOperation, bool expected)
+        {
+            var allowed = await operationPermissionService.HasAccessToOperation(userOperation);
+            Assert.Equal(expected, allowed);           
+        }
     }
 }

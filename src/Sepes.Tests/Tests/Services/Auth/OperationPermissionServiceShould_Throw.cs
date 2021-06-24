@@ -22,6 +22,17 @@ namespace Sepes.Tests.Services.DomainServices
         }
 
         [Theory]
+        [InlineData(false, false)]
+        [InlineData(false, true)]
+        [InlineData(true, false)]
+        [InlineData(true, true)]
+        public async Task ThrowOn_StudyCreateOrUpdate_IfNotAllowed(bool employee, bool datasetAdmin)
+        {
+            var userService = GetUserServiceMock(employee: employee, datasetAdmin: datasetAdmin);
+            await PerformThrowingTestMultipleOperation(userService, UserOperation.Study_Create, UserOperation.Study_Update_Metadata);
+        }
+
+        [Theory]
         [InlineData(false, false, false)]
         [InlineData(false, true, false)]
         [InlineData(false, false, true)]
@@ -59,12 +70,23 @@ namespace Sepes.Tests.Services.DomainServices
         async Task PerformThrowingTest(Mock<IUserService> userService, UserOperation userOperation) {
             var operationPermissionService = OperationPermissionServiceMockFactory.Create(userService.Object);
 
-            var allowed = await operationPermissionService.HasAccessToOperation(userOperation);
-            Assert.False(allowed);
+            await PerformBoolCheck(operationPermissionService, userOperation, false);
 
             await Assert.ThrowsAsync<ForbiddenException>(() => operationPermissionService.HasAccessToOperationOrThrow(userOperation));
         }
-        
+
+        async Task PerformThrowingTestMultipleOperation(Mock<IUserService> userService, params UserOperation[] userOperations)
+        {
+            var operationPermissionService = OperationPermissionServiceMockFactory.Create(userService.Object);
+
+            foreach (var curOperation in userOperations)
+            {
+                await PerformBoolCheck(operationPermissionService, curOperation, false);
+            }               
+
+            await Assert.ThrowsAsync<ForbiddenException>(() => operationPermissionService.HasAccessToAnyOperationOrThrow(userOperations));
+        }
+
         Mock<IUserService> GetUserServiceMock(bool employee = false, bool admin = false, bool sponsor = false, bool datasetAdmin = false, int userId = 1)
         {
             if (admin)
