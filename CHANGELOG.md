@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.23](https://github.com/equinor/sepes-api/compare/0.4.22...0.4.23) (2021-06-24)
+
+
+### Bug Fixes
+
+* prevent fail in resource naming  ([#709](https://github.com/equinor/sepes-api/issues/709)) ([7345f92](https://github.com/equinor/sepes-api/commit/7345f9253db34eee3a8beb670191f6ec94b2cb21)), closes [#707](https://github.com/equinor/sepes-api/issues/707)
+* **study:** prevent setting invalid wbs if active sandbox or dataset ([#705](https://github.com/equinor/sepes-api/issues/705)) ([f909a21](https://github.com/equinor/sepes-api/commit/f909a211f6cdc97a388337245c44370834818491)), closes [#703](https://github.com/equinor/sepes-api/issues/703) [#704](https://github.com/equinor/sepes-api/issues/704)
+
 ### [0.4.22](https://github.com/equinor/sepes-api/compare/0.4.21...0.4.22) (2021-06-17)
 
 
