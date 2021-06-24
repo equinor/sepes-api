@@ -38,6 +38,11 @@ namespace Sepes.Infrastructure.Service
         public async Task<IEnumerable<LookupDto>> StudyRolesUserCanGive(int studyId)
         {
             var user = await _userService.GetCurrentUserAsync();
+
+            if (user.Admin)
+            {
+                return StudyRoles();
+            }
             var studyFromDb = await _studyModelService.GetWitParticipantsNoAccessCheck(studyId);
                     
             var existingParticipantRoles = studyFromDb.StudyParticipants.Where(x => x.UserId == user.Id).ToList();
