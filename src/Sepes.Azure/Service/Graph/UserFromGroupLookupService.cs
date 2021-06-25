@@ -9,7 +9,7 @@ namespace Sepes.Azure.Service
 {
     public class UserFromGroupLookupService : IUserFromGroupLookupService
     {
-        const string SCOPE = "GroupMember.Read.All";
+        string[] SCOPES = new[] { "Group.Read.All", "GroupMember.Read.All" };
         readonly IGraphServiceProvider _graphServiceProvider;
 
         public UserFromGroupLookupService(IGraphServiceProvider graphServiceProvider)
@@ -27,7 +27,7 @@ namespace Sepes.Azure.Service
             }
 
             // Initialize the GraphServiceClient.            
-            var graphClient = _graphServiceProvider.GetGraphServiceClient(new[] { SCOPE });
+            var graphClient = _graphServiceProvider.GetGraphServiceClient(SCOPES);
 
             var queryOptions = new List<QueryOption>()
             {
