@@ -15,7 +15,7 @@ namespace Sepes.Common.Exceptions
             StatusCode = httpStatusCode;
         }
         
-        public CustomUserMessageException(string message, System.Exception inner, string userFriendlyMessage = null, HttpStatusCode? httpStatusCode = default) : base(message, inner)  {
+        public CustomUserMessageException(string message, Exception inner, string userFriendlyMessage = null, HttpStatusCode? httpStatusCode = default) : base(message, inner)  {
             UserFriendlyMessage = userFriendlyMessage;
             StatusCode = httpStatusCode;
         }
