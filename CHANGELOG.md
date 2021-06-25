@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.24](https://github.com/equinor/sepes-api/compare/0.4.23...0.4.24) (2021-06-25)
+
+
+### Bug Fixes
+
+* **wbsvalidation:** better cache duplication handling ([#718](https://github.com/equinor/sepes-api/issues/718)) ([f32b3ff](https://github.com/equinor/sepes-api/commit/f32b3ffec4fecdea29bd0a6306ca459255f57fce)), closes [#717](https://github.com/equinor/sepes-api/issues/717)
+
 ### [0.4.23](https://github.com/equinor/sepes-api/compare/0.4.22...0.4.23) (2021-06-24)
 
 
