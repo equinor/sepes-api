@@ -16,7 +16,7 @@ namespace Sepes.Infrastructure.Service
         readonly IUserService _userService;
         readonly IPublicIpService _publicIpService;
 
-        public DatasetFirewallService(ILogger logger, IUserService userService, IPublicIpService publicIpService)
+        public DatasetFirewallService(ILogger<DatasetFirewallService> logger, IUserService userService, IPublicIpService publicIpService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
