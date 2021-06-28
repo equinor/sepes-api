@@ -26,8 +26,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         [InlineData(true, false)]
-        //[InlineData(false, true)]
-        //[InlineData(true, true)]
+        [InlineData(false, true)]       
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
             Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
@@ -79,11 +78,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
             var processWorkQueueResponse = await ProcessWorkQueue();
 
-            //GET SANDBOX RESOURCE LIST AND ASSERT RESULT
+            //GET SANDBOX RESOURCE LIST AND ASSERT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
             SandboxResourceListAsserts.AfterProvisioning(sandboxResourcesResponseWrapper, virtualMachineResponseWrapper.Content.Name);
 
-            //TODO: GET SANDBOX VM LIST AND ASSERT RESULT
+            //GET SANDBOX VM LIST AND ASSERT
             var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
@@ -131,7 +130,6 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await SandboxDeleter.DeleteAndExpectSuccess(_restHelper, sandboxResponseWrapper.Content.Id);
 
             //DELETE STUDY
-
             await StudyDeleter.DeleteAndExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
             Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
         }
