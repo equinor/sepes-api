@@ -1,5 +1,6 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.Dataset;
+using Sepes.Common.Dto.Storage;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Response.Sandbox;
@@ -95,7 +96,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;           
             await GenericReader.ReadAndAssertExpectSuccess<DatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
             await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));          
-            await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
+            await GenericReader.ReadAndAssertExpectSuccess<List<BlobStorageItemDto>>(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
 
             await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxDetailsUrl(vmResource.Sandbox.Id));
             await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResourcesUrl(vmResource.Sandbox.Id));

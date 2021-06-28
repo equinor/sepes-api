@@ -9,8 +9,10 @@ using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.Test.Common.ServiceMocks;
 using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
 using System;
@@ -54,6 +56,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                 services.AddScoped<ICombinedUserLookupService, AzureCombinedUserLookupServiceMock>();              
 
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
+                services.SwapTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationServiceMock>();
 
                 if (_mockServicesForScenarioProvider != null)
                 {

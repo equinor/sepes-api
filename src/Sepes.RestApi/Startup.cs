@@ -223,6 +223,7 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IDatasetFirewallService, DatasetFirewallService>();
+            services.AddTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationService>();            
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();

@@ -96,7 +96,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true, false, false, StudyRoles.SponsorRep)]
 
 
-        public async Task Allow_GetFileUploadOrDeleteSasToken_IfPermissionMissing(bool createdByCurrentUser, bool restricted, bool isAdmin, bool isSponsor, string studyRole = null)
+        public async Task Allow_GetFileUploadOrDeleteSasToken_IfRelevantPermission(bool createdByCurrentUser, bool restricted, bool isAdmin, bool isSponsor, string studyRole = null)
         {
             SetScenario(isAdmin: isAdmin, isSponsor: isSponsor);
             await WithUserSeeds();
@@ -114,7 +114,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task PerformTestExpectSuccess(string url)
         {
             var studyDeleteConversation = await GenericReader.ReadExpectSuccess<string>(_restHelper, url);
-            ApiResponseBasicAsserts.ExpectNoContent(studyDeleteConversation.Response);
+            ApiResponseBasicAsserts.ExpectSuccess<string>(studyDeleteConversation.Response);
         }        
     }
 }

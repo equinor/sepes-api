@@ -27,7 +27,7 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger<DatasetCloudResourceService> _logger;
 
         readonly IUserService _userService;
- 
+
         readonly IStudyEfModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
@@ -37,24 +37,26 @@ namespace Sepes.Infrastructure.Service
         readonly IProvisioningQueueService _provisioningQueueService;
 
         readonly IDatasetFirewallService _datasetFirewallService;
+        readonly IDatasetWaitForFirewallOperationService _datasetWaitForFirewallOperationService;
 
         public DatasetCloudResourceService(
             IConfiguration config,
             SepesDbContext db,
             ILogger<DatasetCloudResourceService> logger,
-           IUserService userService,          
+           IUserService userService,
            IStudyEfModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
            ICloudResourceReadService cloudResourceReadService,
            ICloudResourceOperationReadService cloudResourceOperationReadService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
            IProvisioningQueueService provisioningQueueService,
-            IDatasetFirewallService datasetFirewallService)
+            IDatasetFirewallService datasetFirewallService,
+            IDatasetWaitForFirewallOperationService datasetWaitForFirewallOperationService)
         {
             _config = config;
             _db = db;
             _logger = logger;
-            _userService = userService;          
+            _userService = userService;
             _studyModelService = studyModelService;
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceReadService = cloudResourceReadService;
@@ -62,6 +64,7 @@ namespace Sepes.Infrastructure.Service
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
             _datasetFirewallService = datasetFirewallService;
+            _datasetWaitForFirewallOperationService = datasetWaitForFirewallOperationService;
         }
 
         public async Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
@@ -86,7 +89,7 @@ namespace Sepes.Infrastructure.Service
             await ScheduleResourceGroupRoleAssignments(studyForCreation, resourceGroupForDatasets, parentQueueItem);
 
             await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
-        }       
+        }
 
 
         public async Task CreateResourcesForStudySpecificDatasetAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
@@ -187,7 +190,7 @@ namespace Sepes.Infrastructure.Service
         async Task ScheduleResourceGroupRoleAssignments(Study study, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)
         {
             var participants = await _db.StudyParticipants.Include(sp => sp.User).Where(p => p.StudyId == study.Id).ToListAsync();
-            var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(study.Id));          
+            var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(study.Id));
 
             var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroup);
 
@@ -214,9 +217,9 @@ namespace Sepes.Infrastructure.Service
 
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
 
-                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry); 
-                
-            
+                ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
+
+
 
                 await _datasetFirewallService.EnsureDatasetHasFirewallRules(dataset, clientIp);
 
@@ -253,30 +256,8 @@ namespace Sepes.Infrastructure.Service
 
                 await _provisioningQueueService.CreateItemAndEnqueue(firewallUpdateOperation);
 
-                await WaitForOperationToCompleteAsync(firewallUpdateOperation.Id);
+                await _datasetWaitForFirewallOperationService.WaitForOperationToCompleteAsync(firewallUpdateOperation.Id);
             }
-        }
-
-        async Task WaitForOperationToCompleteAsync(int operationId, int timeoutInSeconds = 60)
-        {
-            var timeout = TimeSpan.FromSeconds(timeoutInSeconds);
-            var startTime = DateTime.UtcNow;
-
-            while ((DateTime.UtcNow - startTime) < timeout)
-            {
-                Thread.Sleep(TimeSpan.FromSeconds(3));
-
-                if (await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operationId))
-                {
-                    return;
-                }
-                else if (await _cloudResourceOperationReadService.OperationFailedOrAbortedAsync(operationId))
-                {
-                    throw new Exception("Awaited operation failed");
-                }
-            }
-
-            throw new Exception("Awaited operation timed out");
         }
 
         public async Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default)

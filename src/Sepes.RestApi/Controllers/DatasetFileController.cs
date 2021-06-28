@@ -33,7 +33,7 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetFileUploadSasToken(int datasetId, CancellationToken cancellationToken = default)
         {
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);
-            var sasToken = await _datasetFileService.GetFileUploadUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);         
+            var sasToken = await _datasetFileService.GetFileUploadUriAsync(datasetId, clientIp, cancellationToken);         
             return new JsonResult(sasToken);
         }
 
@@ -41,7 +41,7 @@ namespace Sepes.RestApi.Controller
         public async Task<IActionResult> GetFileDeleteSasToken(int datasetId, CancellationToken cancellationToken = default)
         {
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);
-            var sasTokenDelete = await _datasetFileService.GetFileDeleteUriBuilderWithSasTokenAsync(datasetId, clientIp, cancellationToken);
+            var sasTokenDelete = await _datasetFileService.GetFileDeleteUriAsync(datasetId, clientIp, cancellationToken);
             return new JsonResult(sasTokenDelete);
         }
     }
