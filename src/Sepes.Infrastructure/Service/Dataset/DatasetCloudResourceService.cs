@@ -13,6 +13,7 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace Sepes.Infrastructure.Service
         readonly ILogger<DatasetCloudResourceService> _logger;
 
         readonly IUserService _userService;
-        readonly IPublicIpService _publicIpService;
+ 
         readonly IStudyEfModelService _studyModelService;
 
         readonly ICloudResourceCreateService _cloudResourceCreateService;
@@ -35,27 +36,32 @@ namespace Sepes.Infrastructure.Service
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
 
-        public DatasetCloudResourceService(IConfiguration config, SepesDbContext db, ILogger<DatasetCloudResourceService> logger,
-           IUserService userService,
-           IPublicIpService publicIpService,
+        readonly IDatasetFirewallService _datasetFirewallService;
+
+        public DatasetCloudResourceService(
+            IConfiguration config,
+            SepesDbContext db,
+            ILogger<DatasetCloudResourceService> logger,
+           IUserService userService,          
            IStudyEfModelService studyModelService,
            ICloudResourceCreateService cloudResourceCreateService,
            ICloudResourceReadService cloudResourceReadService,
-            ICloudResourceOperationReadService cloudResourceOperationReadService,
+           ICloudResourceOperationReadService cloudResourceOperationReadService,
            ICloudResourceOperationCreateService cloudResourceOperationCreateService,
-           IProvisioningQueueService provisioningQueueService)
+           IProvisioningQueueService provisioningQueueService,
+            IDatasetFirewallService datasetFirewallService)
         {
             _config = config;
             _db = db;
             _logger = logger;
-            _userService = userService;
-            _publicIpService = publicIpService;
+            _userService = userService;          
             _studyModelService = studyModelService;
             _cloudResourceCreateService = cloudResourceCreateService;
             _cloudResourceReadService = cloudResourceReadService;
             _cloudResourceOperationReadService = cloudResourceOperationReadService;
             _cloudResourceOperationCreateService = cloudResourceOperationCreateService;
             _provisioningQueueService = provisioningQueueService;
+            _datasetFirewallService = datasetFirewallService;
         }
 
         public async Task CreateResourceGroupForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
@@ -210,13 +216,13 @@ namespace Sepes.Infrastructure.Service
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry); 
                 
-                var serverPublicIp = await _publicIpService.GetIp();
+            
 
-                DatasetFirewallUtils.EnsureDatasetHasFirewallRules(_logger, currentUser, dataset, clientIp, serverPublicIp);
+                await _datasetFirewallService.EnsureDatasetHasFirewallRules(dataset, clientIp);
 
                 await _db.SaveChangesAsync();
 
-                var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
+                var stateForFirewallOperation = TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
 
                 var createStorageAccountOperation = CloudResourceOperationUtil.GetCreateOperation(resourceEntry);
                 var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(resourceEntry.Id, CloudResourceOperationType.ENSURE_FIREWALL_RULES, dependsOn: createStorageAccountOperation.Id, desiredState: stateForFirewallOperation);
@@ -236,15 +242,11 @@ namespace Sepes.Infrastructure.Service
 
         public async Task EnsureFirewallExistsAsync(Study study, Dataset dataset, string clientIp, CancellationToken cancellationToken = default)
         {
-            var currentUser = await _userService.GetCurrentUserAsync();
-
-            var serverPublicIp = await _publicIpService.GetIp();
-
-            if (DatasetFirewallUtils.SetDatasetFirewallRules(currentUser, dataset, clientIp, serverPublicIp))
+            if (await _datasetFirewallService.SetDatasetFirewallRules(dataset, clientIp))
             {
                 await _db.SaveChangesAsync(cancellationToken);
 
-                var stateForFirewallOperation = DatasetFirewallUtils.TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
+                var stateForFirewallOperation = TranslateAllowedIpsToOperationDesiredState(dataset.FirewallRules.ToList());
                 var datasetStorageAccountResource = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
                 var firewallUpdateOperation = await _cloudResourceOperationCreateService.CreateUpdateOperationAsync(datasetStorageAccountResource.Id,
                     CloudResourceOperationType.ENSURE_FIREWALL_RULES, desiredState: stateForFirewallOperation);
@@ -328,6 +330,21 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-       
+        string TranslateAllowedIpsToOperationDesiredState(List<DatasetFirewallRule> datasetFirewallRules)
+        {
+            if (datasetFirewallRules.Count == 0)
+            {
+                return null;
+            }
+
+            var translated = TranslateAllowedIpsToGenericFirewallRule(datasetFirewallRules);
+
+            return CloudResourceConfigStringSerializer.Serialize(translated);
+        }
+
+        List<FirewallRule> TranslateAllowedIpsToGenericFirewallRule(List<DatasetFirewallRule> datasetFirewallRules)
+        {
+            return datasetFirewallRules.Select(r => new FirewallRule() { Action = FirewallRuleAction.Allow, Address = r.Address }).ToList();
+        }
     }
 }

@@ -113,7 +113,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestExpectSuccess(string url)
         {
-            var studyDeleteConversation = await GenericPutter.PutAndExpectSuccess(_restHelper, url);
+            var studyDeleteConversation = await GenericReader.ReadExpectSuccess<string>(_restHelper, url);
             ApiResponseBasicAsserts.ExpectNoContent(studyDeleteConversation.Response);
         }        
     }

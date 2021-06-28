@@ -17,23 +17,23 @@ namespace Sepes.Infrastructure.Service
 {
     public class DatasetFileService : DatasetServiceBase, IDatasetFileService
     {
-        readonly IAzureBlobStorageService _storageService;
+        readonly IAzureBlobStorageService _azureBlobStorageService;
         readonly IStudySpecificDatasetModelService _studySpecificDatasetModelService;
-        readonly IAzureBlobStorageUriBuilderService _azureStorageAccountTokenService;
+        readonly IAzureBlobStorageUriBuilderService _azureBlobStorageUriBuilderService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
 
         public DatasetFileService(SepesDbContext db, IMapper mapper, ILogger<DatasetFileService> logger, IUserService userService,
             IStudyPermissionService studyPermissionService,
             IStudySpecificDatasetModelService studySpecificDatasetModelService, 
-            IAzureBlobStorageService storageService,
+            IAzureBlobStorageService azureBlobStorageService,
             IDatasetCloudResourceService datasetCloudResourceService,
-            IAzureBlobStorageUriBuilderService azureStorageAccountTokenService)
+            IAzureBlobStorageUriBuilderService azureBlobStorageUriBuilderService)
             : base(db, mapper, logger, userService, studyPermissionService)
         {
-            _storageService = storageService;
+            _azureBlobStorageService = azureBlobStorageService;
             _studySpecificDatasetModelService = studySpecificDatasetModelService;
             _datasetCloudResourceService = datasetCloudResourceService;
-            _azureStorageAccountTokenService = azureStorageAccountTokenService;
+            _azureBlobStorageUriBuilderService = azureBlobStorageUriBuilderService;
         }      
 
         public async Task<List<BlobStorageItemDto>> GetFileListAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default)
@@ -53,14 +53,14 @@ namespace Sepes.Infrastructure.Service
                     var study = DatasetUtils.GetStudyFromStudySpecificDatasetOrThrow(dataset);                   
                 
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
-                    _storageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                    _azureBlobStorageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
                 else
                 {
                     throw new NotImplementedException("Only Study specific datasets is supported");                            
                 }
 
-                return await _storageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
+                return await _azureBlobStorageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
 
             }
             catch (Exception ex)
@@ -82,10 +82,10 @@ namespace Sepes.Infrastructure.Service
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
 
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
-                    _storageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
-                    await _storageService.EnsureContainerExist(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
+                    _azureBlobStorageService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                    await _azureBlobStorageService.EnsureContainerExist(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
                   
-                    _azureStorageAccountTokenService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                    _azureBlobStorageUriBuilderService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
 
                 var uriBuilder = await CreateFileUploadUriBuilder("files", cancellationToken);
@@ -95,13 +95,13 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
+                throw new Exception($"Unable to get file upload url builder from Storage Account - {ex.Message}", ex);
             }
         }
 
         async Task<UriBuilder> CreateFileUploadUriBuilder(string containerName, CancellationToken cancellationToken = default)
         {
-            return await _azureStorageAccountTokenService.CreateUriBuilder(containerName, permission: BlobContainerSasPermissions.Write, expiresOnMinutes: 30, cancellationToken: cancellationToken);
+            return await _azureBlobStorageUriBuilderService.CreateUriBuilder(containerName, permission: BlobContainerSasPermissions.Write, expiresOnMinutes: 30, cancellationToken: cancellationToken);
         }
 
         public async Task<string> GetFileDeleteUriBuilderWithSasTokenAsync(int datasetId, string clientIp, CancellationToken cancellationToken = default)
@@ -115,7 +115,7 @@ namespace Sepes.Infrastructure.Service
                 
                     await _datasetCloudResourceService.EnsureFirewallExistsAsync(study, dataset, clientIp, cancellationToken);
                     var datasetResourceEntry = DatasetUtils.GetStudySpecificStorageAccountResourceEntry(dataset);
-                    _azureStorageAccountTokenService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
+                    _azureBlobStorageUriBuilderService.SetConnectionParameters(datasetResourceEntry.ResourceGroupName, datasetResourceEntry.ResourceName);
                 }
 
                 var uriBuilder = await CreateFileDeleteUriBuilder("files", cancellationToken);
@@ -125,13 +125,13 @@ namespace Sepes.Infrastructure.Service
             }
             catch (Exception ex)
             {
-                throw new Exception($"Unable to get file list from Storage Account - {ex.Message}", ex);
+                throw new Exception($"Unable to get file delete url builder from Storage Account - {ex.Message}", ex);
             }
         }
 
         public async Task<UriBuilder> CreateFileDeleteUriBuilder(string containerName, CancellationToken cancellationToken = default)
         {
-            return await _azureStorageAccountTokenService.CreateUriBuilder(containerName, permission: BlobContainerSasPermissions.Delete, expiresOnMinutes: 5, cancellationToken: cancellationToken);
+            return await _azureBlobStorageUriBuilderService.CreateUriBuilder(containerName, permission: BlobContainerSasPermissions.Delete, expiresOnMinutes: 5, cancellationToken: cancellationToken);
         }
     }
 }

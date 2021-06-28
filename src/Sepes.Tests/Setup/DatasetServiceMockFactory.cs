@@ -83,6 +83,15 @@ namespace Sepes.Tests.Setup
             return new StudyDatasetService(db, mapper, logger, userService.Object, studyPermissionService, studyModelServiceMock.Object, studySpecificDatasetModelService.Object);          
         }
 
+        public static IDatasetFirewallService GetStudyDatasetFirewallService(ServiceProvider serviceProvider, string serverIp)
+        {           
+            var logger = serviceProvider.GetService<ILogger<DatasetFirewallService>>();
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var ipService = PublicIpServiceMockFactory.CreateSucceedingService(serviceProvider, serverIp);
+
+            return new DatasetFirewallService(logger, userService.Object, ipService);
+        }
+
         public static IStudySpecificDatasetService GetStudySpecificDatasetService(ServiceProvider serviceProvider, List<Study> studies = null, List<Dataset> datasets = null)
         {
             if(studies == null)
