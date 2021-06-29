@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
@@ -69,6 +70,34 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 }
 
                 await connection.ExecuteAsync(statement, parameters);
+            }
+        }
+
+        protected async Task ExecuteProcedureAsync(string procedureName, params SqlParameter[] parameters)
+        {
+            using (var connection = new SqlConnection(GetDbConnectionString()))
+            {
+                using (SqlCommand cmd = new SqlCommand(procedureName, connection))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    if (connection.State != ConnectionState.Open)
+                    {
+                        await connection.OpenAsync();
+                    }
+
+                    if(parameters != null && parameters.Length > 0)
+                    {
+                        foreach(var curParameter in parameters)
+                        {
+                            cmd.Parameters.Add(curParameter);
+                        }                      
+                    }                 
+
+                    cmd.ExecuteNonQuery();
+                }
+
+            
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
@@ -53,7 +54,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             }
 
             return default;
-        }      
+        }
 
         public async Task Add(string wbsCode, bool valid)
         {
@@ -65,26 +66,26 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
                 if (await WbsCodeExists(wbsCode))
                 {
-                    _logger.LogInformation($"Wbs Cache - Add: {wbsCode}, valid: {valid}, item exists allready");                                   
-                   
-                    var updateEntrySql = $"UPDATE {WBS_TABLE_NAME} SET [Valid] = {validString}, [Expires] = {GetNewExpires(valid)}  {WhereEqualsWbsCodePart()}";
+                    _logger.LogInformation($"Wbs Cache - Add: {wbsCode}, valid: {valid}, item exists allready");
+
+                    var updateEntrySql = $"UPDATE {WBS_TABLE_NAME} SET [Valid] = {validString}, [Expires] = {GetNewExpiresSql(valid)} {WhereEqualsWbsCodePart()}";
 
                     await base.ExecuteAsync(updateEntrySql, new { wbsCode });
                 }
                 else
                 {
                     _logger.LogInformation($"Wbs Cache - Add: {wbsCode}, valid: {valid}, item does not exist, adding!");
-                    //"IF NOT EXISTS (SELECT * FROM [dbo].[Regions] WHERE [Key] = 'norwayeast') BEGIN INSERT INTO [dbo].[Regions] VALUES ('norwayeast', getutcdate(), 'migration', 'Norway East', 0) END"
-                    var insertWbsCodeSql = $"IF NOT EXISTS({AnyQuery()}) BEGIN INSERT INTO {WBS_TABLE_NAME} ([WbsCode],[Valid],[Expires]) VALUES ($wbsCode,{validString},{GetNewExpires(valid)}) END";
+                    var insertWbsCodeSql = $"IF NOT EXISTS({AnyQuery()}) BEGIN INSERT INTO {WBS_TABLE_NAME} ([WbsCode],[Valid],[Expires]) VALUES (@wbsCode,{validString},{GetNewExpiresSql(valid)}) END";
 
                     await base.ExecuteAsync(insertWbsCodeSql, new { wbsCode });
-                }             
+                }
             }
             catch (Exception ex)
             {
-                throw new CustomUserMessageException($"Unable to add wbs cache entry {wbsCode}, valid: {valid}", ex, $"Failed to update WBS cache");
+                //throw new CustomUserMessageException($"Unable to add wbs cache entry {wbsCode}, valid: {valid}", ex, $"Failed to update WBS cache");
+                _logger.LogError(ex, $"Unable to add wbs cache entry {wbsCode}, valid: {valid}");
             }
-        }
+        }    
 
         async Task<bool> WbsCodeExists(string wbsCode)
         {
@@ -100,7 +101,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         string AnyQuery()
         {
-            return $"SELECT [WbsCode] FROM {WBS_TABLE_NAME} WHERE [WbsCode] = $wbsCode";
+            return $"SELECT [WbsCode] FROM {WBS_TABLE_NAME} WHERE [WbsCode] = @wbsCode";
         }
 
         string AnyQueryAsBool()
@@ -115,7 +116,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         string WhereEqualsWbsCodePart()
         {
-            return "WHERE [WbsCode] = $wbsCode";
+            return "WHERE [WbsCode] = @wbsCode";
         }
 
         string ExpiresPart()
@@ -126,6 +127,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
         DateTime GetNewExpires(bool valid)
         {
             return DateTime.UtcNow.AddMinutes(valid ? 20 : 3);
-        }      
+        }
+
+        string GetNewExpiresSql(bool valid)
+        {           
+            var expires = GetNewExpires(valid);        
+            var expiresString = expires.ToString("s");
+            return $"'{expiresString}'";
+        }
     }
 }
