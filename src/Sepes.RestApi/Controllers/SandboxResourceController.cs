@@ -25,22 +25,22 @@ namespace Sepes.RestApi.Controller
         [HttpGet("sandboxes/{sandboxId}/resources")]
         public async Task<IActionResult> GetSandboxResources(int sandboxId)
         {
-            var sandboxes = await _sandboxResourceReadService.GetSandboxResourcesLight(sandboxId);
-            return new JsonResult(sandboxes);
+            var resources = await _sandboxResourceReadService.GetSandboxResourcesLight(sandboxId);
+            return new JsonResult(resources);
         }
 
         [HttpPut("resources/{resourceId}/retry")]
         public async Task<IActionResult> RetryLastOperation(int resourceId)
         {
-            var resource = await _sandboxResourceRetryService.RetryResourceFailedOperation(resourceId);
-            return new JsonResult(resource);
+            var retriedResource = await _sandboxResourceRetryService.RetryResourceFailedOperation(resourceId);
+            return new JsonResult(retriedResource);
         }       
 
         [HttpGet("sandboxes/{sandboxId}/costanalysis")]
         public async Task<IActionResult> GetSandboxCostanalysis(int sandboxId)
         {
-            var sandboxes = await _sandboxResourceReadService.GetSandboxCostanlysis(sandboxId);
-            return new JsonResult(sandboxes);
+            var costAnalasysLink = await _sandboxResourceReadService.GetSandboxCostanlysis(sandboxId);
+            return new JsonResult(costAnalasysLink);
         }
     }
 }

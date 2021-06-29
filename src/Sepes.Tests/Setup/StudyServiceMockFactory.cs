@@ -25,7 +25,7 @@ namespace Sepes.Tests.Setup
             var config = serviceProvider.GetService<IConfiguration>();         
             var logger = serviceProvider.GetService<ILogger<StudyListModelService>>();           
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
-            var studyPermissionService = StudyPermissionService(serviceProvider);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider);
 
             return new StudyListModelService(config, logger, userService.Object, studyPermissionService);
         }
@@ -37,7 +37,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyEfModelService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyPermissionService = StudyPermissionService(serviceProvider);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider);
 
             return new StudyEfModelService(config, db, logger, userService.Object, studyPermissionService);
         }            
@@ -48,6 +48,7 @@ namespace Sepes.Tests.Setup
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudyCreateService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var operationPermissionFactory = OperationPermissionServiceMockFactory.Create(userService.Object);
 
             var studyModelService = StudyEfModelService(serviceProvider);
            
@@ -59,7 +60,7 @@ namespace Sepes.Tests.Setup
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
             dsCloudResourceServiceMock.Setup(x => x.CreateResourceGroupForStudySpecificDatasetsAsync(It.IsAny<Study>(), default(CancellationToken))).Returns(Task.CompletedTask);
 
-            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoCreateServiceMock.Object, logoReadServiceMock.Object, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
+            return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoCreateServiceMock.Object, logoReadServiceMock.Object, operationPermissionFactory, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
         }
 
         static Mock<IStudyWbsValidationService> GetStudyWbsValidationServiceMock(bool wbsValidationSucceeds)
@@ -96,13 +97,6 @@ namespace Sepes.Tests.Setup
             var updateStudyWbsHandler = new Mock<IUpdateStudyWbsHandler>();
 
             return new StudyUpdateService(db, mapper, logger, userService.Object, studyModelService, logoReadServiceMock.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object, updateStudyWbsHandler.Object);
-        }
-
-        public static IStudyPermissionService StudyPermissionService(ServiceProvider serviceProvider, IUserService userService = null) {
-
-            var mapper = serviceProvider.GetService<IMapper>();            
-
-            return new StudyPermissionService(mapper, userService == null ? UserFactory.GetUserServiceMockForAdmin(1).Object : userService);
         }
 
         public static IStudyDeleteService DeleteService(ServiceProvider serviceProvider)

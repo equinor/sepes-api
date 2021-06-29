@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyReadServiceTests : StudyServiceTestBase
+    public class StudyReadServiceTests : ServiceTestBaseWithInMemoryDb
     {
 
         [Theory]

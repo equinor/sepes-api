@@ -40,7 +40,7 @@ namespace Sepes.Tests.Setup
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();
 
-            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
             return new SandboxService(mapper, logger, userService.Object, studyPermissionService, sandboxModelService, studyModelService, studyWbsValidationServiceMock, sandboxResourceCreateServiceMock.Object, sandboxResourceDeleteServiceMock.Object);
         }      

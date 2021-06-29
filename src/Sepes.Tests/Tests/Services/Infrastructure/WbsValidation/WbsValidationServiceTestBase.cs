@@ -22,7 +22,6 @@ namespace Sepes.Tests.Services.Infrastructure
 {
     public class WbsValidationServiceTestBase : ServiceTestBaseWithInMemoryDb
     {
-
         protected IWbsApiService GetApiService(HttpStatusCode httpStatusCode = HttpStatusCode.OK, params string[] wbsCodesInApiResponse)
         {
             var httpMessageHandlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
@@ -129,10 +128,11 @@ namespace Sepes.Tests.Services.Infrastructure
               });
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));
-
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);
             return new WbsValidationService(
                 configuration,
-                 UserFactory.GetUserServiceMockForAdmin(1).Object,
+                 userService.Object,
+                 OperationPermissionServiceMockFactory.Create(userService.Object),
                  wbsApiServiceMock.Object,
                  wbsCacheServiceMock.Object
                 );
