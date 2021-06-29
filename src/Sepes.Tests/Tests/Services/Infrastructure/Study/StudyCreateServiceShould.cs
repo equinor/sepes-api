@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyCreateServiceShould : StudyServiceTestBase
+    public class StudyCreateServiceShould : ServiceTestBaseWithInMemoryDb
     {
         [Theory]
         [InlineData(null)]

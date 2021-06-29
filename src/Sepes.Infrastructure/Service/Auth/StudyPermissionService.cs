@@ -28,7 +28,6 @@ namespace Sepes.Infrastructure.Service
             return StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, operation, roleBeingAddedOrRemoved);
         }
 
-
         public bool HasAccessToOperationForStudy(UserDto currentUser, IHasStudyPermissionDetails studyPermissionDetails, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
             return StudyAccessUtil.HasAccessToOperationForStudy(currentUser, studyPermissionDetails, operation, roleBeingAddedOrRemoved);
@@ -78,7 +77,6 @@ namespace Sepes.Infrastructure.Service
 
             VerifyAccessOrThrow(currentUser, studyPermissionDetails, operation, roleBeingAddedOrRemoved);
         }
-
 
         public Study HasAccessToOperationForStudyOrThrow(UserDto currentUser, Study study, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {

@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyDeleteServiceTests : StudyServiceTestBase
+    public class StudyDeleteServiceTests : ServiceTestBaseWithInMemoryDb
     {
         public StudyDeleteServiceTests()
             :base()

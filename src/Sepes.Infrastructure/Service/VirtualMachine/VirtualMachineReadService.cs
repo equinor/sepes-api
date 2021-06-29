@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default)
         {
-            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);           
+            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read, cancellationToken);           
 
             var dto = await _azureVirtualMachineExtenedInfoService.GetExtendedInfo(vmResource.ResourceGroupName, vmResource.ResourceName);
 
@@ -72,9 +72,9 @@ namespace Sepes.Infrastructure.Service
             return dto;
         }
 
-        public async Task<VmExternalLink> GetExternalLink(int vmId)
+        public async Task<VmExternalLink> GetExternalLink(int vmId, CancellationToken cancellationToken = default)
         {
-            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read);
+            var vmResource = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Read, cancellationToken);
 
             var vmExternalLink = new VmExternalLink
             {
