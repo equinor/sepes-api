@@ -243,7 +243,7 @@ namespace Sepes.RestApi
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
 
             //Use cases and handlers
             services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();
