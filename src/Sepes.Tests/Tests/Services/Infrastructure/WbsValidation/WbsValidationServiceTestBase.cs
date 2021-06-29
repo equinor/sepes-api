@@ -89,13 +89,14 @@ namespace Sepes.Tests.Services.Infrastructure
         {
             var db = await ClearTestDatabase();
 
+            var configuration = _serviceProvider.GetService<IConfiguration>();
+
             wbsCodesInCache.ForEach((w) => { w.WbsCode = w.WbsCode.ToLowerInvariant(); db.WbsCodeCache.Add(w); });
             await db.SaveChangesAsync();
 
             return new WbsCodeCacheModelService(
-                _serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>(),
-              db
-              );
+                configuration,
+                _serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>());
         }
 
 
@@ -114,8 +115,8 @@ namespace Sepes.Tests.Services.Infrastructure
             wbsCacheServiceMock = new Mock<IWbsCodeCacheModelService>();
 
             wbsCacheServiceMock.Setup(m =>
-          m.Get(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-              .ReturnsAsync((string wbsCode, CancellationToken cancellation) =>
+          m.Get(It.IsAny<string>()))
+              .ReturnsAsync((string wbsCode) =>
               {
                   if (foundInCache)
                   {
