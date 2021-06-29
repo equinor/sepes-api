@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
                 return await _azureBlobStorageService.GetFileList(DatasetConstants.STUDY_SPECIFIC_DATASET_DEFAULT_CONTAINER, cancellationToken);
 
             }
-            catch (ForbiddenException ex)
+            catch (ForbiddenException)
             {
                 throw;
             }
@@ -98,7 +98,7 @@ namespace Sepes.Infrastructure.Service
                 return uriBuilder.Uri.ToString();
 
             }
-            catch (ForbiddenException ex)
+            catch (ForbiddenException)
             {
                 throw;
             }
@@ -132,7 +132,7 @@ namespace Sepes.Infrastructure.Service
                 return uriBuilder.Uri.ToString();
 
             }
-            catch (ForbiddenException ex)
+            catch (ForbiddenException)
             {
                 throw;
             }

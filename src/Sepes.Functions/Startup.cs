@@ -85,7 +85,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IHealthService, HealthService>();
 
             //Domain Model Services
-            builder.Services.AddTransient<ILookupService, LookupService>();
+            builder.Services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
             builder.Services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();
             builder.Services.AddTransient<ISandboxService, SandboxService>();         

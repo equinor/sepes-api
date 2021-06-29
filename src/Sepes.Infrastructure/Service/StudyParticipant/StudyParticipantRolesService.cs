@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class LookupService : ILookupService
+    public class StudyParticipantRolesService : IStudyParticipantRolesService
     {
         public SepesDbContext _db;
         public IMapper _mapper;
         public IUserService _userService;
         public IStudyEfModelService _studyModelService;
 
-        public LookupService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyEfModelService studyModelService)
+        public StudyParticipantRolesService(SepesDbContext db, IMapper mapper, IUserService userService, IStudyEfModelService studyModelService)
         {
             _mapper = mapper;
             _userService = userService;
@@ -24,7 +24,7 @@ namespace Sepes.Infrastructure.Service
             _studyModelService = studyModelService;
         }     
 
-        public IEnumerable<LookupDto> StudyRoles()
+        IEnumerable<LookupDto> StudyRoles()
         {
             return new List<LookupDto>()
             {
@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
             };
         }
 
-        public async Task<IEnumerable<LookupDto>> StudyRolesUserCanGive(int studyId)
+        public async Task<IEnumerable<LookupDto>> RolesAvailableForUser(int studyId)
         {
             var user = await _userService.GetCurrentUserAsync();
 
@@ -43,6 +43,7 @@ namespace Sepes.Infrastructure.Service
             {
                 return StudyRoles();
             }
+
             var studyFromDb = await _studyModelService.GetWitParticipantsNoAccessCheck(studyId);
                     
             var existingParticipantRoles = studyFromDb.StudyParticipants.Where(x => x.UserId == user.Id).ToList();
