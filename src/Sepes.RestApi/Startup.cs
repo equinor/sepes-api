@@ -228,7 +228,7 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
-            services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
+            services.AddTransient<IStudyParticipantSearchService, StudyParticipantSearchService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
             services.AddTransient<IStudyParticipantRemoveService, StudyParticipantRemoveService>();
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
@@ -243,7 +243,7 @@ namespace Sepes.RestApi
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
 
             //Use cases and handlers
             services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();
