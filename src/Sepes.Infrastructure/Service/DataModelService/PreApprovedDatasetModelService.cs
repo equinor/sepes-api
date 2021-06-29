@@ -6,7 +6,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,13 +13,17 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class PreApprovedDatasetModelService : DatasetModelServiceBase, IPreApprovedDatasetModelService
-    {
-        readonly IUserService _userService;
+    {        
+        readonly IOperationPermissionService _operationPermissionService;
 
-        public PreApprovedDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<PreApprovedDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+        public PreApprovedDatasetModelService(IConfiguration configuration,
+            SepesDbContext db,
+            ILogger<PreApprovedDatasetModelService> logger,       
+            IStudyPermissionService studyPermissionService,
+            IOperationPermissionService operationPermissionService)
             : base(configuration, db, logger, studyPermissionService)
-        {
-            _userService = userService;
+        {         
+            _operationPermissionService = operationPermissionService;
         }
 
 
@@ -48,7 +51,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         }
         public async Task<Dataset> CreateAsync(Dataset newDataset)
         {
-            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);           
+            await ThrowIfOperationNotAllowed(UserOperation.PreApprovedDataset_Create_Update_Delete);
             var addedDataset = await AddAsync(newDataset);
             return await GetByIdWithoutPermissionCheckAsync(addedDataset.Id);
         }
@@ -62,9 +65,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
         }
 
         async Task ThrowIfOperationNotAllowed(UserOperation operation)
-        {
-            var currentUser = await _userService.GetCurrentUserAsync();
-            OperationAccessUtil.HasAccessToOperationOrThrow(currentUser, operation);
+        {          
+            await _operationPermissionService.HasAccessToOperationOrThrow(operation);
         }
 
         IQueryable<Dataset> AddBasicFilters(IQueryable<Dataset> queryable)

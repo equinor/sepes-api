@@ -1,4 +1,5 @@
-﻿using Sepes.Azure.Service.Interface;
+﻿using Microsoft.Extensions.Configuration;
+using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
@@ -7,6 +8,7 @@ using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Interface;
+using Sepes.Common.Util;
 using Sepes.Common.Util.Provisioning;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -20,6 +22,7 @@ namespace Sepes.Provisioning.Service
 {
     public class ResourceProvisioningService : IResourceProvisioningService
     {
+        readonly IConfiguration _configuration;
         readonly IServiceProvider _serviceProvider;
         readonly IUserService _userService;
         readonly IRequestIdService _requestIdService;
@@ -41,6 +44,7 @@ namespace Sepes.Provisioning.Service
         readonly IDeleteOperationService _deleteOperationService;
 
         public ResourceProvisioningService(
+            IConfiguration configuration,
             IServiceProvider serviceProvider,
             IUserService userService,
             IRequestIdService requestIdService,
@@ -59,6 +63,7 @@ namespace Sepes.Provisioning.Service
             ICorsRuleProvisioningService corsRuleProvisioningService,
             IFirewallService firewallService)
         {
+            _configuration = configuration;
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
             _requestIdService = requestIdService ?? throw new ArgumentNullException(nameof(requestIdService));
@@ -90,7 +95,12 @@ namespace Sepes.Provisioning.Service
 
             if (!currentUser.Admin)
             {
-                throw new ForbiddenException("This action requires Admin");
+                var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
+
+                if (!isIntegrationTest)
+                {
+                    throw new ForbiddenException("This action requires Admin");
+                }                
             }
 
             var work = await _provisioningQueueService.ReceiveMessageAsync();
@@ -335,9 +345,9 @@ namespace Sepes.Provisioning.Service
                     }
                 }
             }
-            catch (Exception) //Outer loop catch 2
+            catch (Exception ex) //Outer loop catch 2
             {
-                _provisioningLogService.QueueParentProgressError(queueParentItem, "Unhandled exception occured");
+                _provisioningLogService.QueueParentProgressError(queueParentItem, "Unhandled exception occured", ex);
                 await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
             }
         }

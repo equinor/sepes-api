@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyUpdateServiceShould : StudyServiceTestBase
+    public class StudyUpdateServiceShould : ServiceTestBaseWithInMemoryDb
     {
         public StudyUpdateServiceShould()
             :base()

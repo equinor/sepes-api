@@ -82,7 +82,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
             builder.Services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
-            builder.Services.AddSingleton<IHealthService, HealthService>();
+            builder.Services.AddTransient<IHealthService, HealthService>();
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();

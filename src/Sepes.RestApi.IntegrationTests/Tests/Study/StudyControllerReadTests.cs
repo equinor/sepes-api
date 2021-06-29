@@ -34,7 +34,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             _ = await WithStudyCreatedByOtherUser(false);
             _ = await WithStudyCreatedByOtherUser(true);
 
-            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudyListUrl());
             ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
             Assert.Empty(studyReadConversation.Response.Content);
         }
@@ -53,7 +53,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var studyThisUserShouldSee = await WithStudyCreatedByOtherUser(true, new List<string> { myRole });
             var studyThisUserShouldNotSee = await WithStudyCreatedByOtherUser(true);
 
-            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudiesUrl());
+            var studyReadConversation = await GenericReader.ReadExpectSuccess<List<StudyListItemDto>>(_restHelper, GenericReader.StudyListUrl());
             ApiResponseBasicAsserts.ExpectSuccess<List<StudyListItemDto>>(studyReadConversation.Response);
             Assert.NotEmpty(studyReadConversation.Response.Content);
             Assert.NotNull(studyReadConversation.Response.Content.FirstOrDefault(s => s.Id == studyThisUserShouldSee.Id));
@@ -73,7 +73,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             var createdStudy = await WithStudyCreatedByOtherUser(restricted: true);         
 
-            var studyReadConversation = await GenericReader.ReadExpectFailure(_restHelper, GenericReader.StudyUrl(createdStudy.Id));
+            var studyReadConversation = await GenericReader.ReadExpectFailure(_restHelper, GenericReader.StudyDetailsUrl(createdStudy.Id));
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyReadConversation.Response, "does not have permission to perform operation");
         }
 
