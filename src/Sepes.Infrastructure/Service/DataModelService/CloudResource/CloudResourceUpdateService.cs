@@ -1,12 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Util;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
@@ -102,7 +104,19 @@ namespace Sepes.Infrastructure.Service.DataModelService
             await _db.SaveChangesAsync();
 
             return MapEntityToDto(resourceFromDb);
+        }
 
-        }          
+        public async Task UpdateTagsAsync(int resourceId, Dictionary<string, string> tags)
+        {
+            var resource = await GetInternalWithoutAccessCheckAsync(resourceId);
+
+            resource.Tags = TagUtils.TagDictionaryToString(tags);
+
+            var currentUser = await _userService.GetCurrentUserAsync();
+            resource.Updated = DateTime.UtcNow;
+            resource.UpdatedBy = currentUser.UserName;
+
+            await _db.SaveChangesAsync();
+        }
     }
 }

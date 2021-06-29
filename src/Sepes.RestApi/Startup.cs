@@ -14,6 +14,8 @@ using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Automapper;
+using Sepes.Infrastructure.Handlers;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
@@ -198,8 +200,9 @@ namespace Sepes.RestApi
             services.AddTransient<IContextUserService, ContextUserService>();            
             services.AddTransient<IUserModelService, UserModelDapperService>();
             services.AddTransient<IStudyPermissionService, StudyPermissionService>();
+            services.AddTransient<IOperationPermissionService, OperationPermissionService>();
             services.AddTransient<IUserPermissionService, UserPermissionService>();
-
+          
             //Data model services v2
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
@@ -219,6 +222,8 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
+            services.AddTransient<IDatasetFirewallService, DatasetFirewallService>();
+            services.AddTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationService>();            
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
@@ -240,6 +245,10 @@ namespace Sepes.RestApi
             services.AddScoped<IVariableService, VariableService>();
             services.AddTransient<ILookupService, LookupService>();
 
+            //Use cases and handlers
+            services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();
+            
+
             //Provisioning service
             services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
             services.AddTransient<ICloudResourceMonitoringService, CloudResourceMonitoringService>();
@@ -253,7 +262,8 @@ namespace Sepes.RestApi
             services.AddTransient<IFirewallService, FirewallService>();
             services.AddTransient<IOperationCheckService, OperationCheckService>();
             services.AddTransient<IOperationCompletedService, OperationCompletedService>();
-
+            services.AddTransient<ITagProvisioningService, TagProvisioningService>();
+           
             //Ext System Facade Services           
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();

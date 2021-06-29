@@ -2,7 +2,7 @@
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.RequestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using System.Collections.Generic;
@@ -181,7 +181,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task<string> GetResourceListAndAssert(int sandboxId, int resourcesSucceeded, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
             //Get resources list
-            var resourceListConversation = await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResources(sandboxId));
+            var resourceListConversation = await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResourcesUrl(sandboxId));
 
             string resourceRetryLink = null;
             var resourceIndex = 0;

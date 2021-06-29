@@ -30,24 +30,24 @@ namespace Sepes.RestApi.Controller
         {          
             var clientIp = IpAddressUtil.GetClientIp(HttpContext);        
 
-            var updatedStudy = await _studySpecificDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset, clientIp, cancellation);
-            return new JsonResult(updatedStudy);
+            var createdDataset = await _studySpecificDatasetService.CreateStudySpecificDatasetAsync(studyId, newDataset, clientIp, cancellation);
+            return new JsonResult(createdDataset);
         }
 
         [HttpPut("{studyId}/datasets/studyspecific/{datasetId}")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> UpdateStudySpecificDataSet(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
-            var updatedStudy = await _studySpecificDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
-            return new JsonResult(updatedStudy);
+            var updatedDatasetResult = await _studySpecificDatasetService.UpdateStudySpecificDatasetAsync(studyId, datasetId, updatedDataset);
+            return new JsonResult(updatedDatasetResult);
         }
 
         [HttpGet("{studyId}/datasets/{datasetId}/resources")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetDatasetResources(int studyId, int datasetId, CancellationToken cancellation = default)
         {
-            var updatedStudy = await _studySpecificDatasetService.GetDatasetResourcesAsync(studyId, datasetId, cancellation);
-            return new JsonResult(updatedStudy);
+            var datasetResource = await _studySpecificDatasetService.GetDatasetResourcesAsync(studyId, datasetId, cancellation);
+            return new JsonResult(datasetResource);
         }
     }
 }

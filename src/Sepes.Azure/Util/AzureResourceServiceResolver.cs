@@ -21,7 +21,7 @@ namespace Sepes.Azure.Util
             _ => null,
         };
 
-        public static IHasTags GetServiceWithTags(IServiceProvider serviceProvider, string resourceType) => resourceType switch
+        public static IServiceForTaggedResource GetServiceWithTags(IServiceProvider serviceProvider, string resourceType) => resourceType switch
         {
             AzureResourceType.ResourceGroup => serviceProvider.GetRequiredService<IAzureResourceGroupService>(),
             AzureResourceType.VirtualNetwork => serviceProvider.GetRequiredService<IAzureVirtualNetworkService>(),

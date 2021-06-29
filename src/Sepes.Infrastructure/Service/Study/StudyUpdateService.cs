@@ -3,12 +3,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
+using Sepes.Common.Util;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Common.Util;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
@@ -18,7 +20,8 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IStudyLogoDeleteService _studyLogoDeleteService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
-        
+        readonly IUpdateStudyWbsHandler _updateStudyWbsHandler;
+
         public StudyUpdateService(SepesDbContext db,
             IMapper mapper,
             ILogger<StudyUpdateService> logger,
@@ -27,16 +30,19 @@ namespace Sepes.Infrastructure.Service
             IStudyLogoReadService studyLogoReadService,
             IStudyLogoCreateService studyLogoCreateService,
             IStudyLogoDeleteService studyLogoDeleteService,
-            IStudyWbsValidationService studyWbsValidationService
+            IStudyWbsValidationService studyWbsValidationService,
+            IUpdateStudyWbsHandler updateStudyWbsHandler
           )
             : base(db, mapper, logger, userService, studyEfModelService, studyLogoReadService)
         {
             _studyLogoCreateService = studyLogoCreateService;
             _studyLogoDeleteService = studyLogoDeleteService;
             _studyWbsValidationService = studyWbsValidationService;
+
+            _updateStudyWbsHandler = updateStudyWbsHandler;
         }
 
-        public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null)
+        public async Task<Study> UpdateMetadataAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null, CancellationToken cancellationToken = default)
         {
             if (studyId <= 0)
             {
@@ -45,7 +51,7 @@ namespace Sepes.Infrastructure.Service
 
             GenericNameValidation.ValidateName(updatedStudy.Name);
 
-            var studyFromDb = await GetStudyForUpdateAsync(studyId, UserOperation.Study_Update_Metadata);         
+            var studyFromDb = await GetStudyForUpdateAsync(studyId, UserOperation.Study_Update_Metadata);
 
             if (updatedStudy.Name != studyFromDb.Name)
             {
@@ -70,8 +76,11 @@ namespace Sepes.Infrastructure.Service
             if (updatedStudy.WbsCode != studyFromDb.WbsCode)
             {
                 studyFromDb.WbsCode = updatedStudy.WbsCode;
-                
-                await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyFromDb);
+
+                await _studyWbsValidationService.ValidateForStudyUpdate(studyFromDb, await _studyModelService.HasActiveDatasetsAsync(studyFromDb.Id)
+                        || await _studyModelService.HasActiveSandboxesAsync(studyFromDb.Id));
+
+                await _updateStudyWbsHandler.Handle(studyFromDb, cancellationToken);
             }
 
             if (updatedStudy.DeleteLogo)
@@ -80,11 +89,11 @@ namespace Sepes.Infrastructure.Service
                 {
                     studyFromDb.LogoUrl = "";
                     await _studyLogoDeleteService.DeleteAsync(_mapper.Map<Study>(updatedStudy));
-                }                
+                }
             }
             else if (logo != null)
             {
-                studyFromDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyFromDb.Id, logo);          
+                studyFromDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyFromDb.Id, logo);
             }
 
             studyFromDb.Updated = DateTime.UtcNow;
@@ -116,7 +125,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<Study> GetStudyForUpdateAsync(int studyId, UserOperation userOperation)
         {
-           return await _studyModelService.GetByIdAsync(studyId, userOperation);
+            return await _studyModelService.GetByIdAsync(studyId, userOperation);
         }
     }
 }

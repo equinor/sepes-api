@@ -1,6 +1,6 @@
 ﻿using Sepes.Common.Util;
-using Sepes.RestApi.IntegrationTests.Dto;
-using Sepes.RestApi.IntegrationTests.Extensions;
+using Sepes.RestApi.IntegrationTests.Setup.Extensions;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;

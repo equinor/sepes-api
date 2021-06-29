@@ -11,6 +11,6 @@ namespace Sepes.Infrastructure.Service.Interface
 
         Task<VmExtendedDto> GetExtendedInfo(int vmId, CancellationToken cancellationToken = default);
 
-        Task<VmExternalLink> GetExternalLink(int vmId);
+        Task<VmExternalLink> GetExternalLink(int vmId, CancellationToken cancellationToken = default);
     }
 }

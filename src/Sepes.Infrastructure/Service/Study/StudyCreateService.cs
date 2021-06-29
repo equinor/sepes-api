@@ -9,7 +9,6 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -19,6 +18,7 @@ namespace Sepes.Infrastructure.Service
 {
     public class StudyCreateService : StudyServiceBase, IStudyCreateService
     {
+        readonly IOperationPermissionService _operationPermissionService;
         readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IDatasetCloudResourceService _datasetCloudResourceService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
@@ -27,12 +27,14 @@ namespace Sepes.Infrastructure.Service
             IUserService userService,
             IStudyEfModelService studyModelService,
             IStudyLogoCreateService studyLogoCreateService,
-            IStudyLogoReadService studyLogoReadService,
+            IStudyLogoReadService studyLogoReadService,            
+            IOperationPermissionService operationPermissionService,
             IDatasetCloudResourceService datasetCloudResourceService,
             IStudyWbsValidationService studyWbsValidationService
            )
             : base(db, mapper, logger, userService, studyModelService, studyLogoReadService)
         {
+            _operationPermissionService = operationPermissionService;
             _studyLogoCreateService = studyLogoCreateService;
             _datasetCloudResourceService = datasetCloudResourceService;
             _studyWbsValidationService = studyWbsValidationService;
@@ -41,14 +43,14 @@ namespace Sepes.Infrastructure.Service
         public async Task<Study> CreateAsync(StudyCreateDto newStudyDto, IFormFile logo = null, CancellationToken cancellation = default)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
-            OperationAccessUtil.HasAccessToOperationOrThrow(currentUser, UserOperation.Study_Create);
+            await _operationPermissionService.HasAccessToOperationOrThrow(UserOperation.Study_Create);
             GenericNameValidation.ValidateName(newStudyDto.Name);
 
             var studyDb = _mapper.Map<Study>(newStudyDto);
        
             MakeCurrentUserOwnerOfStudy(studyDb, currentUser);
             
-            await _studyWbsValidationService.ValidateForStudyCreateOrUpdate(studyDb);
+            await _studyWbsValidationService.ValidateForStudyCreate(studyDb);
 
             studyDb = await _studyModelService.AddAsync(studyDb);
 

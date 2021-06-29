@@ -79,7 +79,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
             builder.Services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
-            builder.Services.AddSingleton<IHealthService, HealthService>();
+            builder.Services.AddTransient<IHealthService, HealthService>();
 
             //Domain Model Services
             builder.Services.AddTransient<ILookupService, LookupService>();
@@ -96,10 +96,11 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             builder.Services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
 
-            //Business logic services
             builder.Services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             builder.Services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             builder.Services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
+            builder.Services.AddTransient<IWbsCodeCacheModelService, WbsCodeCacheModelService>();
+
 
             //Provisioning service            
             builder.Services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
@@ -115,8 +116,10 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IFirewallService, FirewallService>();
             builder.Services.AddTransient<IOperationCheckService, OperationCheckService>();
             builder.Services.AddTransient<IOperationCompletedService, OperationCompletedService>();
+            builder.Services.AddTransient<ITagProvisioningService, TagProvisioningService>();           
 
-            //Ext System Facade Services          
+
+            //IMPORT SERVICE
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
 

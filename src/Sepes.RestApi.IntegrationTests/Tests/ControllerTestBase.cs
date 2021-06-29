@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.Setup.Seeding;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
@@ -105,16 +105,17 @@ namespace Sepes.RestApi.IntegrationTests
         }
 
         protected async Task<Study> WithStudyCreatedByCurrentUser(bool restricted = false, List<string> additionalRolesForCurrentUser = null,
-            List<string> rolesForOtherUser = null)
+            List<string> rolesForOtherUser = null, bool addDatasets = false)
         {
-            return await WithStudy(true, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser);
+            return await WithStudy(true, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, addDatasets: addDatasets);
         }
 
         protected async Task<Study> WithStudyCreatedByOtherUser(bool restricted = false, List<string> additionalRolesForCurrentUser = null,
-            List<string> rolesForOtherUser = null)
+            List<string> rolesForOtherUser = null, bool addDatasets = false)
         {
-            return await WithStudy(false, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser);
+            return await WithStudy(false, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, addDatasets: addDatasets);
         }
+       
 
         protected async Task<ApiResponseWrapper> ProcessWorkQueue(int timesToRun = 1)
         {

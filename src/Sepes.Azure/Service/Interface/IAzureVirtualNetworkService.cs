@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service.Interface
 {
-    public interface IAzureVirtualNetworkService : IHasProvisioningState, IHasTags, IPerformResourceProvisioning
+    public interface IAzureVirtualNetworkService : IHasProvisioningState, IServiceForTaggedResource, IPerformResourceProvisioning
     {       
         Task EnsureSandboxSubnetHasServiceEndpointForStorage(string resourceGroupName, string networkName);
     }

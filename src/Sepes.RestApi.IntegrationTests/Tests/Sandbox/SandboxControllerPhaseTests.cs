@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
-using Sepes.RestApi.IntegrationTests.RequestHelpers;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
@@ -100,7 +100,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestsExpectSuccess(int sandboxId)
         {
-            var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxUrl(sandboxId));
+            var sandboxDetailsConversation = await GenericReader.ReadAndAssertExpectSuccess<SandboxDetails>(_restHelper, GenericReader.SandboxDetailsUrl(sandboxId));
             SandboxDetailsAsserts.ReadyForPhaseShiftExpectSuccess(sandboxDetailsConversation.Response);
 
             var phaseShiftConversation = await GenericPoster.PostAndExpectSuccess<SandboxDetails>(_restHelper, GenericPoster.SandboxNextPhase(sandboxId));

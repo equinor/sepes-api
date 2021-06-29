@@ -1,7 +1,7 @@
 ﻿using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Model;
 using Sepes.Common.Response.Sandbox;
-using Sepes.RestApi.IntegrationTests.Dto;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Xunit;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox

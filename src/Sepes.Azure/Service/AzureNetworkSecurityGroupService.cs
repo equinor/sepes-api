@@ -2,16 +2,15 @@
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
+using Sepes.Azure.Util.Provisioning;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
-using Sepes.Azure.Service.Interface;
+using Sepes.Common.Exceptions;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
-using Sepes.Azure.Util;
-using Sepes.Azure.Util.Provisioning;
-using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
@@ -153,36 +152,24 @@ namespace Sepes.Azure.Service
             return TagUtils.TagReadOnlyDictionaryToDictionary(rg.Tags);
         }
 
-        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag)
+        public async Task UpdateTagAsync(string resourceGroupName, string resourceName, KeyValuePair<string, string> tag, CancellationToken cancellationToken = default)
         {
             var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
-
-            //Ensure resource is is managed by this instance
+        
             EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
             _ = await resource.UpdateTags().WithoutTag(tag.Key).ApplyTagsAsync();
             _ = await resource.UpdateTags().WithTag(tag.Key, tag.Value).ApplyTagsAsync();
-        }        
+        }
 
-        public async Task<Dictionary<string, NsgRuleDto>> GetNsgRulesContainingName(string resourceGroupName, string nsgName, string nameContains, CancellationToken cancellationToken = default)
+        public async Task SetTagsAsync(string resourceGroupName, string resourceName, Dictionary<string, string> tags, CancellationToken cancellationToken = default)
         {
-            var nsg = await GetResourceInternalAsync(resourceGroupName, nsgName);
+            var resource = await GetResourceInternalAsync(resourceGroupName, resourceName);
 
-            var result = new Dictionary<string, NsgRuleDto>();
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
 
-            foreach (var curRuleKvp in nsg.SecurityRules)
-            {
-                if (curRuleKvp.Value.Name.Contains(nameContains))
-                {
-                    if (!result.ContainsKey(curRuleKvp.Value.Name))
-                    {
-                        result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol });
-                    }
-                }
-            }
-
-            return result;
-        }  
+            _ = await resource.Update().WithTags(tags).ApplyAsync(cancellationToken);
+        }        
         
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
