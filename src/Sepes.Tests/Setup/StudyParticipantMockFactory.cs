@@ -13,11 +13,11 @@ namespace Sepes.Tests.Setup
 {
     public class StudyParticipantMockFactory
     {
-        public static IStudyParticipantLookupService GetStudyParticipantLookupService(ServiceProvider serviceProvider)
+        public static IStudyParticipantSearchService GetStudyParticipantLookupService(ServiceProvider serviceProvider)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var logger = serviceProvider.GetService<ILogger<StudyParticipantLookupService>>();
+            var logger = serviceProvider.GetService<ILogger<StudyParticipantSearchService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
             var studyModelService = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
@@ -33,7 +33,7 @@ namespace Sepes.Tests.Setup
 
             var cloudResourceOperationUpdateService = new Mock<ICloudResourceOperationUpdateService>();       
 
-            return new StudyParticipantLookupService(db, logger, mapper, userService.Object, azureUserLookupService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
+            return new StudyParticipantSearchService(db, logger, mapper, userService.Object, azureUserLookupService.Object, studyModelService, provisioningQueueService.Object, resourceReadServiceMock.Object, cloudResourceOperationCreateService.Object, cloudResourceOperationUpdateService.Object);
         }
     }
 }

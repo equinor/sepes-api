@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyParticipantLookupBase : ServiceTestBaseWithInMemoryDb
+    public class StudyParticipantSearchTestBase : ServiceTestBaseWithInMemoryDb
     {
         protected async Task<SepesDbContext> RefreshAndSeedTestDatabase()
         {
