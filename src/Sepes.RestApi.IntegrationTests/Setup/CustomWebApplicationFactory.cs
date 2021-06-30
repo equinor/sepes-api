@@ -50,7 +50,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                         typeof(DbContextOptions<SepesDbContext>));
 
                 services.Remove(descriptor);
-               
+
+                services.SwapTransient<IDatabaseConnectionStringProvider, IntegrationTestDatabaseConnectionStringProvider>();
                 services.AddSingleton<IContextUserService>(new ContextUserServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));             
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
                 services.AddScoped<ICombinedUserLookupService, AzureCombinedUserLookupServiceMock>();              

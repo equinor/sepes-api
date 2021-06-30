@@ -183,12 +183,12 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
                 services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-               
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();               
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
             //Plumbing          
+            services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
             services.AddTransient<IRequestIdService, RequestIdService>();          
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
@@ -228,7 +228,7 @@ namespace Sepes.RestApi
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
-            services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
+            services.AddTransient<IStudyParticipantSearchService, StudyParticipantSearchService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
             services.AddTransient<IStudyParticipantRemoveService, StudyParticipantRemoveService>();
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
@@ -243,7 +243,7 @@ namespace Sepes.RestApi
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
 
             //Use cases and handlers
             services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();

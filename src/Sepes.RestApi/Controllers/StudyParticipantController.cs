@@ -15,29 +15,18 @@ namespace Sepes.RestApi.Controller
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
     public class StudyParticipantController : ControllerBase
-    {
-        readonly IStudyParticipantLookupService _studyParticipantLookupService;
+    {       
         readonly IStudyParticipantCreateService _studyParticipantCreateService;
         readonly IStudyParticipantRemoveService _studyParticipantRemoveService;
 
-        public StudyParticipantController(
-            IStudyParticipantLookupService studyParticipantLookupService,
+        public StudyParticipantController(         
             IStudyParticipantCreateService studyParticipantCreateService,
             IStudyParticipantRemoveService studyParticipantRemoveService)
-        {
-            _studyParticipantLookupService = studyParticipantLookupService;
+        {          
             _studyParticipantCreateService = studyParticipantCreateService;
             _studyParticipantRemoveService = studyParticipantRemoveService;
         }
-
-        //Get list of lookup items
-        [HttpGet("participants")]
-        [AuthorizeForScopes(Scopes = new[] { "User.Read.All" })]
-        public async Task<IActionResult> GetLookupAsync(string search, CancellationToken cancellationToken = default)
-        {
-            var studyParticipants = await _studyParticipantLookupService.GetLookupAsync(search, cancellationToken: cancellationToken);
-            return new JsonResult(studyParticipants);
-        }
+       
 
         [HttpPut("studies/{studyId}/participants/{role}")]
         public async Task<IActionResult> AddParticipantAsync(int studyId, ParticipantLookupDto user, string role)
