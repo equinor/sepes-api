@@ -183,12 +183,12 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
                 services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-               
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();               
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
             //Plumbing          
+            services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
             services.AddTransient<IRequestIdService, RequestIdService>();          
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
@@ -200,8 +200,9 @@ namespace Sepes.RestApi
             services.AddTransient<IContextUserService, ContextUserService>();            
             services.AddTransient<IUserModelService, UserModelDapperService>();
             services.AddTransient<IStudyPermissionService, StudyPermissionService>();
+            services.AddTransient<IOperationPermissionService, OperationPermissionService>();
             services.AddTransient<IUserPermissionService, UserPermissionService>();
-
+          
             //Data model services v2
             services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             services.AddTransient<IStudyListModelService, StudyListModelService>();
@@ -221,11 +222,13 @@ namespace Sepes.RestApi
             services.AddTransient<IStudyUpdateService, StudyUpdateService>();
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
+            services.AddTransient<IDatasetFirewallService, DatasetFirewallService>();
+            services.AddTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationService>();            
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
             services.AddTransient<IStudyDatasetService, StudyDatasetService>();
-            services.AddTransient<IStudyParticipantLookupService, StudyParticipantLookupService>();
+            services.AddTransient<IStudyParticipantSearchService, StudyParticipantSearchService>();
             services.AddTransient<IStudyParticipantCreateService, StudyParticipantCreateService>();
             services.AddTransient<IStudyParticipantRemoveService, StudyParticipantRemoveService>();
             services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
@@ -240,7 +243,7 @@ namespace Sepes.RestApi
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<ILookupService, LookupService>();
+            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
 
             //Use cases and handlers
             services.AddTransient<IUpdateStudyWbsHandler, UpdateStudyWbsHandler>();

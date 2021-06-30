@@ -1,6 +1,5 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
@@ -15,11 +14,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyDetailsModelService : DapperModelWithPermissionServiceBase, IStudyDetailsModelService
     {
-        public StudyDetailsModelService(IConfiguration configuration, ILogger<StudyDetailsModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, logger, userService, studyPermissionService)
+        public StudyDetailsModelService(ILogger<StudyDetailsModelService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(logger, databaseConnectionStringProvider, userService, studyPermissionService)
         {
 
-        }      
+        }
 
         public async Task<StudyDetailsDapper> GetStudyDetailsAsync(int studyId)
         {
@@ -39,14 +38,14 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<IEnumerable<DatasetForStudyDetailsDapper>> GetDatasetsForStudyDetailsAsync(int studyId)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
                     await connection.OpenAsync();
                 }
 
-                var query = "SELECT DISTINCT ds.[Id] as DatasetId, ds.[Name] as DatasetName, (SELECT CASE WHEN ds.StudySpecific = 1 THEN sds.StudyId ELSE NULL END) as [StudyId],";               
+                var query = "SELECT DISTINCT ds.[Id] as DatasetId, ds.[Name] as DatasetName, (SELECT CASE WHEN ds.StudySpecific = 1 THEN sds.StudyId ELSE NULL END) as [StudyId],";
                 query += " sb.[Id] as [SandboxId], sb.[Name] as [SandboxName]";
                 query += " FROM [StudyDatasets] sds";
                 query += " left join [dbo].[Datasets] ds on sds.DatasetId = ds.Id";
@@ -67,11 +66,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
                              entityDictionary.Add(dataset.DatasetId, datasetEntry);
                          }
 
-                         if(sandbox != null && sandbox.SandboxId > 0)
+                         if (sandbox != null && sandbox.SandboxId > 0)
                          {
                              datasetEntry.Sandboxes.Add(sandbox);
                          }
-                       
+
 
                          return datasetEntry;
                      },
@@ -86,7 +85,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<IEnumerable<StudyParticipantForStudyDetailsDapper>> GetParticipantsForStudyDetailsAsync(int studyId)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
@@ -95,7 +94,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
                 var query = "SELECT u.[Id] as UserId, u.FullName, u.UserName, u.EmailAddress, sp.RoleName as [Role]";
                 query += " FROM [dbo].[StudyParticipants] sp";
-                query += " LEFT JOIN [dbo].[Users] u on sp.UserId = u.Id";            
+                query += " LEFT JOIN [dbo].[Users] u on sp.UserId = u.Id";
                 query += " WHERE sp.[StudyId] = @studyId";
 
                 return await RunDapperQueryMultiple<StudyParticipantForStudyDetailsDapper>(query, new { studyId });

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Model;
@@ -11,8 +10,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyResultsAndLearningsModelService : DapperModelWithPermissionServiceBase, IStudyResultsAndLearningsModelService
     {
-        public StudyResultsAndLearningsModelService(IConfiguration configuration, ILogger<StudyResultsAndLearningsModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, logger, userService, studyPermissionService)
+        public StudyResultsAndLearningsModelService(ILogger<StudyResultsAndLearningsModelService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(logger, databaseConnectionStringProvider, userService, studyPermissionService)
         {
 
         }        

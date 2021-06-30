@@ -16,12 +16,12 @@ using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service
 {
-    public class StudyParticipantLookupService : StudyParticipantBaseService, IStudyParticipantLookupService
+    public class StudyParticipantSearchService : StudyParticipantBaseService, IStudyParticipantSearchService
     {      
         readonly ICombinedUserLookupService _combinedUserLookupService;       
 
-        public StudyParticipantLookupService(SepesDbContext db,
-            ILogger<StudyParticipantLookupService> logger,
+        public StudyParticipantSearchService(SepesDbContext db,
+            ILogger<StudyParticipantSearchService> logger,
             IMapper mapper,
             IUserService userService,
             ICombinedUserLookupService combinedUserLookupService,
@@ -35,7 +35,7 @@ namespace Sepes.Infrastructure.Service
             _combinedUserLookupService = combinedUserLookupService;            
         }
 
-        public async Task<IEnumerable<ParticipantLookupDto>> GetLookupAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<ParticipantLookupDto>> SearchAsync(string searchText, int limit = 30, CancellationToken cancellationToken = default)
         { 
             if (_userService.IsMockUser()) //If mock user, he can only add him self
             {

@@ -28,9 +28,11 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<PreApprovedDatasetModelService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
-            var service = new PreApprovedDatasetModelService(config, db, logger, userService.Object, studyPermissionService);
+            var operationPermissionService = OperationPermissionServiceMockFactory.Create(userService.Object);
+
+            var service = new PreApprovedDatasetModelService(config, db, logger, studyPermissionService, operationPermissionService);
             return service;
         }
 
@@ -57,7 +59,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<DatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
             var preApprovedDatasetModelService = GetPreApprovedDatasetModelService(datasets);
 
@@ -74,11 +76,20 @@ namespace Sepes.Tests.Setup
             var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
 
-            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
             var studySpecificDatasetModelService = GetStudySpecificDatasetModelService(datasets);
 
             return new StudyDatasetService(db, mapper, logger, userService.Object, studyPermissionService, studyModelServiceMock.Object, studySpecificDatasetModelService.Object);          
+        }
+
+        public static IDatasetFirewallService GetStudyDatasetFirewallService(ServiceProvider serviceProvider, string serverIp)
+        {           
+            var logger = serviceProvider.GetService<ILogger<DatasetFirewallService>>();
+            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var ipService = PublicIpServiceMockFactory.CreateSucceedingService(serviceProvider, serverIp);
+
+            return new DatasetFirewallService(logger, userService.Object, ipService);
         }
 
         public static IStudySpecificDatasetService GetStudySpecificDatasetService(ServiceProvider serviceProvider, List<Study> studies = null, List<Dataset> datasets = null)
@@ -94,7 +105,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyPermissionService = StudyServiceMockFactory.StudyPermissionService(serviceProvider, userService.Object);
+            var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
             var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync((int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s => s.Id == a) : null);

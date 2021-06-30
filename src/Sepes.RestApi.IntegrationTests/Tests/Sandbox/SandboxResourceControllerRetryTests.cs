@@ -181,7 +181,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task<string> GetResourceListAndAssert(int sandboxId, int resourcesSucceeded, int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT, int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
             //Get resources list
-            var resourceListConversation = await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResources(sandboxId));
+            var resourceListConversation = await GenericReader.ReadAndAssertExpectSuccess<List<SandboxResourceLight>>(_restHelper, GenericReader.SandboxResourcesUrl(sandboxId));
 
             string resourceRetryLink = null;
             var resourceIndex = 0;

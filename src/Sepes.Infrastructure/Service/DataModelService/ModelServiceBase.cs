@@ -6,23 +6,23 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public abstract class ModelServiceBase
     {
-        protected readonly ILogger _logger;
-        protected readonly IConfiguration _configuration;       
+        protected readonly ILogger _logger;            
 
-        public ModelServiceBase(IConfiguration configuration, ILogger logger)
-        {
-            _configuration = configuration;           
+        public ModelServiceBase(ILogger logger)
+        {                   
             _logger = logger;            
         }
     }   
 
     public class EfModelServiceBase : ModelServiceBase
     {
-        protected readonly SepesDbContext _db;      
+        protected readonly SepesDbContext _db;
+        protected readonly IConfiguration _configuration;
 
         public EfModelServiceBase(IConfiguration configuration, SepesDbContext db, ILogger logger)
-                   : base(configuration, logger)
+                   : base(logger)
         {
+            _configuration = configuration;
             _db = db;          
         }
     }     

@@ -9,8 +9,10 @@ using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.IntegrationTests.Services;
 using Sepes.RestApi.IntegrationTests.Setup.Scenarios;
+using Sepes.Test.Common.ServiceMocks;
 using Sepes.Tests.Common.Extensions;
 using Sepes.Tests.Common.Mocks.Azure;
 using System;
@@ -48,12 +50,14 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                         typeof(DbContextOptions<SepesDbContext>));
 
                 services.Remove(descriptor);
-               
+
+                services.SwapTransient<IDatabaseConnectionStringProvider, IntegrationTestDatabaseConnectionStringProvider>();
                 services.AddSingleton<IContextUserService>(new ContextUserServiceMock(_isEmployee, _isAdmin, _isSponsor, _isDatasetAdmin));             
                 services.AddScoped<IAzureUserService, AzureUserServiceMock>();
                 services.AddScoped<ICombinedUserLookupService, AzureCombinedUserLookupServiceMock>();              
 
                 services.SwapTransientWithSingleton<IAzureQueueService, AzureQueueServiceMock>();
+                services.SwapTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationServiceMock>();
 
                 if (_mockServicesForScenarioProvider != null)
                 {
@@ -107,6 +111,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
                            {
                                [ConfigConstants.IS_INTEGRATION_TEST] = "true",
                                ["AllowCorsDomains"] = "http://localhost:80",
+                               ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
                                ["CostAllocationTypeTagName"] = "INTTEST-CostAllocationType",
                                ["CostAllocationCodeTagName"] = "INTTEST-CostAllocationCode",
                                ["DatasetStorageAccountRoleAssignmentId"] = "9145904e-a892-473a-b559-8d87b9858407" 

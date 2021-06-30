@@ -27,19 +27,19 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(false, false, true, false, false)]
         [InlineData(false, true, true, false, false)]
 
-        //Sponsor can not delete studies he did not create
+        //Sponsor can not close studies he did not create
         [InlineData(false, false, false, true, false)]
         [InlineData(false, true, false, true, false)]
         [InlineData(false, false, true, true, false)]
         [InlineData(false, true, true, true, false)]
 
-        //Dataset admin cannot delete any studies
+        //Dataset admin cannot close any studies
         [InlineData(false, false, false, false, true)]
         [InlineData(false, false, true, false, true)]
         [InlineData(false, true, false, false, true)]
         [InlineData(true, false, false, false, true)]
 
-        //These roles cannot delete study
+        //These roles cannot close study
         [InlineData(false, false, false, false, false, StudyRoles.StudyViewer)]
         [InlineData(false, false, false, false, false, StudyRoles.VendorAdmin)]
         [InlineData(false, false, false, false, false, StudyRoles.VendorContributor)]
@@ -53,7 +53,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(false, false, false, false, true, StudyRoles.VendorContributor)]
 
 
-        public async Task DeleteStudy_WithoutRequiredStudyRole_ShouldFail(bool createdByCurrentUser, bool restricted, bool isEmployee, bool isSponsor, bool isDatasetAdmin, string studyRole  = null)
+        public async Task CloseStudy_WithoutRequiredStudyRole_ShouldFail(bool createdByCurrentUser, bool restricted, bool isEmployee, bool isSponsor, bool isDatasetAdmin, string studyRole  = null)
         { 
             SetScenario(isEmployee: isEmployee, isSponsor: isSponsor, isDatasetAdmin: isDatasetAdmin);
 
@@ -92,7 +92,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, true, false, false, StudyRoles.SponsorRep)]
 
 
-        public async Task DeleteStudy_WithRequiredRole_ShouldSucceed(bool createdByCurrentUser, bool restricted, bool isAdmin, bool isSponsor, string studyRole = null)
+        public async Task CloseStudy_WithRequiredRole_ShouldSucceed(bool createdByCurrentUser, bool restricted, bool isAdmin, bool isSponsor, string studyRole = null)
         {
             SetScenario(isAdmin: isAdmin, isSponsor: isSponsor);
             await WithUserSeeds();
