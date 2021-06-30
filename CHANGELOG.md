@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/equinor/sepes-api/compare/0.4.24...0.5.0) (2021-06-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removed support for CRUD operations for pre-approved datasets
+
+* test: DatasetFileService
+
+### Bug Fixes
+
+* **study:** increase logo sas token timeout to 61 min ([#726](https://github.com/equinor/sepes-api/issues/726)) ([00c5a6f](https://github.com/equinor/sepes-api/commit/00c5a6f19e266ddafc700143c0d339829c3a5b72))
+* **study:** issue with role list and admin role ([#716](https://github.com/equinor/sepes-api/issues/716)) ([15bcc16](https://github.com/equinor/sepes-api/commit/15bcc163dddb225782ca6ea9a7a9e4d4dc6cbc1e)), closes [#710](https://github.com/equinor/sepes-api/issues/710)
+* **study:** participant search ([#723](https://github.com/equinor/sepes-api/issues/723)) ([66e0267](https://github.com/equinor/sepes-api/commit/66e0267298658966203b6a179d2fa6cc46f95a6c)), closes [#712](https://github.com/equinor/sepes-api/issues/712)
+* **study:** wbs cache use dapper and isolate errors ([#724](https://github.com/equinor/sepes-api/issues/724)) ([ae49bfa](https://github.com/equinor/sepes-api/commit/ae49bfadd0e5ef278a88827e7db3b10df99f63c1)), closes [#720](https://github.com/equinor/sepes-api/issues/720)
+* **worker:** lifespan of health service now transient ([#722](https://github.com/equinor/sepes-api/issues/722)) ([091db37](https://github.com/equinor/sepes-api/commit/091db3773dc66d17593b2ce68c537a3a09c54f36))
+
+
+* improve study read rbac coverage ([#714](https://github.com/equinor/sepes-api/issues/714)) ([b031107](https://github.com/equinor/sepes-api/commit/b031107d8b7ed3c0b9fa524f2b625e14ae19ee0f)), closes [#713](https://github.com/equinor/sepes-api/issues/713)
+
 ### [0.4.24](https://github.com/equinor/sepes-api/compare/0.4.23...0.4.24) (2021-06-25)
 
 
