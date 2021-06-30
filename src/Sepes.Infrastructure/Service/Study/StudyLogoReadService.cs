@@ -78,7 +78,7 @@ namespace Sepes.Infrastructure.Service
 
         async Task<UriBuilder> CreateFileDownloadUriBuilder(string containerName, CancellationToken cancellationToken = default)
         {
-            return await _azureStorageAccountTokenService.CreateUriBuilder(containerName, cancellationToken: cancellationToken);
+            return await _azureStorageAccountTokenService.CreateUriBuilder(containerName, expiresOnMinutes: 61, cancellationToken: cancellationToken);
         }
 
         void DecorateLogoUrlWithSAS(UriBuilder uriBuilder, IHasLogoUrl hasLogo)
