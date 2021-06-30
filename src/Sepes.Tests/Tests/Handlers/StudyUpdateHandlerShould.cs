@@ -1,13 +1,14 @@
 ﻿using Sepes.Common.Dto.Study;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using Xunit;
 
-namespace Sepes.Tests.Services.DomainServices
+namespace Sepes.Tests.Handlers
 {
-    public class StudyUpdateServiceShould : ServiceTestBaseWithInMemoryDb
+    public class StudyUpdateHandlerShould : TestBaseWithInMemoryDb
     {
-        public StudyUpdateServiceShould()
+        public StudyUpdateHandlerShould()
             :base()
         {
            
@@ -40,8 +41,8 @@ namespace Sepes.Tests.Services.DomainServices
                 Vendor = vendor
             };
 
-            var studyUpdateService = StudyServiceMockFactory.UpdateService(_serviceProvider);
-            await Assert.ThrowsAsync<ArgumentException>(() => studyUpdateService.UpdateMetadataAsync(createdStudy.Id, studyWithoutReqFields));
+            var studyUpdateHandler = StudyUpdateHandlerMockFactory.Create(_serviceProvider);
+            await Assert.ThrowsAsync<ArgumentException>(() => studyUpdateHandler.UpdateAsync(createdStudy.Id, studyWithoutReqFields));
         }        
     }
 }

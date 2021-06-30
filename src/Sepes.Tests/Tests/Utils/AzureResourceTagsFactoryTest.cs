@@ -1,13 +1,13 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
-using Sepes.Tests.Services;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System.Collections.Generic;
 using Xunit;
 
 namespace Sepes.Tests.Util
 {
-    public class AzureResourceTagsFactoryTest : ServiceTestBaseWithInMemoryDb
+    public class AzureResourceTagsFactoryTest : TestBaseWithInMemoryDb
     {
         [Fact]
         public void SandboxResourceTags_ShouldReturnCorrectValues()

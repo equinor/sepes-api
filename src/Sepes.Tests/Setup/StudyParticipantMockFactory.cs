@@ -20,7 +20,7 @@ namespace Sepes.Tests.Setup
             var logger = serviceProvider.GetService<ILogger<StudyParticipantSearchService>>();
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
 
-            var studyModelService = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
+            var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
 
             var azureUserLookupService = new Mock<ICombinedUserLookupService>();
             azureUserLookupService.Setup(s => s.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new System.Collections.Generic.Dictionary<string, Azure.Dto.AzureUserDto>());

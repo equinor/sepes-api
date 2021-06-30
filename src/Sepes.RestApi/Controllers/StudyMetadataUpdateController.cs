@@ -4,8 +4,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.Study;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System.Net.Mime;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -15,34 +16,34 @@ namespace Sepes.RestApi.Controller
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class StudyUpdateController : ControllerBase
+    public class StudyMetadataUpdateController : ControllerBase
     { 
-        readonly IStudyUpdateService _studyUpdateService;
+        readonly IStudyUpdateHandler _studyUpdateHandler;
         readonly IStudyDetailsService _studyDetailsService;
 
-        public StudyUpdateController(IStudyUpdateService studyUpdateService, IStudyDetailsService studyDetailsService)
-        { 
-            _studyUpdateService = studyUpdateService;
+        public StudyMetadataUpdateController(IStudyUpdateHandler studyUpdateHandler, IStudyDetailsService studyDetailsService)
+        {
+            _studyUpdateHandler = studyUpdateHandler;
             _studyDetailsService = studyDetailsService;
-        } 
-       
+        }        
 
         [HttpPut("{studyId}/details")]       
         public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId,
                [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyUpdateDto study,
                IFormFile image = null)
         {
-            var updatedStudy = await _studyUpdateService.UpdateMetadataAsync(studyId, study, image);
-            var studyDetails = await _studyDetailsService.Get(studyId);
-            return new JsonResult(studyDetails);
-        }
+            var spUpdate = Stopwatch.StartNew();
 
-        [HttpPut("{studyId}/resultsandlearnings")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> UpdateResultsAndLearningsAsync(int studyId, StudyResultsAndLearningsDto resultsAndLearnings)
-        {
-            var resultsAndLearningsFromDb = await _studyUpdateService.UpdateResultsAndLearningsAsync(studyId, resultsAndLearnings);
-            return new JsonResult(resultsAndLearningsFromDb);
-        }
+            var updatedStudy = await _studyUpdateHandler.UpdateAsync(studyId, study, image);
+
+            var afterUpdate = spUpdate.ElapsedMilliseconds;
+            spUpdate.Restart();
+
+            var studyDetails = await _studyDetailsService.Get(studyId);
+
+            var afterGetGetauls = spUpdate.ElapsedMilliseconds;          
+
+            return new JsonResult(studyDetails);
+        }       
     }
 }

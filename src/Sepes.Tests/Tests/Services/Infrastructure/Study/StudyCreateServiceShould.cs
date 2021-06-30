@@ -1,12 +1,13 @@
 ﻿using Sepes.Common.Dto.Study;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyCreateServiceShould : ServiceTestBaseWithInMemoryDb
+    public class StudyCreateServiceShould : TestBaseWithInMemoryDb
     {
         [Theory]
         [InlineData(null)]

@@ -4,9 +4,9 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Tests.Common.Constants;
 using System.Threading.Tasks;
 
-namespace Sepes.Tests.Services
+namespace Sepes.Tests.Tests
 {
-    public class ServiceTestBaseWithInMemoryDb : ServiceTestBase
+    public class TestBaseWithInMemoryDb : TestBase
     {
         protected SepesDbContext GetDatabase()
         {

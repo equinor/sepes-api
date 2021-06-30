@@ -2,11 +2,12 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Exceptions;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyDeleteServiceTests : ServiceTestBaseWithInMemoryDb
+    public class StudyDeleteServiceTests : TestBaseWithInMemoryDb
     {
         public StudyDeleteServiceTests()
             :base()
@@ -45,7 +46,7 @@ namespace Sepes.Tests.Services.DomainServices
            
             await studyDeleteService.CloseStudyAsync(createdStudy.Id);
          
-            var studyReadService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
+            var studyReadService = StudyModelServiceMockFactory.StudyEfModelService(_serviceProvider);
             _ = await Assert.ThrowsAsync<NotFoundException>(() => studyReadService.GetByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
         }  

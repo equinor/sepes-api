@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
-using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -14,13 +12,13 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyEfModelService : EfModelServiceBase<Study>, IStudyEfModelService
-    {
-        readonly IUserService _userService;
+    {       
+        readonly IStudyEfModelOperationsService _studyEfModelOperationsService;
 
-        public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
+        public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IStudyEfModelOperationsService studyEfModelOperationsService,  IStudyPermissionService studyPermissionService)
             : base(configuration, db, logger, studyPermissionService)
         {
-            _userService = userService;
+            _studyEfModelOperationsService = studyEfModelOperationsService;
         }        
 
         public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation)
@@ -76,42 +74,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<Study> GetForDatasetCreationNoAccessCheckAsync(int studyId)
         {
             return await GetStudyFromQueryableThrowIfNotFound(StudyBaseQueries.StudyDatasetCreationQueryable(_db), studyId);
-        }
-
-        public async Task<bool> HasActiveDatasetsAsync(int studyId)
-        {
-            return await _db.StudyDatasets.Where(sds => sds.StudyId == studyId && !sds.Dataset.Deleted && sds.Dataset.StudySpecific).AnyAsync();
-        }
-
-        public async Task<bool> HasActiveSandboxesAsync(int studyId)
-        {
-            return await _db.Sandboxes.Where(sb => sb.StudyId == studyId && !sb.Deleted).AnyAsync();
-        }
+        }                    
 
         async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
         {
-            return await GetStudyFromQueryableThrowIfNotFoundOrNoAccess(_userService, queryable, studyId, operation, roleBeingAddedOrRemoved);
-        }
-
-        async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IUserService userService, IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)
-        {
-            var study = await GetStudyFromQueryableThrowIfNotFound(queryable, studyId);
-
-            await _studyPermissionService.VerifyAccessOrThrow(study, operation, roleBeingAddedOrRemoved);
-
-            return study;
+            return await _studyEfModelOperationsService.GetStudyFromQueryableThrowIfNotFoundOrNoAccess(queryable, studyId, operation, roleBeingAddedOrRemoved);          
         }
 
         async Task<Study> GetStudyFromQueryableThrowIfNotFound(IQueryable<Study> queryable, int studyId)
         {
-            var study = await queryable.SingleOrDefaultAsync(s => s.Id == studyId);
-           
-            if (study == null)
-            {
-                throw NotFoundException.CreateForEntity("Study", studyId);
-            }
-
-            return study;
+            return await _studyEfModelOperationsService.GetStudyFromQueryableThrowIfNotFound(queryable, studyId);           
         }     
     }
 }

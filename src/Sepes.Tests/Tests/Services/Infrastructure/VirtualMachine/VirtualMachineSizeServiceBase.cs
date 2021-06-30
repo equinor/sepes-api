@@ -1,5 +1,6 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {
-    public class VirtualMachineSizeServiceBase: ServiceTestBaseWithInMemoryDb
+    public class VirtualMachineSizeServiceBase: TestBaseWithInMemoryDb
     {
         protected async Task<SepesDbContext> GetCalculateVmPrice_ShouldReturnPrice_RefreshAndSeedTestDatabase()
         {

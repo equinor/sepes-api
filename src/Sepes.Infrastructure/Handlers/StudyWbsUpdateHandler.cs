@@ -1,24 +1,24 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.Sandbox;
+using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Sepes.Common.Dto.Sandbox;
-using Sepes.Common.Constants;
-using System.Collections.Generic;
-using Sepes.Azure.Util;
-using Sepes.Infrastructure.Handlers.Interface;
-using Sepes.Common.Constants.CloudResource;
 
 namespace Sepes.Infrastructure.Handlers
 {
-    public class UpdateStudyWbsHandler : IUpdateStudyWbsHandler
+    public class StudyWbsUpdateHandler : IStudyWbsUpdateHandler
     {
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
@@ -26,7 +26,7 @@ namespace Sepes.Infrastructure.Handlers
         readonly IProvisioningQueueService _provisioningQueueService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
 
-        public UpdateStudyWbsHandler(ILogger<UpdateStudyWbsHandler> logger, IConfiguration configuration, SepesDbContext sepesDbContext, IProvisioningQueueService provisioningQueueService, ICloudResourceOperationCreateService cloudResourceOperationCreateService)
+        public StudyWbsUpdateHandler(ILogger<StudyWbsUpdateHandler> logger, IConfiguration configuration, SepesDbContext sepesDbContext, IProvisioningQueueService provisioningQueueService, ICloudResourceOperationCreateService cloudResourceOperationCreateService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
@@ -37,15 +37,14 @@ namespace Sepes.Infrastructure.Handlers
 
         public async Task Handle(Study study, CancellationToken cancellationToken = default)
         {
-            study = await _sepesDbContext.Studies
+            var studyWithUser = await _sepesDbContext.Studies
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                     .SingleOrDefaultAsync(s => s.Id == study.Id);
            
 
-            await UpdateTagsForStudySpecificDatasetsAsync(study, cancellationToken);
-
-            await UpdateTagsForSandboxResourcesAsync(study, cancellationToken);                     
+            await UpdateTagsForStudySpecificDatasetsAsync(studyWithUser, cancellationToken);
+            await UpdateTagsForSandboxResourcesAsync(studyWithUser, cancellationToken);                     
         }       
 
         public async Task UpdateTagsForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)

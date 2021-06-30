@@ -1,12 +1,13 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.VirtualMachine
 {
-    public class VirtualMachineValidationServiceTests: ServiceTestBaseWithInMemoryDb
+    public class VirtualMachineValidationServiceTests: TestBaseWithInMemoryDb
     {
         public VirtualMachineValidationServiceTests()
            : base()

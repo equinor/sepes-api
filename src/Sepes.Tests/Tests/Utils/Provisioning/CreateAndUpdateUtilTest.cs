@@ -9,7 +9,7 @@ namespace Sepes.Tests.Util.Provisioning
 {
     public class CreateAndUpdateUtilTest
     {
-        ICreateAndUpdateService _createAndUpdateService;
+        readonly ICreateAndUpdateService _createAndUpdateService;
 
         public CreateAndUpdateUtilTest()
         {

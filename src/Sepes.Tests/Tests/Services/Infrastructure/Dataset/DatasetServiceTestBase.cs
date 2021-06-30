@@ -1,11 +1,12 @@
 ﻿using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
+using Sepes.Tests.Tests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services
 {
-    public class DatasetServiceTestBase : ServiceTestBaseWithInMemoryDb
+    public class DatasetServiceTestBase : TestBaseWithInMemoryDb
     {
 
         public DatasetServiceTestBase()

@@ -1,11 +1,12 @@
 using Sepes.Common.Constants;
 using Sepes.Common.Exceptions;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyReadServiceTests : ServiceTestBaseWithInMemoryDb
+    public class StudyReadServiceTests : TestBaseWithInMemoryDb
     {
 
         [Theory]
@@ -16,7 +17,7 @@ namespace Sepes.Tests.Services.DomainServices
         public async void GetStudyByIdAsync_WillThrow_IfStudyDoesNotExist(int id)
         {
             await ClearTestDatabase();
-            var studyService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
+            var studyService = StudyModelServiceMockFactory.StudyEfModelService(_serviceProvider);
 
             await Assert.ThrowsAsync<NotFoundException>(() => studyService.GetByIdAsync(id, UserOperation.Study_Read));
         }       

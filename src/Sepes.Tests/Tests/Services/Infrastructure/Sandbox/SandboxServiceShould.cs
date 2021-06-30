@@ -9,6 +9,7 @@ using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Common.ModelFactory;
 using Sepes.Tests.Common.ServiceMockFactories.Infrastructure;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.Infrastructure
 {
-    public class SandboxServiceShould : ServiceTestBase
+    public class SandboxServiceShould : TestBase
     {
       
         //[Fact]

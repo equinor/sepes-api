@@ -15,6 +15,7 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -23,7 +24,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class StudyParticipantServiceTests : ServiceTestBaseWithInMemoryDb
+    public class StudyParticipantServiceTests : TestBaseWithInMemoryDb
     {
         public StudyParticipantServiceTests()
             : base()
@@ -89,7 +90,7 @@ namespace Sepes.Tests.Services.DomainServices
             adUserServiceMock.Setup(service => service.GetUserAsync(It.IsAny<string>())).ReturnsAsync(new AzureUserDto() { DisplayName = userFullName, Mail = userEmail });
 
             //Study model service
-            var studyModelService = StudyServiceMockFactory.StudyEfModelService(_serviceProvider);
+            var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(_serviceProvider);
 
             //Used to get current user
             var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);

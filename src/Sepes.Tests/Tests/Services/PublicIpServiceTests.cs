@@ -1,11 +1,12 @@
 ﻿using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services
 {
-    public class PublicIpServiceTests : ServiceTestBaseWithInMemoryDb
+    public class PublicIpServiceTests : TestBase
     {
         [Theory]
         [InlineData("192.168.1.1")]

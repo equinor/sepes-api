@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
@@ -7,6 +6,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.Lookup
 {
-    public class StudyParticipantRolesServiceShould : ServiceTestBaseWithInMemoryDb
+    public class StudyParticipantRolesServiceShould : TestBaseWithInMemoryDb
     {
         public StudyParticipantRolesServiceShould()
            : base()

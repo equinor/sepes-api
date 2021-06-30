@@ -2,12 +2,13 @@
 using Sepes.Common.Constants;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public partial class OperationPermissionServiceShould : ServiceTestBase
+    public partial class OperationPermissionServiceShould : TestBase
     {
         [Theory]     
         [InlineData(false, true)]

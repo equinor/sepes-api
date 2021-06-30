@@ -11,8 +11,10 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Test.Common.ServiceMockFactories;
 using Sepes.Tests.Common.Mocks;
 using Sepes.Tests.Setup;
+using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -21,7 +23,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Tests.Services.Infrastructure
 {
-    public class WbsValidationServiceTestBase : ServiceTestBaseWithInMemoryDb
+    public class WbsValidationServiceTestBase : TestBaseWithInMemoryDb
     {
         protected IWbsApiService GetApiService(HttpStatusCode httpStatusCode = HttpStatusCode.OK, params string[] wbsCodesInApiResponse)
         {
@@ -88,14 +90,26 @@ namespace Sepes.Tests.Services.Infrastructure
 
         async Task<IWbsCodeCacheModelService> GetCacheService(List<WbsCodeCache> wbsCodesInCache)
         {
-            var db = await ClearTestDatabase();           
+            var db = await ClearTestDatabase();
 
-            wbsCodesInCache.ForEach((w) => { w.WbsCode = w.WbsCode.ToLowerInvariant(); db.WbsCodeCache.Add(w); });
-            await db.SaveChangesAsync();
+            var wbsCodesLookup = wbsCodesInCache.ToDictionary(w => w.WbsCode.ToLowerInvariant(), w => w);
 
-            return new WbsCodeCacheModelService(              
-                _serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>(),
-                DatabaseConnectionStringProviderFactory.Create(db));
+            var dapperQueryServiceMock = new Mock<IDapperQueryService>();
+            dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<bool>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) => wbsCodesLookup.ContainsKey(wbsCode));
+            dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<WbsCodeCache>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) =>
+            {
+                if (wbsCodesLookup.TryGetValue(wbsCode, out WbsCodeCache itemFromCache))
+                {
+                    return itemFromCache;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            );
+
+            return new WbsCodeCacheModelService(_serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>(), dapperQueryServiceMock.Object);
         }
 
 

@@ -6,6 +6,7 @@ using Sepes.Azure.Dto;
 using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Tests.Common.Constants;
+using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -13,7 +14,8 @@ using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.Azure
-{    public class CombinedUserLookupServiceShould : ServiceTestBase
+{
+    public class CombinedUserLookupServiceShould : TestBase
     {
         [Theory]
         [InlineData(false, true)]

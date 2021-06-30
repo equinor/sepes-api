@@ -29,7 +29,9 @@ namespace Sepes.Tests.Common.ServiceMockFactories.Infrastructure
 
             var logger = serviceProvider.GetService<ILogger<StudyWbsValidationService>>();
 
-            return new StudyWbsValidationService(logger, wbsValidationServiceMock.Object);
+            Mock<IDapperQueryService> dapperQueryService = DapperQueryServiceMockFactory.GetBasicService();
+
+            return new StudyWbsValidationService(logger, wbsValidationServiceMock.Object, dapperQueryService.Object);
         }
     }
 }

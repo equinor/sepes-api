@@ -46,7 +46,7 @@ namespace Sepes.Tests.Setup
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
            
-            var studyModelServiceMock = StudyServiceMockFactory.StudyEfModelService(serviceProvider);
+            var studyModelServiceMock = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
             return new StudyParticipantRolesService(db, mapper, userService.Object, studyModelServiceMock);
         }
 

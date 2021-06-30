@@ -1,17 +1,16 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
+﻿using Moq;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Tests.Common.Constants;
 using Sepes.Tests.Mocks;
+using Sepes.Tests.Tests;
 using System.Threading.Tasks;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
 {
-    public class UserServiceTest : ServiceTestBaseWithInMemoryDb
+    public class UserServiceTest : TestBaseWithInMemoryDb
     {
         public UserServiceTest()
             : base()
