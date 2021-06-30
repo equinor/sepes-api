@@ -1,10 +1,7 @@
-﻿using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Sepes.Common.Exceptions;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading.Tasks;
 
@@ -14,12 +11,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
     {
         const string WBS_TABLE_NAME = "dbo.[WbsCodeCache]";
 
-        public WbsCodeCacheModelService(IConfiguration configuration, ILogger<WbsCodeCacheModelService> logger)
-            : base(configuration, logger)
+        public WbsCodeCacheModelService(ILogger<WbsCodeCacheModelService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider)
+            : base(logger, databaseConnectionStringProvider)
         {
 
         }
-
 
         public async Task<WbsCodeCache> Get(string wbsCode)
         {

@@ -11,6 +11,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Test.Common.ServiceMockFactories;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,13 +22,14 @@ namespace Sepes.Tests.Setup
     public static class StudyServiceMockFactory
     {
         public static IStudyListModelService StudyListModelService(ServiceProvider serviceProvider)
-        {
-            var config = serviceProvider.GetService<IConfiguration>();         
-            var logger = serviceProvider.GetService<ILogger<StudyListModelService>>();           
+        {                  
+            var logger = serviceProvider.GetService<ILogger<StudyListModelService>>();
+            var db = serviceProvider.GetService<SepesDbContext>();
+            var connectionStringProvider = DatabaseConnectionStringProviderFactory.Create(db);
             var userService = UserFactory.GetUserServiceMockForAdmin(1);
             var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider);
 
-            return new StudyListModelService(config, logger, userService.Object, studyPermissionService);
+            return new StudyListModelService(logger, connectionStringProvider, userService.Object, studyPermissionService);
         }
 
         public static IStudyEfModelService StudyEfModelService(ServiceProvider serviceProvider)
@@ -58,7 +60,7 @@ namespace Sepes.Tests.Setup
             var studyWbsValidationService = GetStudyWbsValidationServiceMock(wbsValidationSucceeds);           
 
             var dsCloudResourceServiceMock = new Mock<IDatasetCloudResourceService>();
-            dsCloudResourceServiceMock.Setup(x => x.CreateResourceGroupForStudySpecificDatasetsAsync(It.IsAny<Study>(), default(CancellationToken))).Returns(Task.CompletedTask);
+            dsCloudResourceServiceMock.Setup(x => x.CreateResourceGroupForStudySpecificDatasetsAsync(It.IsAny<Study>(), default)).Returns(Task.CompletedTask);
 
             return new StudyCreateService(db, mapper, logger, userService.Object, studyModelService, logoCreateServiceMock.Object, logoReadServiceMock.Object, operationPermissionFactory, dsCloudResourceServiceMock.Object, studyWbsValidationService.Object);
         }

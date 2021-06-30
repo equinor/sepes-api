@@ -183,12 +183,12 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
                 services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
-               
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();               
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
             //Plumbing          
+            services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
             services.AddTransient<IRequestIdService, RequestIdService>();          
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();

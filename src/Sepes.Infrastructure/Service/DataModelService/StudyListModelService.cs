@@ -12,8 +12,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class StudyListModelService : DapperModelWithPermissionServiceBase, IStudyListModelService
     {
-        public StudyListModelService(IConfiguration configuration, ILogger<StudyListModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, logger, userService, studyPermissionService)
+        public StudyListModelService(ILogger<StudyListModelService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(logger, databaseConnectionStringProvider, userService, studyPermissionService)
         {
 
         }
@@ -37,5 +37,6 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             studies = await RunDapperQueryMultiple<StudyListItemDto>(studiesQuery);
             return studies;
-        }    }
+        }
+    }
 }

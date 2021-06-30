@@ -77,14 +77,15 @@ namespace Sepes.Functions
 
 
             //Plumbing
-            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));
-            builder.Services.AddScoped<IUserService, FunctionUserService>();
+            builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
+            builder.Services.AddScoped<IUserService, FunctionUserService>();          
             builder.Services.AddTransient<IRequestIdService, RequestIdService>();
             builder.Services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
             builder.Services.AddTransient<IHealthService, HealthService>();
 
             //Domain Model Services
+            builder.Services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
             builder.Services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
             builder.Services.AddTransient<IStudyEfModelService, StudyEfModelService>();
             builder.Services.AddTransient<IDatasetService, DatasetService>();

@@ -1,10 +1,8 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
-using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
@@ -16,27 +14,29 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class DapperModelServiceBase : ModelServiceBase
     {
-        public DapperModelServiceBase(IConfiguration configuration, ILogger logger)
-            : base(configuration, logger)
+       protected readonly string _dbConnectionString;
+
+        public DapperModelServiceBase(ILogger logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider)
+            : base(logger)
         {
-          
+            _dbConnectionString = databaseConnectionStringProvider.GetConnectionString();
         }
 
-        protected string GetDbConnectionString()
-        {
-            var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
+        //protected string GetDbConnectionString()
+        //{
+        //    var isIntegrationTest = ConfigUtil.GetBoolConfig(_configuration, ConfigConstants.IS_INTEGRATION_TEST);
 
-            if (isIntegrationTest)
-            {
-                return _configuration[ConfigConstants.DB_INTEGRATION_TEST_CONNECTION_STRING];
-            }
+        //    if (isIntegrationTest)
+        //    {
+        //        return _configuration[ConfigConstants.DB_INTEGRATION_TEST_CONNECTION_STRING];
+        //    }
 
-            return _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
-        }
+        //    return _configuration[ConfigConstants.DB_READ_WRITE_CONNECTION_STRING];
+        //}
 
         protected async Task<IEnumerable<T>> RunDapperQueryMultiple<T>(string query, object parameters = null)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
@@ -49,7 +49,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         protected async Task<T> RunDapperQuerySingleAsync<T>(string query, object parameters = null)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
@@ -62,7 +62,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         protected async Task ExecuteAsync(string statement, object parameters = null)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 if (connection.State != System.Data.ConnectionState.Open)
                 {
@@ -75,7 +75,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         protected async Task ExecuteProcedureAsync(string procedureName, params SqlParameter[] parameters)
         {
-            using (var connection = new SqlConnection(GetDbConnectionString()))
+            using (var connection = new SqlConnection(_dbConnectionString))
             {
                 using (SqlCommand cmd = new SqlCommand(procedureName, connection))
                 {
@@ -107,8 +107,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
         protected readonly IUserService _userService;
         readonly IStudyPermissionService _studyPermissionService;
 
-        public DapperModelWithPermissionServiceBase(IConfiguration configuration, ILogger logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            : base(configuration, logger)
+        public DapperModelWithPermissionServiceBase(ILogger logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(logger, databaseConnectionStringProvider)
         {
             _userService = userService;
             _studyPermissionService = studyPermissionService;

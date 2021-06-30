@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Model;
@@ -119,7 +120,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
         async Task<SepesDbContext> RefreshAndSeedTestDatabase(string roleType = null)
         {
-            var db = await ClearTestDatabaseAddUser();
+            var db = await ClearTestDatabaseAddUser();          
 
             var study = new Study()
             {

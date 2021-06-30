@@ -8,6 +8,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Test.Common.ServiceMockFactories;
 using Sepes.Tests.Common.Mocks;
 using Sepes.Tests.Setup;
 using System;
@@ -87,16 +88,14 @@ namespace Sepes.Tests.Services.Infrastructure
 
         async Task<IWbsCodeCacheModelService> GetCacheService(List<WbsCodeCache> wbsCodesInCache)
         {
-            var db = await ClearTestDatabase();
-
-            var configuration = _serviceProvider.GetService<IConfiguration>();
+            var db = await ClearTestDatabase();           
 
             wbsCodesInCache.ForEach((w) => { w.WbsCode = w.WbsCode.ToLowerInvariant(); db.WbsCodeCache.Add(w); });
             await db.SaveChangesAsync();
 
-            return new WbsCodeCacheModelService(
-                configuration,
-                _serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>());
+            return new WbsCodeCacheModelService(              
+                _serviceProvider.GetService<ILogger<WbsCodeCacheModelService>>(),
+                DatabaseConnectionStringProviderFactory.Create(db));
         }
 
 

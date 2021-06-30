@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
+using Sepes.Infrastructure.Service.Interface;
 using System;
 using System.Threading.Tasks;
 
@@ -9,8 +9,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class UserModelDapperService : DapperModelServiceBase, IUserModelService
     {
-        public UserModelDapperService(IConfiguration configuration, ILogger<UserModelDapperService> logger)
-            : base(configuration, logger)
+        public UserModelDapperService(ILogger<UserModelDapperService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider)
+            : base(logger, databaseConnectionStringProvider)
         {
 
         }
