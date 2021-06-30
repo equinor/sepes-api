@@ -80,12 +80,12 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public async Task<bool> HasActiveDatasetsAsync(int studyId)
         {
-            return await _db.StudyDatasets.Where(sds => sds.StudyId == studyId && sds.Dataset.Deleted && sds.Dataset.StudySpecific).AnyAsync();
+            return await _db.StudyDatasets.Where(sds => sds.StudyId == studyId && !sds.Dataset.Deleted && sds.Dataset.StudySpecific).AnyAsync();
         }
 
         public async Task<bool> HasActiveSandboxesAsync(int studyId)
         {
-            return await _db.Sandboxes.Where(sb => sb.StudyId == studyId && sb.Deleted).AnyAsync();
+            return await _db.Sandboxes.Where(sb => sb.StudyId == studyId && !sb.Deleted).AnyAsync();
         }
 
         async Task<Study> GetStudyFromQueryableThrowIfNotFoundOrNoAccess(IQueryable<Study> queryable, int studyId, UserOperation operation, string roleBeingAddedOrRemoved = null)

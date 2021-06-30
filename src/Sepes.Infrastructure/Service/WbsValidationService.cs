@@ -43,7 +43,7 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
-            var cachedItem = await _wbsCodeCacheModelService.Get(wbsCode, cancellation);
+            var cachedItem = await _wbsCodeCacheModelService.Get(wbsCode);
 
             if (cachedItem != null) //Found in cache, means its valid
             {

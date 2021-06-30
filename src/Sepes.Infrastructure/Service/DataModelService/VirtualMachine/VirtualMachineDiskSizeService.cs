@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
@@ -10,11 +9,11 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class VirtualMachineDiskSizeService : DapperModelWithPermissionServiceBase, IVirtualMachineDiskSizeService
-    { 
-        public VirtualMachineDiskSizeService(IConfiguration configuration, ILogger<VirtualMachineDiskSizeService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
-            :base(configuration, logger, userService, studyPermissionService)
-        {  
-          
+    {
+        public VirtualMachineDiskSizeService(ILogger<VirtualMachineDiskSizeService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider, IUserService userService, IStudyPermissionService studyPermissionService)
+            : base(logger, databaseConnectionStringProvider, userService, studyPermissionService)
+        {
+
         }
 
         public async Task<IEnumerable<VmDiskLookupDto>> AvailableDisks(int sandboxId, CancellationToken cancellationToken = default)
@@ -25,8 +24,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
             disksQuery += " WHERE rd.[RegionKey] = (SELECT [Region] from sandboxRegionCte)";
             disksQuery += " ) SELECT [Key], [DisplayValue] FROM diskSizesCte ORDER BY [Size]";
 
-            var disks = await RunDapperQueryMultiple<VmDiskLookupDto>(disksQuery, new { SandboxId = sandboxId } );
-            return disks;            
-        }       
+            var disks = await RunDapperQueryMultiple<VmDiskLookupDto>(disksQuery, new { SandboxId = sandboxId });
+            return disks;
+        }
     }
 }

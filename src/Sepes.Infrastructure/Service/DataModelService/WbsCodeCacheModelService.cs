@@ -1,43 +1,55 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Sepes.Common.Exceptions;
-using Sepes.Infrastructure.Extensions;
+﻿using Microsoft.Extensions.Logging;
 using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
+using Sepes.Infrastructure.Service.Interface;
 using System;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Infrastructure.Service.DataModelService
 {
-    public class WbsCodeCacheModelService : IWbsCodeCacheModelService
+    public class WbsCodeCacheModelService : DapperModelServiceBase, IWbsCodeCacheModelService
     {
-        readonly ILogger _logger;
-        readonly SepesDbContext _sepesDbContext;
+        const string WBS_TABLE_NAME = "dbo.[WbsCodeCache]";
 
-        public WbsCodeCacheModelService(ILogger<WbsCodeCacheModelService> logger, SepesDbContext sepesDbContext)
+        public WbsCodeCacheModelService(ILogger<WbsCodeCacheModelService> logger, IDatabaseConnectionStringProvider databaseConnectionStringProvider)
+            : base(logger, databaseConnectionStringProvider)
         {
-            _logger = logger;
-            _sepesDbContext = sepesDbContext;
-        }       
 
-        public async Task<WbsCodeCache> Get(string wbsCode, CancellationToken cancellation = default)
+        }
+
+        public async Task<WbsCodeCache> Get(string wbsCode)
         {
-            _logger.LogInformation($"Wbs Cache - Get: {wbsCode}");
-
             try
             {
-                var wbsFromDbQueryable = GetItemQueryable(wbsCode, true).Where(w => w.Expires > DateTime.UtcNow);
-                return await wbsFromDbQueryable.SingleOrDefaultAsync(cancellation);
+                _logger.LogInformation($"Wbs Cache - Get: {wbsCode}");
+
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"WbsCode cache lookup failed for code {wbsCode}");
+                _logger.LogError(ex, $"Wbs Cache - Get: {wbsCode}, failed");
             }
 
-            return null;
+            return await GetInternal(wbsCode);
+        }
+
+        async Task<WbsCodeCache> GetInternal(string wbsCode)
+        {
+            var getWbsQuery = $"{BasicQueryProjection()} AND {ExpiresPart()}";
+            return await RunSingleWbsCodeQuery<WbsCodeCache>(getWbsQuery, wbsCode);
+        }
+
+        async Task<T> RunSingleWbsCodeQuery<T>(string query, string wbsCode)
+        {
+            try
+            {
+                return await base.RunDapperQuerySingleAsync<T>(query, new { wbsCode });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"The following query failed: {query}, wbsCode: {wbsCode}");
+            }
+
+            return default;
         }
 
         public async Task Add(string wbsCode, bool valid)
@@ -46,42 +58,66 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
             try
             {
-                //Executed as NoTracking, because it ensures we hit the database
-                var queryable = GetItemQueryable(wbsCode, true);
+                var validString = valid ? "1" : "0";
 
-                if (queryable.Any())
+                if (await WbsCodeExists(wbsCode))
                 {
                     _logger.LogInformation($"Wbs Cache - Add: {wbsCode}, valid: {valid}, item exists allready");
-                    //Re-running the query, but now as a trackable, because we might be updating the entry.
 
-                    queryable = GetItemQueryable(wbsCode);
-                    var existingItem = await queryable.SingleOrDefaultAsync();
-                    existingItem.Valid = valid;
+                    var updateEntrySql = $"UPDATE {WBS_TABLE_NAME} SET [Valid] = {validString}, [Expires] = {GetNewExpiresSql(valid)} {WhereEqualsWbsCodePart()}";
 
-                    if (valid)
-                    {
-                        existingItem.Expires = GetNewExpires(valid);
-                    }
+                    await base.ExecuteAsync(updateEntrySql, new { wbsCode });
                 }
                 else
                 {
                     _logger.LogInformation($"Wbs Cache - Add: {wbsCode}, valid: {valid}, item does not exist, adding!");
-                    _sepesDbContext.WbsCodeCache.Add(new WbsCodeCache(wbsCode.ToLowerInvariant(), valid, GetNewExpires(valid)));
-                }
+                    var insertWbsCodeSql = $"IF NOT EXISTS({AnyQuery()}) BEGIN INSERT INTO {WBS_TABLE_NAME} ([WbsCode],[Valid],[Expires]) VALUES (@wbsCode,{validString},{GetNewExpiresSql(valid)}) END";
 
-                await _sepesDbContext.SaveChangesAsync();
+                    await base.ExecuteAsync(insertWbsCodeSql, new { wbsCode });
+                }
             }
             catch (Exception ex)
             {
-                throw new CustomUserMessageException($"Unable to add wbs cache entry {wbsCode}, valid: {valid}", ex, $"Failed to update WBS cache");
-            }           
+                //throw new CustomUserMessageException($"Unable to add wbs cache entry {wbsCode}, valid: {valid}", ex, $"Failed to update WBS cache");
+                _logger.LogError(ex, $"Unable to add wbs cache entry {wbsCode}, valid: {valid}");
+            }
+        }    
+
+        async Task<bool> WbsCodeExists(string wbsCode)
+        {
+            var getWbsQuery = $"{AnyQueryAsBool()}";
+            return await RunSingleWbsCodeQuery<bool>(getWbsQuery, wbsCode);
         }
 
         public async Task Clean()
         {
-            var itemsToRemove = await _sepesDbContext.WbsCodeCache.Where(w => w.Expires <= DateTime.UtcNow).ToListAsync();
-            _sepesDbContext.WbsCodeCache.RemoveRange(itemsToRemove);
-            await _sepesDbContext.SaveChangesAsync();
+            var cleanWbsQuery = $"DELETE FROM {WBS_TABLE_NAME} WHERE {ExpiresPart()}";
+            await base.ExecuteAsync(cleanWbsQuery);
+        }
+
+        string AnyQuery()
+        {
+            return $"SELECT [WbsCode] FROM {WBS_TABLE_NAME} WHERE [WbsCode] = @wbsCode";
+        }
+
+        string AnyQueryAsBool()
+        {
+            return $"SELECT CASE WHEN EXISTS({AnyQuery()}) THEN 1 ELSE 0 END";
+        }
+
+        string BasicQueryProjection()
+        {
+            return $"SELECT [WbsCode],[Valid],[Expires] FROM {WBS_TABLE_NAME} {WhereEqualsWbsCodePart()}";
+        }
+
+        string WhereEqualsWbsCodePart()
+        {
+            return "WHERE [WbsCode] = @wbsCode";
+        }
+
+        string ExpiresPart()
+        {
+            return "[Expires] > GETUTCDATE()";
         }
 
         DateTime GetNewExpires(bool valid)
@@ -89,11 +125,11 @@ namespace Sepes.Infrastructure.Service.DataModelService
             return DateTime.UtcNow.AddMinutes(valid ? 20 : 3);
         }
 
-        IQueryable<WbsCodeCache> GetItemQueryable(string wbsCode, bool asNoTracking = false)
-        {
-            return _sepesDbContext.WbsCodeCache
-                 .If(asNoTracking, x => x.AsNoTracking())
-                .Where(w => w.WbsCode == wbsCode.ToLowerInvariant());
-        }      
+        string GetNewExpiresSql(bool valid)
+        {           
+            var expires = GetNewExpires(valid);        
+            var expiresString = expires.ToString("s");
+            return $"'{expiresString}'";
+        }
     }
 }
