@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller
@@ -32,16 +31,8 @@ namespace Sepes.RestApi.Controller
                [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyUpdateDto study,
                IFormFile image = null)
         {
-            var spUpdate = Stopwatch.StartNew();
-
-            var updatedStudy = await _studyUpdateHandler.UpdateAsync(studyId, study, image);
-
-            var afterUpdate = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
-
-            var studyDetails = await _studyDetailsService.Get(studyId);
-
-            var afterGetGetauls = spUpdate.ElapsedMilliseconds;          
+            _ = await _studyUpdateHandler.UpdateAsync(studyId, study, image); 
+            var studyDetails = await _studyDetailsService.Get(studyId);                   
 
             return new JsonResult(studyDetails);
         }       
