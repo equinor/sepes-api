@@ -22,7 +22,7 @@ namespace Sepes.RestApi.IntegrationTests.Services
 
         public UserDto GetCurrentUser()
         {
-           var user = new UserDto(TestUserConstants.COMMON_CUR_USER_OBJECTID, TestUserConstants.COMMON_CUR_USER_UPN, TestUserConstants.COMMON_CUR_USER_FULL_NAME, TestUserConstants.COMMON_CUR_USER_EMAIL,
+           var user = new UserDto(UserTestConstants.COMMON_CUR_USER_OBJECTID, UserTestConstants.COMMON_CUR_USER_UPN, UserTestConstants.COMMON_CUR_USER_FULL_NAME, UserTestConstants.COMMON_CUR_USER_EMAIL,
                 _isAdmin, _isSponsor, _isDatasetAdmin, _isEmployee);
 
             ApplyExtendedProps(user);
@@ -59,7 +59,7 @@ namespace Sepes.RestApi.IntegrationTests.Services
 
         public string GetCurrentUserObjectId()
         {
-           return TestUserConstants.COMMON_CUR_USER_OBJECTID;
+           return UserTestConstants.COMMON_CUR_USER_OBJECTID;
         }
 
         public bool IsMockUser()

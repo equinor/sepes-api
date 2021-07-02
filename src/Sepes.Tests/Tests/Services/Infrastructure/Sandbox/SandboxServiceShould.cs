@@ -43,7 +43,7 @@ namespace Sepes.Tests.Services.Infrastructure
             
             var sandboxCreateRequest = CreateSandboxRequest(sandboxName);
 
-            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyTestConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
 
         [Theory]
@@ -56,7 +56,7 @@ namespace Sepes.Tests.Services.Infrastructure
             
             var sandboxCreateRequest = CreateSandboxRequest(region: sandboxRegion);
 
-            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<ArgumentException>(() => sandboxService.CreateAsync(StudyTestConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
 
         [Theory]
@@ -69,7 +69,7 @@ namespace Sepes.Tests.Services.Infrastructure
             
             var sandboxCreateRequest = CreateSandboxRequest();
 
-            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyTestConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
 
         [Theory]
@@ -81,7 +81,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
             var sandboxCreateRequest = CreateSandboxRequest();
 
-            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
+            await Assert.ThrowsAsync<InvalidWbsException>(() => sandboxService.CreateAsync(StudyTestConstants.CREATED_BY_ME_ID, sandboxCreateRequest));
         }
         
         
@@ -133,8 +133,8 @@ namespace Sepes.Tests.Services.Infrastructure
         
         ISandboxService CreateForFailingSandboxCreate(string userAppRole,
             int userId,
-            int studyId = StudyConstants.CREATED_BY_ME_ID,
-            string wbs = StudyConstants.CREATED_BY_ME_WBS, bool wbsExists = false, bool wbsValidationFails = false)
+            int studyId = StudyTestConstants.CREATED_BY_ME_ID,
+            string wbs = StudyTestConstants.CREATED_BY_ME_WBS, bool wbsExists = false, bool wbsValidationFails = false)
         {
             var study = StudyModelFactory.CreateBasic(id: studyId, wbs: wbs);         
 

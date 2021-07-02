@@ -48,7 +48,7 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabaseAddUser();         
 
             var userModelServiceMock = new Mock<IUserModelService>();
-            userModelServiceMock.Setup(s => s.GetByObjectIdAsync(It.IsAny<string>())).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_CUR_USER_DB_ID, ObjectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, FullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, UserName = TestUserConstants.COMMON_CUR_USER_UPN });          
+            userModelServiceMock.Setup(s => s.GetByObjectIdAsync(It.IsAny<string>())).ReturnsAsync(new UserDto() { Id = UserTestConstants.COMMON_CUR_USER_DB_ID, ObjectId = UserTestConstants.COMMON_CUR_USER_OBJECTID, FullName = UserTestConstants.COMMON_CUR_USER_FULL_NAME, UserName = UserTestConstants.COMMON_CUR_USER_UPN });          
           
             var contextUserServiceMock = ContextUserServiceMock.GetService(admin: admin, sponsor: sponsor, datasetAdmin: datasetAdmin, employee: employee);         
 

@@ -14,8 +14,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup
             var userList = new Dictionary<string, AzureUserDto>
             {
                 {
-                TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID,
-                 TestUserConstants.NEW_PARTICIPANT
+                UserTestConstants.COMMON_NEW_PARTICIPANT_OBJECTID,
+                 UserTestConstants.NEW_PARTICIPANT
                 }
             };
 

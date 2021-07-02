@@ -13,31 +13,31 @@ namespace Sepes.Tests.Setup
     {
         public static IStudyParticipantRolesService GetForBasicUser(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForBasicUser(true, TestUserConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForAdmin(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForAdmin(TestUserConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForSponsor(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForSponsor(TestUserConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserFactory.GetUserServiceMockForSponsor(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForDatasetAdmin(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForDatasetAdmin(TestUserConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserFactory.GetUserServiceMockForDatasetAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForEmployee(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForBasicUser(true, TestUserConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 

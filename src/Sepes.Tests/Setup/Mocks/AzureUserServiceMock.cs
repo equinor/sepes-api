@@ -11,11 +11,11 @@ namespace Sepes.Tests.Mocks
         {
             var currentUserServiceMock = new Mock<IAzureUserService>();
 
-            currentUserServiceMock.Setup(us => us.GetUserAsync(TestUserConstants.COMMON_CUR_USER_OBJECTID))
+            currentUserServiceMock.Setup(us => us.GetUserAsync(UserTestConstants.COMMON_CUR_USER_OBJECTID))
                 .ReturnsAsync(new AzureUserDto() {
-                    DisplayName = TestUserConstants.COMMON_CUR_USER_FULL_NAME,
-                    Mail = TestUserConstants.COMMON_CUR_USER_EMAIL,
-                    UserPrincipalName = TestUserConstants.COMMON_CUR_USER_UPN 
+                    DisplayName = UserTestConstants.COMMON_CUR_USER_FULL_NAME,
+                    Mail = UserTestConstants.COMMON_CUR_USER_EMAIL,
+                    UserPrincipalName = UserTestConstants.COMMON_CUR_USER_UPN 
                 });
 
             return currentUserServiceMock;

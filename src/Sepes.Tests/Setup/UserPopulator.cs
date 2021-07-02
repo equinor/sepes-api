@@ -7,7 +7,7 @@ namespace Sepes.Tests.Setup
 {
     public static class UserPopulator
     {
-        public static User Add(SepesDbContext db, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID, string userName = TestUserConstants.COMMON_CUR_USER_UPN, string email = TestUserConstants.COMMON_CUR_USER_EMAIL, string fullName = TestUserConstants.COMMON_CUR_USER_FULL_NAME)
+        public static User Add(SepesDbContext db, string objectId = UserTestConstants.COMMON_CUR_USER_OBJECTID, string userName = UserTestConstants.COMMON_CUR_USER_UPN, string email = UserTestConstants.COMMON_CUR_USER_EMAIL, string fullName = UserTestConstants.COMMON_CUR_USER_FULL_NAME)
         {
             var newUser = new User()
             {

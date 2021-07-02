@@ -71,7 +71,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
         async Task ActAndAssert(IStudyParticipantRolesService studyParticipantRolesService, List<LookupDto> expectedRoles)
         {
-            var rolesFromService = (await studyParticipantRolesService.RolesAvailableForUser(StudyConstants.CREATED_BY_ME_ID)).ToList();
+            var rolesFromService = (await studyParticipantRolesService.RolesAvailableForUser(StudyTestConstants.CREATED_BY_ME_ID)).ToList();
 
             CollectionAssert.AreEquivalent(expectedRoles, rolesFromService);
             CollectionAssert.AllItemsAreUnique(rolesFromService);
@@ -124,7 +124,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
             var study = new Study()
             {
-                Id = StudyConstants.CREATED_BY_ME_ID,
+                Id = StudyTestConstants.CREATED_BY_ME_ID,
                 Name = "Test Study with specific participants",
                 StudyParticipants = new List<StudyParticipant>()
                   
@@ -132,11 +132,11 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
             if (string.IsNullOrWhiteSpace(roleType))
             {
-                study.StudyParticipants.Add(new StudyParticipant() { UserId = TestUserConstants.COMMON_ALTERNATIVE_STUDY_OWNER_DB_ID, RoleName = StudyRoles.StudyOwner });
+                study.StudyParticipants.Add(new StudyParticipant() { UserId = UserTestConstants.COMMON_ALTERNATIVE_STUDY_OWNER_DB_ID, RoleName = StudyRoles.StudyOwner });
             }
             else
             {
-                study.StudyParticipants.Add(new StudyParticipant() { UserId = TestUserConstants.COMMON_CUR_USER_DB_ID, RoleName = roleType });            
+                study.StudyParticipants.Add(new StudyParticipant() { UserId = UserTestConstants.COMMON_CUR_USER_DB_ID, RoleName = roleType });            
             }
 
             db.Studies.Add(study);

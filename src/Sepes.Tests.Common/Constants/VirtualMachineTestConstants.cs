@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Tests.Common.Constants
 {
-    public static class VirtualMachineConstants
+    public static class VirtualMachineTestConstants
     {
         public const string NAME = "virtualmachinename";
         public const string RESOURCE_ID = "virtualmachineresourceid";
@@ -10,8 +10,5 @@
         public const string OS_CATEGORY_WINDOWS = "windows";
         public const string OS_WINDOWS = "win2019datacenter";
         public const string USERNAME = "integrationTestUsr";
-
-
-
     }
 }

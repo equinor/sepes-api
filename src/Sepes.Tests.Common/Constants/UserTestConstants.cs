@@ -1,9 +1,8 @@
 ﻿using Sepes.Azure.Dto;
-using System.Collections.Generic;
 
 namespace Sepes.Tests.Common.Constants
 {
-    public static class TestUserConstants
+    public static class UserTestConstants
     {
         //CURRENT USER CONSTANTS
         public const int COMMON_CUR_USER_DB_ID = 1;

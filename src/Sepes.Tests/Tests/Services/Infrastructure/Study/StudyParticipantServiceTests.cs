@@ -77,7 +77,7 @@ namespace Sepes.Tests.Services.DomainServices
             var userEmail = userName + "@somedomain.com";
             var userFullName = "Newly Added User";
 
-            var participantToAdd = new ParticipantLookupDto() { DatabaseId = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
+            var participantToAdd = new ParticipantLookupDto() { DatabaseId = UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserTestConstants.COMMON_NEW_PARTICIPANT_OBJECTID, EmailAddress = userEmail, FullName = userFullName, UserName = userName, Source = source };
 
             await RefreshAndPopulateTestDb();
 
@@ -93,8 +93,8 @@ namespace Sepes.Tests.Services.DomainServices
             var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(_serviceProvider);
 
             //Used to get current user
-            var userServiceMock = GetUserServiceMock(TestUserConstants.COMMON_CUR_USER_DB_ID, TestUserConstants.COMMON_CUR_USER_OBJECTID);
-            userServiceMock.Setup(service => service.GetByDbIdAsync(TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = TestUserConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
+            var userServiceMock = GetUserServiceMock(UserTestConstants.COMMON_CUR_USER_DB_ID, UserTestConstants.COMMON_CUR_USER_OBJECTID);
+            userServiceMock.Setup(service => service.GetByDbIdAsync(UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID)).ReturnsAsync(new UserDto() { Id = UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, ObjectId = UserTestConstants.COMMON_NEW_PARTICIPANT_OBJECTID});
                       
             //Queue service mock 
             var queueServiceMock = new Mock<IProvisioningQueueService>();
@@ -115,7 +115,7 @@ namespace Sepes.Tests.Services.DomainServices
             return await studyParticipantService.AddAsync(studyId, participantToAdd, role);
         }       
 
-        Mock<IUserService> GetUserServiceMock(int id, string objectId = TestUserConstants.COMMON_CUR_USER_OBJECTID)
+        Mock<IUserService> GetUserServiceMock(int id, string objectId = UserTestConstants.COMMON_CUR_USER_OBJECTID)
         {
             return UserFactory.GetUserServiceMockForAdmin(id, objectId);
         }       
@@ -125,11 +125,11 @@ namespace Sepes.Tests.Services.DomainServices
             await ClearTestDatabase();
             var db = _serviceProvider.GetService<SepesDbContext>();
 
-            StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", TestUserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 1", "Vendor for TS1", "WBS for TS1", UserTestConstants.COMMON_CUR_USER_DB_ID);
 
-            StudyPopulator.Add(db, "Test Study 2", "Vendor for TS2", "WBS for TS2", TestUserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 2", "Vendor for TS2", "WBS for TS2", UserTestConstants.COMMON_CUR_USER_DB_ID);
 
-            StudyPopulator.Add(db, "Test Study 3", "Vendor for TS3", "WBS for TS3", TestUserConstants.COMMON_CUR_USER_DB_ID);
+            StudyPopulator.Add(db, "Test Study 3", "Vendor for TS3", "WBS for TS3", UserTestConstants.COMMON_CUR_USER_DB_ID);
 
             db.SaveChanges();
         }

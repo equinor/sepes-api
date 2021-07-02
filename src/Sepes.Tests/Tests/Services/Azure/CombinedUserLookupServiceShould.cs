@@ -35,7 +35,7 @@ namespace Sepes.Tests.Services.Azure
         [InlineData(true, false)]      
         public async Task ReturnItemsFromOneServiceIfOtherServiceFails(bool companyLookupThrows, bool affiliateLookupThrows)
         {
-            var service = GetServiceWithMocks(companyLookupThrows, affiliateLookupThrows, TestUserConstants.SOME_EMPLOYEE, TestUserConstants.SOME_EMPLOYEE);
+            var service = GetServiceWithMocks(companyLookupThrows, affiliateLookupThrows, UserTestConstants.SOME_EMPLOYEE, UserTestConstants.SOME_EMPLOYEE);
 
             var result = await service.SearchAsync("someuser", 10);
 
@@ -46,7 +46,7 @@ namespace Sepes.Tests.Services.Azure
         [Fact]       
         public async Task ReturnUniqueItemsIfMultipleSearchHits()
         {
-            var service = GetServiceWithMocks(false, false, TestUserConstants.SOME_EMPLOYEE, TestUserConstants.SOME_EMPLOYEE);
+            var service = GetServiceWithMocks(false, false, UserTestConstants.SOME_EMPLOYEE, UserTestConstants.SOME_EMPLOYEE);
 
             var result = await service.SearchAsync("someuser", 10);
 
@@ -57,13 +57,13 @@ namespace Sepes.Tests.Services.Azure
         [Fact]
         public async Task MergeResultsFromAllSources()
         {
-            var service = GetServiceWithMocks(false, false, TestUserConstants.SOME_EMPLOYEE, TestUserConstants.SOME_AFFILIATE);
+            var service = GetServiceWithMocks(false, false, UserTestConstants.SOME_EMPLOYEE, UserTestConstants.SOME_AFFILIATE);
 
             var result = await service.SearchAsync("someuser", 10);          
 
             Assert.Collection(result.Values,
-                 item => Assert.Equal(TestUserConstants.SOME_EMPLOYEE.Id, item.Id),
-                 item => Assert.Equal(TestUserConstants.SOME_AFFILIATE.Id, item.Id));          
+                 item => Assert.Equal(UserTestConstants.SOME_EMPLOYEE.Id, item.Id),
+                 item => Assert.Equal(UserTestConstants.SOME_AFFILIATE.Id, item.Id));          
         }
 
         CombinedUserLookupService GetServiceWithMocks(bool companyLookupThrows, bool affiliateLookupThrows, AzureUserDto companyUserResult, AzureUserDto affiliateUserResult)

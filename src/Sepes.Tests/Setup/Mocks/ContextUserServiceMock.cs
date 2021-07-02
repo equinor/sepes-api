@@ -11,10 +11,10 @@ namespace Sepes.Tests.Mocks
             var currentUserServiceMock = new Mock<IContextUserService>();           
 
             currentUserServiceMock.Setup(us => us.GetCurrentUser()).Returns(new Sepes.Common.Dto.UserDto(
-                TestUserConstants.COMMON_CUR_USER_OBJECTID,
-                TestUserConstants.COMMON_CUR_USER_UPN,
-                TestUserConstants.COMMON_CUR_USER_FULL_NAME,
-                TestUserConstants.COMMON_CUR_USER_EMAIL,
+                UserTestConstants.COMMON_CUR_USER_OBJECTID,
+                UserTestConstants.COMMON_CUR_USER_UPN,
+                UserTestConstants.COMMON_CUR_USER_FULL_NAME,
+                UserTestConstants.COMMON_CUR_USER_EMAIL,
                 admin,
                 sponsor, 
                 datasetAdmin,

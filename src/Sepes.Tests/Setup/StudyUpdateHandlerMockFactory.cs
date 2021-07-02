@@ -12,7 +12,7 @@ namespace Sepes.Tests.Setup
         public static IStudyUpdateHandler Create(ServiceProvider serviceProvider, bool wbsValidationSucceeds = true)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
-            
+            UserFactory.GetUserServiceForDatasetAdmin()
             var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>(); 
             

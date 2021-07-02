@@ -12,7 +12,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
     {
         public Task<AzureUserDto> GetUserAsync(string id)
         {
-            var user = new AzureUserDto { UserPrincipalName = TestUserConstants.COMMON_CUR_USER_UPN, DisplayName = TestUserConstants.COMMON_CUR_USER_FULL_NAME, Mail = TestUserConstants.COMMON_CUR_USER_EMAIL };
+            var user = new AzureUserDto { UserPrincipalName = UserTestConstants.COMMON_CUR_USER_UPN, DisplayName = UserTestConstants.COMMON_CUR_USER_FULL_NAME, Mail = UserTestConstants.COMMON_CUR_USER_EMAIL };
             return Task.FromResult(user);
         }      
 
@@ -20,7 +20,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
         {
             var userList = new List<User>
             {
-                new User { Id = TestUserConstants.COMMON_NEW_PARTICIPANT_OBJECTID, DisplayName = TestUserConstants.COMMON_NEW_PARTICIPANT_FULL_NAME, Mail = TestUserConstants.COMMON_NEW_PARTICIPANT_EMAIL, UserPrincipalName = TestUserConstants.COMMON_NEW_PARTICIPANT_UPN }
+                new User { Id = UserTestConstants.COMMON_NEW_PARTICIPANT_OBJECTID, DisplayName = UserTestConstants.COMMON_NEW_PARTICIPANT_FULL_NAME, Mail = UserTestConstants.COMMON_NEW_PARTICIPANT_EMAIL, UserPrincipalName = UserTestConstants.COMMON_NEW_PARTICIPANT_UPN }
             };
 
             return Task.FromResult(userList);

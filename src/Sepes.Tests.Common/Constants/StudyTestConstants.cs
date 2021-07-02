@@ -1,6 +1,6 @@
 ﻿namespace Sepes.Tests.Common.Constants
 {
-    public static class StudyConstants
+    public static class StudyTestConstants
     {
         //PERSONAL STUDY CONSTANTS   
         public const int CREATED_BY_ME_ID = 1;
