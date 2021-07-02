@@ -4,7 +4,7 @@ using Sepes.Tests.Tests;
 using System;
 using Xunit;
 
-namespace Sepes.Tests.Handlers
+namespace Sepes.Tests.Infrastructure.Handlers
 {
     public class StudyUpdateHandlerShould : TestBaseWithInMemoryDb
     {

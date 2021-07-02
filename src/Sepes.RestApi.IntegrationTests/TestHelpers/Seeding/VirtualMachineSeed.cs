@@ -5,7 +5,6 @@ using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
-using Sepes.Infrastructure.Util.Azure;
 using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System.Threading.Tasks;

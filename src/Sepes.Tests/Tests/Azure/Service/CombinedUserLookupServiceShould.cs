@@ -13,7 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Sepes.Tests.Services.Azure
+namespace Sepes.Tests.Azure.Service
 {
     public class CombinedUserLookupServiceShould : TestBase
     {

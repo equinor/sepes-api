@@ -1,6 +1,6 @@
 ﻿using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Util.Azure
+namespace Sepes.Infrastructure.Util
 {
     public static class VmSizeUtil
     {

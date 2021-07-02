@@ -1,14 +1,11 @@
 ﻿using Sepes.Common.Constants;
-using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Util
+namespace Sepes.Azure.Util
 {
     public static class AzureResourceTypeUtil
     {
-       public static string GetUserFriendlyName(CloudResource resource)
+       public static string GetUserFriendlyName(string resourceType)
         {
-            var resourceType = resource.ResourceType;
-
             switch (resourceType)
             {
                 case AzureResourceType.ResourceGroup:

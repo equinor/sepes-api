@@ -1,4 +1,5 @@
-﻿using Sepes.Common.Constants;
+﻿using Sepes.Azure.Util;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
 using Xunit;
@@ -20,7 +21,7 @@ namespace Sepes.Tests.Util
         public void StudySpecificDatasetResourceGroupName_ShouldContainStudyName(string expectedResult, string resourceType)
         {
             var resource = new CloudResource { ResourceType = resourceType };
-            var result = AzureResourceTypeUtil.GetUserFriendlyName(resource);
+            var result = AzureResourceTypeUtil.GetUserFriendlyName(resource.ResourceType);
             Assert.Equal(expectedResult, result);
         }
     }

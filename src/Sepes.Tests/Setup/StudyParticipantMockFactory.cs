@@ -23,7 +23,7 @@ namespace Sepes.Tests.Setup
             var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
 
             var azureUserLookupService = new Mock<ICombinedUserLookupService>();
-            azureUserLookupService.Setup(s => s.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new System.Collections.Generic.Dictionary<string, Azure.Dto.AzureUserDto>());
+            azureUserLookupService.Setup(s => s.SearchAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new System.Collections.Generic.Dictionary<string, Sepes.Azure.Dto.AzureUserDto>());
 
             var provisioningQueueService = new Mock<IProvisioningQueueService>();
 

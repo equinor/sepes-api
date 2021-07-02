@@ -6,7 +6,7 @@ using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 
-namespace Sepes.Infrastructure.Util.Azure
+namespace Sepes.Infrastructure.Util
 {
     public static class VmRuleUtils
     {
