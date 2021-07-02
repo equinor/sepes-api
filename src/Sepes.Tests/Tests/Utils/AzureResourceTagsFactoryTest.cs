@@ -1,6 +1,7 @@
-﻿using Sepes.Infrastructure.Model;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Util;
-using Sepes.Tests.Setup;
 using Sepes.Tests.Tests;
 using System.Collections.Generic;
 using Xunit;
@@ -13,7 +14,7 @@ namespace Sepes.Tests.Util
         public void SandboxResourceTags_ShouldReturnCorrectValues()
         {
 
-            var config = AzureResourceTagsFactory_Factory.GetConfiguration(_serviceProvider);
+            var config = _serviceProvider.GetService<IConfiguration>();
             List<StudyParticipant> participants = new List<StudyParticipant>();
             var user = new User() { Id = 1, FullName = "John Doe", EmailAddress = "John@doe.com" };
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });
@@ -37,7 +38,7 @@ namespace Sepes.Tests.Util
         public void StudySpecificDatasourceResourceGroupTags_ShouldReturnCorrectValues()
         {
 
-            var config = AzureResourceTagsFactory_Factory.GetConfiguration(_serviceProvider);
+            IConfiguration config = _serviceProvider.GetService<IConfiguration>();
             List<StudyParticipant> participants = new List<StudyParticipant>();
             var user = new User() { Id = 1, FullName = "John Doe", EmailAddress = "John@doe.com" };
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });
@@ -58,7 +59,7 @@ namespace Sepes.Tests.Util
         public void StudySpecificDatasourceStorageAccountTags_ShouldReturnCorrectValues()
         {
 
-            var config = AzureResourceTagsFactory_Factory.GetConfiguration(_serviceProvider);
+            var config = _serviceProvider.GetService<IConfiguration>();
             List<StudyParticipant> participants = new List<StudyParticipant>();
             var user = new User() { Id = 1, FullName = "John Doe", EmailAddress = "John@doe.com" };
             participants.Add(new StudyParticipant() { RoleName = "Study Owner", User = user });

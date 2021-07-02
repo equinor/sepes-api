@@ -4,6 +4,7 @@ using Sepes.Infrastructure.Handlers;
 using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Common.Constants;
 
 namespace Sepes.Tests.Setup
 {
@@ -12,7 +13,7 @@ namespace Sepes.Tests.Setup
         public static IStudyUpdateHandler Create(ServiceProvider serviceProvider, bool wbsValidationSucceeds = true)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
-            UserFactory.GetUserServiceForDatasetAdmin()
+            var userService = UserFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>(); 
             
@@ -20,7 +21,7 @@ namespace Sepes.Tests.Setup
             var updateStudyWbsHandler = new Mock<IStudyWbsUpdateHandler>();
             var studyEfModelOperationsService = StudyEfModelOperationsServiceMockFactory.Create(serviceProvider);
 
-            return new StudyUpdateHandler(db, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object, updateStudyWbsHandler.Object, studyEfModelOperationsService);
+            return new StudyUpdateHandler(db, userService.Object, logoCreateServiceMock.Object, logoDeleteServiceMock.Object , studyWbsValidationService.Object, updateStudyWbsHandler.Object, studyEfModelOperationsService);
         }     
     }
 }
