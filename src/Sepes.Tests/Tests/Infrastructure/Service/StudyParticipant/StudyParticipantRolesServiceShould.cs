@@ -10,6 +10,7 @@ using Sepes.Tests.Tests;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices.Lookup

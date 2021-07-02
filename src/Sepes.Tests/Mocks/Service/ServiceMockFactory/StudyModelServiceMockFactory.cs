@@ -5,14 +5,15 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public static class StudyModelServiceMockFactory
     {
         public static IStudyListModelService StudyListModelService(ServiceProvider serviceProvider)
         {                
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
             var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider);
             var dapperQueryService = serviceProvider.GetService<IDapperQueryService>();
             return new StudyListModelService(dapperQueryService, userService.Object, studyPermissionService);

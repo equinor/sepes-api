@@ -1,6 +1,6 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Exceptions;
-using Sepes.Tests.Setup;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services

@@ -1,4 +1,6 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using System.Linq;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,10 +9,9 @@ using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System.Collections.Generic;
-using System.Linq;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public static class SandboxServiceWithMocksFactory
     {
@@ -35,7 +36,7 @@ namespace Sepes.Tests.Setup
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<SandboxService>>();
 
-            var userService = UserFactory.GetUserServiceMockForAppRole(userAppRole, userId);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAppRole(userAppRole, userId);
 
             var sandboxResourceCreateServiceMock = new Mock<ISandboxResourceCreateService>();
             var sandboxResourceDeleteServiceMock = new Mock<ISandboxResourceDeleteService>();

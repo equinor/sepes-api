@@ -1,8 +1,8 @@
 ﻿using Sepes.Common.Interface;
 
-namespace Sepes.Tests.Mocks
+namespace Sepes.Tests.Common.Mocks.Service
 {
-    public class HasRequestIdMock : IRequestIdService
+    public class RequestIdServiceMock : IRequestIdService
     {
         public string GetRequestId() { return "requestId"; }
     }

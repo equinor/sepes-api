@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Test.Mocks;
-using System;
+using Sepes.Tests.Common.Mocks.Service;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public static class PublicIpServiceMockFactory
     {

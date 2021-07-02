@@ -4,9 +4,9 @@ using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
-    public static class UserFactory
+    public static class UserServiceMockFactory
     {
         public static string OBJECT_ID = UserTestConstants.COMMON_CUR_USER_OBJECTID;
         public static string USERNAME = UserTestConstants.COMMON_CUR_USER_UPN;

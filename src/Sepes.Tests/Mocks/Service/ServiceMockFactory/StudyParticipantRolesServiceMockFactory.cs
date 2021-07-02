@@ -5,39 +5,38 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
-using System;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public class StudyParticipantRolesServiceMockFactory
     {
         public static IStudyParticipantRolesService GetForBasicUser(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForAdmin(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForSponsor(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForSponsor(UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForSponsor(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForDatasetAdmin(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForDatasetAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForDatasetAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 
         public static IStudyParticipantRolesService GetForEmployee(ServiceProvider serviceProvider)
         {
-            var userService = UserFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForBasicUser(true, UserTestConstants.COMMON_CUR_USER_DB_ID);
             return GetInternal(serviceProvider, userService);
         }
 

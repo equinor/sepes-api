@@ -20,6 +20,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 
 namespace Sepes.Tests.Services.Infrastructure
 {
@@ -142,7 +143,7 @@ namespace Sepes.Tests.Services.Infrastructure
               });
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
             return new WbsValidationService(
                 configuration,
                  userService.Object,

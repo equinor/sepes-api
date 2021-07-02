@@ -9,8 +9,9 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public class VirtualMachineMockServiceFactory
     {     
@@ -21,7 +22,7 @@ namespace Sepes.Tests.Setup
             var mapper = serviceProvider.GetService<IMapper>();
             var config = serviceProvider.GetService<IConfiguration>();
             var logger = serviceProvider.GetService<ILogger<VirtualMachineCreateService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();            
 
@@ -59,7 +60,7 @@ namespace Sepes.Tests.Setup
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
             sandboxModelServiceMock.Setup(x => x.GetRegionByIdAsync(1, It.IsAny<UserOperation>())).ReturnsAsync("norwayeast");

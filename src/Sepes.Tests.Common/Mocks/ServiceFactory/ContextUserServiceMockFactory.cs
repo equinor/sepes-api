@@ -2,7 +2,7 @@
 using Sepes.Common.Interface;
 using Sepes.Tests.Common.Constants;
 
-namespace Sepes.Tests.Mocks
+namespace Sepes.Tests.Common.Mocks.ServiceFactory
 {
     public static class ContextUserServiceMock
     {

@@ -3,9 +3,9 @@ using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Tests.Common.Constants;
-using Sepes.Tests.Mocks;
 using Sepes.Tests.Tests;
 using System.Threading.Tasks;
+using Sepes.Tests.Common.Mocks.ServiceFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices

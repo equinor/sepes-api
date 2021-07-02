@@ -2,6 +2,8 @@
 using Sepes.Tests.Setup;
 using Sepes.Tests.Tests;
 using System;
+using Sepes.Tests.Mocks.HandlerMockFactory;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Infrastructure.Handlers

@@ -1,5 +1,7 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -7,14 +9,11 @@ using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
-using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
     public static class StudyServiceMockFactory
     {
@@ -23,7 +22,7 @@ namespace Sepes.Tests.Setup
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();         
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
             var operationPermissionFactory = OperationPermissionServiceMockFactory.Create(userService.Object);
 
             var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
@@ -60,7 +59,7 @@ namespace Sepes.Tests.Setup
         {
             var db = serviceProvider.GetService<SepesDbContext>();         
             var logger = serviceProvider.GetService<ILogger<StudyDeleteService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var studyEfModelService = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
 

@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Model;
-using Sepes.Infrastructure.Service.Interface;
-using Sepes.Tests.Setup;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Service.Interface;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.Infrastructure

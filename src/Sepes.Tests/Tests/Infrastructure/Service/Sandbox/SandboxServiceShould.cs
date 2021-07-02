@@ -13,6 +13,7 @@ using Sepes.Tests.Tests;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.Infrastructure

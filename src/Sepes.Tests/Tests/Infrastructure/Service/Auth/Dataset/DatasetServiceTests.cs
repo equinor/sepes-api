@@ -1,6 +1,6 @@
-﻿using Sepes.Common.Dto.Dataset;
-using Sepes.Tests.Setup;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Sepes.Common.Dto.Dataset;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services

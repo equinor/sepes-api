@@ -1,8 +1,8 @@
-﻿using Sepes.Infrastructure.Model;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Sepes.Infrastructure.Model;
 
-namespace Sepes.Tests.Setup.ModelFactory
+namespace Sepes.Tests.ModelFactory
 {
     public static class StudyFactory
     {

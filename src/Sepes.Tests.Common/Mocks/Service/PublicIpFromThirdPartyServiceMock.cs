@@ -1,9 +1,9 @@
-﻿using Sepes.Infrastructure.Service.Interface;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Infrastructure.Service.Interface;
 
-namespace Sepes.Test.Mocks
+namespace Sepes.Tests.Common.Mocks.Service
 {
     public class PublicIpFromThirdPartyServiceMock : IPublicIpFromThirdPartyService
     {

@@ -5,6 +5,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Setup;
 using Sepes.Tests.Tests;
 using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
@@ -70,18 +71,18 @@ namespace Sepes.Tests.Services.DomainServices
         {
             if (admin)
             {
-               return UserFactory.GetUserServiceMockForAdmin(userId);
+               return UserServiceMockFactory.GetUserServiceMockForAdmin(userId);
             }
             else if(sponsor)
             {
-                return UserFactory.GetUserServiceMockForSponsor(userId);
+                return UserServiceMockFactory.GetUserServiceMockForSponsor(userId);
             }
             else if (datasetAdmin)
             {
-                return UserFactory.GetUserServiceMockForDatasetAdmin(userId);
+                return UserServiceMockFactory.GetUserServiceMockForDatasetAdmin(userId);
             }
 
-            return UserFactory.GetUserServiceMockForBasicUser(employee, userId);        
+            return UserServiceMockFactory.GetUserServiceMockForBasicUser(employee, userId);        
         }
     }
 }

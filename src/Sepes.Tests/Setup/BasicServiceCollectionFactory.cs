@@ -7,11 +7,10 @@ using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
-using Sepes.Tests.Mocks;
+using Sepes.Tests.Common.Mocks.Service;
 
 namespace Sepes.Tests.Setup
 {
@@ -41,7 +40,7 @@ namespace Sepes.Tests.Setup
             
             services.AddAutoMapper(typeof(AutoMappingConfigs));
             services.AddTransient<CloudResourceOperationReadService>();            
-            services.AddTransient<IRequestIdService, HasRequestIdMock>();        
+            services.AddTransient<IRequestIdService, RequestIdServiceMock>();        
 
             //Sepes Services           
             services.AddTransient<IVariableService, VariableService>();

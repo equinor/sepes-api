@@ -5,15 +5,17 @@ using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.Constants;
+using Sepes.Tests.Mocks.ServiceMockFactory;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.HandlerMockFactory
 {
     public static class StudyUpdateHandlerMockFactory   
     {  
         public static IStudyUpdateHandler Create(ServiceProvider serviceProvider, bool wbsValidationSucceeds = true)
         {
             var db = serviceProvider.GetService<SepesDbContext>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(UserTestConstants.COMMON_CUR_USER_DB_ID);
             var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>(); 
             

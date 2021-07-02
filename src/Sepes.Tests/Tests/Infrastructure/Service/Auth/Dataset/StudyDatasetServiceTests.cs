@@ -1,8 +1,7 @@
-﻿using Sepes.Common.Exceptions;
+﻿using System.Threading.Tasks;
+using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
-using Sepes.Tests.Setup;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services

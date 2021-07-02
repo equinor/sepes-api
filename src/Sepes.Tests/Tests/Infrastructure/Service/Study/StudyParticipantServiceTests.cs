@@ -20,6 +20,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
+using Sepes.Tests.ModelFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices
@@ -117,7 +119,7 @@ namespace Sepes.Tests.Services.DomainServices
 
         Mock<IUserService> GetUserServiceMock(int id, string objectId = UserTestConstants.COMMON_CUR_USER_OBJECTID)
         {
-            return UserFactory.GetUserServiceMockForAdmin(id, objectId);
+            return UserServiceMockFactory.GetUserServiceMockForAdmin(id, objectId);
         }       
 
         async Task RefreshAndPopulateTestDb()

@@ -1,10 +1,10 @@
-﻿using Sepes.Common.Model;
+﻿using System;
+using System.Collections.Generic;
+using Sepes.Common.Model;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using System;
-using System.Collections.Generic;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.ModelFactory
 {
     public static class SandboxPopulator
     {

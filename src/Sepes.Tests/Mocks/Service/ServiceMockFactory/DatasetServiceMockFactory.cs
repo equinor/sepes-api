@@ -1,4 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -11,12 +15,9 @@ using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Tests.Common.ServiceMockFactories.Infrastructure;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Sepes.Tests.Setup;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.Mocks.ServiceMockFactory
 {
 
     public static class DatasetServiceMockFactory
@@ -26,7 +27,7 @@ namespace Sepes.Tests.Setup
             var config = serviceProvider.GetService<IConfiguration>();
             var db = serviceProvider.GetService<SepesDbContext>();         
             var logger = serviceProvider.GetService<ILogger<PreApprovedDatasetModelService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
@@ -57,7 +58,7 @@ namespace Sepes.Tests.Setup
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<DatasetService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 
@@ -71,7 +72,7 @@ namespace Sepes.Tests.Setup
             var db = serviceProvider.GetService<SepesDbContext>();          
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudyDatasetService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);            
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);            
 
             var studyModelServiceMock = new Mock<IStudyEfModelService>();
             studyModelServiceMock.Setup(x => x.GetForDatasetsAsync(It.IsAny<int>(), It.IsAny<UserOperation>())).ReturnsAsync(( int a, UserOperation b) => studies != null ? studies.FirstOrDefault(s=> s.Id == a) : null);
@@ -86,7 +87,7 @@ namespace Sepes.Tests.Setup
         public static IDatasetFirewallService GetStudyDatasetFirewallService(ServiceProvider serviceProvider, string serverIp)
         {           
             var logger = serviceProvider.GetService<ILogger<DatasetFirewallService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
             var ipService = PublicIpServiceMockFactory.CreateSucceedingService(serviceProvider, serverIp);
 
             return new DatasetFirewallService(logger, userService.Object, ipService);
@@ -103,7 +104,7 @@ namespace Sepes.Tests.Setup
             var config = serviceProvider.GetService<IConfiguration>();
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
-            var userService = UserFactory.GetUserServiceMockForAdmin(1);
+            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var studyPermissionService = StudyPermissionServiceMockFactory.Create(serviceProvider, userService.Object);
 

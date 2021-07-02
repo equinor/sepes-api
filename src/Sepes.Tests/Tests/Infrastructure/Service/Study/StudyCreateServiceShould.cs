@@ -3,6 +3,7 @@ using Sepes.Tests.Setup;
 using Sepes.Tests.Tests;
 using System;
 using System.Threading.Tasks;
+using Sepes.Tests.Mocks.ServiceMockFactory;
 using Xunit;
 
 namespace Sepes.Tests.Services.DomainServices

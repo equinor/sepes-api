@@ -1,12 +1,9 @@
-﻿using Sepes.Common.Constants;
+﻿using System.Collections.Generic;
+using Sepes.Common.Constants;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Tests.Setup.ModelFactory;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Sepes.Tests.Setup
+namespace Sepes.Tests.ModelFactory
 {
     public static class StudyPopulator
     {
