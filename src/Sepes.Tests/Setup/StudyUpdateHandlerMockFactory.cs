@@ -1,10 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Sepes.Infrastructure.Handlers;
 using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model.Context;
-using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 
 namespace Sepes.Tests.Setup

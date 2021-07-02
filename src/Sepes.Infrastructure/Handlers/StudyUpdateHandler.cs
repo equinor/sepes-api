@@ -10,6 +10,7 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,7 @@ namespace Sepes.Infrastructure.Handlers
     public class StudyUpdateHandler : IStudyUpdateHandler
     {
         readonly SepesDbContext _db;
+        readonly IUserService _userService;
         readonly IStudyLogoCreateService _studyLogoCreateService;
         readonly IStudyLogoDeleteService _studyLogoDeleteService;
         readonly IStudyWbsValidationService _studyWbsValidationService;
@@ -26,15 +28,17 @@ namespace Sepes.Infrastructure.Handlers
 
         readonly IStudyEfModelOperationsService _studyEfModelOperationsService;
 
-        public StudyUpdateHandler(SepesDbContext db, 
+        public StudyUpdateHandler(SepesDbContext db,
+            IUserService userService,
             IStudyLogoCreateService studyLogoCreateService,
             IStudyLogoDeleteService studyLogoDeleteService,
             IStudyWbsValidationService studyWbsValidationService,
             IStudyWbsUpdateHandler studyWbsUpdateHandler,
             IStudyEfModelOperationsService studyEfModelOperationsService
-          )           
+          )
         {
             _db = db;
+            _userService = userService;
             _studyLogoCreateService = studyLogoCreateService;
             _studyLogoDeleteService = studyLogoDeleteService;
             _studyWbsValidationService = studyWbsValidationService;
@@ -54,50 +58,43 @@ namespace Sepes.Infrastructure.Handlers
 
             GenericNameValidation.ValidateName(updatedStudy.Name);
 
-            var afterValidation = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
+            var studyFromDb = await GetStudyAsync(studyId);       
 
-            var studyFromDb = await GetStudyAsync(studyId);
-
-            var afterGetStudy = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
-
-            if (updatedStudy.Name != studyFromDb.Name)
+            var TasksToWaitFor = new List<Task>
             {
-                studyFromDb.Name = updatedStudy.Name;
-            }
+                HandleWbsChanged(updatedStudy, studyFromDb, cancellationToken),
 
-            if (updatedStudy.Description != studyFromDb.Description)
+                HandleLogoChanged(updatedStudy, studyFromDb, logo, cancellationToken),
+
+                HandleSimpleValuesChanged(updatedStudy, studyFromDb)
+            };
+
+            await Task.WhenAll(TasksToWaitFor);
+
+            EntityValidationUtil.Validate<Study>(studyFromDb);           
+
+            await _db.SaveChangesAsync();          
+
+            return studyFromDb;
+        }
+
+        async Task HandleWbsChanged(StudyUpdateDto studyFromClient, Study studyFromDb, CancellationToken cancellationToken)
+        {           
+            if (studyFromClient.WbsCode != studyFromDb.WbsCode)
             {
-                studyFromDb.Description = updatedStudy.Description;
+                studyFromDb.WbsCode = studyFromClient.WbsCode;             
+
+                await _studyWbsValidationService.ValidateForStudyUpdate(studyFromDb); 
+                await _studyWbsUpdateHandler.Handle(studyFromDb, cancellationToken); 
             }
+        }
 
-            if (updatedStudy.Vendor != studyFromDb.Vendor)
-            {
-                studyFromDb.Vendor = updatedStudy.Vendor;
-            }
-
-            if (updatedStudy.Restricted != studyFromDb.Restricted)
-            {
-                studyFromDb.Restricted = updatedStudy.Restricted;
-            }
-
-            if (updatedStudy.WbsCode != studyFromDb.WbsCode)
-            {
-                studyFromDb.WbsCode = updatedStudy.WbsCode;
-
-                await _studyWbsValidationService.ValidateForStudyUpdate(studyFromDb);
-
-                await _studyWbsUpdateHandler.Handle(studyFromDb, cancellationToken);
-            }
-
-            var afterWbs = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
-
-            if (updatedStudy.DeleteLogo)
+        async Task HandleLogoChanged(StudyUpdateDto studyFromClient, Study studyFromDb, IFormFile logo = null, CancellationToken cancellationToken = default)
+        {
+            if (studyFromClient.DeleteLogo)
             {
                 if (!String.IsNullOrWhiteSpace(studyFromDb.LogoUrl))
-                {                   
+                {
                     await _studyLogoDeleteService.DeleteAsync(studyFromDb.LogoUrl);
                     studyFromDb.LogoUrl = "";
                 }
@@ -106,24 +103,35 @@ namespace Sepes.Infrastructure.Handlers
             {
                 studyFromDb.LogoUrl = await _studyLogoCreateService.CreateAsync(studyFromDb, logo);
             }
+        }
 
-            var afterLogo = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
+        async Task HandleSimpleValuesChanged(StudyUpdateDto studyFromClient, Study studyFromDb)
+        {
+            var currentUser = await _userService.GetCurrentUserAsync();
 
             studyFromDb.Updated = DateTime.UtcNow;
+            studyFromDb.UpdatedBy = currentUser.UserName;
 
-            EntityValidationUtil.Validate<Study>(studyFromDb);
+            if (studyFromClient.Name != studyFromDb.Name)
+            {
+                studyFromDb.Name = studyFromClient.Name;
+            }
 
-            var afterValidate = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
+            if (studyFromClient.Description != studyFromDb.Description)
+            {
+                studyFromDb.Description = studyFromClient.Description;
+            }
 
-            await _db.SaveChangesAsync();
+            if (studyFromClient.Vendor != studyFromDb.Vendor)
+            {
+                studyFromDb.Vendor = studyFromClient.Vendor;
+            }
 
-            var afterSave = spUpdate.ElapsedMilliseconds;
-            spUpdate.Restart();
-
-            return studyFromDb;
-        }       
+            if (studyFromClient.Restricted != studyFromDb.Restricted)
+            {
+                studyFromDb.Restricted = studyFromClient.Restricted;
+            }
+        }
 
         public async Task<Study> GetStudyAsync(int studyId)
         {

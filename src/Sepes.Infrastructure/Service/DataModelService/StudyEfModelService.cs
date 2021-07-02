@@ -6,6 +6,7 @@ using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Service.Queries;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -18,8 +19,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public StudyEfModelService(IConfiguration configuration, SepesDbContext db, ILogger<StudyEfModelService> logger, IStudyEfModelOperationsService studyEfModelOperationsService,  IStudyPermissionService studyPermissionService)
             : base(configuration, db, logger, studyPermissionService)
         {
-            _studyEfModelOperationsService = studyEfModelOperationsService;
-        }        
+            _studyEfModelOperationsService = studyEfModelOperationsService ?? throw new ArgumentNullException(nameof(studyEfModelOperationsService));
+        }       
 
         public async Task<Study> GetByIdAsync(int studyId, UserOperation userOperation)
         {

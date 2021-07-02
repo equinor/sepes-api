@@ -12,6 +12,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Sepes.Infrastructure.Handlers
     {
         readonly ILogger _logger;
         readonly IConfiguration _configuration;
-        readonly SepesDbContext _sepesDbContext;        
+        readonly SepesDbContext _sepesDbContext;
         readonly IProvisioningQueueService _provisioningQueueService;
         readonly ICloudResourceOperationCreateService _cloudResourceOperationCreateService;
 
@@ -37,15 +38,18 @@ namespace Sepes.Infrastructure.Handlers
 
         public async Task Handle(Study study, CancellationToken cancellationToken = default)
         {
+           
             var studyWithUser = await _sepesDbContext.Studies
                 .Include(s => s.StudyParticipants)
                     .ThenInclude(sp => sp.User)
                     .SingleOrDefaultAsync(s => s.Id == study.Id);
-           
 
-            await UpdateTagsForStudySpecificDatasetsAsync(studyWithUser, cancellationToken);
-            await UpdateTagsForSandboxResourcesAsync(studyWithUser, cancellationToken);                     
-        }       
+
+            await UpdateTagsForStudySpecificDatasetsAsync(studyWithUser, cancellationToken);  
+
+            await UpdateTagsForSandboxResourcesAsync(studyWithUser, cancellationToken);
+        
+        }
 
         public async Task UpdateTagsForStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default)
         {
@@ -61,7 +65,7 @@ namespace Sepes.Infrastructure.Handlers
             datasetResourceGroup.Tags = TagUtils.TagDictionaryToString(resourceGroupTags);
 
             await _sepesDbContext.SaveChangesAsync(cancellationToken);
-            
+
             await CreateUpdateOperationAndEnqueue(parentQueueItem, datasetResourceGroup);
 
             //Update all datasets in resource group
@@ -71,7 +75,7 @@ namespace Sepes.Infrastructure.Handlers
             {
                 _logger.LogInformation($"Updating tags for study specific dataset storage account {curStorageAccount.Id}: {curStorageAccount.ResourceName}");
                 var tagsForStorageAccount = ResourceTagFactory.StudySpecificDatasourceStorageAccountTags(_configuration, study, curStorageAccount.Dataset.Name);
-                curStorageAccount.Tags = TagUtils.TagDictionaryToString(tagsForStorageAccount);               
+                curStorageAccount.Tags = TagUtils.TagDictionaryToString(tagsForStorageAccount);
                 await CreateUpdateOperationAndEnqueue(parentQueueItem, curStorageAccount);
             }
 
@@ -104,7 +108,7 @@ namespace Sepes.Infrastructure.Handlers
 
             var sandboxes = await GetSandboxWithResourcesAsync(study, cancellationToken);
 
-            foreach(var curSandbox in sandboxes)
+            foreach (var curSandbox in sandboxes)
             {
                 var parentQueueItem = QueueItemFactory.CreateParent($"Update tags for Sandbox resources, Sandbox: {curSandbox.Id}");
 
@@ -114,14 +118,14 @@ namespace Sepes.Infrastructure.Handlers
 
                 foreach (var curSandboxResource in curSandbox.Resources)
                 {
-                    _logger.LogInformation($"Updating tags for resource {curSandboxResource.Id}: {curSandboxResource.ResourceName}");                   
+                    _logger.LogInformation($"Updating tags for resource {curSandboxResource.Id}: {curSandboxResource.ResourceName}");
                     curSandboxResource.Tags = TagUtils.TagDictionaryToString(tag);
-                    await CreateUpdateOperationAndEnqueue(parentQueueItem, curSandboxResource);                   
+                    await CreateUpdateOperationAndEnqueue(parentQueueItem, curSandboxResource);
                 }
 
                 await _sepesDbContext.SaveChangesAsync(cancellationToken);
                 await _provisioningQueueService.SendMessageAsync(parentQueueItem, cancellationToken: cancellationToken);
-            }                 
+            }
 
             _logger.LogInformation($"Done updating tags for sandbox resources for study {study.Id}");
         }
