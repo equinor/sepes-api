@@ -42,18 +42,40 @@ namespace Sepes.Tests.Util
         public void DiagStorageAccountName_ShouldNotExceed24Characters()
         {
             var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "Strezztest1");
-            Assert.InRange(resourceName.Length, 4, 24);
-            Assert.Contains("stdiag", resourceName);
+
+            DiagStorageAccountNameAsserts(resourceName);
             Assert.Contains("bestes", resourceName);
             Assert.Contains("strezzte", resourceName);
 
 
             var resourceName2 = AzureResourceNameUtil.DiagnosticsStorageAccount("Bestest Study Ever", "The third test we are going to too");
-            Assert.InRange(resourceName2.Length, 4, 24);
-            Assert.Contains("stdiag", resourceName2);
+
+            DiagStorageAccountNameAsserts(resourceName);
             Assert.Contains("be", resourceName2);
             Assert.Contains("thethird", resourceName2);
+        }
 
+        [Theory]
+        [InlineData("ct-test", "test sandbox", "ct", "tests")]
+        [InlineData("ct-test-", "test sandbox", "ct", "tests")]
+        [InlineData("cttest", "test-sandbox", "ct", "tests")]
+        [InlineData("cttest", "test--sandbox", "ct", "tests")]
+        public void DiagStorageAccountName_ShouldDiscardSpecialCharactersInStudyName(string studyName, string sandboxName, string shouldContain1, string shouldContain2)
+        {
+            var resourceName = AzureResourceNameUtil.DiagnosticsStorageAccount(studyName, sandboxName);
+            DiagStorageAccountNameAsserts(resourceName);
+            Assert.Contains(shouldContain1, resourceName);
+            Assert.Contains(shouldContain2, resourceName);         
+        }
+
+        void DiagStorageAccountNameAsserts(string nameFromUtil)
+        {
+            Assert.InRange(nameFromUtil.Length, 4, 24);
+            Assert.Contains("stdiag", nameFromUtil);
+            Assert.DoesNotContain("-", nameFromUtil);
+            Assert.DoesNotContain("_", nameFromUtil);
+            Assert.DoesNotContain(".", nameFromUtil);
+            Assert.DoesNotContain(" ", nameFromUtil);
         }
 
         [Fact]
