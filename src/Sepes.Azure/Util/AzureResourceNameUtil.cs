@@ -41,7 +41,7 @@ namespace Sepes.Azure.Util
             string prefix = "stds";
             var uniquePart = Guid.NewGuid().ToString().ToLower().Substring(0, 5);
 
-            var nameNormalized = MakeStringAlphanumericAndRemoveWhitespace(datasetName, 24 - prefix.Length - uniquePart.Length);
+            var nameNormalized = RemoveSpecialCharactersAndRemoveWhitespace(datasetName, true, 24 - prefix.Length - uniquePart.Length);
 
             return $"{prefix}{nameNormalized}{uniquePart}";
         }
@@ -58,8 +58,8 @@ namespace Sepes.Azure.Util
 
         public static string DiagnosticsStorageAccount(string studyName, string sandboxName)
         {
-            var studyNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(studyName);
-            var sanboxNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(sandboxName);
+            var studyNameNormalized = RemoveSpecialCharactersAndRemoveWhitespace(studyName);
+            var sanboxNameNormalized = RemoveSpecialCharactersAndRemoveWhitespace(sandboxName);
 
             return AzureResourceNameConstructor("stdiag", studyNameNormalized, sanboxNameNormalized, maxLength: 24, addUniqueEnding: true, avoidDash: true);
         }
@@ -69,9 +69,9 @@ namespace Sepes.Azure.Util
         public static string VirtualMachine(string studyName, string sandboxName, string userSuffix)
         {
 
-            var studyNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(studyName, 10);
-            var sanboxNameNormalized = MakeStringAlphanumericAndRemoveWhitespace(sandboxName, 10);
-            var userSuffixNormalized = MakeStringAlphanumericAndRemoveWhitespace(userSuffix);
+            var studyNameNormalized = RemoveSpecialCharactersAndRemoveWhitespace(studyName, limit: 10);
+            var sanboxNameNormalized = RemoveSpecialCharactersAndRemoveWhitespace(sandboxName, limit: 10);
+            var userSuffixNormalized = RemoveSpecialCharactersAndRemoveWhitespace(userSuffix);
 
             var partWithoutUserSuffix = AzureResourceNameConstructor("vm-", studyNameNormalized, sanboxNameNormalized, maxLength: 64 - userSuffixNormalized.Length, addUniqueEnding: false, avoidDash: false);
 
@@ -94,11 +94,11 @@ namespace Sepes.Azure.Util
 
             if (suffix == null)
             {
-                suffixNormalized = Normalize(Guid.NewGuid().ToString(), suffixMaxLength);
+                suffixNormalized = StripWhitespaceAndEnsureLength(Guid.NewGuid().ToString(), suffixMaxLength);
             }
             else
             {
-                suffixNormalized = Normalize(suffix, suffixMaxLength);
+                suffixNormalized = StripWhitespaceAndEnsureLength(suffix, suffixMaxLength);
             }
 
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
@@ -113,8 +113,8 @@ namespace Sepes.Azure.Util
             var shortUniquePart = addUniqueEnding ? (avoidDash ? "" : "-") + Guid.NewGuid().ToString().ToLower().Substring(0, 3) : "";
             var availableSpaceForStudyAndSandboxName = maxLength - prefixLength - suffixLength - shortUniquePart.Length - (avoidDash ? 0 : 1);
 
-            var alphanumericStudyName = MakeStringAlphanumericAndRemoveWhitespace(studyName);
-            var alphanumericSandboxName = sandboxName != null ? MakeStringAlphanumericAndRemoveWhitespace(sandboxName) : null;
+            var alphanumericStudyName = RemoveSpecialCharactersAndRemoveWhitespace(studyName, avoidDash);
+            var alphanumericSandboxName = sandboxName != null ? RemoveSpecialCharactersAndRemoveWhitespace(sandboxName, avoidDash) : null;
 
             StripTextsEqually(availableSpaceForStudyAndSandboxName, ref alphanumericStudyName, ref alphanumericSandboxName);
 
@@ -173,18 +173,18 @@ namespace Sepes.Azure.Util
             return text.Length;
         }
 
-        static string Normalize(string input, int limit = 0)
+        static string StripWhitespaceAndEnsureLength(string input, int limit = 0)
         {
             var normalizedString = StripWhitespace(input).ToLower();
 
             return EnsureMaxLength(normalizedString, limit);
         }
 
-        public static string MakeStringAlphanumericAndRemoveWhitespace(string str, int limit = 0)
+        public static string RemoveSpecialCharactersAndRemoveWhitespace(string str, bool avoidDash = false, int limit = 0)
         {
 
             var alphaNummericString = new string((from c in str
-                                                  where (char.IsLetterOrDigit(c) || c.Equals('-')) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
+                                                  where (char.IsLetterOrDigit(c) || (c.Equals('-') && !avoidDash)) && !char.IsWhiteSpace(c) && c != 'æ' && c != 'ø' && c != 'å'
                                                   select c).ToArray()).ToLower();
 
             return EnsureMaxLength(alphaNummericString, limit);
