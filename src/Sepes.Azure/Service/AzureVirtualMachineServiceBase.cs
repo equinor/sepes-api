@@ -6,7 +6,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualMachineServiceBase : AzureServiceBase
+    public class AzureVirtualMachineServiceBase : AzureSdkServiceBase
     {      
 
         public AzureVirtualMachineServiceBase(IConfiguration config, ILogger logger)

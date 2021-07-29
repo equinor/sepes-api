@@ -14,7 +14,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupService : AzureServiceBase, IAzureNetworkSecurityGroupService
+    public class AzureNetworkSecurityGroupService : AzureSdkServiceBase, IAzureNetworkSecurityGroupService
     {
         public AzureNetworkSecurityGroupService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger)
              : base(config, logger)

@@ -9,7 +9,7 @@ using Sepes.Azure.Dto;
 namespace Sepes.Azure.Service
 {
 
-    public abstract class AzureBlobStorageServiceBase : AzureServiceBase
+    public abstract class AzureBlobStorageServiceBase : AzureSdkServiceBase
     {
         protected AzureStorageAccountConnectionParameters _connectionParameters;
         protected IAzureStorageAccountAccessKeyService _azureStorageAccountAccessKeyService;

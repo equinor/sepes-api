@@ -16,7 +16,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureBastionService : AzureServiceBase, IAzureBastionService
+    public class AzureBastionService : AzureSdkServiceBase, IAzureBastionService
     {
         public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger) : base(config, logger)
         {

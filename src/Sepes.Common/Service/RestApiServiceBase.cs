@@ -32,7 +32,7 @@ namespace Sepes.Common.Service
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
+            //_tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _scope = scope;
             _apiTokenType = apiTokenType;
@@ -55,6 +55,7 @@ namespace Sepes.Common.Service
             if (needsAuth)
             {
                 var token = _apiTokenType == ApiTokenType.App ? await _tokenAcquisition.GetAccessTokenForAppAsync(_scope) : await _tokenAcquisition.GetAccessTokenForUserAsync(scopes: new List<string>() { _scope });
+               var _credentials = new AzureCredentials
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 

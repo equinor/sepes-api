@@ -59,15 +59,15 @@ namespace Sepes.Functions
             // This is configuration from environment variables, settings.json etc.
             var configuration = builder.GetContext().Configuration;
 
-            Log("Function - Startup - Configure - Auth");
-            builder.Services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = "Bearer";
-                sharedOptions.DefaultChallengeScheme = "Bearer";
-            })
-                .AddMicrosoftIdentityWebApi(configuration)
-                    .EnableTokenAcquisitionToCallDownstreamApi()
-                    .AddInMemoryTokenCaches();
+            //Log("Function - Startup - Configure - Auth");
+            //builder.Services.AddAuthentication(sharedOptions =>
+            //{
+            //    sharedOptions.DefaultScheme = "Bearer";
+            //    sharedOptions.DefaultChallengeScheme = "Bearer";
+            //})
+            //    .AddMicrosoftIdentityWebApi(configuration)
+            //        .EnableTokenAcquisitionToCallDownstreamApi()
+            //        .AddInMemoryTokenCaches();
 
             builder.Services.AddHttpContextAccessor();
 

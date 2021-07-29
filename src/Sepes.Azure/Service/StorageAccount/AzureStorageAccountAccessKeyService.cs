@@ -9,7 +9,7 @@ using Sepes.Azure.Util;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountAccessKeyService : AzureServiceBase, IAzureStorageAccountAccessKeyService
+    public class AzureStorageAccountAccessKeyService : AzureSdkServiceBase, IAzureStorageAccountAccessKeyService
     {
         public AzureStorageAccountAccessKeyService(IConfiguration configuration, ILogger<AzureStorageAccountAccessKeyService> logger)
             : base(configuration, logger)

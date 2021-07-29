@@ -9,7 +9,7 @@ using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupRuleService : AzureServiceBase, IAzureNetworkSecurityGroupRuleService
+    public class AzureNetworkSecurityGroupRuleService : AzureSdkServiceBase, IAzureNetworkSecurityGroupRuleService
     {
         public AzureNetworkSecurityGroupRuleService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger)
              : base(config, logger)

@@ -7,7 +7,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountBaseService : AzureServiceBase
+    public class AzureStorageAccountBaseService : AzureSdkServiceBase
     {
         public AzureStorageAccountBaseService(IConfiguration config, ILogger logger)
             : base(config, logger)

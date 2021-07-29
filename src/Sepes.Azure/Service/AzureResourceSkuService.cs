@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceSkuService : AzureServiceBase, IAzureResourceSkuService
+    public class AzureResourceSkuService : AzureSdkServiceBase, IAzureResourceSkuService
     {
         public AzureResourceSkuService(IConfiguration config, ILogger<AzureResourceSkuService> logger)
             : base(config, logger)

@@ -16,7 +16,7 @@ using Sepes.Common.Util;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualNetworkService : AzureServiceBase, IAzureVirtualNetworkService
+    public class AzureVirtualNetworkService : AzureSdkServiceBase, IAzureVirtualNetworkService
     {
         public AzureVirtualNetworkService(IConfiguration config, ILogger<AzureVirtualNetworkService> logger)
             : base(config, logger)

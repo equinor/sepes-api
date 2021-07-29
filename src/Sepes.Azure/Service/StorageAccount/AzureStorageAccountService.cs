@@ -15,7 +15,7 @@ using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountService : AzureServiceBase, IAzureStorageAccountService
+    public class AzureStorageAccountService : AzureSdkServiceBase, IAzureStorageAccountService
     {
         readonly IMapper _mapper;
 

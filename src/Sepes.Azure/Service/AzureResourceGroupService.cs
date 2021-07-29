@@ -12,7 +12,7 @@ using Sepes.Common.Dto.Provisioning;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
+    public class AzureResourceGroupService : AzureSdkServiceBase, IAzureResourceGroupService
     {
         public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
             : base(config, logger)

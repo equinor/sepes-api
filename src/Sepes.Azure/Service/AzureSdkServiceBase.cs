@@ -15,7 +15,7 @@ using System.Collections.Generic;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureServiceBase
+    public class AzureSdkServiceBase
     {
         protected readonly IConfiguration _config;
         protected readonly ILogger _logger;
@@ -25,7 +25,7 @@ namespace Sepes.Azure.Service
         protected string _subscriptionId;
 
 
-        public AzureServiceBase(IConfiguration config, ILogger logger)
+        public AzureSdkServiceBase(IConfiguration config, ILogger logger)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -99,8 +99,6 @@ namespace Sepes.Azure.Service
         {
             try
             {
-                // AzureResourceTagsFactory.CheckIfResourceIsManagedByThisInstanceThrowIfNot(_config, resourceTags);
-                
                 var expectedTagValueFromConfig = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.MANAGED_BY);
 
                 ContainsTagWithValueThrowIfError(resourceTags, CloudResourceConstants.MANAGED_BY_TAG_NAME, expectedTagValueFromConfig);
