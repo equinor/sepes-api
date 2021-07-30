@@ -1,16 +1,17 @@
 ﻿using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Service.Interface;
+using Sepes.Common.Exceptions;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Common.Exceptions;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountBaseService : AzureSdkServiceBase
+    public class AzureStorageAccountBaseService : AzureSdkServiceBaseV1
     {
-        public AzureStorageAccountBaseService(IConfiguration config, ILogger logger)
-            : base(config, logger)
+        public AzureStorageAccountBaseService(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
          
         }

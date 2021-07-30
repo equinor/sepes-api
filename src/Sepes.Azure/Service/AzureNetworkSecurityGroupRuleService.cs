@@ -1,18 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
+using Sepes.Common.Dto.VirtualMachine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupRuleService : AzureSdkServiceBase, IAzureNetworkSecurityGroupRuleService
+    public class AzureNetworkSecurityGroupRuleService : AzureSdkServiceBaseV1, IAzureNetworkSecurityGroupRuleService
     {
-        public AzureNetworkSecurityGroupRuleService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger)
-             : base(config, logger)
+        public AzureNetworkSecurityGroupRuleService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger, IAzureCredentialService azureCredentialService)
+             : base(config, logger, azureCredentialService)
         {
 
 

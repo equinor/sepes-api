@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Azure.Management.Network;
+﻿using Microsoft.Azure.Management.Network;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
@@ -13,12 +9,16 @@ using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureBastionService : AzureSdkServiceBase, IAzureBastionService
+    public class AzureBastionService: AzureSdkServiceBaseV1, IAzureBastionService
     {
-        public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger) : base(config, logger)
+        public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger, IAzureCredentialService azureCredentialService) : base(config, logger, azureCredentialService)
         {
 
         }

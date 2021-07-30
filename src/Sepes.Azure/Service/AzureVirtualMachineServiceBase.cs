@@ -1,16 +1,17 @@
 ﻿using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
+using Sepes.Azure.Service.Interface;
 using Sepes.Common.Exceptions;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualMachineServiceBase : AzureSdkServiceBase
+    public class AzureVirtualMachineServiceBase : AzureSdkServiceBaseV1
     {      
 
-        public AzureVirtualMachineServiceBase(IConfiguration config, ILogger logger)
-            : base(config, logger)
+        public AzureVirtualMachineServiceBase(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
                   
         }

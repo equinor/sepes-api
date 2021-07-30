@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
 using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
@@ -12,8 +11,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureDiskPriceService : AzureApiServiceBase, IAzureDiskPriceService
     {
-        public AzureDiskPriceService(IConfiguration config, ILogger<AzureDiskPriceService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-            : base(config, logger, tokenAcquisition, httpClient)
+        public AzureDiskPriceService(IConfiguration config, ILogger<AzureDiskPriceService> logger, IAzureApiRequestAuthenticatorService azureApiRequestAuthenticatorService, HttpClient httpClient)
+            : base(config, logger, azureApiRequestAuthenticatorService, httpClient)
         {
         }
 

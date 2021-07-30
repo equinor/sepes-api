@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Azure.Management.Network.Fluent;
+﻿using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
@@ -13,13 +9,17 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualNetworkService : AzureSdkServiceBase, IAzureVirtualNetworkService
+    public class AzureVirtualNetworkService : AzureSdkServiceBaseV1, IAzureVirtualNetworkService
     {
-        public AzureVirtualNetworkService(IConfiguration config, ILogger<AzureVirtualNetworkService> logger)
-            : base(config, logger)
+        public AzureVirtualNetworkService(IConfiguration config, ILogger<AzureVirtualNetworkService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
 
         }

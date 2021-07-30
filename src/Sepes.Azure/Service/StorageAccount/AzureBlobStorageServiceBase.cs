@@ -1,21 +1,21 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
 
 namespace Sepes.Azure.Service
 {
 
-    public abstract class AzureBlobStorageServiceBase : AzureSdkServiceBase
+    public abstract class AzureBlobStorageServiceBase : AzureSdkServiceBaseV1
     {
         protected AzureStorageAccountConnectionParameters _connectionParameters;
         protected IAzureStorageAccountAccessKeyService _azureStorageAccountAccessKeyService;
 
-        public AzureBlobStorageServiceBase(IConfiguration configuration, ILogger logger, IAzureStorageAccountAccessKeyService azureStorageAccountAccessKeyService)
-            : base(configuration, logger)
+        public AzureBlobStorageServiceBase(IConfiguration configuration, ILogger logger, IAzureCredentialService azureCredentialService, IAzureStorageAccountAccessKeyService azureStorageAccountAccessKeyService)
+            : base(configuration, logger, azureCredentialService)
         {
             _azureStorageAccountAccessKeyService = azureStorageAccountAccessKeyService;
         }

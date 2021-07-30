@@ -2,11 +2,12 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Web;
 using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
+using Sepes.Common.Service;
+using Sepes.Common.Service.Interface;
 using Sepes.Functions.Service;
 using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
@@ -82,6 +83,9 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IHealthService, HealthService>();
             builder.Services.AddTransient<IDapperQueryService, DapperQueryService>();
             builder.Services.AddTransient<IStudyEfModelOperationsService, StudyEfModelOperationsService>();
+            builder.Services.AddTransient<IRestApiTokenAquisitionWithIdentityService, RestApiTokenAquisitionWithIdentityService>();      
+            builder.Services.AddTransient<IAzureApiRequestAuthenticatorService, AzureApiRequestAuthenticatorService>();
+            builder.Services.AddTransient<IAzureCredentialService, FunctionAzureCredentialService>();
 
             //Domain Model Services
             builder.Services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();

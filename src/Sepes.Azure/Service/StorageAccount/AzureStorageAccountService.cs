@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
 using Microsoft.Extensions.Configuration;
@@ -12,15 +8,19 @@ using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountService : AzureSdkServiceBase, IAzureStorageAccountService
+    public class AzureStorageAccountService : AzureSdkServiceBaseV1, IAzureStorageAccountService
     {
         readonly IMapper _mapper;
 
-        public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper)
-            : base(config, logger)
+        public AzureStorageAccountService(IConfiguration config, ILogger<AzureStorageAccountService> logger, IMapper mapper, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
             _mapper = mapper;
         }

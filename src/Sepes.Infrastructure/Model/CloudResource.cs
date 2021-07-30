@@ -9,7 +9,6 @@ namespace Sepes.Infrastructure.Model
     [Table("CloudResources")]
     public class CloudResource : UpdateableBaseModel, ISupportSoftDelete
     {
-
         public int? StudyId { get; set; }
 
         public int? SandboxId { get; set; }
