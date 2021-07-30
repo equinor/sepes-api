@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceGroupService : AzureSdkServiceBaseV1, IAzureResourceGroupService
+    public class AzureResourceGroupService : AzureSdkServiceBase, IAzureResourceGroupService
     {
         public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger, IAzureCredentialService azureCredentialService)
             : base(config, logger, azureCredentialService)

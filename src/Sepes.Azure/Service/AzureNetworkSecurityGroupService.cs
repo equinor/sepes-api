@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupService : AzureSdkServiceBaseV1, IAzureNetworkSecurityGroupService
+    public class AzureNetworkSecurityGroupService : AzureSdkServiceBase, IAzureNetworkSecurityGroupService
     {
         public AzureNetworkSecurityGroupService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger, IAzureCredentialService azureCredentialService)
              : base(config, logger, azureCredentialService)

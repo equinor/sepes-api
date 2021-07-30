@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountService : AzureSdkServiceBaseV1, IAzureStorageAccountService
+    public class AzureStorageAccountService : AzureSdkServiceBase, IAzureStorageAccountService
     {
         readonly IMapper _mapper;
 

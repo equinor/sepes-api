@@ -46,7 +46,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
             return new WbsApiService(_serviceProvider.GetService<IConfiguration>(),
                 _serviceProvider.GetService<ILogger<WbsApiService>>(),
-                TokenAquistionMockFactory.CreateDefault().Object,
+                TokenAquistionMockFactory.CreateRequestAuthenticator().Object,
                 new HttpClient(httpMessageHandlerMock.Object));
         }
 

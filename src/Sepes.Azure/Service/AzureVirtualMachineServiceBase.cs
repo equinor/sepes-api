@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualMachineServiceBase : AzureSdkServiceBaseV1
+    public class AzureVirtualMachineServiceBase : AzureSdkServiceBase
     {      
 
         public AzureVirtualMachineServiceBase(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)

@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureBastionService: AzureSdkServiceBaseV1, IAzureBastionService
+    public class AzureBastionService: AzureSdkServiceBase, IAzureBastionService
     {
         public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger, IAzureCredentialService azureCredentialService) : base(config, logger, azureCredentialService)
         {

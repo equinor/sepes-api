@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureVirtualNetworkService : AzureSdkServiceBaseV1, IAzureVirtualNetworkService
+    public class AzureVirtualNetworkService : AzureSdkServiceBase, IAzureVirtualNetworkService
     {
         public AzureVirtualNetworkService(IConfiguration config, ILogger<AzureVirtualNetworkService> logger, IAzureCredentialService azureCredentialService)
             : base(config, logger, azureCredentialService)

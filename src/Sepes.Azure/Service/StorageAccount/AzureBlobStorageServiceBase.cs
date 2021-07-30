@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Sepes.Azure.Service
 {
 
-    public abstract class AzureBlobStorageServiceBase : AzureSdkServiceBaseV1
+    public abstract class AzureBlobStorageServiceBase : AzureSdkServiceBase
     {
         protected AzureStorageAccountConnectionParameters _connectionParameters;
         protected IAzureStorageAccountAccessKeyService _azureStorageAccountAccessKeyService;

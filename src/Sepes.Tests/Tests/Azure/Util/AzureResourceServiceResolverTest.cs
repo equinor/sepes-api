@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
@@ -17,9 +18,9 @@ namespace Sepes.Tests.Util
         {
             Services = BasicServiceCollectionFactory.GetServiceCollectionWithInMemory();
 
-            Services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
-            Services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
-            Services.AddTransient<IAzureBastionService, AzureBastionService>();           
+            Services.AddSingleton<IAzureResourceGroupService>(new Mock<IAzureResourceGroupService>().Object);
+            Services.AddSingleton<IAzureVirtualNetworkService>(new Mock<IAzureVirtualNetworkService>().Object);
+            Services.AddSingleton<IAzureBastionService>(new Mock<IAzureBastionService>().Object);
 
             ServiceProvider = Services.BuildServiceProvider();
         }

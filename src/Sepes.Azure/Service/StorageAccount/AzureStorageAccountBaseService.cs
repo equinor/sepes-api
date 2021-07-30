@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountBaseService : AzureSdkServiceBaseV1
+    public class AzureStorageAccountBaseService : AzureSdkServiceBase
     {
         public AzureStorageAccountBaseService(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)
             : base(config, logger, azureCredentialService)

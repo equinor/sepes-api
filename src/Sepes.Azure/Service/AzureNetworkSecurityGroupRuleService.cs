@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupRuleService : AzureSdkServiceBaseV1, IAzureNetworkSecurityGroupRuleService
+    public class AzureNetworkSecurityGroupRuleService : AzureSdkServiceBase, IAzureNetworkSecurityGroupRuleService
     {
         public AzureNetworkSecurityGroupRuleService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger, IAzureCredentialService azureCredentialService)
              : base(config, logger, azureCredentialService)

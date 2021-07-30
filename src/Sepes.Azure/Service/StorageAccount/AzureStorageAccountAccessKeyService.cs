@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountAccessKeyService : AzureSdkServiceBaseV1, IAzureStorageAccountAccessKeyService
+    public class AzureStorageAccountAccessKeyService : AzureSdkServiceBase, IAzureStorageAccountAccessKeyService
     {
         public AzureStorageAccountAccessKeyService(IConfiguration configuration, ILogger<AzureStorageAccountAccessKeyService> logger, IAzureCredentialService azureCredentialService)
             : base(configuration, logger, azureCredentialService)

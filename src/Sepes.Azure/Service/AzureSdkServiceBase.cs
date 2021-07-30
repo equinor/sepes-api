@@ -9,13 +9,15 @@ using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
+using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureSdkServiceBaseV1
+    public class AzureSdkServiceBase
     {
         protected readonly IConfiguration _config;
         protected readonly ILogger _logger;
@@ -25,7 +27,7 @@ namespace Sepes.Azure.Service
 
         protected string _subscriptionId;
 
-        public AzureSdkServiceBaseV1(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)
+        public AzureSdkServiceBase(IConfiguration config, ILogger logger, IAzureCredentialService azureCredentialService)
      
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
