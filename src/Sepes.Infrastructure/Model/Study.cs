@@ -10,7 +10,7 @@ namespace Sepes.Infrastructure.Model
         [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
-        [MaxLength(4096)]
+        [MaxLength(512)]
 
         public string Description { get; set; }
 
