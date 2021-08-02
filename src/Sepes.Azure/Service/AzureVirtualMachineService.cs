@@ -28,11 +28,11 @@ namespace Sepes.Azure.Service
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
 
-        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger,
+        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger, IAzureCredentialService azureCredentialService,
             IAzureKeyVaultSecretService azureKeyVaultSecretService,
             IAzureNetworkSecurityGroupRuleService azureNetworkSecurityGroupRuleService
            )
-            : base(config, logger)
+            : base(config, logger, azureCredentialService)
         {
             _mapper = mapper;
             _azureKeyVaultSecretService = azureKeyVaultSecretService;

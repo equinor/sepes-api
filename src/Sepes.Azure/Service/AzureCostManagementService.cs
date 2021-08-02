@@ -1,21 +1,19 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
+using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
-using Sepes.Common.Service;
-using System.Net.Http;
 
 namespace Sepes.Azure.Service
 {
     public class AzureCostManagementService : AzureApiServiceBase, IAzureCostManagementService
     {
-        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-            : base(config, logger, tokenAcquisition, httpClient)
+        public AzureCostManagementService(IConfiguration config, ILogger<AzureCostManagementService> logger, IAzureApiRequestAuthenticatorService azureApiRequestAuthenticatorService, HttpClient httpClient)
+            : base(config, logger, azureApiRequestAuthenticatorService, httpClient)
         {
 
         }

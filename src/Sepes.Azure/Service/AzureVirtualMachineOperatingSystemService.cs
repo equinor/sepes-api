@@ -1,7 +1,6 @@
 ﻿using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
@@ -18,8 +17,8 @@ namespace Sepes.Azure.Service
     {
         readonly string _subscriptionId;
 
-        public AzureVirtualMachineOperatingSystemService(IConfiguration config, ILogger<AzureVirtualMachineOperatingSystemService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-            : base(config, logger, tokenAcquisition, httpClient)
+        public AzureVirtualMachineOperatingSystemService(IConfiguration config, ILogger<AzureVirtualMachineOperatingSystemService> logger, IAzureApiRequestAuthenticatorService azureApiRequestAuthenticatorService, HttpClient httpClient)
+            : base(config, logger, azureApiRequestAuthenticatorService, httpClient)
         {       
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
 using Sepes.Azure.Dto.RoleAssignment;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
@@ -20,8 +19,8 @@ namespace Sepes.Azure.Service
         const string API_VERSION_ARGUMENT = "api-version=2018-07-01";
         readonly string _subscriptionId;
 
-        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-            : base(config, logger, tokenAcquisition, httpClient)
+        public AzureRoleAssignmentService(IConfiguration config, ILogger<AzureRoleAssignmentService> logger, IAzureApiRequestAuthenticatorService azureApiRequestAuthenticatorService, HttpClient httpClient)
+            : base(config, logger, azureApiRequestAuthenticatorService, httpClient)
         {
             _subscriptionId = config[ConfigConstants.SUBSCRIPTION_ID];
         }

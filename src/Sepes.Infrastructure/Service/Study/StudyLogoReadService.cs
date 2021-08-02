@@ -14,20 +14,16 @@ namespace Sepes.Infrastructure.Service
     {
         readonly string _containerName = "studylogos";
 
-        readonly ILogger _logger;      
-    
-        readonly IAzureBlobStorageService _azureBlobStorageService;
+        readonly ILogger _logger;         
+       
         readonly IAzureBlobStorageUriBuilderService _azureStorageAccountTokenService;
 
-        public StudyLogoReadService(ILogger<StudyLogoReadService> logger,         
-            IAzureBlobStorageService blobService,
+        public StudyLogoReadService(ILogger<StudyLogoReadService> logger, 
             IAzureBlobStorageUriBuilderService azureStorageAccountTokenService)
         {
             _logger = logger;  
-            _azureBlobStorageService = blobService;
-            _azureStorageAccountTokenService = azureStorageAccountTokenService;
-
-            _azureBlobStorageService.SetConnectionParameters(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
+           
+            _azureStorageAccountTokenService = azureStorageAccountTokenService;        
             _azureStorageAccountTokenService.SetConnectionParameters(ConfigConstants.STUDY_LOGO_STORAGE_CONSTRING);
         }
 

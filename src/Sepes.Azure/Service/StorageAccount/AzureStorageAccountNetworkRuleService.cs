@@ -17,8 +17,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountNetworkRuleService : AzureStorageAccountBaseService, IAzureStorageAccountNetworkRuleService
     {
-        public AzureStorageAccountNetworkRuleService(IConfiguration config, ILogger<AzureStorageAccountNetworkRuleService> logger)
-            : base(config, logger)
+        public AzureStorageAccountNetworkRuleService(IConfiguration config, ILogger<AzureStorageAccountNetworkRuleService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
 
         }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
 using Sepes.Common.Constants;
 using Sepes.Common.Service;
+using Sepes.Common.Service.Interface;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.Interface;
 using System;
@@ -17,8 +17,8 @@ namespace Sepes.Infrastructure.Service
     public class WbsApiService : RestApiServiceBase, IWbsApiService
     {
 
-        public WbsApiService(IConfiguration config, ILogger<WbsApiService> logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient)
-          : base(config, logger, tokenAcquisition, httpClient, ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.WBS_SEARCH_API_SCOPE), ApiTokenType.User)
+        public WbsApiService(IConfiguration config, ILogger<WbsApiService> logger, IRequestAuthenticatorWithTokenAquistionService requestAuthenticatorService, HttpClient httpClient)
+          : base(config, logger, requestAuthenticatorService, httpClient, ConfigUtil.GetConfigValueAndThrowIfEmpty(config, ConfigConstants.WBS_SEARCH_API_SCOPE), ApiTokenType.User)
         {
             
         }

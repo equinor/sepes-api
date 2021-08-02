@@ -14,8 +14,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureVirtualMachineExtendedInfoService : AzureVirtualMachineServiceBase, IAzureVirtualMachineExtendedInfoService
     { 
-        public AzureVirtualMachineExtendedInfoService(IConfiguration config, ILogger<AzureVirtualMachineExtendedInfoService> logger)
-            : base(config, logger)
+        public AzureVirtualMachineExtendedInfoService(IConfiguration config, ILogger<AzureVirtualMachineExtendedInfoService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
          
         }  

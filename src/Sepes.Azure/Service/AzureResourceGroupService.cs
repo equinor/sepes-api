@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Azure.Management.ResourceManager.Fluent;
+﻿using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
 using Sepes.Common.Dto.Provisioning;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
+    public class AzureResourceGroupService : AzureSdkServiceBase, IAzureResourceGroupService
     {
-        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
-            : base(config, logger)
+        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
 
         }

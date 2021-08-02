@@ -12,6 +12,8 @@ using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
+using Sepes.Common.Service;
+using Sepes.Common.Service.Interface;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Handlers;
@@ -165,6 +167,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
+                services.AddHttpClient("azuremanagement");
 
                 //Azure Services
                 services.AddTransient<IAzureUserService, AzureUserService>();
@@ -194,8 +197,13 @@ namespace Sepes.RestApi
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
             services.AddTransient<IHealthService, HealthService>();
-            services.AddTransient<IDapperQueryService, DapperQueryService>(); 
-            
+            services.AddTransient<IDapperQueryService, DapperQueryService>();
+            services.AddTransient<IRestApiTokenAquisitionWithIdentityService, RestApiTokenAquisitionWithIdentityService>();
+            services.AddTransient<IRequestAuthenticatorWithTokenAquistionService, RequestAuthenticatorWithTokenAquistionService>();
+            services.AddTransient<IAzureApiRequestAuthenticatorService, AzureApiRequestAuthenticatorService>();
+            services.AddTransient<IAzureCredentialService, WebAppAzureCredentialService>();
+
+
             //Authentication and Authorization
             services.AddScoped<IUserService, UserService>();
             services.AddTransient<IContextUserService, ContextUserService>();            

@@ -12,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceSkuService : AzureServiceBase, IAzureResourceSkuService
+    public class AzureResourceSkuService : AzureSdkServiceBase, IAzureResourceSkuService
     {
-        public AzureResourceSkuService(IConfiguration config, ILogger<AzureResourceSkuService> logger)
-            : base(config, logger)
+        public AzureResourceSkuService(IConfiguration config, ILogger<AzureResourceSkuService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
 
         }
