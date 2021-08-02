@@ -5,22 +5,20 @@ using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
-using Sepes.Azure.Util.Provisioning;
+using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Exceptions;
-using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Util;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureBastionService : AzureServiceBase, IAzureBastionService
+    public class AzureBastionService: AzureSdkServiceBase, IAzureBastionService
     {
-        public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger) : base(config, logger)
+        public AzureBastionService(IConfiguration config, ILogger<AzureBastionService> logger, IAzureCredentialService azureCredentialService) : base(config, logger, azureCredentialService)
         {
 
         }
@@ -81,7 +79,7 @@ namespace Sepes.Azure.Service
              .WithTags(tags)
              .CreateAsync(cancellationToken);
 
-            using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+            using (var client = new NetworkManagementClient(_credentials))
             {
                 client.SubscriptionId = _subscriptionId;
 
@@ -196,7 +194,7 @@ namespace Sepes.Azure.Service
         {
             try
             {
-                using (var client = new Microsoft.Azure.Management.Network.NetworkManagementClient(_credentials))
+                using (var client = new NetworkManagementClient(_credentials))
                 {
                     client.SubscriptionId = _subscriptionId;
                     var bastion = await client.BastionHosts.GetAsync(resourceGroupName, bastionHostName);

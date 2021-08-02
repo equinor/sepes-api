@@ -2,17 +2,17 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Util;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureStorageAccountAccessKeyService : AzureServiceBase, IAzureStorageAccountAccessKeyService
+    public class AzureStorageAccountAccessKeyService : AzureSdkServiceBase, IAzureStorageAccountAccessKeyService
     {
-        public AzureStorageAccountAccessKeyService(IConfiguration configuration, ILogger<AzureStorageAccountAccessKeyService> logger)
-            : base(configuration, logger)
+        public AzureStorageAccountAccessKeyService(IConfiguration configuration, ILogger<AzureStorageAccountAccessKeyService> logger, IAzureCredentialService azureCredentialService)
+            : base(configuration, logger, azureCredentialService)
         {
 
         }

@@ -4,20 +4,20 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
-using Sepes.Azure.Util.Provisioning;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureNetworkSecurityGroupService : AzureServiceBase, IAzureNetworkSecurityGroupService
+    public class AzureNetworkSecurityGroupService : AzureSdkServiceBase, IAzureNetworkSecurityGroupService
     {
-        public AzureNetworkSecurityGroupService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger)
-             : base(config, logger)
+        public AzureNetworkSecurityGroupService(IConfiguration config, ILogger<AzureNetworkSecurityGroupService> logger, IAzureCredentialService azureCredentialService)
+             : base(config, logger, azureCredentialService)
         {
 
 
@@ -110,7 +110,7 @@ namespace Sepes.Azure.Service
             }         
 
             //Ensure resource is is managed by this instance
-            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceGroupName, resource.Tags);
+            EnsureResourceIsManagedByThisIEnvironmentThrowIfNot(resourceName, resource.Tags);
 
             await _azure.NetworkSecurityGroups.DeleteByResourceGroupAsync(resourceGroupName, resourceName);
         }       
@@ -173,7 +173,7 @@ namespace Sepes.Azure.Service
         
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

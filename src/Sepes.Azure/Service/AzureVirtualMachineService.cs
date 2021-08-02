@@ -1,24 +1,23 @@
-﻿using AutoMapper;
-using Microsoft.Azure.Management.Compute.Fluent;
-using Microsoft.Azure.Management.Compute.Fluent.Models;
-using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
-using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Sepes.Common.Constants;
-using Sepes.Common.Dto.Provisioning;
-using Sepes.Common.Dto.VirtualMachine;
-using Sepes.Azure.Service.Interface;
-using Sepes.Common.Util;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sepes.Azure.Dto;
-using Sepes.Azure.Util;
-using Sepes.Azure.Util.Provisioning;
+using AutoMapper;
+using Microsoft.Azure.Management.Compute.Fluent;
+using Microsoft.Azure.Management.Compute.Fluent.Models;
+using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
 using Microsoft.Azure.Management.Network.Fluent.Models;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Sepes.Azure.Dto;
+using Sepes.Azure.Service.Interface;
+using Sepes.Azure.Util;
+using Sepes.Common.Constants;
+using Sepes.Common.Dto.Provisioning;
+using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Util;
 
 namespace Sepes.Azure.Service
 {
@@ -29,11 +28,11 @@ namespace Sepes.Azure.Service
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
 
-        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger,
+        public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger, IAzureCredentialService azureCredentialService,
             IAzureKeyVaultSecretService azureKeyVaultSecretService,
             IAzureNetworkSecurityGroupRuleService azureNetworkSecurityGroupRuleService
            )
-            : base(config, logger)
+            : base(config, logger, azureCredentialService)
         {
             _mapper = mapper;
             _azureKeyVaultSecretService = azureKeyVaultSecretService;

@@ -2,11 +2,12 @@
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Identity.Web;
 using Sepes.Azure.Service;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants;
 using Sepes.Common.Interface;
+using Sepes.Common.Service;
+using Sepes.Common.Service.Interface;
 using Sepes.Functions.Service;
 using Sepes.Infrastructure.Automapper;
 using Sepes.Infrastructure.Model.Context;
@@ -32,8 +33,7 @@ namespace Sepes.Functions
 
             var appiKey = GetConfigValue(ConfigConstants.APPI_KEY, true);
             var aiOptions = new ApplicationInsightsServiceOptions
-            {
-                // Disables adaptive sampling.
+            {               
                 EnableAdaptiveSampling = false,
                 InstrumentationKey = appiKey,
                 EnableDebugLogger = true
@@ -54,27 +54,25 @@ namespace Sepes.Functions
                       maxRetryCount: 3,
                       maxRetryDelay: TimeSpan.FromSeconds(30),
                       errorNumbersToAdd: null);
-                  }
-                  )
-
+                  })
               );
+
             // This is configuration from environment variables, settings.json etc.
             var configuration = builder.GetContext().Configuration;
 
-            Log("Function - Startup - Configure - Auth");
-            builder.Services.AddAuthentication(sharedOptions =>
-            {
-                sharedOptions.DefaultScheme = "Bearer";
-                sharedOptions.DefaultChallengeScheme = "Bearer";
-            })
-                .AddMicrosoftIdentityWebApi(configuration)
-                    .EnableTokenAcquisitionToCallDownstreamApi()
-                    .AddInMemoryTokenCaches();
+            //Log("Function - Startup - Configure - Auth");
+            //builder.Services.AddAuthentication(sharedOptions =>
+            //{
+            //    sharedOptions.DefaultScheme = "Bearer";
+            //    sharedOptions.DefaultChallengeScheme = "Bearer";
+            //})
+            //    .AddMicrosoftIdentityWebApi(configuration)
+            //        .EnableTokenAcquisitionToCallDownstreamApi()
+            //        .AddInMemoryTokenCaches();
 
             builder.Services.AddHttpContextAccessor();
 
             Log("Function - Startup - Configure - Adding Services");
-
 
             //Plumbing
             builder.Services.AddAutoMapper(typeof(AutoMappingConfigs));           
@@ -83,6 +81,11 @@ namespace Sepes.Functions
             builder.Services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             builder.Services.AddSingleton<IPublicIpService, PublicIpService>();
             builder.Services.AddTransient<IHealthService, HealthService>();
+            builder.Services.AddTransient<IDapperQueryService, DapperQueryService>();
+            builder.Services.AddTransient<IStudyEfModelOperationsService, StudyEfModelOperationsService>();
+            builder.Services.AddTransient<IRestApiTokenAquisitionWithIdentityService, RestApiTokenAquisitionWithIdentityService>();      
+            builder.Services.AddTransient<IAzureApiRequestAuthenticatorService, AzureApiRequestAuthenticatorService>();
+            builder.Services.AddTransient<IAzureCredentialService, FunctionAzureCredentialService>();
 
             //Domain Model Services
             builder.Services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
@@ -94,7 +97,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<ICloudResourceReadService, CloudResourceReadService>();
             builder.Services.AddTransient<ICloudResourceCreateService, CloudResourceCreateService>();
             builder.Services.AddTransient<ICloudResourceUpdateService, CloudResourceUpdateService>();
-            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();           
+            builder.Services.AddTransient<IResourceOperationModelService, ResourceOperationModelService>();
 
             builder.Services.AddTransient<ICloudResourceOperationCreateService, CloudResourceOperationCreateService>();
             builder.Services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
@@ -126,7 +129,6 @@ namespace Sepes.Functions
             //IMPORT SERVICE
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
-
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();

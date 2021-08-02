@@ -1,13 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Identity.Web;
+using Sepes.Common.Service.Interface;
 using Sepes.Common.Util;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,16 +21,16 @@ namespace Sepes.Common.Service
     {
         protected readonly ILogger _logger;
         protected readonly IConfiguration _config;
-        protected readonly ITokenAcquisition _tokenAcquisition;
+        protected readonly IHttpRequestAuthenticatorService _httpRequestAuthenticatorService;
         protected readonly HttpClient _httpClient;
         readonly string _scope;
         readonly ApiTokenType _apiTokenType;
 
-        public RestApiServiceBase(IConfiguration config, ILogger logger, ITokenAcquisition tokenAcquisition, HttpClient httpClient, string scope, ApiTokenType apiTokenType = ApiTokenType.App)
+        public RestApiServiceBase(IConfiguration config, ILogger logger, IHttpRequestAuthenticatorService httpRequestAuthenticatorService, HttpClient httpClient, string scope, ApiTokenType apiTokenType = ApiTokenType.App)
         {
             _config = config ?? throw new ArgumentNullException(nameof(config));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _tokenAcquisition = tokenAcquisition ?? throw new ArgumentNullException(nameof(tokenAcquisition));
+            _httpRequestAuthenticatorService = httpRequestAuthenticatorService ?? throw new ArgumentNullException(nameof(httpRequestAuthenticatorService));
             _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _scope = scope;
             _apiTokenType = apiTokenType;
@@ -52,42 +50,36 @@ namespace Sepes.Common.Service
 
         protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, Dictionary<string, string> additionalHeaders = null, CancellationToken cancellationToken = default)
         {
+            var requestMessage = new HttpRequestMessage(method, url);
+
             if (needsAuth)
             {
-                var token = _apiTokenType == ApiTokenType.App ? await _tokenAcquisition.GetAccessTokenForAppAsync(_scope) : await _tokenAcquisition.GetAccessTokenForUserAsync(scopes: new List<string>() { _scope });
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                if (_apiTokenType == ApiTokenType.App)
+                {
+                    await _httpRequestAuthenticatorService.PrepareRequestForAppAsync(requestMessage, _scope, cancellationToken);
+                }
+                else if (_apiTokenType == ApiTokenType.User)
+                {
+                    await _httpRequestAuthenticatorService.PrepareRequestForUserAsync(requestMessage, new List<string> { _scope }, cancellationToken);
+                }
             }
 
-            if(additionalHeaders != null)
+            if (additionalHeaders != null)
             {
-                foreach(var curHeader in additionalHeaders)
+                foreach (var curHeader in additionalHeaders)
                 {
-                    _httpClient.DefaultRequestHeaders.Add(curHeader.Key, curHeader.Value);
+                    requestMessage.Headers.Add(curHeader.Key, curHeader.Value);
                 }
             }
 
             HttpResponseMessage responseMessage = null;
 
-            if (method == HttpMethod.Get)
+            if (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch)
             {
-                responseMessage = await _httpClient.GetAsync(url, cancellationToken);
+                requestMessage.Content = content;
             }
-            else if (method == HttpMethod.Post)
-            {
-                responseMessage = await _httpClient.PostAsync(url, content, cancellationToken);
-            }
-            else if (method == HttpMethod.Put)
-            {
-                responseMessage = await _httpClient.PutAsync(url, content, cancellationToken);
-            }
-            else if (method == HttpMethod.Patch)
-            {
-                responseMessage = await _httpClient.PatchAsync(url, content, cancellationToken);
-            }
-            else if (method == HttpMethod.Delete)
-            {
-                responseMessage = await _httpClient.DeleteAsync(url, cancellationToken);
-            }
+
+            responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
 
             if (responseMessage.IsSuccessStatusCode)
             {

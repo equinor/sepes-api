@@ -12,8 +12,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureBlobStorageUriBuilderService : AzureBlobStorageServiceBase, IAzureBlobStorageUriBuilderService
     {
-        public AzureBlobStorageUriBuilderService(IConfiguration configuration, ILogger<AzureBlobStorageUriBuilderService> logger, IAzureStorageAccountAccessKeyService azureStorageAccountAccessKeyService)
-            : base(configuration, logger, azureStorageAccountAccessKeyService)
+        public AzureBlobStorageUriBuilderService(IConfiguration configuration, ILogger<AzureBlobStorageUriBuilderService> logger, IAzureCredentialService azureCredentialService, IAzureStorageAccountAccessKeyService azureStorageAccountAccessKeyService)
+            : base(configuration, logger, azureCredentialService, azureStorageAccountAccessKeyService)
         {
 
         }    

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Sepes.Azure.Service.Interface;
 using Sepes.Azure.Util;
-using Sepes.Azure.Util.Provisioning;
 using Sepes.Common.Dto.Provisioning;
 using System;
 using System.Collections.Generic;
@@ -13,10 +12,10 @@ using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
-    public class AzureResourceGroupService : AzureServiceBase, IAzureResourceGroupService
+    public class AzureResourceGroupService : AzureSdkServiceBase, IAzureResourceGroupService
     {
-        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger)
-            : base(config, logger)
+        public AzureResourceGroupService(IConfiguration config, ILogger<AzureResourceGroupService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
 
         }
@@ -156,7 +155,7 @@ namespace Sepes.Azure.Service
 
         public Task<ResourceProvisioningResult> Update(ResourceProvisioningParameters parameters, CancellationToken cancellationToken = default)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }     
     }
 }

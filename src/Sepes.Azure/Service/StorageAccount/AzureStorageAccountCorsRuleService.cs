@@ -11,8 +11,8 @@ namespace Sepes.Azure.Service
 {
     public class AzureStorageAccountCorsRuleService : AzureStorageAccountBaseService, IAzureStorageAccountCorsRuleService
     {
-        public AzureStorageAccountCorsRuleService(IConfiguration config, ILogger<AzureStorageAccountCorsRuleService> logger)
-            : base(config, logger)
+        public AzureStorageAccountCorsRuleService(IConfiguration config, ILogger<AzureStorageAccountCorsRuleService> logger, IAzureCredentialService azureCredentialService)
+            : base(config, logger, azureCredentialService)
         {
           
         }
