@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.5.1](https://github.com/equinor/sepes-api/compare/0.5.0...0.5.1) (2021-08-02)
+
+
+### Bug Fixes
+
+* filter out dash in storage account name ([#736](https://github.com/equinor/sepes-api/issues/736)) ([63592a0](https://github.com/equinor/sepes-api/commit/63592a08b2b13a363dbb59b9f585d7c65bb36943))
+* **function:** run as managed identity ([#700](https://github.com/equinor/sepes-api/issues/700)) ([3b50e56](https://github.com/equinor/sepes-api/commit/3b50e56161a181ae63ae3df45dc66045cb05ed7a)), closes [#669](https://github.com/equinor/sepes-api/issues/669)
+* reduce max length of description ([3bc80bc](https://github.com/equinor/sepes-api/commit/3bc80bc41b5a64874291a20a4e0fff9da147d797))
+
 ## [0.5.0](https://github.com/equinor/sepes-api/compare/0.4.24...0.5.0) (2021-06-30)
 
 
