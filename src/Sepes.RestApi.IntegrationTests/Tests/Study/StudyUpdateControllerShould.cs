@@ -25,7 +25,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false, true)]
         [InlineData(true, true, false)]
         [InlineData(true, true, true)]
-        public async Task UpdateStudyMetadata_WithRequiredRole_ShouldSucceed(bool isEmployee, bool isAdmin, bool isSponsor)
+        public async Task UpdateStudyMetadata_IfRequiredRole(bool isEmployee, bool isAdmin, bool isSponsor)
         {
             SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
 
