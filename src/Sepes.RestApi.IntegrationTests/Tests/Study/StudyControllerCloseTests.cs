@@ -81,11 +81,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [InlineData(true, false, true, false)]
         [InlineData(true, true, true, false)]
 
-        ////SPONSOR      
+        //SPONSOR      
         [InlineData(true, false, false, true)]
         [InlineData(true, true, false, true)]
 
-        ////STUDY SPECIFIC ROLES
+        //STUDY SPECIFIC ROLES
         [InlineData(false, false, false, false, StudyRoles.SponsorRep)]
         [InlineData(false, true, false, false, StudyRoles.SponsorRep)]
         [InlineData(true, false, false, false, StudyRoles.SponsorRep)]
