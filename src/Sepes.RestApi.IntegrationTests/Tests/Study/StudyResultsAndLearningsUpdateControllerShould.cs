@@ -1,8 +1,8 @@
 ﻿using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
-using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,30 +10,53 @@ using Xunit;
 namespace Sepes.RestApi.IntegrationTests.Tests
 {
     [Collection("Integration tests collection")]
-    public class StudyUpdateControllerShould : ControllerTestBase
+    public class StudyResultsAndLearningsUpdateControllerShould : ControllerTestBase
     {
-        public StudyUpdateControllerShould(TestHostFixture testHostFixture)
+        public StudyResultsAndLearningsUpdateControllerShould(TestHostFixture testHostFixture)
             : base(testHostFixture)
         {
 
-        }      
+        }
+
+
+        [Fact]
+        public async Task Update_If_UserIsAdmin()
+        {
+            SetScenario(isAdmin: true);
+
+            await WithUserSeeds();
+
+            await PerformTestExpectSuccess(false, false);
+            await PerformTestExpectSuccess(true, false);
+        }
+
+        [Fact]
+        public async Task Update_If_UserIsSponsorAndOwner()
+        {
+            SetScenario(isSponsor: true);
+
+            await WithUserSeeds();
+
+            await PerformTestExpectSuccess(true, false);
+            await PerformTestExpectSuccess(true, true);
+        }
 
         [Theory]
-        [InlineData(false, false, true)]
-        [InlineData(false, true, false)]
-        [InlineData(false, true, true)]
-        [InlineData(true, false, true)]
-        [InlineData(true, true, false)]
-        [InlineData(true, true, true)]
-        public async Task UpdateStudyMetadata_IfRequiredRole(bool isEmployee, bool isAdmin, bool isSponsor)
+        [InlineData(false, StudyRoles.SponsorRep)]
+        [InlineData(true, StudyRoles.SponsorRep)]
+        public async Task Update_If_UserHasRelevantPermissions(bool restricted, params string[] studyRoles)
         {
-            SetScenario(isEmployee: isEmployee, isAdmin: isAdmin, isSponsor: isSponsor);
+            SetScenario();
 
-            var studyCreateConversation = await StudyCreator.CreateAndExpectSuccess(_restHelper);
+            await WithUserSeeds();
 
-            CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
-        }     
-          
+            foreach (var curStudyRole in studyRoles)
+            {
+                await PerformTestExpectSuccess(false, restricted, curStudyRole);
+                await PerformTestExpectSuccess(true, restricted, curStudyRole);
+            }
+        }
+
 
         [Theory]
         [InlineData(false, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
@@ -75,7 +98,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await PerformTestExpectForbidden(false, true);
             await PerformTestExpectForbidden(true, false);
             await PerformTestExpectForbidden(true, true);
-        }       
+        }
 
         [Fact]
         public async Task Throw_If_Sponsor_AndNotCreatedByCurrent()
@@ -85,11 +108,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             await WithUserSeeds();
 
             await PerformTestExpectForbidden(false, false);
-            await PerformTestExpectForbidden(false, true);          
+            await PerformTestExpectForbidden(false, true);
         }
 
         [Theory]
-        [InlineData(null, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]     
+        [InlineData(null, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         public async Task Throw_If_DatasetAdmin_And_NoOtherRelevant_Permission(params string[] studyRoles)
         {
             SetScenario(isDatasetAdmin: true);
@@ -103,6 +126,19 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             }
         }
 
+        async Task PerformTestExpectSuccess(bool createdByCurrentUser, bool restricted, string studyRole = null)
+        {
+            var study = createdByCurrentUser ? await WithStudyCreatedByCurrentUser(restricted, new List<string> { studyRole }) : await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
+            await PerformTestExpectSuccess(study.Id);
+        }
+
+        async Task PerformTestExpectSuccess(int studyId)
+        {
+            var updateRequest = new StudyResultsAndLearningsDto() { ResultsAndLearnings = "newResultsandLearnings" };
+            var studyUpdateConversation = await StudyResultsAndLearningsUpdater.UpdateAndExpectSuccess(_restHelper, studyId, updateRequest);
+            UpdateStudyResultsAndLearningAsserts.ExpectSuccess(updateRequest, studyUpdateConversation.Response);
+        }
+
         async Task PerformTestExpectForbidden(bool createdByCurrentUser, bool restricted, string studyRole = null)
         {
             var study = createdByCurrentUser ? await WithStudyCreatedByCurrentUser(restricted, new List<string> { studyRole }) : await WithStudyCreatedByOtherUser(restricted, new List<string> { studyRole });
@@ -111,9 +147,9 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         async Task PerformTestExpectForbidden(int studyId)
         {
-            var updateRequest = new StudyDto() { Name = "newName", Vendor = "newVendor" };
-            var studyDeleteConversation = await StudyUpdater.UpdateAndExpectFailure(_restHelper, studyId, updateRequest);
-            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyDeleteConversation.Response, "does not have permission to perform operation");
+            var updateRequest = new StudyResultsAndLearningsDto() { ResultsAndLearnings = "newResultsandLearnings" };
+            var studyUpdateConversation = await StudyResultsAndLearningsUpdater.UpdateAndExpectFailure(_restHelper, studyId, updateRequest);
+            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(studyUpdateConversation.Response, "does not have permission to perform operation");
         }
     }
 }
