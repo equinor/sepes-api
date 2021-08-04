@@ -26,7 +26,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         [InlineData(true, false)]
-        [InlineData(false, true)]       
+        [InlineData(false, true)]      
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
             Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
@@ -56,7 +56,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var sandboxResponse = sandboxResponseWrapper.Content;
 
             //ADD DATASET TO SANDBOX
-            var addDatasetToSandboxResponse = await SandboxOperations.AddDataset(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);
+            var addDatasetToSandboxResponse = await SandboxDatasetOperations.AddDatasetExpectSuccess(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);
             var sandboxDatasetResponseWrapper = addDatasetToSandboxResponse.Response;
             AddDatasetToSandboxAsserts.ExpectSuccess(createDatasetResponse.Id, createDatasetResponse.Name, createDatasetResponse.Classification, "Open", sandboxDatasetResponseWrapper);
 

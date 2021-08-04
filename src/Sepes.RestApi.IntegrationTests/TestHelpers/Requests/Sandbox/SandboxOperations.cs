@@ -1,23 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Response.Sandbox;
-using Sepes.RestApi.IntegrationTests.TestHelpers.Constants;
 using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
-using System;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 {
     public static class SandboxOperations
-    {
-        public static async Task<AddDatasetToSandboxResult> AddDataset(RestHelper restHelper, int sandboxId, int datasetId)         
-        {       
-            var response = await restHelper.Put<AvailableDatasets>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
-
-            return new AddDatasetToSandboxResult(response);
-        }
-
-
+    { 
         public static async Task<ApiConversation<VmRuleDto, TResponse>> OpenInternetForVm<TResponse>(RestHelper restHelper, int vmId)
         {
             var request = new VmRuleDto() { Name = "OpenInternet", Action = RuleAction.Allow, Description = "tests", Direction = RuleDirection.Outbound, Ip = "1.1.1.1", Port = 80, Protocol = "HTTP" };
@@ -46,15 +36,5 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
         {            
             return await GenericDeleter.DeleteAndExpectSuccess(restHelper, $"api/virtualmachines/{vmId}");             
         }
-    }
-
-    public class AddDatasetToSandboxResult
-    {
-        public AddDatasetToSandboxResult(ApiResponseWrapper<AvailableDatasets> response)
-        {          
-            Response = response;
-        }     
-
-        public ApiResponseWrapper<AvailableDatasets> Response { get; private set; }       
-    }
+    } 
 }

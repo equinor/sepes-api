@@ -36,7 +36,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Retry_AsAdmin_ShouldSucceed(bool studyCreatedByCurrentUser, bool restrictedStudy, int resourcesSucceeded, string statusOfFailedResource = CloudResourceOperationState.ABORTED, int tryCount = 5, int maxTryCount = 5)
         {
             await WithBasicSeeds();
-            var sandbox = await WithFailedSandbox(studyCreatedByCurrentUser, restrictedStudy, addDatasets: false, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
+            var sandbox = await WithFailedSandbox(studyCreatedByCurrentUser, restrictedStudy, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
             SetScenario(isAdmin: true);
 
             await PerformTestsExpectSuccess(sandbox.Id, resourcesSucceeded, tryCount, maxTryCount);
@@ -58,7 +58,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Retry_ToOwnedStudy_AsSponsor_ShouldSucceed(bool restrictedStudy, int resourcesSucceeded, string statusOfFailedResource = CloudResourceOperationState.ABORTED, int tryCount = 5, int maxTryCount = 5)
         {
             await WithBasicSeeds();
-            var sandbox = await WithFailedSandbox(true, restrictedStudy, addDatasets: false, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
+            var sandbox = await WithFailedSandbox(true, restrictedStudy, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
 
             SetScenario(isSponsor: true);
 
@@ -77,7 +77,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await WithBasicSeeds();
 
-            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
+            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, resourcesSucceeded: RESOURCES_SUCCEEDED);
 
             SetScenario();
 
@@ -93,7 +93,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await WithBasicSeeds();
 
-            var sandbox = await WithFailedSandbox(false, restrictedStudy, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
+            var sandbox = await WithFailedSandbox(false, restrictedStudy, resourcesSucceeded: RESOURCES_SUCCEEDED);
 
             SetScenario(isEmployee: true, isSponsor: true);
 
@@ -111,7 +111,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             await WithBasicSeeds();
 
-            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, addDatasets: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
+            var sandbox = await WithFailedSandbox(false, restrictedStudy, new List<string> { studyRole }, addDatasetsToStudy: false, resourcesSucceeded: RESOURCES_SUCCEEDED);
 
             SetScenario();
 
@@ -122,7 +122,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Retry_SuceededSandbox_ShouldFail()
         {
             await WithBasicSeeds();
-            var sandbox = await WithSandbox(true, true, addDatasets: false);
+            var sandbox = await WithSandbox(true, true);
             SetScenario(isAdmin: true);
             await AttemptRetryOfSucceededSandbox(sandbox);
         }
@@ -133,7 +133,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var RESOURCES_SUCCEEDED = 5;
 
             await WithBasicSeeds();
-            var vm = await WithFailedVirtualMachine(true, true, addDatasets: false);
+            var vm = await WithFailedVirtualMachine(true, true);
             SetScenario(isAdmin: true);
             await PerformTestsExpectSuccess(vm.SandboxId.Value, RESOURCES_SUCCEEDED);          
         }
@@ -142,7 +142,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task Retry_FinishedVm_ShouldFail()
         {
             await WithBasicSeeds();
-            var vm = await WithVirtualMachine(true, true, addDatasets: false);
+            var vm = await WithVirtualMachine(true, true);
             SetScenario(isAdmin: true);
             await AttemptRetryOfSucceededResource(vm.Id);
         }      
