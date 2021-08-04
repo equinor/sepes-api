@@ -102,9 +102,8 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var dataset = sandbox.Study.StudyDatasets.FirstOrDefault();
 
             var datasetAddConversation = await SandboxDatasetOperations.AddDatasetExpectSuccess(_restHelper, sandbox.Id, dataset.DatasetId);
-            SandboxDatasetAsserts.NewlyAddedExpectSuccess(datasetAddConversation);           
-
-            //Remove dataset
+            SandboxDatasetAsserts.NewlyAddedExpectSuccess(datasetAddConversation);
+            
             var sandboxRemoveConversation = await SandboxDatasetOperations.RemoveDatasetExpectSuccess(_restHelper, sandbox.Id, dataset.DatasetId);
             SandboxDatasetAsserts.NewlyRemovedExpectSuccess(sandboxRemoveConversation);
         }      
