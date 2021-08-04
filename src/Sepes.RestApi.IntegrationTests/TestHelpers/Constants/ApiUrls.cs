@@ -10,6 +10,8 @@
 
         public const string STUDY_SPECIFIC_DATASETS = "api/studies/{0}/datasets/studyspecific";
 
+        public const string STUDY_SPECIFIC_DATASETS_UPDATE = "api/studies/{0}/datasets/studyspecific/{1}";
+
         public const string STUDY_SPECIFIC_DATASETS_RESOURCES = "api/studies/{studyId}/datasets/{datasetId}/resources";
     }
 }

@@ -39,7 +39,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
 
             //CREATE STUDY SPECIFIC DATASET
-            var datasetSeedResponse = await DatasetCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
+            var datasetSeedResponse = await StudySpecificDatasetCreatorAndUpdater.CreateExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
             var datasetCreateRequest = datasetSeedResponse.Request;
             var datasetResponseWrapper = datasetSeedResponse.Response;
             CreateDatasetAsserts.ExpectSuccess(datasetCreateRequest, datasetResponseWrapper);
