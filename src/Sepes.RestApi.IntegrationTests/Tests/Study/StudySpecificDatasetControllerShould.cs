@@ -1,13 +1,12 @@
 ﻿using Sepes.Common.Constants;
-using Sepes.Common.Dto.Study;
-using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
+using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
-using System.Linq;
 
 namespace Sepes.RestApi.IntegrationTests.Tests
 {
@@ -136,12 +135,14 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task PerformTestExpectSuccess(int studyId)
         {    
             //Create
-            var createRequest = await StudySpecificDatasetCreatorAndUpdater.CreateExpectSuccess(_restHelper, studyId);
+            var createRequest = await StudySpecificDatasetCreateUpdateDelete.CreateExpectSuccess(_restHelper, studyId);
             CreateDatasetAsserts.ExpectSuccess(createRequest.Request, createRequest.Response);
                    
             //Update
-            var updateRequest = await StudySpecificDatasetCreatorAndUpdater.UpdateExpectSuccess(_restHelper, studyId, createRequest.Response.Content.Id);
-            CreateDatasetAsserts.ExpectSuccess(updateRequest.Request, updateRequest.Response);          
+            var updateRequest = await StudySpecificDatasetCreateUpdateDelete.UpdateExpectSuccess(_restHelper, studyId, createRequest.Response.Content.Id);
+            CreateDatasetAsserts.ExpectSuccess(updateRequest.Request, updateRequest.Response);             
+
+            //TODO: Delete
         }
 
         async Task PerformTestExpectForbidden(bool createdByCurrentUser, bool restricted, string studyRole = null)
@@ -154,11 +155,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         async Task PerformTestExpectForbidden(int studyId, int datasetId)
         {
             //Create
-            var createRequest = await StudySpecificDatasetCreatorAndUpdater.CreateExpectFailure(_restHelper, studyId);
+            var createRequest = await StudySpecificDatasetCreateUpdateDelete.CreateExpectFailure(_restHelper, studyId);
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(createRequest.Response, "does not have permission to perform operation");
 
             //Update         
-            var updateRequest = await StudySpecificDatasetCreatorAndUpdater.UpdateExpectFailure(_restHelper, studyId, datasetId);
+            var updateRequest = await StudySpecificDatasetCreateUpdateDelete.UpdateExpectFailure(_restHelper, studyId, datasetId);
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(updateRequest.Response, "does not have permission to perform operation");
         }
     }
