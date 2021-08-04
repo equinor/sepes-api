@@ -20,7 +20,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task ResourceListShouldContainAllResources()
         {
             await WithBasicSeeds();
-            var vm = await WithVirtualMachine(true, true, addDatasets: false);
+            var vm = await WithVirtualMachine(true, true, addDatasetsToStudy: false);
             SetScenario(isAdmin: true);
            
             var sandboxResourcesPreProvisioningResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{vm.SandboxId}/resources");
@@ -31,7 +31,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task ResourceList_ShouldContain_DeletedResources_IfDeleteOperation_IsNotFinished()
         {
             await WithBasicSeeds();
-            var vm = await WithVirtualMachine(true, true, addDatasets: false, deleted: true);
+            var vm = await WithVirtualMachine(true, true, addDatasetsToStudy: false, deleted: true);
             SetScenario(isAdmin: true);
 
             var sandboxResourcesPreProvisioningResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{vm.SandboxId}/resources");
@@ -42,7 +42,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         public async Task ResourceList_ShouldNotContain_DeletedResources_IfDeleteOperation_IsFinished()
         {
             await WithBasicSeeds();
-            var vm = await WithVirtualMachine(true, true, addDatasets: false, deleted: true, deleteSucceeded: true);
+            var vm = await WithVirtualMachine(true, true, addDatasetsToStudy: false, deleted: true, deleteSucceeded: true);
             SetScenario(isAdmin: true);
 
             var sandboxResourcesPreProvisioningResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{vm.SandboxId}/resources");
