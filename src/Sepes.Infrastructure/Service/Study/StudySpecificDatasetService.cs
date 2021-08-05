@@ -191,6 +191,12 @@ namespace Sepes.Infrastructure.Service
         public async Task HardDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default)
         {
             var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
+
+            if (!dataset.StudySpecific)
+            {
+                throw new ArgumentException("Dataset is not study specific and cannot be deleted");
+            }
+
             var study = dataset.StudyDatasets.SingleOrDefault().Study;
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await HardDeleteAsync(dataset);

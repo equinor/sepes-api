@@ -42,6 +42,14 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedDatasetResult);
         }
 
+        [HttpDelete("datasets/studyspecific/{datasetId}")]
+        public async Task<IActionResult> DeleteAsync(int datasetId, CancellationToken cancellationToken = default)
+        {
+            await _studySpecificDatasetService.HardDeleteStudySpecificDatasetAsync(datasetId, cancellationToken);         
+
+            return new NoContentResult();
+        }
+
         [HttpGet("{studyId}/datasets/{datasetId}/resources")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetDatasetResources(int studyId, int datasetId, CancellationToken cancellation = default)
