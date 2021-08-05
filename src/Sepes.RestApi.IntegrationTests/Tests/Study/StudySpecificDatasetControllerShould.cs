@@ -20,7 +20,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task CreateAndUpdate_If_UserIsAdmin()
+        public async Task CreateAndUpdateAndDelete_If_UserIsAdmin()
         {
             SetScenario(isAdmin: true);
 
@@ -31,7 +31,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task CreateAndUpdate_If_UserIsSponsorAndOwner()
+        public async Task CreateAndUpdateAndDelete_If_UserIsSponsorAndOwner()
         {
             SetScenario(isSponsor: true);
 
@@ -44,7 +44,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [Theory]
         [InlineData(false, StudyRoles.SponsorRep)]
         [InlineData(true, StudyRoles.SponsorRep)]
-        public async Task CreateAndUpdate_If_UserHasRelevantPermissions(bool restricted, params string[] studyRoles)
+        public async Task CreateAndUpdateAndDelete_If_UserHasRelevantPermissions(bool restricted, params string[] studyRoles)
         {
             SetScenario();
 
@@ -61,7 +61,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         [Theory]
         [InlineData(false, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
         [InlineData(true, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
-        public async Task PreventCreateAndUpdate_If_No_Relevant_Permission(bool restricted, params string[] studyRoles)
+        public async Task Prevent_CreateAndUpdateAndDelete_If_No_Relevant_Permission(bool restricted, params string[] studyRoles)
         {
             SetScenario();
 
@@ -75,7 +75,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task PreventCreateAndUpdate_If_No_Permission()
+        public async Task Prevent_CreateAndUpdateAndDelete_If_No_Permission()
         {
             SetScenario();
 
@@ -88,7 +88,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task PreventCreateAndUpdate_If_Only_Employee()
+        public async Task Prevent_CreateAndUpdateAndDelete_If_Only_Employee()
         {
             SetScenario(isEmployee: true);
 
@@ -101,7 +101,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         }
 
         [Fact]
-        public async Task PreventCreateAndUpdate_If_Sponsor_AndNotCreatedByCurrent()
+        public async Task Prevent_CreateAndUpdateAndDelete_If_Sponsor_AndNotCreatedByCurrent()
         {
             SetScenario(isSponsor: true);
 
@@ -113,7 +113,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         [InlineData(null, StudyRoles.StudyViewer, StudyRoles.VendorAdmin, StudyRoles.VendorContributor)]
-        public async Task PreventCreateAndUpdate_If_DatasetAdmin_And_NoOtherRelevant_Permission(params string[] studyRoles)
+        public async Task Prevent_CreateAndUpdateAndDelete_If_DatasetAdmin_And_NoOtherRelevant_Permission(params string[] studyRoles)
         {
             SetScenario(isDatasetAdmin: true);
 
@@ -140,9 +140,11 @@ namespace Sepes.RestApi.IntegrationTests.Tests
                    
             //Update
             var updateRequest = await StudySpecificDatasetCreateUpdateDelete.UpdateExpectSuccess(_restHelper, studyId, createRequest.Response.Content.Id);
-            CreateDatasetAsserts.ExpectSuccess(updateRequest.Request, updateRequest.Response);             
+            CreateDatasetAsserts.ExpectSuccess(updateRequest.Request, updateRequest.Response);
 
-            //TODO: Delete
+            //Delete
+            var deleteRequest = await StudySpecificDatasetCreateUpdateDelete.DeleteExpectSuccess(_restHelper, createRequest.Response.Content.Id);
+            CreateDatasetAsserts.ExpectDeleteSuccess(deleteRequest.Response);
         }
 
         async Task PerformTestExpectForbidden(bool createdByCurrentUser, bool restricted, string studyRole = null)
@@ -161,6 +163,10 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //Update         
             var updateRequest = await StudySpecificDatasetCreateUpdateDelete.UpdateExpectFailure(_restHelper, studyId, datasetId);
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(updateRequest.Response, "does not have permission to perform operation");
+
+            //Delete
+            var deleteRequest = await StudySpecificDatasetCreateUpdateDelete.DeleteExpectFailure(_restHelper, datasetId);
+            ApiResponseBasicAsserts.ExpectForbiddenWithMessage(deleteRequest.Response, "does not have permission to perform operation");
         }
     }
 }

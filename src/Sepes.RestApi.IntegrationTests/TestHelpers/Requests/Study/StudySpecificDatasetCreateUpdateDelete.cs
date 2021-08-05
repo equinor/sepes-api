@@ -48,14 +48,14 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 
         public static async Task<ApiConversation<NoContentResult>> DeleteExpectSuccess(RestHelper restHelper, int datasetId)
         {
-            var response = await restHelper.Delete<NoContentResult>(String.Format(ApiUrls.DATASET, datasetId));
+            var response = await restHelper.Delete<NoContentResult>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASET_DELETE, datasetId));
 
             return new ApiConversation<NoContentResult>(response);
         }
 
         public static async Task<ApiConversation<Common.Dto.ErrorResponse>> DeleteExpectFailure(RestHelper restHelper, int datasetId)
         {
-            var response = await restHelper.Delete<Common.Dto.ErrorResponse>(String.Format(ApiUrls.DATASET, datasetId));
+            var response = await restHelper.Delete<Common.Dto.ErrorResponse>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASET_DELETE, datasetId));
 
             return new ApiConversation<Common.Dto.ErrorResponse>(response);
         }
@@ -66,6 +66,6 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             var response = await restHelper.Delete<T>(String.Format(ApiUrls.DATASET, datasetId));
 
             return new ApiConversation<T>(response);
-        }
+        }        
     }  
 }

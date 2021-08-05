@@ -1,4 +1,5 @@
-﻿using Sepes.Common.Dto.Dataset;
+﻿using Microsoft.AspNetCore.Mvc;
+using Sepes.Common.Dto.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.Dto;
 using Xunit;
 
@@ -12,6 +13,11 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset
             Assert.NotEqual<int>(0, responseWrapper.Content.Id);
             Assert.Equal(createRequest.Name, responseWrapper.Content.Name);
             Assert.Equal(createRequest.Classification, responseWrapper.Content.Classification);
+        }
+
+        public static void ExpectDeleteSuccess(ApiResponseWrapper<NoContentResult> responseWrapper)
+        {
+            ApiResponseBasicAsserts.ExpectNoContent(responseWrapper);         
         }
     }
 }
