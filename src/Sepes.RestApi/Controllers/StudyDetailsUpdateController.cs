@@ -15,19 +15,19 @@ namespace Sepes.RestApi.Controller
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class StudyMetadataUpdateController : ControllerBase
+    public class StudyDetailsUpdateController : ControllerBase
     { 
         readonly IStudyUpdateHandler _studyUpdateHandler;
         readonly IStudyDetailsService _studyDetailsService;
 
-        public StudyMetadataUpdateController(IStudyUpdateHandler studyUpdateHandler, IStudyDetailsService studyDetailsService)
+        public StudyDetailsUpdateController(IStudyUpdateHandler studyUpdateHandler, IStudyDetailsService studyDetailsService)
         {
             _studyUpdateHandler = studyUpdateHandler;
             _studyDetailsService = studyDetailsService;
         }        
 
         [HttpPut("{studyId}/details")]       
-        public async Task<IActionResult> UpdateStudyDetailsAsync(int studyId,
+        public async Task<IActionResult> UpdateAsync(int studyId,
                [ModelBinder(BinderType = typeof(JsonModelBinder))] StudyUpdateDto study,
                IFormFile image = null)
         {

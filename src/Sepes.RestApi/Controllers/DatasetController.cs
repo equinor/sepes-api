@@ -63,19 +63,12 @@ namespace Sepes.RestApi.Controller
         //    return new JsonResult(updatedDataset);
         //}
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
-        {
-            if (await _preApprovedDatasetModelService.IsStudySpecific(id))
-            {
-                await _studySpecificDatasetService.HardDeleteStudySpecificDatasetAsync(id, cancellationToken);
-            }
-            //else
-            //{
-            //    await _datasetService.DeleteAsync(id);
-            //}
-           
-            return new NoContentResult();
-        }     
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteAsync(int id, CancellationToken cancellationToken = default)
+        //{
+        //    await _datasetService.DeleteAsync(id);
+
+        //    return new NoContentResult();
+        //}     
     }
 }
