@@ -7,7 +7,13 @@ using Xunit;
 namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 {
     public static class SandboxVirtualMachineAsserts
-    {    
+    {
+
+        public static void ExpectSuccess(ApiResponseWrapper<VmDto> responseWrapper)
+        {
+            ApiResponseBasicAsserts.ExpectSuccess<VmDto>(responseWrapper);          
+        }
+
 
         public static void BeforeProvisioning(ApiResponseWrapper<List<VmDto>> responseWrapper, params string[] expectedVmNames)
         {

@@ -8,7 +8,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
     {
         static async Task<ApiConversation<StudyResultsAndLearningsDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, StudyResultsAndLearningsDto studyResultsAndLearningsDto)         
         {         
-            var response = await restHelper.Put<TResponse, StudyResultsAndLearningsDto>($"api/studies/{studyId}/resultsandlearnings", studyResultsAndLearningsDto);
+            var response = await restHelper.Put<StudyResultsAndLearningsDto, TResponse>($"api/studies/{studyId}/resultsandlearnings", studyResultsAndLearningsDto);
 
             return new ApiConversation<StudyResultsAndLearningsDto, TResponse>(studyResultsAndLearningsDto, response);
         }
