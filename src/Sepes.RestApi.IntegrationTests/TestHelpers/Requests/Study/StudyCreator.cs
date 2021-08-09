@@ -9,7 +9,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
         static async Task<ApiConversation<StudyCreateDto, TResponse>> Create<TResponse>(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")         
         {
             var request = new StudyCreateDto() { Name = studyName, Vendor = vendor, WbsCode = wbsCode };
-            var response = await restHelper.PostAsForm<TResponse, StudyCreateDto>("api/studies", "study", request);
+            var response = await restHelper.PostAsForm<StudyCreateDto, TResponse>("api/studies", "study", request);
 
             return new ApiConversation<StudyCreateDto, TResponse>(request, response);
         }

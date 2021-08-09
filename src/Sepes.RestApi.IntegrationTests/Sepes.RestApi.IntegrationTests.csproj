@@ -40,8 +40,4 @@
     <ProjectReference Include="..\Sepes.Tests.Common\Sepes.Tests.Common.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Tests\Sandbox\VirtualMachine\" />
-  </ItemGroup>
-
 </Project>

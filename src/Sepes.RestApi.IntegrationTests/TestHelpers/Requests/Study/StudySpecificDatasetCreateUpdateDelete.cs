@@ -19,12 +19,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Create<Common.Dto.ErrorResponse>(restHelper, studyId, location, name, classification);       
         }
 
-        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, T>> Create<T>(RestHelper restHelper, int studyId, string location = "norwayeast", string name = "datasetName", string classification = "open")
+        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>> Create<TResponse>(RestHelper restHelper, int studyId, string location = "norwayeast", string name = "datasetName", string classification = "open")
         {
             var request = new DatasetCreateUpdateInputBaseDto() { Name = name, Location = location, Classification = classification };
-            var response = await restHelper.Post<T, DatasetCreateUpdateInputBaseDto>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASETS, studyId), request);
+            var response = await restHelper.Post<DatasetCreateUpdateInputBaseDto, TResponse>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASETS, studyId), request);
 
-            return new ApiConversation<DatasetCreateUpdateInputBaseDto, T>(request, response);
+            return new ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>(request, response);
         }
 
 
@@ -38,12 +38,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Update<Common.Dto.ErrorResponse>(restHelper, studyId, datasetId, newName, newClassification);
         }
 
-        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, T>> Update<T>(RestHelper restHelper, int studyId, int datasetId, string newName = "newDatasetName", string newClassification = "restricted")
+        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, int datasetId, string newName = "newDatasetName", string newClassification = "restricted")
         {
             var request = new DatasetCreateUpdateInputBaseDto() { Name = newName, Classification = newClassification, Location = "norwayeast" };
-            var response = await restHelper.Put<T, DatasetCreateUpdateInputBaseDto>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASETS_UPDATE, studyId, datasetId), request);
+            var response = await restHelper.Put<DatasetCreateUpdateInputBaseDto, TResponse>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASETS_UPDATE, studyId, datasetId), request);
 
-            return new ApiConversation<DatasetCreateUpdateInputBaseDto, T>(request, response);
+            return new ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>(request, response);
         }
 
         public static async Task<ApiConversation<NoContentResult>> DeleteExpectSuccess(RestHelper restHelper, int datasetId)

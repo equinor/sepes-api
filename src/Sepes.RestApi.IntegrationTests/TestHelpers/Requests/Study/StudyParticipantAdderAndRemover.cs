@@ -11,7 +11,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
     {
         static async Task<ApiConversation<ParticipantLookupDto, TResponse>> Add<TResponse>(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)         
         {         
-            var response = await restHelper.Put<TResponse, ParticipantLookupDto>($"api/studies/{studyId}/participants/{role}", requestDto);
+            var response = await restHelper.Put<ParticipantLookupDto, TResponse>($"api/studies/{studyId}/participants/{role}", requestDto);
 
             return new ApiConversation<ParticipantLookupDto, TResponse>(requestDto, response);
         }
