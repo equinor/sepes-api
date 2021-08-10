@@ -41,14 +41,6 @@ namespace Sepes.RestApi.Controller
         {
             await _studyDatasetService.RemovePreApprovedDatasetFromStudyAsync(studyId, datasetId);
             return new NoContentResult();
-        }
-
-        [HttpGet("{studyId}/datasets/{datasetId}")]
-        [Consumes(MediaTypeNames.Application.Json)]
-        public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
-        {
-            var dataset = await _studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
-            return new JsonResult(dataset);
-        }        
+        }     
     }
 }

@@ -1,4 +1,5 @@
-﻿using Sepes.Common.Dto.Dataset;
+﻿using Sepes.Common.Dto;
+using Sepes.Common.Dto.Dataset;
 using Sepes.Infrastructure.Model;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,9 +9,9 @@ namespace Sepes.Infrastructure.Service.Interface
 {
     public interface IStudySpecificDatasetService
     {         
-        Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, string clientIp, CancellationToken cancellationToken = default);
+        Task<StudySpecificDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDataset, string clientIp, CancellationToken cancellationToken = default);
 
-        Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto newDataset);
+        Task<StudySpecificDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto newDataset);
 
         Task DeleteAllStudyRelatedResourcesAsync(Study study, CancellationToken cancellationToken = default);
 
@@ -22,5 +23,6 @@ namespace Sepes.Infrastructure.Service.Interface
         Task SoftDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
         Task HardDeleteAllStudySpecificDatasetsAsync(Study study, CancellationToken cancellationToken = default);
         Task<List<DatasetResourceLightDto>> GetDatasetResourcesAsync(int studyId, int datasetId, CancellationToken cancellation);
+        Task<StudySpecificDatasetDto> GetDatasetAsync(int studyId, int datasetId);
     }
 }

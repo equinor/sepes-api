@@ -57,5 +57,13 @@ namespace Sepes.RestApi.Controller
             var datasetResource = await _studySpecificDatasetService.GetDatasetResourcesAsync(studyId, datasetId, cancellation);
             return new JsonResult(datasetResource);
         }
+
+        [HttpGet("{studyId}/datasets/{datasetId}")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
+        {
+            var dataset = await _studySpecificDatasetService.GetDatasetAsync(studyId, datasetId);
+            return new JsonResult(dataset);
+        }   
     }
 }

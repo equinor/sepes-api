@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
 using Sepes.Tests.Mocks.ServiceMockFactory;
@@ -42,24 +43,6 @@ namespace Sepes.Tests.Services
             await Assert.ThrowsAsync<NotFoundException>(() => studyDatasetService.AddPreApprovedDatasetToStudyAsync(providedStudyId, providedDatasetId));
         }
 
-        [Fact]
-        public async void AddDatasetFromStudyAsync_ShouldAddDataset()
-        {
-            var studyId = 1;
-            var studies = CreateTestStudyList(studyId);
-
-            var datasetId = 1;
-            var datasets = CreateTestDatasetList(datasetId);
-            _ = await ClearTestDatabase();
-
-            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider, studies, datasets);
-
-            await studyDatasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
-            var dataset = await studyDatasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId);
-
-            Assert.NotNull(dataset);
-        }
-
         [Theory]
         [InlineData(1337, 1)]
         [InlineData(1, 1337)]
@@ -82,13 +65,15 @@ namespace Sepes.Tests.Services
 
             var datasetId = 1;
             var datasets = CreateTestDatasetList(datasetId);
-            _ = await ClearTestDatabase();
+            var db = await ClearTestDatabase();
 
             var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider, studies, datasets);
 
             await datasetService.AddPreApprovedDatasetToStudyAsync(studyId, datasetId);
             await datasetService.RemovePreApprovedDatasetFromStudyAsync(studyId, datasetId);
-            await Assert.ThrowsAsync<NotFoundException>(() => datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId));
+            //await Assert.ThrowsAsync<NotFoundException>(() => datasetService.GetDatasetByStudyIdAndDatasetIdAsync(studyId, datasetId));
+            //To d
+            Assert.Empty(db.StudyDatasets.Where(x => x.DatasetId.Equals(datasetId) && x.StudyId.Equals(studyId)).ToList());
         }
 
     }

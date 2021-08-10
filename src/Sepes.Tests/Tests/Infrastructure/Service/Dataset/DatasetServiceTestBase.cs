@@ -23,7 +23,8 @@ namespace Sepes.Tests.Services
                 Name = "TestStudy",
                 Vendor = "Bouvet",
                 WbsCode = "1234.1345afg",
-                StudyParticipants = new List<StudyParticipant>()
+                StudyParticipants = new List<StudyParticipant>(), 
+                StudyDatasets = new List<StudyDataset>()
             };
         }
 
