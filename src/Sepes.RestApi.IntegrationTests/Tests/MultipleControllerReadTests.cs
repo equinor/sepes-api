@@ -1,4 +1,5 @@
 ﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Dto.Storage;
 using Sepes.Common.Dto.Study;
@@ -94,7 +95,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             //Dataset
             var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;           
-            await GenericReader.ReadAndAssertExpectSuccess<DatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectSuccess<StudySpecificDatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
             await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));          
             await GenericReader.ReadAndAssertExpectSuccess<List<BlobStorageItemDto>>(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
 
