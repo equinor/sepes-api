@@ -1,5 +1,6 @@
 name: "CodeQL config"
 disable-default-queries: true
+CatchClause: false
 queries: 
   # Run all extra query suites, both because we want to
   # and because it'll act as extra testing. This is why
