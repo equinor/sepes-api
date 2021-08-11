@@ -38,7 +38,6 @@ jobs:
       with:
         languages: ${{ matrix.language }}
        # queries: security-and-quality
-        disable-default-queries: true
         config-file: ./.github/codeql/codeql-config.yml
         
         # If you wish to specify custom queries, you can do so here or in a config file.
