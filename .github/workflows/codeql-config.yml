@@ -1,6 +1,5 @@
 name: "CodeQL config"
 disable-default-queries: true
-cs/catch-of-all-exceptions: false
 queries:
   - uses: HansKristianVikOlsen/codeql/csharp/ql/src/codeql-suites/csharp-security-and-quality.qls@main
   # Run all extra query suites, both because we want to
