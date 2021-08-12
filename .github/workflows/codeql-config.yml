@@ -2,7 +2,7 @@ name: "CodeQL config"
 disable-default-queries: true
 cs/catch-of-all-exceptions: false
 queries:
-  uses: github/codeql/csharp/ql/src/codeql-suites/csharp-code-scanning.qls@main
+  - uses: github/codeql/csharp/ql/src/codeql-suites/csharp-code-scanning.qls@main
   # Run all extra query suites, both because we want to
   # and because it'll act as extra testing. This is why
   # we include both even though one is a superset of the
