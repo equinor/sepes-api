@@ -15,22 +15,23 @@ namespace Sepes.Functions
         readonly IConfiguration _configuration;        
         readonly IVirtualMachineSizeImportService _virtualMachineSizeImportService;
         readonly IVirtualMachineDiskSizeImportService _virtualMachineDiskSizeImportService;
+        readonly IVirtualMachineImageImportService _virtualMachineImageImportService;
         readonly IWbsCodeCacheModelService _wbsCodeCacheModelService;
 
-        public UpdateCacheFunction(ILogger<UpdateCacheFunction> logger, IConfiguration configuration, IVirtualMachineSizeImportService virtualMachineSizeImportService, IVirtualMachineDiskSizeImportService virtualMachineDiskSizeImportService, IWbsCodeCacheModelService wbsCodeCacheModelService)
+        public UpdateCacheFunction(ILogger<UpdateCacheFunction> logger, IConfiguration configuration, IVirtualMachineSizeImportService virtualMachineSizeImportService, IVirtualMachineDiskSizeImportService virtualMachineDiskSizeImportService, IVirtualMachineImageImportService virtualMachineImageImportService, IWbsCodeCacheModelService wbsCodeCacheModelService)
         {
             _logger = logger;
             _configuration = configuration;
             _virtualMachineSizeImportService = virtualMachineSizeImportService;
             _virtualMachineDiskSizeImportService = virtualMachineDiskSizeImportService;
+            _virtualMachineImageImportService = virtualMachineImageImportService;
             _wbsCodeCacheModelService = wbsCodeCacheModelService;
         }
 
-        //To run every minute (in debug only): "0 */30 * * * *"
-        //Run every hour: "0 * * * *"    
-        //Run ever 6 hour "0 */6 * * *"
+        //To run every minute (in debug only): 0 * 0 ? * * *      
+        //Run ever 6 hour "0 0 */6 * * *"
         [FunctionName("UpdateAllCaches")]
-        public async Task Run([TimerTrigger("0 */6 * * * *", RunOnStartup = true)] TimerInfo myTimer)
+        public async Task Run([TimerTrigger("0 0 */6 * * *", RunOnStartup = true)] TimerInfo myTimer)
         {
             var cacheUpdateDisabled = _configuration[ConfigConstants.DISABLE_CACHE_UPDATE];
 
@@ -40,8 +41,9 @@ namespace Sepes.Functions
                 return;
             }
 
+            await _virtualMachineImageImportService.Import();
             await _virtualMachineSizeImportService.UpdateVmSizeCache();
-            await _virtualMachineDiskSizeImportService.Import();
+            await _virtualMachineDiskSizeImportService.Import();           
             await _wbsCodeCacheModelService.Clean();
         }
     }

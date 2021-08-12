@@ -17,6 +17,8 @@ namespace Sepes.Infrastructure.Model
 
         public ICollection<RegionDiskSize> DiskSizeAssociations { get; set; }
 
+        public ICollection<RegionVmImage> VmImageAssociations { get; set; }
+        
         public int Order { get; set; }
     }
 }

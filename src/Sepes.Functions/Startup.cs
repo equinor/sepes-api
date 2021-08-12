@@ -129,6 +129,7 @@ namespace Sepes.Functions
             //IMPORT SERVICE
             builder.Services.AddTransient<IVirtualMachineDiskSizeImportService, VirtualMachineDiskSizeImportService>();
             builder.Services.AddTransient<IVirtualMachineSizeImportService, VirtualMachineSizeImportService>();
+            builder.Services.AddTransient<IVirtualMachineImageImportService, VirtualMachineImageImportService>();
 
             //Azure Services
             builder.Services.AddTransient<IAzureBlobStorageService, AzureBlobStorageService>();
@@ -137,6 +138,7 @@ namespace Sepes.Functions
             builder.Services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
             builder.Services.AddTransient<IAzureBastionService, AzureBastionService>();
             builder.Services.AddTransient<IAzureVirtualNetworkService, AzureVirtualNetworkService>();
+            builder.Services.AddTransient<IAzureVirtualMachineImageService, AzureVirtualMachineImageService>();            
             builder.Services.AddTransient<IAzureVirtualMachineService, AzureVirtualMachineService>();
             builder.Services.AddTransient<IAzureQueueService, AzureQueueService>();
             builder.Services.AddTransient<IAzureStorageAccountService, AzureStorageAccountService>();

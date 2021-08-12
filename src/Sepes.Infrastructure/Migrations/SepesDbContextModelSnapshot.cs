@@ -442,6 +442,22 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("RegionDiskSize");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmImage", b =>
+                {
+                    b.Property<string>("RegionKey")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<int>("VmImageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RegionKey", "VmImageId");
+
+                    b.HasIndex("VmImageId");
+
+                    b.ToTable("RegionVmImage");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
                 {
                     b.Property<string>("RegionKey")
@@ -614,8 +630,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasColumnType("nvarchar(512)")
+                        .HasMaxLength(512);
 
                     b.Property<string>("LogoUrl")
                         .HasColumnType("nvarchar(512)")
@@ -826,6 +842,93 @@ namespace Sepes.Infrastructure.Migrations
                     b.ToTable("Variables");
                 });
 
+            modelBuilder.Entity("Sepes.Infrastructure.Model.VmImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("DisplayValue")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("ForeignSystemId")
+                        .HasColumnType("nvarchar(1024)")
+                        .HasMaxLength(1024);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<bool>("Recommended")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VmImages");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.VmImageSearchProperties", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Category")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(64)")
+                        .HasMaxLength(64);
+
+                    b.Property<string>("DisplayValue")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("Offer")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<bool>("PartOfRecommended")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Publisher")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.Property<string>("Sku")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("VmImageSearchProperties");
+                });
+
             modelBuilder.Entity("Sepes.Infrastructure.Model.VmSize", b =>
                 {
                     b.Property<string>("Key")
@@ -945,6 +1048,21 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasOne("Sepes.Infrastructure.Model.DiskSize", "DiskSize")
                         .WithMany("RegionAssociations")
                         .HasForeignKey("VmDiskKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmImage", b =>
+                {
+                    b.HasOne("Sepes.Infrastructure.Model.Region", "Region")
+                        .WithMany("VmImageAssociations")
+                        .HasForeignKey("RegionKey")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sepes.Infrastructure.Model.VmImage", "VmImage")
+                        .WithMany("RegionAssociations")
+                        .HasForeignKey("VmImageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

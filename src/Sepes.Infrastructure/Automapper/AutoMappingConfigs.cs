@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.Azure.Management.Compute.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.Management.Storage.Fluent;
@@ -13,6 +14,7 @@ using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Interface;
 using Sepes.Common.Response.Sandbox;
 using Sepes.Infrastructure.Model;
+using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Util;
 using System.Linq;
 
@@ -210,7 +212,7 @@ namespace Sepes.Infrastructure.Automapper
             CreateMap<VmSize, VmSizeLookupDto>()
                .ForMember(dest => dest.DisplayValue, source => source.MapFrom(x => x.DisplayText));
 
-              
+            CreateMap<VirtualMachineImageResource, VmImageWithAdditionalProperties>();
         }
     }
 }
