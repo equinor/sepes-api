@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
@@ -18,6 +13,11 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
@@ -61,7 +61,7 @@ namespace Sepes.Azure.Service
                     parameters.Name,
                     vmSettings.NetworkName, vmSettings.SubnetName,
                     vmSettings.Username, password,
-                    vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
+                    vmSize, vmSettings.OperatingSystemImageId, vmSettings.OperatingSystemCategory, parameters.Tags,
                     vmSettings.DiagnosticStorageAccountName, cancellationToken);
 
                 await DeletePasswordFromKeyVault(passwordReference);
@@ -161,7 +161,6 @@ namespace Sepes.Azure.Service
                                 ruleMapped.Priority = await FindNextPriority(parameters, existingRules, AzureVmConstants.MIN_RULE_PRIORITY, 10, AzureVmConstants.MAX_RULE_PRIORITY, curRule.Direction.ToString());
                                 await _azureNetworkSecurityGroupRuleService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
-
                         }
                         else
                         {
@@ -259,8 +258,6 @@ namespace Sepes.Azure.Service
                         collision = true;
                         break;
                     }
-
-
                 }
 
                 if (collision)
@@ -311,7 +308,7 @@ namespace Sepes.Azure.Service
             }
         }
 
-        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
+        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string vmImageId, string vmImageOsCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
         {
             IVirtualMachine vm;
 
@@ -345,17 +342,17 @@ namespace Sepes.Azure.Service
 
             IWithCreate vmWithOS;
 
-            if (osCategory.ToLower().Equals("windows"))
+            if (vmImageOsCategory.ToLower().Equals("windows"))
             {
-                vmWithOS = CreateWindowsVm(vmCreatable, osName, userName, password);
+                vmWithOS = await CreateWindowsVm(vmCreatable, vmImageId, userName, password);
             }
-            else if (osCategory.ToLower().Equals("linux"))
+            else if (vmImageOsCategory.ToLower().Equals("linux"))
             {
-                vmWithOS = CreateLinuxVm(vmCreatable, osName, userName, password);
+                vmWithOS = await CreateLinuxVm(vmCreatable, vmImageId, userName, password);
             }
             else
             {
-                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {osCategory}");
+                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {vmImageOsCategory}");
             }
 
             var vmWithSize = vmWithOS.WithSize(vmSize);
@@ -369,29 +366,12 @@ namespace Sepes.Azure.Service
 
         }
 
-        private IWithManagedCreate CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        async Task <IWithManagedCreate> CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
         {
-            IWithWindowsAdminUsernameManagedOrUnmanaged withOS;
+            var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
+     
+            var withOS = vmCreatable.WithSpecificWindowsImageVersion(imageReference.ImageReference);
 
-            switch (distro.ToLower())
-            {
-                case "win2019datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
-                    break;
-                case "win2019datacentercore":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Sku);
-                    break;
-                case "win2016datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Sku);
-                    break;
-                case "win2016datacentercore":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Sku);
-                    break;
-                default:
-                    _logger.LogInformation("Could not match distro argument. Default will be chosen: Windows Server 2019");
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
-                    break;
-            }
             var vm = withOS
                 .WithAdminUsername(userName)
                 .WithAdminPassword(password)
@@ -399,32 +379,12 @@ namespace Sepes.Azure.Service
             return vm;
         }
 
-        private IWithManagedCreate CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        async Task<IWithManagedCreate> CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
         {
-            IWithLinuxRootUsernameManagedOrUnmanaged withOS;
+            var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
 
-            switch (distro.ToLower())
-            {
-                case "ubuntults":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
-                    break;
-                case "ubuntu16lts":
-                    withOS = vmCreatable.WithPopularLinuxImage(KnownLinuxVirtualMachineImage.UbuntuServer16_04_Lts);
-                    break;
-                case "rhel":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Publisher, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Offer, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Sku);
-                    break;
-                case "debian":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.Debian10.Publisher, AzureVmOperatingSystemConstants.Linux.Debian10.Offer, AzureVmOperatingSystemConstants.Linux.Debian10.Sku);
-                    break;
-                case "centos":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.CentOS75.Publisher, AzureVmOperatingSystemConstants.Linux.CentOS75.Offer, AzureVmOperatingSystemConstants.Linux.CentOS75.Sku);
-                    break;
-                default:
-                    _logger.LogInformation("Could not match distro argument. Default will be chosen: Ubuntu 18.04-LTS");
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
-                    break;
-            }
+            var withOS = vmCreatable.WithSpecificLinuxImageVersion(imageReference.ImageReference);
+         
             var vm = withOS
                 .WithRootUsername(userName)
                 .WithRootPassword(password)

@@ -11,7 +11,7 @@ namespace Sepes.Infrastructure.Util
 
             if (vmSettings != null)
             {
-                return vmSettings.OperatingSystem;
+                return vmSettings.OperatingSystemImageId;
             }
 
             return null;

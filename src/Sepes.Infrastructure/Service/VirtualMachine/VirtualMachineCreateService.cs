@@ -32,8 +32,8 @@ namespace Sepes.Infrastructure.Service
 
         readonly IProvisioningQueueService _provisioningQueueService;
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
-        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;     
-
+        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
+       
 
         public VirtualMachineCreateService(
             IConfiguration config,
@@ -175,8 +175,11 @@ namespace Sepes.Infrastructure.Service
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var availableOs = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(region);
-            vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
+            var vmImageId = Convert.ToInt32(userInput.OperatingSystem);
+            var vmImage = await _virtualMachineOperatingSystemService.GetImage(vmImageId);
+
+            vmSettings.OperatingSystemCategory = vmImage.Category;
+            vmSettings.OperatingSystemImageId = vmImage.ForeignSystemId;
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 

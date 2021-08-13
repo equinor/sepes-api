@@ -187,9 +187,9 @@ namespace Sepes.Infrastructure.Service
             imageDb.Recommended = imageAzure.IsRecommended;
         }
 
-        string CreateDisplayValue(VmImageSearchProperties curSearchProperty, Microsoft.Azure.Management.Compute.Models.VirtualMachineImageResource curImageFromAzure)
+        string CreateDisplayValue(VmImageSearchProperties curSearchProperty, VirtualMachineImageResource curImageFromAzure)
         {
-            return $"{curSearchProperty.DisplayValue} - {curImageFromAzure.Name}";
+            return $"{curSearchProperty.DisplayValue} ({curImageFromAzure.Name})";
         } 
     }
 

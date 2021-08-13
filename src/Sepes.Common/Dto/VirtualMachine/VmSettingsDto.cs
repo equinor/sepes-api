@@ -14,7 +14,7 @@ namespace Sepes.Common.Dto.VirtualMachine
 
         public List<string> DataDisks { get; set; }
 
-        public string OperatingSystem { get; set; }
+        public string OperatingSystemImageId { get; set; }
 
         public string OperatingSystemCategory { get; set; }
 
