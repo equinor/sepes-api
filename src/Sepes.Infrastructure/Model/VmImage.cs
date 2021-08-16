@@ -14,6 +14,9 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(128)]
         public string DisplayValue { get; set; }
 
+        [MaxLength(128)]
+        public string DisplayValueExtended { get; set; }
+
         [MaxLength(64)]
         public string Category { get; set; }
 

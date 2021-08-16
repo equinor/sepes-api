@@ -180,6 +180,7 @@ namespace Sepes.Infrastructure.Service
 
             vmSettings.OperatingSystemCategory = vmImage.Category;
             vmSettings.OperatingSystemImageId = vmImage.ForeignSystemId;
+            vmSettings.OperatingSystemDisplayName = vmImage.DisplayValue;
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 

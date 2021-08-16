@@ -12,7 +12,9 @@
         
         public string DisplayValue { get; set; }
 
-       
+        public string DisplayValueExtended { get; set; }
+
+
         public string Category { get; set; }
 
         public bool Recommended { get; set; }       

@@ -28,7 +28,7 @@ namespace Sepes.Infrastructure.Service
             _dapperQueryService = dapperQueryService;
         }
 
-        public async Task<IEnumerable<VmOsDto>> AvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<VmOsDto>> AvailableOperatingSystems(int sandboxId)
         {
             IEnumerable<VmOsDto> result = null;
 
@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
             {                
                 var sandboxRegion = await _sandboxModelService.GetRegionByIdAsync(sandboxId, UserOperation.Study_Crud_Sandbox);
 
-                result = await AvailableOperatingSystems(sandboxRegion, cancellationToken);
+                result = await AvailableOperatingSystems(sandboxRegion);
 
                 return result;
             }
@@ -49,9 +49,9 @@ namespace Sepes.Infrastructure.Service
         }  
 
 
-        public async Task<IEnumerable<VmOsDto>> AvailableOperatingSystems(string region = null, CancellationToken cancellationToken = default)
+        async Task<IEnumerable<VmOsDto>> AvailableOperatingSystems(string region)
         {
-            var query = "SELECT v.[Id] as [Key], v.[DisplayValue], v.[Category], v.[Recommended]";
+            var query = "SELECT v.[Id] as [Key], v.[DisplayValueExtended] as DisplayValue, v.[Category], v.[Recommended]";
             query += " FROM [dbo].[RegionVmImage] r";
             query += " left join [dbo].[VmImages] v on r.[VmImageId] = v.[Id]";
             query += " where r.[RegionKey] = @region";
@@ -64,7 +64,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<VmImageDto> GetImage(int id)
         {
-            var query = "SELECT v.[Id], v.[DisplayValue], v.[Category], v.[Recommended]";
+            var query = "SELECT v.[Id], v.[DisplayValue], v.[DisplayValueExtended], v.[ForeignSystemId], v.[Category], v.[Recommended]";
             query += " FROM [dbo].[VmImages] v";
             query += " WHERE v.[Id] = @id";     
 

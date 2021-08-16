@@ -78,7 +78,8 @@ namespace Sepes.Infrastructure.Service
                                     existingDbAssociation.VmImage.Name = curImageFromAzure.Name;
                                     existingDbAssociation.VmImage.Updated = entryUpdatedAt;
                                     existingDbAssociation.VmImage.Category = curSearchProperty.Category;
-                                    existingDbAssociation.VmImage.DisplayValue = CreateDisplayValue(curSearchProperty, curImageFromAzure);
+                                    existingDbAssociation.VmImage.DisplayValue = CreateDisplayValue(curSearchProperty);
+                                    existingDbAssociation.VmImage.DisplayValueExtended = CreateDisplayValueExtended(curSearchProperty, curImageFromAzure);
                                     ApplyCommonVmImageProperties(existingDbAssociation.VmImage, curSearchProperty, curImageFromAzure, currentUser.UserName, entryUpdatedAt);
                                 }
                                 else
@@ -183,14 +184,20 @@ namespace Sepes.Infrastructure.Service
             imageDb.Updated = updatedAt;
             imageDb.UpdatedBy = currentUser;
             imageDb.Category = vmImageSearchProperties.Category;
-            imageDb.DisplayValue = CreateDisplayValue(vmImageSearchProperties, imageAzure);
+            imageDb.DisplayValue = CreateDisplayValue(vmImageSearchProperties);
+            imageDb.DisplayValueExtended = CreateDisplayValueExtended(vmImageSearchProperties, imageAzure);
             imageDb.Recommended = imageAzure.IsRecommended;
         }
 
-        string CreateDisplayValue(VmImageSearchProperties curSearchProperty, VirtualMachineImageResource curImageFromAzure)
+        string CreateDisplayValue(VmImageSearchProperties curSearchProperty)
+        {
+            return $"{curSearchProperty.DisplayValue}";
+        }
+
+        string CreateDisplayValueExtended(VmImageSearchProperties curSearchProperty, VirtualMachineImageResource curImageFromAzure)
         {
             return $"{curSearchProperty.DisplayValue} ({curImageFromAzure.Name})";
-        } 
+        }
     }
 
     public class VmImageWithAdditionalProperties : VirtualMachineImageResource

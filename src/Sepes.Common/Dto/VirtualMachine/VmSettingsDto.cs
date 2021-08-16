@@ -18,6 +18,8 @@ namespace Sepes.Common.Dto.VirtualMachine
 
         public string OperatingSystemCategory { get; set; }
 
+        public string OperatingSystemDisplayName { get; set; }
+
         public string Username { get; set; }
 
         public string Password { get; set; }

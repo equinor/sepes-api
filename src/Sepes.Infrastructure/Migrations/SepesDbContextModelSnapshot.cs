@@ -864,6 +864,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("nvarchar(128)")
                         .HasMaxLength(128);
 
+                    b.Property<string>("DisplayValueExtended")
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
+
                     b.Property<string>("ForeignSystemId")
                         .HasColumnType("nvarchar(1024)")
                         .HasMaxLength(1024);
