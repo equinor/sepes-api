@@ -4,6 +4,6 @@
     {
         public string Category { get; set; }
 
-        public string Recommended { get; set; }
+        public bool Recommended { get; set; }
     }
 }

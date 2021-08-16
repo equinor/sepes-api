@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
             query += " FROM [dbo].[RegionVmImage] r";
             query += " left join [dbo].[VmImages] v on r.[VmImageId] = v.[Id]";
             query += " where r.[RegionKey] = @region";
-            query += " order by [Name] DESC";
+            query += " order by [Recommended] DESC, [DisplayValue] DESC";
 
             var result = await  _dapperQueryService.RunDapperQueryMultiple<VmOsDto>(query, new { region });
 
