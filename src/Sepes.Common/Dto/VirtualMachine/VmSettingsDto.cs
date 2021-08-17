@@ -10,6 +10,8 @@ namespace Sepes.Common.Dto.VirtualMachine
 
         public string SubnetName { get; set; }
 
+        public string PublicIpName { get; set; }
+
         public string Size { get; set; }
 
         public List<string> DataDisks { get; set; }

@@ -2,7 +2,9 @@
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
+using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.Network.Fluent.Models;
+using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -60,6 +62,7 @@ namespace Sepes.Azure.Service
                     parameters.ResourceGroupName,
                     parameters.Name,
                     vmSettings.NetworkName, vmSettings.SubnetName,
+                    vmSettings.PublicIpName,
                     vmSettings.Username, password,
                     vmSize, vmSettings.OperatingSystemImageId, vmSettings.OperatingSystemCategory, parameters.Tags,
                     vmSettings.DiagnosticStorageAccountName, cancellationToken);
@@ -308,7 +311,7 @@ namespace Sepes.Azure.Service
             }
         }
 
-        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string vmImageId, string vmImageOsCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
+        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string publicIpName, string userName, string password, string vmSize, string vmImageId, string vmImageOsCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
         {
             IVirtualMachine vm;
 
@@ -321,15 +324,7 @@ namespace Sepes.Azure.Service
 
             AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
-            var publicIpName = AzureResourceNameUtil.VirtualMachinePublicIp(vmName);
-
-            var pip = await _azure.PublicIPAddresses.Define(publicIpName)
-             .WithRegion(region)
-             .WithExistingResourceGroup(resourceGroupName)
-             .WithStaticIP()
-             .WithSku(PublicIPSkuType.Standard)
-             .WithTags(tags)
-             .CreateAsync(cancellationToken);
+            var publicIp = await EnsurePublicIpAddressExists(region, resourceGroupName, publicIpName, tags, cancellationToken);
 
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
                                     .WithRegion(region)
@@ -337,7 +332,7 @@ namespace Sepes.Azure.Service
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
-                                    .WithExistingPrimaryPublicIPAddress(pip);
+                                    .WithExistingPrimaryPublicIPAddress(publicIp);
 
 
             IWithCreate vmWithOS;
@@ -366,10 +361,47 @@ namespace Sepes.Azure.Service
 
         }
 
-        async Task <IWithManagedCreate> CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
+        async Task<IPublicIPAddress> GetPublicIpAddress(string resourceGroupName, string publicIpName, CancellationToken cancellationToken = default)
+        {
+            return await _azure.PublicIPAddresses.GetByResourceGroupAsync(resourceGroupName, publicIpName, cancellationToken);
+        }
+
+        async Task EnsurePublicIpDeleted(string resourceGroupName, string publicIpName, CancellationToken cancellationToken = default)
+        {
+            var publicIp = GetPublicIpAddress(resourceGroupName, publicIpName, cancellationToken);
+
+            if(publicIp != null)
+            {
+                await _azure.PublicIPAddresses.DeleteByResourceGroupAsync(resourceGroupName, publicIpName, cancellationToken);
+            }
+        }
+
+        async Task<IPublicIPAddress> EnsurePublicIpAddressExists(Region region, string resourceGroupName, string publicIpName, IDictionary<string, string> tags, CancellationToken cancellationToken)
+        {
+
+            var publicIp = await GetPublicIpAddress(resourceGroupName, publicIpName, cancellationToken);
+
+            if (publicIp == null)
+            {
+
+                publicIp = await _azure.PublicIPAddresses.Define(publicIpName)
+            .WithRegion(region)
+            .WithExistingResourceGroup(resourceGroupName)
+            .WithStaticIP()
+            .WithSku(PublicIPSkuType.Standard)
+            .WithTags(tags)
+            .CreateAsync(cancellationToken);
+            }
+
+            return publicIp;
+
+
+        }
+
+        async Task<IWithManagedCreate> CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
         {
             var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
-     
+
             var withOS = vmCreatable.WithSpecificWindowsImageVersion(imageReference.ImageReference);
 
             var vm = withOS
@@ -384,7 +416,7 @@ namespace Sepes.Azure.Service
             var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
 
             var withOS = vmCreatable.WithSpecificLinuxImageVersion(imageReference.ImageReference);
-         
+
             var vm = withOS
                 .WithRootUsername(userName)
                 .WithRootPassword(password)
@@ -456,9 +488,13 @@ namespace Sepes.Azure.Service
                 await DeleteDiskById(curDiskKvp.Value.Id);
             }
 
-            //Delete VM rules
+
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(configString);
 
+            await EnsurePublicIpDeleted(resourceGroupName, vmSettings.PublicIpName);
+
+
+            //Delete VM rules
             foreach (var curRule in vmSettings.Rules)
             {
                 try
@@ -530,7 +566,7 @@ namespace Sepes.Azure.Service
             //Update disk tags
             await UpdateDiskTags(virtualMachine.OSDiskId, tags);
 
-            foreach(var curDataDisk in virtualMachine.DataDisks)
+            foreach (var curDataDisk in virtualMachine.DataDisks)
             {
                 await UpdateDiskTags(curDataDisk.Value.Id, tags);
             }

@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
                 vmResourceEntry = await _cloudResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
 
                 //Create vm settings and immeately attach to resource entry
-                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
+                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, sandbox.Study.Id, sandboxId, vmResourceEntry.Id, vmResourceEntry.ResourceName ,userInput);
                 vmResourceEntry.ConfigString = vmSettingsString;
                 await _cloudResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
@@ -171,7 +171,7 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, VirtualMachineCreateDto userInput)
+        async Task<string> CreateVmSettingsString(string region, int studyId, int sandboxId, int vmId, string vmName,VirtualMachineCreateDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
@@ -192,6 +192,8 @@ namespace Sepes.Infrastructure.Service
 
             var networkSetting = CloudResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
+
+            vmSettings.PublicIpName = AzureResourceNameUtil.VirtualMachinePublicIp(vmName);
 
             vmSettings.Rules = VmRuleUtils.CreateInitialVmRules(vmId);
             return CloudResourceConfigStringSerializer.Serialize(vmSettings);
