@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Interface.Service;
 using Sepes.Provisioning.Service.Interface;
+using Sepes.Common.Dto.Sandbox;
 
 namespace Sepes.Provisioning.Service.Interface
 {
@@ -34,6 +35,7 @@ namespace Sepes.Provisioning.Service.Interface
         }
 
         public async Task<ResourceProvisioningResult> Handle(
+             ProvisioningQueueParentDto queueParentItem,
            CloudResourceOperationDto operation,
            ResourceProvisioningParameters currentCrudInput,
            IPerformResourceProvisioning provisioningService
@@ -41,7 +43,7 @@ namespace Sepes.Provisioning.Service.Interface
         {
             try
             {
-                _provisioningLogService.OperationInformation(operation, $"Deleting {operation.Resource.ResourceType}");
+                _provisioningLogService.OperationInformation(queueParentItem, operation, $"Deleting {operation.Resource.ResourceType}");
 
                 var deleteTask = provisioningService.EnsureDeleted(currentCrudInput);
 
@@ -52,7 +54,7 @@ namespace Sepes.Provisioning.Service.Interface
                     Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                 }
 
-                _provisioningLogService.OperationInformation(operation, $"Delete Operation finished");
+                _provisioningLogService.OperationInformation(queueParentItem, operation, $"Delete Operation finished");
 
                 return deleteTask.Result;
             }
