@@ -17,12 +17,15 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 WORKDIR /app
 COPY --from=build-env /app/Sepes.RestApi/out .
 
-RUN adduser \
-    --uid 1001 \
-    --disabled-password \
-    --home /app \
-    --gecos '' app \
-    && chown -R app /app
+RUN addgroup --gid 1001 radix-non-root-group
+RUN adduser --uid 1001 --gid 1001 radix-non-root-user
+
+# RUN adduser \
+#     --uid 1001 \
+#     --disabled-password \
+#     --home /app \
+#     --gecos '' app \
+#     && chown -R app /app
 
 USER 1001
 
