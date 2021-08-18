@@ -6,21 +6,21 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 {
     public static class StudyUpdater
     {
-        static async Task<ApiConversation<StudyDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, StudyDto studyDto)         
+        static async Task<ApiConversation<StudyUpdateDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, StudyUpdateDto studyUpdateDto)         
         {         
-            var response = await restHelper.PutAsForm<TResponse, StudyDto>($"api/studies/{studyId}/details", "study", studyDto);
+            var response = await restHelper.PutAsForm<StudyUpdateDto, TResponse>($"api/studies/{studyId}/details", "study", studyUpdateDto);
 
-            return new ApiConversation<StudyDto, TResponse>(studyDto, response);
+            return new ApiConversation<StudyUpdateDto, TResponse>(studyUpdateDto, response);
         }
 
-        public static async Task<ApiConversation<StudyDto, StudyDto>> UpdateAndExpectSuccess(RestHelper restHelper, int studyId, StudyDto studyDto)
+        public static async Task<ApiConversation<StudyUpdateDto, StudyDetailsDto>> UpdateAndExpectSuccess(RestHelper restHelper, int studyId, StudyUpdateDto studyUpdateDto)
         {
-            return await Update<StudyDto>(restHelper, studyId, studyDto);
+            return await Update<StudyDetailsDto>(restHelper, studyId, studyUpdateDto);
         }
 
-        public static async Task<ApiConversation<StudyDto, Common.Dto.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, int studyId, StudyDto studyDto)
+        public static async Task<ApiConversation<StudyUpdateDto, Common.Dto.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, int studyId, StudyUpdateDto studyUpdateDto)
         {
-            return await Update<Common.Dto.ErrorResponse>(restHelper, studyId, studyDto);
+            return await Update<Common.Dto.ErrorResponse>(restHelper, studyId, studyUpdateDto);
         }
     } 
 }

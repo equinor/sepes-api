@@ -95,7 +95,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         protected async Task<CloudResource> WithVirtualMachine(bool createdByCurrentUser, bool restricted = false, string studyRole = null)
         {
-            return await base.WithVirtualMachine(createdByCurrentUser, restricted, new List<string> { studyRole }, addDatasets: true);
+            return await base.WithVirtualMachine(createdByCurrentUser, restricted, new List<string> { studyRole }, addDatasetsToStudy: true, addDatasetsToSandbox: true);
         }
 
         async Task PerformTestsExpectSuccess(int sandboxId)

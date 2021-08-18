@@ -36,6 +36,11 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             var cloudResource = CreateBasic(region, resourceType, resourceGroup, resourceName, resourceId, resourceKey, purpose, sandboxControlled, parentResource);
             cloudResource.Operations.Add(createOperationFinished ? CloudResourceOperationFactory.SucceededOperation("create" + resourceName, batchId: batchId) : CloudResourceOperationFactory.NewOperation("create" + resourceName, batchId: batchId));
             
+            if(resourceType == AzureResourceType.VirtualNetwork)
+            {
+                cloudResource.ConfigString = "{ \"sandboxSubnetName\":\"snet-test\"}";
+            }
+
             if(deleted)
             {
                 cloudResource.Operations.Add(deleteSucceeded ?

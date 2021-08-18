@@ -7,6 +7,7 @@ using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Dto.VirtualMachine;
+using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -124,6 +125,11 @@ namespace Sepes.Infrastructure.Service
                 catch (Exception rollbackEx)
                 {
                     _logger.LogError(rollbackEx, $"Failed to roll back VM creation for sandbox {sandboxId}");
+                }
+
+                if(ex is ForbiddenException)
+                {
+                    throw;
                 }
 
                 throw new Exception($"Failed to create VM: {ex.Message}", ex);

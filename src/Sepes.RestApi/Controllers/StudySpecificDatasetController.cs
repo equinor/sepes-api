@@ -42,6 +42,14 @@ namespace Sepes.RestApi.Controller
             return new JsonResult(updatedDatasetResult);
         }
 
+        [HttpDelete("datasets/studyspecific/{datasetId}")]
+        public async Task<IActionResult> DeleteAsync(int datasetId, CancellationToken cancellationToken = default)
+        {
+            await _studySpecificDatasetService.HardDeleteStudySpecificDatasetAsync(datasetId, cancellationToken);         
+
+            return new NoContentResult();
+        }
+
         [HttpGet("{studyId}/datasets/{datasetId}/resources")]
         [Consumes(MediaTypeNames.Application.Json)]
         public async Task<IActionResult> GetDatasetResources(int studyId, int datasetId, CancellationToken cancellation = default)
@@ -49,5 +57,13 @@ namespace Sepes.RestApi.Controller
             var datasetResource = await _studySpecificDatasetService.GetDatasetResourcesAsync(studyId, datasetId, cancellation);
             return new JsonResult(datasetResource);
         }
+
+        [HttpGet("{studyId}/datasets/{datasetId}")]
+        [Consumes(MediaTypeNames.Application.Json)]
+        public async Task<IActionResult> GetSpecificDatasetByStudyIdAsync(int studyId, int datasetId)
+        {
+            var dataset = await _studySpecificDatasetService.GetDatasetAsync(studyId, datasetId);
+            return new JsonResult(dataset);
+        }   
     }
 }

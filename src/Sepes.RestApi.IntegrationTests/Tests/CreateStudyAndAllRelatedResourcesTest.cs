@@ -2,12 +2,12 @@
 using Sepes.Common.Dto.Study;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Response.Sandbox;
-using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using Sepes.RestApi.IntegrationTests.Setup;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Dataset;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox;
 using Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.StudyParticipant;
+using Sepes.RestApi.IntegrationTests.TestHelpers.Requests;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -26,7 +26,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
         [Theory]
         [InlineData(true, false)]
-        [InlineData(false, true)]       
+        [InlineData(false, true)]
         public async Task AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed(bool isAdmin, bool isSponsor)
         {
             Trace.WriteLine("START AddStudyAndSandboxAndVm_WithRequiredRole_ShouldSucceed");
@@ -39,7 +39,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             CreateStudyAsserts.ExpectSuccess(studyCreateConversation.Request, studyCreateConversation.Response);
 
             //CREATE STUDY SPECIFIC DATASET
-            var datasetSeedResponse = await DatasetCreator.Create(_restHelper, studyCreateConversation.Response.Content.Id);
+            var datasetSeedResponse = await StudySpecificDatasetCreateUpdateDelete.CreateExpectSuccess(_restHelper, studyCreateConversation.Response.Content.Id);
             var datasetCreateRequest = datasetSeedResponse.Request;
             var datasetResponseWrapper = datasetSeedResponse.Response;
             CreateDatasetAsserts.ExpectSuccess(datasetCreateRequest, datasetResponseWrapper);
@@ -56,12 +56,12 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var sandboxResponse = sandboxResponseWrapper.Content;
 
             //ADD DATASET TO SANDBOX
-            var addDatasetToSandboxResponse = await SandboxOperations.AddDataset(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);
+            var addDatasetToSandboxResponse = await SandboxDatasetOperations.AddDatasetExpectSuccess(_restHelper, sandboxResponse.Id, createDatasetResponse.Id);
             var sandboxDatasetResponseWrapper = addDatasetToSandboxResponse.Response;
             AddDatasetToSandboxAsserts.ExpectSuccess(createDatasetResponse.Id, createDatasetResponse.Name, createDatasetResponse.Classification, "Open", sandboxDatasetResponseWrapper);
 
             //CREATE VM
-            var virtualMachineSeedResponse = await VirtualMachineCreator.Create(_restHelper, sandboxResponse.Id);
+            var virtualMachineSeedResponse = await VirtualMachineCreator.CreateAndExpectSuccess(_restHelper, sandboxResponse.Id);
             var virtualMachineCreateRequest = virtualMachineSeedResponse.Request;
             var virtualMachineResponseWrapper = virtualMachineSeedResponse.Response;
 
@@ -75,6 +75,9 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             var virtualMachinesPreProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.BeforeProvisioning(virtualMachinesPreProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
 
+            var vmInfoExtended = await _restHelper.Get<VmExtendedDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
+            VirtualMachineExtendedInfoAsserts.BeforeProvisioningExpectSuccess(vmInfoExtended);
+
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
             var processWorkQueueResponse = await ProcessWorkQueue();
 
@@ -85,6 +88,9 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             //GET SANDBOX VM LIST AND ASSERT
             var virtualMachinesAfterProvisioningResponseWrapper = await GenericReader.ReadAndAssertExpectSuccess<List<VmDto>>(_restHelper, GenericReader.SandboxVirtualMachinesUrl(sandboxResponse.Id));
             SandboxVirtualMachineAsserts.AfterProvisioning(virtualMachinesAfterProvisioningResponseWrapper.Response, virtualMachineResponseWrapper.Content.Name);
+
+            var vmInfoExtendedAfter = await _restHelper.Get<VmExtendedDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
+            VirtualMachineExtendedInfoAsserts.AfterProvisioningExpectSuccess(vmInfoExtendedAfter);
 
             //Add some participants
 
@@ -97,20 +103,27 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             AddStudyParticipantsAsserts.ExpectSuccess(StudyRoles.SponsorRep, studyParticipant, studyParticipantResponse.Response);
 
-            var vmRuleExtended = await _restHelper.Get<VmRuleDto>($"api/virtualmachines/{virtualMachineResponseWrapper.Content.Id}/extended");
+            //Get rules
+            var vmRules = await GenericReader.ReadAndAssertExpectSuccess<List<VmRuleDto>>(_restHelper, GenericReader.VirtualMachineRulesUrl(virtualMachineResponseWrapper.Content.Id));
 
             //OPEN INTERNET
-            var openInternetResponse = await SandboxOperations.OpenInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
+            var openInternetResponse = await SandboxOperations.OpenInternetForVmExpectSuccess(_restHelper, virtualMachineResponseWrapper.Content.Id, vmRules.Response.Content);
 
-            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse.Response.Content, vmRuleExtended.Content);
+            SandboxVirtualMachineRuleAsserts.ExpectSuccess(openInternetResponse);
+                      
+            _ = await ProcessWorkQueue();
 
-            await SandboxOperations.CloseInternetForVm<VmRuleDto>(_restHelper, virtualMachineResponseWrapper.Content.Id);
+            var closeInternetResponse = await SandboxOperations.CloseInternetForVmExpectSuccess(_restHelper, virtualMachineResponseWrapper.Content.Id, vmRules.Response.Content);
+
+            SandboxVirtualMachineRuleAsserts.ExpectSuccess(closeInternetResponse);
+
+            _ = await ProcessWorkQueue();
 
             //MOVE TO NEXT PHASE
             var sandboxAfterMovingToNextPhase = await SandboxOperations.MoveToNextPhase<SandboxDetails>(_restHelper, sandboxResponseWrapper.Content.Id);
 
             SandboxDetailsAsserts.AfterPhaseShiftExpectSuccess(sandboxAfterMovingToNextPhase.Response);
-            
+
             //DELETE VM
             var deleteVmConversation = await SandboxOperations.DeleteVm(_restHelper, virtualMachineResponseWrapper.Content.Id);
             ApiResponseBasicAsserts.ExpectNoContent(deleteVmConversation.Response);

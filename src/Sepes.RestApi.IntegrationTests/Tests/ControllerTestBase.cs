@@ -25,8 +25,7 @@ namespace Sepes.RestApi.IntegrationTests
 
         protected void SetScenario(bool isEmployee = false, bool isAdmin = false, bool isSponsor = false, bool isDatasetAdmin = false)
         {
-            Trace.WriteLine("ControllerTestBase SetScenario");
-            //_testHostFixture.SetScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
+            Trace.WriteLine("ControllerTestBase SetScenario");           
             _restHelper = _testHostFixture.GetRestHelperForScenario(isEmployee, isAdmin, isSponsor, isDatasetAdmin);
         }
 
@@ -51,10 +50,10 @@ namespace Sepes.RestApi.IntegrationTests
         }
 
         protected async Task<Sandbox> WithSandbox(bool createdByCurrentUser, bool restricted = false, List<string> additionalRolesForCurrentUser = null,
-            List<string> rolesForOtherUser = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false)
+            List<string> rolesForOtherUser = null, SandboxPhase phase = SandboxPhase.Open, bool addDatasetsToStudy = false, bool addDatasetsToSandbox = false)
         {
-            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasets);
-            var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasets);
+            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasetsToStudy);
+            var sandbox = await SandboxSeed.Create(study, phase: phase, addDatasets: addDatasetsToSandbox);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
@@ -63,13 +62,13 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<Sandbox> WithFailedSandbox(bool createdByCurrentUser, bool restricted = false,
             List<string> additionalRolesForCurrentUser = null,
             List<string> rolesForOtherUser = null,
-            bool addDatasets = false, int resourcesSucceeded = 0,
+            bool addDatasetsToStudy = false, bool addDatasetsToSandbox = false, int resourcesSucceeded = 0,
             string statusOfFailedResource = CloudResourceOperationState.FAILED,
             int tryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT,
             int maxTryCount = CloudResourceConstants.RESOURCE_MAX_TRY_COUNT)
         {
-            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasets);
-            var sandbox = await SandboxSeed.CreateFailing(study, phase: SandboxPhase.Open, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount, addDatasets: addDatasets);
+            var study = await WithStudy(createdByCurrentUser, restricted, additionalRolesForCurrentUser, rolesForOtherUser, addDatasets: addDatasetsToStudy);
+            var sandbox = await SandboxSeed.CreateFailing(study, phase: SandboxPhase.Open, resourcesSucceeded: resourcesSucceeded, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount, addDatasets: addDatasetsToSandbox);
             sandbox.Study = study;
             study.Sandboxes.Add(sandbox);
             return sandbox;
@@ -79,11 +78,12 @@ namespace Sepes.RestApi.IntegrationTests
             List<string> additionalRolesForCurrentUser = null,
             List<string> rolesForOtherUser = null,
             SandboxPhase phase = SandboxPhase.Open,
-            bool addDatasets = false,
+            bool addDatasetsToStudy = false,
+            bool addDatasetsToSandbox = false,
             bool deleted = false,
             bool deleteSucceeded = false)
         {
-            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasetsToStudy: addDatasetsToStudy, addDatasetsToSandbox: addDatasetsToSandbox);
             var vm = await VirtualMachineSeed.Create(sandbox, deleted: deleted, deleteSucceeded: deleteSucceeded);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;
@@ -93,11 +93,13 @@ namespace Sepes.RestApi.IntegrationTests
         protected async Task<CloudResource> WithFailedVirtualMachine(bool createdByCurrentUser, bool restricted = false,
             List<string> additionalRolesForCurrentUser = null,
             List<string> rolesForOtherUser = null,
-            SandboxPhase phase = SandboxPhase.Open, bool addDatasets = false,
+            SandboxPhase phase = SandboxPhase.Open,
+            bool addDatasetsToStudy = false,
+            bool addDatasetsToSandbox = false,
             bool deleted = false,
             bool deleteSucceeded = false)
         {
-            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasets: addDatasets);
+            var sandbox = await WithSandbox(createdByCurrentUser, restricted, additionalRolesForCurrentUser: additionalRolesForCurrentUser, rolesForOtherUser: rolesForOtherUser, phase, addDatasetsToStudy: addDatasetsToStudy, addDatasetsToSandbox: addDatasetsToSandbox);
             var vm = await VirtualMachineSeed.CreateFailed(sandbox, deleted: deleted, deleteSucceeded: deleteSucceeded);
             sandbox.Resources.Add(vm);
             vm.Sandbox = sandbox;

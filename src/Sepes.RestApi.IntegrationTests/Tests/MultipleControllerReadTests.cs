@@ -1,4 +1,5 @@
 ﻿using Sepes.Common.Constants;
+using Sepes.Common.Dto;
 using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Dto.Storage;
 using Sepes.Common.Dto.Study;
@@ -35,7 +36,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             Trace.WriteLine("START Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
             SetScenario(isAdmin: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy, addDatasets: true);
+            var virtualMachine = await WithVirtualMachine(createdByCurrentUser, restrictedStudy, addDatasetsToStudy: true, addDatasetsToSandbox: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);
             Trace.WriteLine("END Read_AnyStudyRelatedEntity_AsAdmin_ShouldSucceed");
         }
@@ -47,7 +48,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isSponsor: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(true, restrictedStudy, addDatasets: true);
+            var virtualMachine = await WithVirtualMachine(true, restrictedStudy, addDatasetsToStudy: true, addDatasetsToSandbox: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);
         }
 
@@ -66,7 +67,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
         {
             SetScenario(isEmployee: true);
             await WithBasicSeeds();
-            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, new List<string> { studyRole }, addDatasets: true);
+            var virtualMachine = await WithVirtualMachine(false, restrictedStudy, new List<string> { studyRole }, addDatasetsToStudy: true, addDatasetsToSandbox: true);
             await ReadAllAndAssertExpectSuccess(virtualMachine);                  
         }     
 
@@ -82,7 +83,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             SetScenario(isEmployee: employee, isSponsor: sponsor, isDatasetAdmin: datasetAdmin);
             await WithBasicSeeds();
 
-            var virtualMachine = await WithVirtualMachine(false, true, addDatasets: true);
+            var virtualMachine = await WithVirtualMachine(false, true, addDatasetsToStudy: true, addDatasetsToSandbox: true);
 
             await ReadAllAndAssertExpectForbidden(virtualMachine);
         }       
@@ -94,7 +95,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
 
             //Dataset
             var datasetId = vmResource.Sandbox.Study.StudyDatasets.FirstOrDefault().DatasetId;           
-            await GenericReader.ReadAndAssertExpectSuccess<DatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
+            await GenericReader.ReadAndAssertExpectSuccess<StudySpecificDatasetDto>(_restHelper, GenericReader.StudyDatasetSpecificUrl(vmResource.Sandbox.StudyId, datasetId));
             await GenericReader.ReadAndAssertExpectSuccess<List<DatasetResourceLightDto>>(_restHelper, GenericReader.StudyDatasetResourcesUrl(vmResource.Sandbox.StudyId, datasetId));          
             await GenericReader.ReadAndAssertExpectSuccess<List<BlobStorageItemDto>>(_restHelper, GenericReader.DatasetFileListUrl(datasetId));
 

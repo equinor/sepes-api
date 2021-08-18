@@ -12,7 +12,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
         static async Task<ApiConversation<SandboxCreateDto, TResponse>> Create<TResponse>(RestHelper restHelper, int studyId, string sandboxName = "sandboxName", string region = "norwayeast")         
         {
             var request = new SandboxCreateDto() {  Name = sandboxName, Region = region };
-            var response = await restHelper.Post<TResponse, SandboxCreateDto>(String.Format(ApiUrls.STUDY_SANDBOXES, studyId), request);
+            var response = await restHelper.Post<SandboxCreateDto, TResponse>(String.Format(ApiUrls.STUDY_SANDBOXES, studyId), request);
 
             return new ApiConversation<SandboxCreateDto, TResponse>(request, response);
         }

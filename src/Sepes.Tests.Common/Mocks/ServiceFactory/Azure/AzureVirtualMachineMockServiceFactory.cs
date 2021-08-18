@@ -15,6 +15,9 @@ namespace Sepes.Test.Common.ServiceMockFactories
             mock.Setup(us => us.EnsureCreated(It.IsAny<ResourceProvisioningParameters>(), It.IsAny<CancellationToken>()))
                  .ReturnsAsync((ResourceProvisioningParameters ipt, CancellationToken cancellation) => ProvisioningResultFactory.Create(ipt, AzureResourceType.VirtualMachine));
 
+            mock.Setup(us => us.Update(It.IsAny<ResourceProvisioningParameters>(), It.IsAny<CancellationToken>()))
+               .ReturnsAsync((ResourceProvisioningParameters ipt, CancellationToken cancellation) => ProvisioningResultFactory.Create(ipt, AzureResourceType.VirtualMachine));
+
             return mock;
 
         }

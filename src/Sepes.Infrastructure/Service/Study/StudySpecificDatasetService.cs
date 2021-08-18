@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sepes.Common.Constants;
 using Sepes.Common.Constants.CloudResource;
+using Sepes.Common.Dto;
 using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Model;
@@ -44,7 +45,7 @@ namespace Sepes.Infrastructure.Service
             _datasetCloudResourceService = datasetCloudResourceService ?? throw new ArgumentNullException(nameof(datasetCloudResourceService));
         }
 
-        public async Task<DatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
+        public async Task<StudySpecificDatasetDto> CreateStudySpecificDatasetAsync(int studyId, DatasetCreateUpdateInputBaseDto newDatasetInput, string clientIp, CancellationToken cancellationToken = default)
         {
             var studyFromDb = await _studyModelService.GetForDatasetCreationAsync(studyId, UserOperation.Study_AddRemove_Dataset);
 
@@ -83,14 +84,14 @@ namespace Sepes.Infrastructure.Service
                 throw;
             }
 
-            var datasetDto = _mapper.Map<DatasetDto>(dataset);
+            var datasetDto = _mapper.Map<StudySpecificDatasetDto>(dataset);
 
             await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
             return datasetDto;
         }
 
-        public async Task<DatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
+        public async Task<StudySpecificDatasetDto> UpdateStudySpecificDatasetAsync(int studyId, int datasetId, DatasetCreateUpdateInputBaseDto updatedDataset)
         {
             DatasetUtils.PerformUsualTestForPostedDatasets(updatedDataset);
 
@@ -104,7 +105,7 @@ namespace Sepes.Infrastructure.Service
 
             await _db.SaveChangesAsync();
 
-            var datasetDto = _mapper.Map<DatasetDto>(datasetFromDb);
+            var datasetDto = _mapper.Map<StudySpecificDatasetDto>(datasetFromDb);
 
             await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
 
@@ -191,6 +192,12 @@ namespace Sepes.Infrastructure.Service
         public async Task HardDeleteStudySpecificDatasetAsync(int datasetId, CancellationToken cancellationToken = default)
         {
             var dataset = await _studySpecificDatasetModelService.GetForResourceAndFirewall(datasetId, UserOperation.Study_AddRemove_Dataset);
+
+            if (!dataset.StudySpecific)
+            {
+                throw new ArgumentException("Dataset is not study specific and cannot be deleted");
+            }
+
             var study = dataset.StudyDatasets.SingleOrDefault().Study;
             await _datasetCloudResourceService.DeleteResourcesForStudySpecificDatasetAsync(study, dataset, cancellationToken);
             await HardDeleteAsync(dataset);
@@ -217,6 +224,23 @@ namespace Sepes.Infrastructure.Service
             var resourcesMapped = _mapper.Map<List<DatasetResourceLightDto>>(resourcesFiltered);
 
             return resourcesMapped;
+        }
+
+        public async Task<StudySpecificDatasetDto> GetDatasetAsync(int studyId, int datasetId)
+        {
+            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId);
+
+            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
+
+            if (studyDatasetRelation == null)
+            {
+                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
+            }
+
+            var datasetDto = _mapper.Map<StudySpecificDatasetDto>(studyDatasetRelation.Dataset);
+            await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
+
+            return datasetDto;
         }
     }
 }
