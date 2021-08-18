@@ -55,7 +55,7 @@ namespace Sepes.Infrastructure.Service
                 convertedMessage.MessageId = messageFromQueue.MessageId;
                 convertedMessage.PopReceipt = messageFromQueue.PopReceipt;
                 convertedMessage.NextVisibleOn = messageFromQueue.NextVisibleOn;
-                _logger.LogInformation($"Returning {MessagePrefix(convertedMessage)}");
+                _logger.LogInformation($"Returning {MessagePrefix(convertedMessage)}, description: {convertedMessage.Description}");
                 return convertedMessage;
             }
 
@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
 
         string MessagePrefix(ProvisioningQueueParentDto message)
         {
-            return $"{message.MessageId} ({message.Description})";
+            return $"{message.MessageId}";
         }
 
         string MessagePrefix(string messageId)
@@ -105,7 +105,7 @@ namespace Sepes.Infrastructure.Service
 
         public async Task ReQueueMessageAsync(ProvisioningQueueParentDto message, int? invisibleForInSeconds = default, CancellationToken cancellationToken = default)
         {
-            _logger.LogInformation($"{MessagePrefix(message)}: Re-queuing message. Children: {message.Children.Count}.");
+            _logger.LogInformation($"{MessagePrefix(message)}: Re-queuing message with description: {message.Description}. Children: {message.Children.Count}.");
 
             await DeleteMessageAsync(message);
             message.DequeueCount = 0;
