@@ -53,10 +53,17 @@ namespace Sepes.Infrastructure.Automapper
 
             CreateMap<DatasetCreateUpdateInputBaseDto, Dataset>();
 
-            CreateMap<Dataset, DatasetDto>()
-                .ForMember(dest => dest.Studies,source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()))
+
+            CreateMap<Dataset, StudySpecificDatasetDto>()
+                .ForMember(dest => dest.StudyName, source => source.MapFrom(x => x.StudyDatasets.FirstOrDefault().Study.Name))
                 .ForMember(dest => dest.StorageAccountName, source => source.MapFrom<DatasetStorageAccountNameResolver>())
                 .ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<StorageAccountExternalLinkResolver>());
+
+
+            CreateMap<Dataset, DatasetDto>()
+                .ForMember(dest => dest.Studies, source => source.MapFrom(x => x.StudyDatasets.Select(y => y.Study).ToList()));
+                //.ForMember(dest => dest.StorageAccountName, source => source.MapFrom<DatasetStorageAccountNameResolver>())
+                //.ForMember(dest => dest.StorageAccountLink, source => source.MapFrom<StorageAccountExternalLinkResolver>());
             
             CreateMap<Dataset, DatasetLookupItemDto>();
 

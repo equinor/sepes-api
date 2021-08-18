@@ -29,23 +29,6 @@ namespace Sepes.Infrastructure.Service
             _studySpecificDatasetModelService = studySpecificDatasetModelService;
         }
 
-        public async Task<DatasetDto> GetDatasetByStudyIdAndDatasetIdAsync(int studyId, int datasetId)
-        {           
-            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId);
-
-            var studyDatasetRelation = studyFromDb.StudyDatasets.FirstOrDefault(sd => sd.DatasetId == datasetId);
-
-            if (studyDatasetRelation == null)
-            {
-                throw NotFoundException.CreateForEntity("StudyDataset", datasetId);
-            }
-
-            var datasetDto = _mapper.Map<DatasetDto>(studyDatasetRelation.Dataset);
-            await DecorateDtoStudySpecific(_userService, studyFromDb, datasetDto.Permissions);
-
-            return datasetDto;
-        }
-
         public async Task<IEnumerable<DatasetDto>> GetDatasetsForStudyAsync(int studyId)
         {
             var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId);           
