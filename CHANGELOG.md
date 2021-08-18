@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/equinor/sepes-api/compare/0.5.2...0.6.0) (2021-08-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* url for deleting study specific dataset is now on api/studies/datasets/studyspecific/{datasetId}
+
+* results and learnings and study specific datasets ([#746](https://github.com/equinor/sepes-api/issues/746)) ([ccd6da9](https://github.com/equinor/sepes-api/commit/ccd6da9852b44263401b4ed6688d706717cf0f68)), closes [#742](https://github.com/equinor/sepes-api/issues/742) [#744](https://github.com/equinor/sepes-api/issues/744)
+
 ### [0.5.2](https://github.com/equinor/sepes-api/compare/0.5.1...0.5.2) (2021-08-10)
 
 ### [0.5.1](https://github.com/equinor/sepes-api/compare/0.5.0...0.5.1) (2021-08-02)
