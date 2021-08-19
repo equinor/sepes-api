@@ -7,7 +7,7 @@ namespace Sepes.Infrastructure.Model
 {
     public class Dataset : UpdateableBaseModel, ISupportSoftDelete
     {
-        [MaxLength(64)]
+        [MaxLength(128)]
         [Required(AllowEmptyStrings =false)]
         public string Name { get; set; }
 
