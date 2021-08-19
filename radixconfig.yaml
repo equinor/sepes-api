@@ -47,7 +47,7 @@ spec:
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
-            AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com"
+            AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com,http://localhost:3000/"
           replicas: 2
           monitoring: true
           resources:
