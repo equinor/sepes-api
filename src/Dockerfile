@@ -20,13 +20,6 @@ COPY --from=build-env /app/Sepes.RestApi/out .
 RUN addgroup --gid 1001 radix-non-root-group
 RUN adduser --uid 1001 --gid 1001 radix-non-root-user
 
-# RUN adduser \
-#     --uid 1001 \
-#     --disabled-password \
-#     --home /app \
-#     --gecos '' app \
-#     && chown -R app /app
-
 USER 1001
 
 # Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
