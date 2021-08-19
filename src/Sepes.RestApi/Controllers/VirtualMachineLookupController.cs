@@ -62,9 +62,9 @@ namespace Sepes.RestApi.Controllers
         }
 
         [HttpGet("{sandboxId}/operatingsystems")]
-        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId, CancellationToken cancellationToken = default)
+        public async Task<IActionResult> GetAvailableOperatingSystems(int sandboxId)
         {
-            var availableSizes = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(sandboxId, cancellationToken);
+            var availableSizes = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(sandboxId);
             return new JsonResult(availableSizes);
         }    
     }

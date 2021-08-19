@@ -11,7 +11,12 @@ namespace Sepes.Infrastructure.Util
 
             if (vmSettings != null)
             {
-                return vmSettings.OperatingSystem;
+                if (string.IsNullOrWhiteSpace(vmSettings.OperatingSystemDisplayName))
+                {
+                    return vmSettings.OperatingSystemCategory;
+                }
+
+                return vmSettings.OperatingSystemDisplayName;
             }
 
             return null;

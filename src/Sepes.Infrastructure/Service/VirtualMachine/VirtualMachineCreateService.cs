@@ -32,8 +32,8 @@ namespace Sepes.Infrastructure.Service
 
         readonly IProvisioningQueueService _provisioningQueueService;
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
-        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;     
-
+        readonly IVirtualMachineOperatingSystemService _virtualMachineOperatingSystemService;
+       
 
         public VirtualMachineCreateService(
             IConfiguration config,
@@ -95,7 +95,7 @@ namespace Sepes.Infrastructure.Service
                 vmResourceEntry = await _cloudResourceCreateService.CreateVmEntryAsync(sandboxId, resourceGroup, region.Name, tags, virtualMachineName, dependsOn, null);
 
                 //Create vm settings and immeately attach to resource entry
-                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, vmResourceEntry.Id, sandbox.Study.Id, sandboxId, userInput);
+                var vmSettingsString = await CreateVmSettingsString(sandbox.Region, sandbox.Study.Id, sandboxId, vmResourceEntry.Id, vmResourceEntry.ResourceName ,userInput);
                 vmResourceEntry.ConfigString = vmSettingsString;
                 await _cloudResourceUpdateService.Update(vmResourceEntry.Id, vmResourceEntry);
 
@@ -171,12 +171,16 @@ namespace Sepes.Infrastructure.Service
             }
         }
 
-        async Task<string> CreateVmSettingsString(string region, int vmId, int studyId, int sandboxId, VirtualMachineCreateDto userInput)
+        async Task<string> CreateVmSettingsString(string region, int studyId, int sandboxId, int vmId, string vmName,VirtualMachineCreateDto userInput)
         {
             var vmSettings = _mapper.Map<VmSettingsDto>(userInput);
 
-            var availableOs = await _virtualMachineOperatingSystemService.AvailableOperatingSystems(region);
-            vmSettings.OperatingSystemCategory = AzureVmUtil.GetOsCategory(availableOs, vmSettings.OperatingSystem);
+            var vmImageId = Convert.ToInt32(userInput.OperatingSystem);
+            var vmImage = await _virtualMachineOperatingSystemService.GetImage(vmImageId);
+
+            vmSettings.OperatingSystemCategory = vmImage.Category;
+            vmSettings.OperatingSystemImageId = vmImage.ForeignSystemId;
+            vmSettings.OperatingSystemDisplayName = vmImage.DisplayValue;
 
             vmSettings.Password = await StoreNewVmPasswordAsKeyVaultSecretAndReturnReference(studyId, sandboxId, vmSettings.Password);
 
@@ -188,6 +192,8 @@ namespace Sepes.Infrastructure.Service
 
             var networkSetting = CloudResourceConfigStringSerializer.NetworkSettings(networkResource.ConfigString);
             vmSettings.SubnetName = networkSetting.SandboxSubnetName;
+
+            vmSettings.PublicIpName = AzureResourceNameUtil.VirtualMachinePublicIp(vmName);
 
             vmSettings.Rules = VmRuleUtils.CreateInitialVmRules(vmId);
             return CloudResourceConfigStringSerializer.Serialize(vmSettings);

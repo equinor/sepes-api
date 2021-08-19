@@ -30,12 +30,18 @@ namespace Sepes.Infrastructure.Model.Context
         public virtual DbSet<CloudResourceOperation> CloudResourceOperations { get; set; }
         public virtual DbSet<RegionVmSize> RegionVmSize { get; set; }
         public virtual DbSet<RegionDiskSize> RegionDiskSize { get; set; }
+        public virtual DbSet<RegionVmImage> RegionVmImage { get; set; }
 
         public virtual DbSet<Variable> Variables { get; set; }
 
         //Cloud provider cache
         public virtual DbSet<Region> Regions { get; set; }
         public virtual DbSet<VmSize> VmSizes { get; set; }
+
+        public virtual DbSet<VmImage> VmImages { get; set; }
+
+        public virtual DbSet<VmImageSearchProperties> VmImageSearchProperties { get; set; }
+
         public virtual DbSet<DiskSize> DiskSizes { get; set; }
 
         public virtual DbSet<WbsCodeCache> WbsCodeCache { get; set; }
@@ -120,8 +126,10 @@ namespace Sepes.Infrastructure.Model.Context
             modelBuilder.Entity<Region>().HasKey(r => r.Key);
             modelBuilder.Entity<VmSize>().HasKey(r => r.Key);
             modelBuilder.Entity<DiskSize>().HasKey(r => r.Key);
+            modelBuilder.Entity<VmImage>().HasKey(r => r.Id);
             modelBuilder.Entity<RegionVmSize>().HasKey(r => new { r.RegionKey, r.VmSizeKey });
             modelBuilder.Entity<RegionDiskSize>().HasKey(r => new { r.RegionKey, r.VmDiskKey });
+            modelBuilder.Entity<RegionVmImage>().HasKey(r => new { r.RegionKey, r.VmImageId });
             modelBuilder.Entity<WbsCodeCache>().HasKey(r => r.WbsCode);
         }
 
@@ -232,7 +240,7 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasForeignKey(sd => sd.VmSizeKey)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            //Cloud Region, Vm Disk Size
+            //Region and Vm Disk Size
             modelBuilder.Entity<RegionDiskSize>()
                 .HasOne(sd => sd.Region)
                 .WithMany(s => s.DiskSizeAssociations)
@@ -243,6 +251,19 @@ namespace Sepes.Infrastructure.Model.Context
                 .HasOne(sd => sd.DiskSize)
                 .WithMany(d => d.RegionAssociations)
                 .HasForeignKey(sd => sd.VmDiskKey)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Region and Vm Image
+            modelBuilder.Entity<RegionVmImage>()
+                .HasOne(sd => sd.Region)
+                .WithMany(s => s.VmImageAssociations)
+                .HasForeignKey(sd => sd.RegionKey)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RegionVmImage>()
+                .HasOne(sd => sd.VmImage)
+                .WithMany(d => d.RegionAssociations)
+                .HasForeignKey(sd => sd.VmImageId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
 
