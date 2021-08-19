@@ -283,8 +283,8 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
 
                     b.Property<string>("SourceSystem")
                         .HasColumnType("nvarchar(256)")
@@ -524,8 +524,8 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("TechnicalContactName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -745,8 +745,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasMaxLength(64);
 
                     b.Property<string>("EmailAddress")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasColumnType("nvarchar(128)")
+                        .HasMaxLength(128);
 
                     b.Property<string>("FullName")
                         .IsRequired()
