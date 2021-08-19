@@ -312,7 +312,7 @@ namespace Sepes.Provisioning.Service
             {
                 if (ex.DeleteFromQueue)
                 {
-                    _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting due to exception");
+                    _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting message due to exception");
                     await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
                 }
                 else if (ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
@@ -321,13 +321,13 @@ namespace Sepes.Provisioning.Service
                     {
                         if (queueParentItem.DequeueCount == 5)
                         {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing after exception");
+                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing message after exception");
                          
                             await _provisioningQueueService.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
                         }
                         else
                         {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility after exception");
+                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility of message after exception");
                             await _provisioningQueueService.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
                         }
                     }

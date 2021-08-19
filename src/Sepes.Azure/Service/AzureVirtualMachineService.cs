@@ -28,7 +28,6 @@ namespace Sepes.Azure.Service
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
 
-
         public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger, IAzureCredentialService azureCredentialService,
             IAzureKeyVaultSecretService azureKeyVaultSecretService,
             IAzureNetworkSecurityGroupRuleService azureNetworkSecurityGroupRuleService
@@ -90,9 +89,9 @@ namespace Sepes.Azure.Service
                 //Validate data disks
                 if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
                 {
-                    if (virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
+                    if (virtualMachine.DataDisks.Count > 0 && virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
                     {
-                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {vmSettings.DataDisks.Count} on VM");
+                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {virtualMachine.DataDisks.Count} on VM");
                     }
                 }
             }
