@@ -24,7 +24,6 @@ spec:
         - AzureVmTempPasswordStorageKeyVault_Url
       environmentConfig:
         - environment: prod
-          runAsNonRoot: true
           variables:
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
@@ -41,7 +40,6 @@ spec:
               memory: "512Mi"
               cpu: "400m"
         - environment: dev
-          runAsNonRoot: true
           variables:
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
