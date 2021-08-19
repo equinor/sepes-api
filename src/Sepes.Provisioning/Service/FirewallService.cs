@@ -1,6 +1,7 @@
 ﻿using Sepes.Azure.Service.Interface;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -45,6 +46,7 @@ namespace Sepes.Provisioning.Service
         }
 
         public async Task Handle(
+            ProvisioningQueueParentDto queueParentItem,
             CloudResourceOperationDto operation,
             IHasFirewallRules networkRuleService)
         {
@@ -67,7 +69,7 @@ namespace Sepes.Provisioning.Service
 
                     if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        _provisioningLogService.OperationWarning(operation, $"Operation aborted, firewall rule assignment will be aborted");
+                        _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, firewall rule assignment will be aborted");
                         cancellation.Cancel();
                         break;
                     }

@@ -17,7 +17,7 @@ namespace Sepes.Provisioning.Service
 
         public void HandlingQueueParent(ProvisioningQueueParentDto queueParentItem)
         {
-            _logger.LogInformation($"Handling: {queueParentItem.MessageId} - {queueParentItem.Description}");
+            _logger.LogInformation($"{queueParentItem.MessageId} - {queueParentItem.Description}: Message being handled");
         }
 
         public void QueueParentProgressInformation(ProvisioningQueueParentDto queueParentItem, string suffix)
@@ -42,27 +42,28 @@ namespace Sepes.Provisioning.Service
 
         string QueueParentProgressLogMessage(ProvisioningQueueParentDto queueParentItem, string suffix)
         {
-            return $"MessageId: {queueParentItem.MessageId} - {queueParentItem.Description} | {suffix}";
+            return $"{queueParentItem.MessageId} - {queueParentItem.Description} | {suffix}";
         }
 
-        public void OperationInformation(CloudResourceOperationDto currentResourceOperation, string suffix, EventId eventId = default(EventId))
+        public void OperationInformation(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation, string suffix, EventId eventId = default(EventId))
         {
-            _logger.LogInformation(eventId, CurrentOperationLogMessage(currentResourceOperation, suffix));
+            _logger.LogInformation(eventId, CurrentOperationLogMessage(queueParentItem, currentResourceOperation, suffix));
         }
         
-        public void OperationWarning(CloudResourceOperationDto currentResourceOperation, string suffix, Exception exeption = null, EventId eventId = default(EventId))
+        public void OperationWarning(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation, string suffix, Exception exeption = null, EventId eventId = default(EventId))
         {
-            _logger.LogWarning(eventId, exeption, CurrentOperationLogMessage(currentResourceOperation, suffix));
+            _logger.LogWarning(eventId, exeption, CurrentOperationLogMessage(queueParentItem, currentResourceOperation, suffix));
         }
         
-        public void OperationError(Exception exeption, CloudResourceOperationDto currentResourceOperation, string suffix)
+        public void OperationError(ProvisioningQueueParentDto queueParentItem, Exception exeption, CloudResourceOperationDto currentResourceOperation, string suffix)
         {
-            _logger.LogError(exeption, CurrentOperationLogMessage(currentResourceOperation, suffix));
+            _logger.LogError(exeption, CurrentOperationLogMessage(queueParentItem, currentResourceOperation, suffix));
         }
 
-        string CurrentOperationLogMessage(CloudResourceOperationDto currentResourceOperation, string suffix)
+        string CurrentOperationLogMessage(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto currentResourceOperation, string suffix)
         {
-            return $"{currentResourceOperation.Resource.SandboxName} | {currentResourceOperation.Id} | {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType.ToUpper()} | attempt ({currentResourceOperation.TryCount}/{currentResourceOperation.MaxTryCount}) | {suffix}";
+            var sandboxPart = String.IsNullOrWhiteSpace(currentResourceOperation.Resource.SandboxName) ? "" : $" {currentResourceOperation.Resource.SandboxName} | ";
+            return $"{queueParentItem.MessageId} | {currentResourceOperation.Id} |{sandboxPart} {currentResourceOperation.Resource.ResourceType} | {currentResourceOperation.OperationType.ToUpper()} | {currentResourceOperation.TryCount}/{currentResourceOperation.MaxTryCount} | {suffix}";
         }
     }
 }

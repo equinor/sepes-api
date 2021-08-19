@@ -1,6 +1,7 @@
 ﻿using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Provisioning;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Interface.Service;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -50,6 +51,7 @@ namespace Sepes.Provisioning.Service
         }
 
         public async Task<ResourceProvisioningResult> Handle(
+                  ProvisioningQueueParentDto queueParentItem,
             CloudResourceOperationDto operation,
             ResourceProvisioningParameters currentCrudInput,
             IPerformResourceProvisioning provisioningService
@@ -66,7 +68,7 @@ namespace Sepes.Provisioning.Service
 
                     if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
                     {
-                        _provisioningLogService.OperationWarning(operation, "Operation aborted, provisioning will be aborted");
+                        _provisioningLogService.OperationWarning(queueParentItem, operation, "Operation aborted, provisioning will be aborted");
                         cancellation.Cancel();
                         break;
                     }
@@ -78,7 +80,7 @@ namespace Sepes.Provisioning.Service
 
                 if (operation.OperationType == CloudResourceOperationType.CREATE)
                 {
-                    _provisioningLogService.OperationInformation(operation, $"Storing resource Id and Name");
+                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Storing resource Id and Name");
                     await _cloudResourceUpdateService.UpdateResourceIdAndName(operation.Resource.Id, provisioningResult.IdInTargetSystem, provisioningResult.NameInTargetSystem);
                 }
 
