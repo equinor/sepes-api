@@ -24,7 +24,7 @@ spec:
         - AzureVmTempPasswordStorageKeyVault_Url
       environmentConfig:
         - environment: prod
-          variables: 
+          variables:
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"

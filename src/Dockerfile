@@ -16,7 +16,12 @@ RUN dotnet publish Sepes.RestApi -c Release -o Sepes.RestApi/out
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 WORKDIR /app
 COPY --from=build-env /app/Sepes.RestApi/out .
-ENTRYPOINT ["dotnet", "Sepes.RestApi.dll", "--environment=Development"]
+
+RUN addgroup --gid 1001 radix-non-root-group
+RUN adduser --uid 1001 --gid 1001 radix-non-root-user
+
+USER 1001
 
 # Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
 EXPOSE 80
+ENTRYPOINT ["dotnet", "Sepes.RestApi.dll", "--environment=Development"]
