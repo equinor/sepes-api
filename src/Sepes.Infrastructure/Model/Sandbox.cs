@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Model
         public string Name { get; set; }
 
         [Required(AllowEmptyStrings =false)]
-        [MaxLength(64)]
+        [MaxLength(128)]
         public string TechnicalContactName { get; set; }
 
         [Required(AllowEmptyStrings =false)]
