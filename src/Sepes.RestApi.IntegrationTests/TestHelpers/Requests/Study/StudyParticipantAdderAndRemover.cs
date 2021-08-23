@@ -21,9 +21,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Add<StudyParticipantListItem>(restHelper, studyId, role, requestDto);
         }
 
-        public static async Task<ApiConversation<ParticipantLookupDto, ErrorResponse>> AddAndExpectFailure(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)
+        public static async Task<ApiConversation<ParticipantLookupDto, Common.Response.ErrorResponse>> AddAndExpectFailure(RestHelper restHelper, int studyId, string role, ParticipantLookupDto requestDto)
         {
-            return await Add<ErrorResponse>(restHelper, studyId, role, requestDto);
+            return await Add<Common.Response.ErrorResponse>(restHelper, studyId, role, requestDto);
         }
 
         static async Task<ApiConversation<TResponse>> Remove<TResponse>(RestHelper restHelper, int studyId, int userId, string role)
@@ -37,9 +37,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Remove<StudyParticipantDto>(restHelper, studyId, userId, role);
         }
 
-        public static async Task<ApiConversation<ErrorResponse>> RemoveAndExpectFailure(RestHelper restHelper, int studyId, int userId, string role)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> RemoveAndExpectFailure(RestHelper restHelper, int studyId, int userId, string role)
         {
-            return await Remove<ErrorResponse>(restHelper, studyId, userId, role);
+            return await Remove<Common.Response.ErrorResponse>(restHelper, studyId, userId, role);
         }
 
         public static ParticipantLookupDto CreateParticipantLookupDto()

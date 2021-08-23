@@ -18,9 +18,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Update<StudyDetailsDto>(restHelper, studyId, studyUpdateDto);
         }
 
-        public static async Task<ApiConversation<StudyUpdateDto, Common.Dto.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, int studyId, StudyUpdateDto studyUpdateDto)
+        public static async Task<ApiConversation<StudyUpdateDto, Common.Response.ErrorResponse>> UpdateAndExpectFailure(RestHelper restHelper, int studyId, StudyUpdateDto studyUpdateDto)
         {
-            return await Update<Common.Dto.ErrorResponse>(restHelper, studyId, studyUpdateDto);
+            return await Update<Common.Response.ErrorResponse>(restHelper, studyId, studyUpdateDto);
         }
     } 
 }

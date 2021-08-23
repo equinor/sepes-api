@@ -14,9 +14,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Create<DatasetDto>(restHelper, studyId, location, name, classification);      
         }
 
-        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, Common.Dto.ErrorResponse>> CreateExpectFailure(RestHelper restHelper, int studyId, string location = "norwayeast", string name = "datasetName", string classification = "open")
+        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, Common.Response.ErrorResponse>> CreateExpectFailure(RestHelper restHelper, int studyId, string location = "norwayeast", string name = "datasetName", string classification = "open")
         {
-            return await Create<Common.Dto.ErrorResponse>(restHelper, studyId, location, name, classification);       
+            return await Create<Common.Response.ErrorResponse>(restHelper, studyId, location, name, classification);       
         }
 
         public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>> Create<TResponse>(RestHelper restHelper, int studyId, string location = "norwayeast", string name = "datasetName", string classification = "open")
@@ -33,9 +33,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Update<DatasetDto>(restHelper, studyId, datasetId, newName, newClassification);
         }
 
-        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, Common.Dto.ErrorResponse>> UpdateExpectFailure(RestHelper restHelper, int studyId, int datasetId, string newName = "newDatasetName", string newClassification = "restricted")
+        public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, Common.Response.ErrorResponse>> UpdateExpectFailure(RestHelper restHelper, int studyId, int datasetId, string newName = "newDatasetName", string newClassification = "restricted")
         {
-            return await Update<Common.Dto.ErrorResponse>(restHelper, studyId, datasetId, newName, newClassification);
+            return await Update<Common.Response.ErrorResponse>(restHelper, studyId, datasetId, newName, newClassification);
         }
 
         public static async Task<ApiConversation<DatasetCreateUpdateInputBaseDto, TResponse>> Update<TResponse>(RestHelper restHelper, int studyId, int datasetId, string newName = "newDatasetName", string newClassification = "restricted")
@@ -53,11 +53,11 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return new ApiConversation<NoContentResult>(response);
         }
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> DeleteExpectFailure(RestHelper restHelper, int datasetId)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> DeleteExpectFailure(RestHelper restHelper, int datasetId)
         {
-            var response = await restHelper.Delete<Common.Dto.ErrorResponse>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASET_DELETE, datasetId));
+            var response = await restHelper.Delete<Common.Response.ErrorResponse>(String.Format(ApiUrls.STUDY_SPECIFIC_DATASET_DELETE, datasetId));
 
-            return new ApiConversation<Common.Dto.ErrorResponse>(response);
+            return new ApiConversation<Common.Response.ErrorResponse>(response);
         }
 
 

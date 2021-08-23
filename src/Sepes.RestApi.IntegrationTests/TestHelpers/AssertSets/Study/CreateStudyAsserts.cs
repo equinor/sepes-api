@@ -17,7 +17,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(createRequest.WbsCode, responseWrapper.Content.WbsCode); 
         }
 
-        public static void ExpectValidationFailure(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, string message)
+        public static void ExpectValidationFailure(ApiResponseWrapper<Common.Response.ErrorResponse> responseWrapper, string message)
         {
             ApiResponseBasicAsserts.ExpectFailureWithMessage(responseWrapper, HttpStatusCode.BadRequest, message);           
         }
