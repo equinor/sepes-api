@@ -21,7 +21,7 @@ jobs:
       - uses: Amadevus/pwsh-script@v2
         id: my-script
         with:
-          script: /.github/scripts/hasCreakingChange.yml
+          script: /.github/scripts/breakingChangeInDevelop.ps1
 
       # - name: Run a one-line script
       #   id: test1
