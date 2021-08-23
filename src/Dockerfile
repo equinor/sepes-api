@@ -22,5 +22,4 @@ RUN adduser --uid 1001 --gid 1001 radix-non-root-user
 
 USER 1001
 
-# Declare the port the API will communicate through. Must be ran with -p command to actually ezpose ports
-ENTRYPOINT ["dotnet", "Sepes.RestApi.dll", "--environment=Development"]
+ENTRYPOINT ["dotnet", "Sepes.RestApi.dll"]
