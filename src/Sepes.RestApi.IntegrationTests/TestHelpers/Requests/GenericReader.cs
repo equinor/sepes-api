@@ -18,9 +18,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Read<T>(restHelper, url);
         }     
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> ReadExpectFailure(RestHelper restHelper, string url)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> ReadExpectFailure(RestHelper restHelper, string url)
         {
-            return await Read<Common.Dto.ErrorResponse>(restHelper, url);
+            return await Read<Common.Response.ErrorResponse>(restHelper, url);
         }
 
         public static async Task<ApiConversation<T>> ReadAndAssertExpectSuccess<T>(RestHelper restHelper, string url)
@@ -31,9 +31,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
 
         }
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> ReadAndAssertExpectForbidden(RestHelper restHelper, string url)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> ReadAndAssertExpectForbidden(RestHelper restHelper, string url)
         {
-            var conversation = await Read<Common.Dto.ErrorResponse>(restHelper, url);
+            var conversation = await Read<Common.Response.ErrorResponse>(restHelper, url);
             ApiResponseBasicAsserts.ExpectForbiddenWithMessage(conversation.Response);
             return conversation;
 

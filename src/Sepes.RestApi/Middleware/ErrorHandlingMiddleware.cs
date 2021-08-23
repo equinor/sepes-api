@@ -128,7 +128,7 @@ namespace Sepes.RestApi.Middelware
 
         public static JsonResponse CreateErrorMessageResult(string requestId, string message, HttpStatusCode statusCode = HttpStatusCode.InternalServerError)
         {
-            var content = JsonSerializerUtil.Serialize(new Common.Dto.ErrorResponse
+            var content = JsonSerializerUtil.Serialize(new Common.Response.ErrorResponse
             {
                 Message = message,
                 RequestId = requestId

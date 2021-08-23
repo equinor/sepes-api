@@ -19,9 +19,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Create<StudyDetailsDto>(restHelper, studyName, vendor, wbsCode);
         }
 
-        public static async Task<ApiConversation<StudyCreateDto, Common.Dto.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")
+        public static async Task<ApiConversation<StudyCreateDto, Common.Response.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, string studyName = "studyName", string vendor = "Vendor", string wbsCode = "wbs")
         {
-            return await Create<Common.Dto.ErrorResponse>(restHelper, studyName, vendor, wbsCode);
+            return await Create<Common.Response.ErrorResponse>(restHelper, studyName, vendor, wbsCode);
         }
     } 
 }

@@ -20,16 +20,16 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return new AddorRemoveDatasetToSandboxResult(response);
         }
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> AddDatasetExpectFailure(RestHelper restHelper, int sandboxId, int datasetId)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> AddDatasetExpectFailure(RestHelper restHelper, int sandboxId, int datasetId)
         {
-            var response = await restHelper.Put<Common.Dto.ErrorResponse>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
-            return new ApiConversation<Common.Dto.ErrorResponse>(response);
+            var response = await restHelper.Put<Common.Response.ErrorResponse>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
+            return new ApiConversation<Common.Response.ErrorResponse>(response);
         }
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> RemoveDatasetExpectFailure(RestHelper restHelper, int sandboxId, int datasetId)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> RemoveDatasetExpectFailure(RestHelper restHelper, int sandboxId, int datasetId)
         {
-            var response = await restHelper.Delete<Common.Dto.ErrorResponse>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
-            return new ApiConversation<Common.Dto.ErrorResponse>(response);
+            var response = await restHelper.Delete<Common.Response.ErrorResponse>(String.Format(ApiUrls.SANDBOX_DATASETS, sandboxId, datasetId));
+            return new ApiConversation<Common.Response.ErrorResponse>(response);
         }       
     }
 

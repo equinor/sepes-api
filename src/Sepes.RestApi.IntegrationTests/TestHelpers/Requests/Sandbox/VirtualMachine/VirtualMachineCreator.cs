@@ -23,9 +23,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Create<VmDto>(restHelper, sandboxId, name);
         }
 
-        public static async Task<ApiConversation<VirtualMachineCreateDto, Common.Dto.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int sandboxId, string name = "integrationtest")
+        public static async Task<ApiConversation<VirtualMachineCreateDto, Common.Response.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int sandboxId, string name = "integrationtest")
         {
-            return await Create<Common.Dto.ErrorResponse>(restHelper, sandboxId, name);
+            return await Create<Common.Response.ErrorResponse>(restHelper, sandboxId, name);
         }
     }   
 }
