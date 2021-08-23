@@ -42,6 +42,7 @@ spec:
         - environment: dev
           runAsNonRoot: true
           variables:
+            ASPNETCORE_URLS: "http://*:3000"
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
