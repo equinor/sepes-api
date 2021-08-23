@@ -30,6 +30,15 @@ namespace Sepes.RestApi.Middelware
             {
                 await next(context);
             }
+            catch (TaskCanceledException ex)
+            {
+                log.LogInformation($"Task was cancelled: {method} {path}, requestId: {requestId}");
+
+                var result = JsonExceptionResultFactory.CreateExceptionMessageResult(
+                   requestId, ex, HttpStatusCode.Continue);
+
+                await HandleExceptionAsync(context, result.Content, result.StatusCode);
+            }
             catch (NotFoundException ex)
             {
                 LogHelper.LogError(log, ex, path, method);
@@ -65,16 +74,7 @@ namespace Sepes.RestApi.Middelware
                    requestId, ex, HttpStatusCode.BadRequest);
 
                 await HandleExceptionAsync(context, result.Content, result.StatusCode);
-            }
-            catch (TaskCanceledException ex)
-            {
-                log.LogInformation($"Task was cancelled: {method} {path}, requestId: {requestId}");
-
-                var result = JsonExceptionResultFactory.CreateExceptionMessageResult(
-                   requestId, ex, HttpStatusCode.Continue);
-
-                await HandleExceptionAsync(context, result.Content, result.StatusCode);
-            }
+            }        
             catch (Exception ex)
             {
                 LogHelper.LogError(log, ex, path, method);

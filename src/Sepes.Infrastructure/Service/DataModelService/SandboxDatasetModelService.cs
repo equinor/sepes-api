@@ -83,7 +83,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
                 if (datasetFromDb.StudySpecific && studyForDataset.Id != sandbox.Study.Id)
                 {
-                    throw new ArgumentException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {sandbox.Study.Id}.");
+                    throw new BadRequestException($"Dataset {datasetId} cannot be added to Sandbox {sandboxId}. The dataset is Study specific and belongs to another Study than {sandbox.Study.Id}.");
                 }
             }         
 
@@ -93,7 +93,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             //Is dataset allready linked to this sandbox?
             if (sandboxDatasetRelation != null)
             {
-                throw new ArgumentException($"Dataset is allready added to Sandbox.");
+                throw new BadRequestException($"Dataset is allready added to Sandbox.");
             }
 
             // Create new entry in the relation table
