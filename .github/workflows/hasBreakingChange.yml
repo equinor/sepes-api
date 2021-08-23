@@ -19,7 +19,7 @@ jobs:
       - uses: Amadevus/pwsh-script@v2
         id: my-script
         with:
-          script: .\scripts\hasCreakingChange.yml
+          script: .github/scripts/hasCreakingChange.yml
 
       # - name: Run a one-line script
       #   id: test1
