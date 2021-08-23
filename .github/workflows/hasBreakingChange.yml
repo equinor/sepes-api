@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v1
       - run: dir
       - run: dir .github
-      - run: dir .gitub/scripts
+      - run: dir .github/scripts
       - uses: Amadevus/pwsh-script@v2
         id: my-script
         with:
