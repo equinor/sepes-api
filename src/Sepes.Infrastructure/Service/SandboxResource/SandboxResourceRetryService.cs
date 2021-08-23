@@ -61,7 +61,7 @@ namespace Sepes.Infrastructure.Service
 
                 if (!AllSandboxResourcesOkay(sandbox))
                 {
-                    throw new NullReferenceException(ReScheduleResourceLogPrefix(resource, $"Cannot retry VM creation for {resource.ResourceName} when Sandbox is not setup properly", operationToRetry));
+                    throw new BadRequestException(ReScheduleResourceLogPrefix(resource, $"Cannot retry VM creation for {resource.ResourceName} when Sandbox is not setup properly", operationToRetry), "Cannot retry VM creation when Sandbox is not setup properly");
                 }
 
                 await EnsureOperationIsReadyForRetryAndEnqueue(resource, operationToRetry);
@@ -81,7 +81,7 @@ namespace Sepes.Infrastructure.Service
             }
             else
             {
-                throw new ArgumentException($"Retry is not supported for resource type: {resource.ResourceType} ");
+                throw new BadRequestException($"Retry is not supported for resource type: {resource.ResourceType} ");
             }
 
             return _mapper.Map<SandboxResourceLight>(resource);
@@ -124,14 +124,14 @@ namespace Sepes.Infrastructure.Service
 
         void EnsureHasAllRequiredResourcesThrowIfNot(Sandbox sandbox)
         {
-            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.ResourceGroup);
-            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.StorageAccount);
-            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.NetworkSecurityGroup);
-            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.VirtualNetwork);
-            EnsureSandboxHasResourceTypeThrowIfNot(sandbox, AzureResourceType.Bastion);
+            EnsureResourceExistsForSandbox(sandbox, AzureResourceType.ResourceGroup);
+            EnsureResourceExistsForSandbox(sandbox, AzureResourceType.StorageAccount);
+            EnsureResourceExistsForSandbox(sandbox, AzureResourceType.NetworkSecurityGroup);
+            EnsureResourceExistsForSandbox(sandbox, AzureResourceType.VirtualNetwork);
+            EnsureResourceExistsForSandbox(sandbox, AzureResourceType.Bastion);
         }
 
-        void EnsureSandboxHasResourceTypeThrowIfNot(Sandbox sandbox, string resourceType)
+        void EnsureResourceExistsForSandbox(Sandbox sandbox, string resourceType)
         {
             var resource = CloudResourceUtil.GetResourceByType(sandbox.Resources, resourceType, true);
 
