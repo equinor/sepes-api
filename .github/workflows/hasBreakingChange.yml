@@ -1,0 +1,37 @@
+name: Check for breaking change
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [develop]
+  schedule:
+    - cron: "0 19 * * 6"
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - uses: Amadevus/pwsh-script@v2
+      id: my-script
+      with:
+        script: .\scripts\hasCreakingChange.yml
+
+    # - name: Run a one-line script
+    #   id: test1
+    #   run: echo "##[set-output name=data;]$(date)" 
+    #     shell: powershell
+
+    - name: Time badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: breaking_change_status
+          LABEL: ${{ steps.my-script.outputs.result }}
+          STATUS: ${{ steps.my-script.outputs.result }}
+          COLOR: 00EEFF
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
