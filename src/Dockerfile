@@ -23,4 +23,4 @@ RUN adduser --uid 1001 --gid 1001 radix-non-root-user
 USER 1001
 
 EXPOSE 3000
-ENTRYPOINT ["dotnet", "Sepes.RestApi.dll"] 
+ENTRYPOINT ["dotnet", "Sepes.RestApi.dll"]
