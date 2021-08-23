@@ -15,8 +15,6 @@ spec:
       src: src
       ports:
         - name: http
-          port: 80
-        - name: httpdev
           port: 3000
       publicPort: http
       secrets:
