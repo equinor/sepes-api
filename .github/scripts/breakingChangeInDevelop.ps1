@@ -1,5 +1,5 @@
 $dateSinceLastCommitToMaster = git log master -1 --format=%ct.
 $output = git log --after=$dateSinceLastCommitToMaster --grep="feat!"
 
-if (!$output) { return "test2" }
-else { return "test1" }
+if (!$output) { return "No breaking change from backend" }
+else { return "Backend change to be merged to prod" }
