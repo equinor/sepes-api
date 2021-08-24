@@ -1,0 +1,26 @@
+name: Check for breaking change
+
+on:
+  push:
+    branches: [develop, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: Amadevus/pwsh-script@v2
+        id: my-script
+        with:
+          script: ./.github/scripts/breakingChangeInDevelop.ps1
+
+      - name: Time badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: breaking_change_status
+          LABEL: Api status
+          STATUS: ${{ steps.my-script.outputs.result }}
+          COLOR: 00EEEA
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
