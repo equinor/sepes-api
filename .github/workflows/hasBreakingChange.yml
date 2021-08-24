@@ -20,6 +20,8 @@ jobs:
         with:
           script: ./.github/scripts/breakingChangeInDevelop.ps1
 
+      - run: echo "${{ steps.my-script.outputs.result }}"
+
       - name: Time badge
         uses: RubbaBoy/BYOB@v1.2.1
         with:
