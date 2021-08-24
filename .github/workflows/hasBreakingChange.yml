@@ -27,12 +27,13 @@ jobs:
       #   id: test1
       #   run: echo "##[set-output name=data;]$(date)"
       #     shell: powershell
+      - run: "${{ steps.my-script.outputs.result }}"
 
       - name: Time badge
         uses: RubbaBoy/BYOB@v1.2.1
         with:
           NAME: breaking_change_status
           LABEL: "Status"
-          STATUS: ${{ steps.my-script.outputs.result }}
+          STATUS: "${{ steps.my-script.outputs.result }}"
           COLOR: 00EEEE
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
