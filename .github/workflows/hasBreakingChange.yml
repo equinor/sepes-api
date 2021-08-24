@@ -33,7 +33,7 @@ jobs:
         uses: RubbaBoy/BYOB@v1.2.1
         with:
           NAME: breaking_change_status
-          LABEL: "Status"
-          STATUS: "${{ steps.my-script.outputs.result }}"
+          LABEL: ${{ steps.my-script.outputs.result }}
+          STATUS: "test"
           COLOR: 00EEEE
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
