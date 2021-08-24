@@ -1,1 +1,1 @@
-{"breaking_change_status":{"label":"Api status","status":"[\"Branch 'build/add_badge_for_breaking_change' set up to track remote branch 'build/add_badge_for_breaking_change' from 'origin'.\",\"No breaking change from backend\"]","color":"00EEEA"}}
+{"breaking_change_status":{"label":"Api status","status":"No breaking change from backend","color":"00EEEA"}}
