@@ -23,10 +23,6 @@ jobs:
         with:
           script: ./.github/scripts/breakingChangeInDevelop.ps1
 
-      # - name: Run a one-line script
-      #   id: test1
-      #   run: echo "##[set-output name=data;]$(date)"
-      #     shell: powershell
       - run: echo "${{ steps.my-script.outputs.result }}"
 
       - name: Time badge
