@@ -34,6 +34,6 @@ jobs:
         with:
           NAME: breaking_change_status
           LABEL: ${{ steps.my-script.outputs.result }}
-          STATUS: "test"
-          COLOR: 00EEEE
+          STATUS: ${{ steps.my-script.outputs.result }}
+          COLOR: 00EEEA
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
