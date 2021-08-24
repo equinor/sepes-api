@@ -15,15 +15,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - run: dir
-      - run: dir .github
-      - run: dir .github/scripts
       - uses: Amadevus/pwsh-script@v2
         id: my-script
         with:
           script: ./.github/scripts/breakingChangeInDevelop.ps1
-
-      - run: echo "${{ steps.my-script.outputs.result }}"
 
       - name: Time badge
         uses: RubbaBoy/BYOB@v1.2.1
