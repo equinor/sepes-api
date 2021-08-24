@@ -24,7 +24,9 @@ spec:
         - AzureVmTempPasswordStorageKeyVault_Url
       environmentConfig:
         - environment: prod
+          runAsNonRoot: true
           variables:
+            ASPNETCORE_URLS: "http://*:3000"
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
