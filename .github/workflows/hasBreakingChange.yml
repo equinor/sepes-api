@@ -3,9 +3,9 @@ name: Check for breaking change
 on:
   push:
     branches: [develop, master]
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [develop]
+  # pull_request:
+  # The branches below must be a subset of the branches above
+  # branches: [develop]
   schedule:
     - cron: "0 19 * * 6"
 
@@ -19,8 +19,6 @@ jobs:
         id: my-script
         with:
           script: ./.github/scripts/breakingChangeInDevelop.ps1
-
-      - run: echo "${{ steps.my-script.outputs.result }}"
 
       - name: Time badge
         uses: RubbaBoy/BYOB@v1.2.1
