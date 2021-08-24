@@ -27,7 +27,7 @@ jobs:
       #   id: test1
       #   run: echo "##[set-output name=data;]$(date)"
       #     shell: powershell
-      - run: "${{ steps.my-script.outputs.result }}"
+      - run: echo "${{ steps.my-script.outputs.result }}"
 
       - name: Time badge
         if: ${{ steps.my-script.outputs.result == 'test2' }}
