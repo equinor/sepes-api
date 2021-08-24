@@ -2,6 +2,90 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.6](https://github.com/equinor/sepes-api/compare/0.6.5...0.6.6) (2021-08-24)
+
+### [0.6.5](https://github.com/equinor/sepes-api/compare/0.6.4...0.6.5) (2021-08-24)
+
+### [0.6.4](https://github.com/equinor/sepes-api/compare/0.6.3...0.6.4) (2021-08-23)
+
+### [0.6.3](https://github.com/equinor/sepes-api/compare/0.6.2...0.6.3) (2021-08-23)
+
+### [0.6.2](https://github.com/equinor/sepes-api/compare/0.6.1...0.6.2) (2021-08-23)
+
+### [0.6.1](https://github.com/equinor/sepes-api/compare/0.6.0...0.6.1) (2021-08-20)
+
+## [0.6.0](https://github.com/equinor/sepes-api/compare/0.5.2...0.6.0) (2021-08-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* url for deleting study specific dataset is now on api/studies/datasets/studyspecific/{datasetId}
+
+* results and learnings and study specific datasets ([#746](https://github.com/equinor/sepes-api/issues/746)) ([ccd6da9](https://github.com/equinor/sepes-api/commit/ccd6da9852b44263401b4ed6688d706717cf0f68)), closes [#742](https://github.com/equinor/sepes-api/issues/742) [#744](https://github.com/equinor/sepes-api/issues/744)
+
+### [0.5.2](https://github.com/equinor/sepes-api/compare/0.5.1...0.5.2) (2021-08-10)
+
+### [0.5.1](https://github.com/equinor/sepes-api/compare/0.5.0...0.5.1) (2021-08-02)
+
+
+### Bug Fixes
+
+* filter out dash in storage account name ([#736](https://github.com/equinor/sepes-api/issues/736)) ([63592a0](https://github.com/equinor/sepes-api/commit/63592a08b2b13a363dbb59b9f585d7c65bb36943))
+* **function:** run as managed identity ([#700](https://github.com/equinor/sepes-api/issues/700)) ([3b50e56](https://github.com/equinor/sepes-api/commit/3b50e56161a181ae63ae3df45dc66045cb05ed7a)), closes [#669](https://github.com/equinor/sepes-api/issues/669)
+* reduce max length of description ([3bc80bc](https://github.com/equinor/sepes-api/commit/3bc80bc41b5a64874291a20a4e0fff9da147d797))
+
+## [0.5.0](https://github.com/equinor/sepes-api/compare/0.4.24...0.5.0) (2021-06-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removed support for CRUD operations for pre-approved datasets
+
+* test: DatasetFileService
+
+### Bug Fixes
+
+* **study:** increase logo sas token timeout to 61 min ([#726](https://github.com/equinor/sepes-api/issues/726)) ([00c5a6f](https://github.com/equinor/sepes-api/commit/00c5a6f19e266ddafc700143c0d339829c3a5b72))
+* **study:** issue with role list and admin role ([#716](https://github.com/equinor/sepes-api/issues/716)) ([15bcc16](https://github.com/equinor/sepes-api/commit/15bcc163dddb225782ca6ea9a7a9e4d4dc6cbc1e)), closes [#710](https://github.com/equinor/sepes-api/issues/710)
+* **study:** participant search ([#723](https://github.com/equinor/sepes-api/issues/723)) ([66e0267](https://github.com/equinor/sepes-api/commit/66e0267298658966203b6a179d2fa6cc46f95a6c)), closes [#712](https://github.com/equinor/sepes-api/issues/712)
+* **study:** wbs cache use dapper and isolate errors ([#724](https://github.com/equinor/sepes-api/issues/724)) ([ae49bfa](https://github.com/equinor/sepes-api/commit/ae49bfadd0e5ef278a88827e7db3b10df99f63c1)), closes [#720](https://github.com/equinor/sepes-api/issues/720)
+* **worker:** lifespan of health service now transient ([#722](https://github.com/equinor/sepes-api/issues/722)) ([091db37](https://github.com/equinor/sepes-api/commit/091db3773dc66d17593b2ce68c537a3a09c54f36))
+
+
+* improve study read rbac coverage ([#714](https://github.com/equinor/sepes-api/issues/714)) ([b031107](https://github.com/equinor/sepes-api/commit/b031107d8b7ed3c0b9fa524f2b625e14ae19ee0f)), closes [#713](https://github.com/equinor/sepes-api/issues/713)
+
+### [0.4.24](https://github.com/equinor/sepes-api/compare/0.4.23...0.4.24) (2021-06-25)
+
+
+### Bug Fixes
+
+* **wbsvalidation:** better cache duplication handling ([#718](https://github.com/equinor/sepes-api/issues/718)) ([f32b3ff](https://github.com/equinor/sepes-api/commit/f32b3ffec4fecdea29bd0a6306ca459255f57fce)), closes [#717](https://github.com/equinor/sepes-api/issues/717)
+
+### [0.4.23](https://github.com/equinor/sepes-api/compare/0.4.22...0.4.23) (2021-06-24)
+
+
+### Bug Fixes
+
+* prevent fail in resource naming  ([#709](https://github.com/equinor/sepes-api/issues/709)) ([7345f92](https://github.com/equinor/sepes-api/commit/7345f9253db34eee3a8beb670191f6ec94b2cb21)), closes [#707](https://github.com/equinor/sepes-api/issues/707)
+* **study:** prevent setting invalid wbs if active sandbox or dataset ([#705](https://github.com/equinor/sepes-api/issues/705)) ([f909a21](https://github.com/equinor/sepes-api/commit/f909a211f6cdc97a388337245c44370834818491)), closes [#703](https://github.com/equinor/sepes-api/issues/703) [#704](https://github.com/equinor/sepes-api/issues/704)
+
+### [0.4.22](https://github.com/equinor/sepes-api/compare/0.4.21...0.4.22) (2021-06-17)
+
+
+### Bug Fixes
+
+* participant search from employees and affiliates ([#701](https://github.com/equinor/sepes-api/issues/701)) ([35f8a80](https://github.com/equinor/sepes-api/commit/35f8a80b82d2afc74a436a2338a140976414bd44))
+* **dataset:** assign custom role for dataset resource group ([#699](https://github.com/equinor/sepes-api/issues/699)) ([9a4d9af](https://github.com/equinor/sepes-api/commit/9a4d9af4e5c1389ac3b2b6039307cbc9fddb4c8d)), closes [#692](https://github.com/equinor/sepes-api/issues/692)
+
+### [0.4.21](https://github.com/equinor/sepes-api/compare/0.4.20...0.4.21) (2021-06-10)
+
+
+### Bug Fixes
+
+* **cypress:** use group access from token for mock user ([#691](https://github.com/equinor/sepes-api/issues/691)) ([7c84d67](https://github.com/equinor/sepes-api/commit/7c84d675e9c0c321c74edaa8c91a6d3482f05a01))
+* **study:** details response also including datasets not in any sandbox ([#695](https://github.com/equinor/sepes-api/issues/695)) ([c3a972a](https://github.com/equinor/sepes-api/commit/c3a972a7756e8e5eab1f3bb0072463ac10daf6af)), closes [#694](https://github.com/equinor/sepes-api/issues/694)
+* **vm:** no public IP was created for VM ([#696](https://github.com/equinor/sepes-api/issues/696)) ([11f84e8](https://github.com/equinor/sepes-api/commit/11f84e89a2f4014f147715dc7ac184f1355f9d97)), closes [#693](https://github.com/equinor/sepes-api/issues/693)
+
 ### [0.4.20](https://github.com/equinor/sepes-api/compare/0.4.19...0.4.20) (2021-06-03)
 
 

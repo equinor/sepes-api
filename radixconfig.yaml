@@ -15,7 +15,7 @@ spec:
       src: src
       ports:
         - name: http
-          port: 80
+          port: 3000
       publicPort: http
       secrets:
         - AzureAd__ClientId
@@ -24,7 +24,9 @@ spec:
         - AzureVmTempPasswordStorageKeyVault_Url
       environmentConfig:
         - environment: prod
+          runAsNonRoot: true
           variables:
+            ASPNETCORE_URLS: "http://*:3000"
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
@@ -40,12 +42,14 @@ spec:
               memory: "512Mi"
               cpu: "400m"
         - environment: dev
+          runAsNonRoot: true
           variables:
+            ASPNETCORE_URLS: "http://*:3000"
             SEPES_HttpOnly: "true"
             DisableMigrations: "false"
             CostAllocationTypeTagName: "CostAllocationType"
             CostAllocationCodeTagName: "CostAllocationCode"
-            AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com"
+            AllowCorsDomains: "https://frontend-sepes-web-dev.radix.equinor.com,http://localhost:3000/"
           replicas: 2
           monitoring: true
           resources:
