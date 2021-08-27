@@ -68,9 +68,7 @@ namespace Sepes.Infrastructure.Service
         }     
 
         public async Task RemovePreApprovedDatasetFromStudyAsync(int studyId, int datasetId)
-        {
-            var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);                  
-          
+        {                 
             if (await _studySpecificDatasetModelService.IsStudySpecific(datasetId))
             {
                 throw new Exception("Study specific datasets cannot be deleted using this method");              

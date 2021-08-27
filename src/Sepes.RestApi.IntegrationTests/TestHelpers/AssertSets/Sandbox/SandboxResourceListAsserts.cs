@@ -83,12 +83,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
                     Assert.Contains(CloudResourceStatus.CREATING, curResource.Status);
                     Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
                 }
-                 else if (vmDeleted && !vmDeleteFinished)
+                 else if (!vmDeleteFinished)
                 {
                     Assert.Contains(CloudResourceStatus.DELETING, curResource.Status);
                     Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);
                 }
-                 else if (vmDeleteFinished)
+                 else
                 {
                     Assert.Contains(CloudResourceStatus.DELETING, curResource.Status);
                     Assert.Contains(CloudResourceStatus.IN_QUEUE, curResource.Status);

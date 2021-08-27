@@ -55,7 +55,6 @@ namespace Sepes.Tests.Util
         [Fact]
         public void MarkAsDeleted_ShouldMarkAsDeletedWithCorrectName5()
         {
-            var deletedBy = new UserDto { };
             var itemToBeDeleted = new CloudResource { };
             var ex = Assert.Throws<ArgumentNullException>(() => SoftDeleteUtil.MarkAsDeleted(null, ""));
 

@@ -51,7 +51,6 @@ namespace Sepes.Tests.Services
         {           
             _ = await ClearTestDatabase();
 
-            var studyDatasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
             var datasetService = DatasetServiceMockFactory.GetStudyDatasetService(_serviceProvider);
            
             await Assert.ThrowsAsync<NotFoundException>(() => datasetService.RemovePreApprovedDatasetFromStudyAsync(providedStudyId, providedDatasetId));

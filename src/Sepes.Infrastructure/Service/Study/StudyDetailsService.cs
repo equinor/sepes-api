@@ -36,35 +36,29 @@ namespace Sepes.Infrastructure.Service
             var studyFromDbDapper = await _studyDetailsModelService.GetStudyDetailsAsync(studyId);
             var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDbDapper);
 
-            var afterStudy = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             var sandboxes = await _studyDetailsModelService.GetSandboxForStudyDetailsAsync(studyId);
             studyDetailsDto.Sandboxes = _mapper.Map<List<SandboxListItem>>(sandboxes);
 
-            var aftersb = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             var datasets = await _studyDetailsModelService.GetDatasetsForStudyDetailsAsync(studyId);
             studyDetailsDto.Datasets = _mapper.Map<List<DatasetListItemDto>>(datasets);
 
-            var afterds = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             var participants = await _studyDetailsModelService.GetParticipantsForStudyDetailsAsync(studyId);
             studyDetailsDto.Participants = _mapper.Map<List<StudyParticipantListItem>>(participants);
 
-            var afterParticipants = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);
 
-            var afterLogo = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             await DecorateStudyWithPermissions(studyDetailsDto);
 
-            var afterPermissions = spUpdate.ElapsedMilliseconds;
             spUpdate.Restart();
 
             return studyDetailsDto;

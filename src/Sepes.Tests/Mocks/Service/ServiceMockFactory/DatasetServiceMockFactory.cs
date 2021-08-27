@@ -101,7 +101,6 @@ namespace Sepes.Tests.Mocks.ServiceMockFactory
             }
 
             var db = serviceProvider.GetService<SepesDbContext>();
-            var config = serviceProvider.GetService<IConfiguration>();
             var mapper = serviceProvider.GetService<IMapper>();
             var logger = serviceProvider.GetService<ILogger<StudySpecificDatasetService>>();
             var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);

@@ -189,7 +189,6 @@ namespace Sepes.Infrastructure.Service
 
         async Task ScheduleResourceGroupRoleAssignments(Study study, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)
         {
-            var participants = await _db.StudyParticipants.Include(sp => sp.User).Where(p => p.StudyId == study.Id).ToListAsync();
             var desiredState = CloudResourceConfigStringSerializer.Serialize(new CloudResourceOperationStateForRoleUpdate(study.Id));
 
             var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroup);
@@ -210,16 +209,12 @@ namespace Sepes.Infrastructure.Service
 
                 _logger.LogInformation($"CreateResourcesForStudySpecificDataset - Dataset Id: {dataset.Id}");
 
-                var currentUser = await _userService.GetCurrentUserAsync();
-
                 var tagsForStorageAccount = ResourceTagFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
                 var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
-
-
 
                 await _datasetFirewallService.EnsureDatasetHasFirewallRules(dataset, clientIp);
 

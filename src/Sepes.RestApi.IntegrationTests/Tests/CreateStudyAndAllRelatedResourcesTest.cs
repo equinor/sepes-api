@@ -79,7 +79,7 @@ namespace Sepes.RestApi.IntegrationTests.Tests
             VirtualMachineExtendedInfoAsserts.BeforeProvisioningExpectSuccess(vmInfoExtended);
 
             //SETUP INFRASTRUCTURE BY RUNNING A METHOD ON THE API            
-            var processWorkQueueResponse = await ProcessWorkQueue();
+            await ProcessWorkQueue();
 
             //GET SANDBOX RESOURCE LIST AND ASSERT
             var sandboxResourcesResponseWrapper = await _restHelper.Get<List<SandboxResourceLight>>($"api/sandboxes/{sandboxResponse.Id}/resources");
