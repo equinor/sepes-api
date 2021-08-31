@@ -32,12 +32,9 @@ namespace Sepes.Infrastructure.Util
                 {
                     foreach (var curRule in vmSettings.Rules)
                     {
-                        if (curRule.Direction == RuleDirection.Outbound)
+                        if (curRule.Direction == RuleDirection.Outbound && curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
                         {
-                            if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-                            {
-                                return curRule;
-                            }
+                            return curRule;
                         }
                     }
                 }
