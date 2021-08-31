@@ -56,15 +56,9 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             var allowedForAppRolesQueryable = AllowedUserOperations.ForAppRolesLevel(relevantOperations);
 
-            if (allowedForAppRolesQueryable.Any())
+            if (allowedForAppRolesQueryable.Any(p => UserHasAnyOfTheseAppRoles(currentUser, p.AllowedForRoles)))
             {
-                foreach (var curAllowance in allowedForAppRolesQueryable)
-                {
-                    if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             return false;
@@ -79,25 +73,18 @@ namespace Sepes.Infrastructure.Util.Auth
                 allowedForAppRolesQueryable = AllowedUserOperations.ForRestrictedStudies(allowedForAppRolesQueryable);
             }
 
-            if (allowedForAppRolesQueryable.Any())
+            foreach (var curAllowance in allowedForAppRolesQueryable.Where(a => UserHasAnyOfTheseAppRoles(currentUser, a.AllowedForRoles)))
             {
-                foreach (var curAllowance in allowedForAppRolesQueryable)
+                if (curAllowance.AppliesOnlyIfUserIsStudyOwner)
                 {
-                    if (UserHasAnyOfTheseAppRoles(currentUser, curAllowance.AllowedForRoles))
+                    if (UserHasAnyOfTheseStudyRoles(currentUser.Id, studyPermissionDetails, operation, roleBeingAddedOrRemoved, StudyRoles.StudyOwner))
                     {
-                        if (curAllowance.AppliesOnlyIfUserIsStudyOwner)
-                        {
-                            if (UserHasAnyOfTheseStudyRoles(currentUser.Id, studyPermissionDetails, operation, roleBeingAddedOrRemoved, StudyRoles.StudyOwner))
-                            {
-                                return true;
-                            }
-                        }
-                        else
-                        {
-                            return true;
-                        }
+                        return true;
                     }
-
+                }
+                else
+                {
+                    return true;
                 }
             }
 
