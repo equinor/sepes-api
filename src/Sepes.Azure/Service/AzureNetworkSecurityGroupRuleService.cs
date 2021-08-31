@@ -44,17 +44,8 @@ namespace Sepes.Azure.Service
         {
             var nsg = await _azure.NetworkSecurityGroups.GetByResourceGroupAsync(resourceGroupName, nsgName, cancellationToken);
 
-            foreach (var curRuleKvp in nsg.SecurityRules)
-            {
-                //TODO: VERIFY CHECK
-                if (curRuleKvp.Value.Access.ToLower() == action.ToString().ToLower() && curRuleKvp.Value.Name == ruleName)
-                {
-                    return true;
-                }
-            }
-
-
-            return false;
+            //TODO: VERIFY CHECK
+            return nsg.SecurityRules.Any(r => r.Value.Access.ToLower() == action.ToString().ToLower() && r.Value.Name == ruleName);         
         }
 
 
@@ -64,12 +55,17 @@ namespace Sepes.Azure.Service
 
             var result = new Dictionary<string, NsgRuleDto>();
 
-            foreach (var curRuleKvp in nsg.SecurityRules)
+            foreach (var curRuleKvp in nsg.SecurityRules.Where(r=> !result.ContainsKey(r.Value.Name) && r.Value.Direction == direction))
             {
-                if (!result.ContainsKey(curRuleKvp.Value.Name) && curRuleKvp.Value.Direction == direction)
-                {
-                    result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
-                }
+                result.Add(
+                    curRuleKvp.Value.Name,
+                    new NsgRuleDto() { 
+                        Key = curRuleKvp.Key,
+                        Name = curRuleKvp.Value.Name,
+                        Description = curRuleKvp.Value.Description,
+                        Protocol = curRuleKvp.Value.Protocol,
+                        Priority = curRuleKvp.Value.Priority,
+                        Direction = curRuleKvp.Value.Direction });
             }
 
             return result;
