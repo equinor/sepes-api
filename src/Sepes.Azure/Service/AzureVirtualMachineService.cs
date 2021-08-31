@@ -87,12 +87,10 @@ namespace Sepes.Azure.Service
             else
             {
                 //Validate data disks
-                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
+                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0 &&
+                    virtualMachine.DataDisks.Count > 0 && virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
                 {
-                    if (virtualMachine.DataDisks.Count > 0 && virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
-                    {
-                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {virtualMachine.DataDisks.Count} on VM");
-                    }
+                    throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {virtualMachine.DataDisks.Count} on VM");
                 }
             }
 

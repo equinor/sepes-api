@@ -54,12 +54,9 @@ namespace Sepes.Azure.Service
                 {
                     var itemAsUser = curItem as User;
 
-                    if (itemAsUser != null)
+                    if (itemAsUser != null && !userList.ContainsKey(itemAsUser.Id))
                     {
-                        if (!userList.ContainsKey(itemAsUser.Id))
-                        {
-                            userList.Add(itemAsUser.Id, new AzureUserDto() { Id = itemAsUser.Id, Mail = itemAsUser.Mail, DisplayName = itemAsUser.DisplayName, UserPrincipalName = itemAsUser.UserPrincipalName });
-                        }
+                        userList.Add(itemAsUser.Id, new AzureUserDto() { Id = itemAsUser.Id, Mail = itemAsUser.Mail, DisplayName = itemAsUser.DisplayName, UserPrincipalName = itemAsUser.UserPrincipalName });
                     }
                 }
 
