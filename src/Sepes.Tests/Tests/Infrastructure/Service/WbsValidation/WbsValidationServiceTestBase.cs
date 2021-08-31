@@ -132,14 +132,7 @@ namespace Sepes.Tests.Services.Infrastructure
           m.Get(It.IsAny<string>()))
               .ReturnsAsync((string wbsCode) =>
               {
-                  if (foundInCache)
-                  {
-                      return new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10));
-                  }
-                  else
-                  {
-                      return null;
-                  }
+                  return foundInCache ? new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10)) : null;
               });
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));
