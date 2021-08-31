@@ -66,11 +66,7 @@ namespace Sepes.Provisioning.Service
                         Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
 
-                    if (setRulesTask.IsCompletedSuccessfully)
-                    {
-
-                    }
-                    else
+                    if (!setRulesTask.IsCompletedSuccessfully)
                     {
                         if (setRulesTask.Exception == null)
                         {
@@ -80,7 +76,7 @@ namespace Sepes.Provisioning.Service
                         {
                             throw setRulesTask.Exception;
                         }
-                    }
+                    }                   
                 }
             }
             catch (Exception ex)
