@@ -32,7 +32,7 @@ namespace Sepes.Tests.Common.ServiceMockFactories.Infrastructure
             {
                 wbsValidationServiceMock.Setup(s =>
                         s.GetImage(It.IsAny<int>()))
-                    .ReturnsAsync((int id) => { if (availableOperatingSystemsLookup.TryGetValue(id, out VmImageDto relevantImage)) { return relevantImage; } else return null; });
+                    .ReturnsAsync((int id) => { return availableOperatingSystemsLookup.TryGetValue(id, out VmImageDto relevantImage) ? relevantImage : null; });
             }
 
             return wbsValidationServiceMock;
