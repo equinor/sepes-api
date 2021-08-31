@@ -93,12 +93,9 @@ namespace Sepes.Infrastructure.Service
                 {
                     foreach (var curOperation in curResource.Operations)
                     {
-                        if (curOperation.DependsOnOperation != null)
+                        if (curOperation.DependsOnOperation != null && _db.CloudResourceOperations.Contains(curOperation.DependsOnOperation))
                         {
-                            if (_db.CloudResourceOperations.Contains(curOperation.DependsOnOperation))
-                            {
-                                _db.CloudResourceOperations.Remove(curOperation.DependsOnOperation);
-                            }
+                            _db.CloudResourceOperations.Remove(curOperation.DependsOnOperation);
                         }
 
                         if (_db.CloudResourceOperations.Contains(curOperation))
