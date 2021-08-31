@@ -74,12 +74,9 @@ namespace Sepes.Infrastructure.Service
 
         void ValidateStudyForCloseOrDeleteThrowIfNot(Study studyFromDb)
         {
-            foreach (var curSandbox in studyFromDb.Sandboxes)
+            if (studyFromDb.Sandboxes.Any(s=> !s.Deleted))
             {
-                if (!curSandbox.Deleted)
-                {
-                    throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
-                }
+                throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
             }
         }
 
