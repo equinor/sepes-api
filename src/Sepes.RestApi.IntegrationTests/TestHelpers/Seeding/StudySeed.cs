@@ -6,6 +6,7 @@ using Sepes.RestApi.IntegrationTests.TestHelpers;
 using Sepes.Tests.Common.Constants;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
@@ -29,19 +30,17 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (additionalRolesForCurrentUser != null)
             {
-                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser)
+                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser.Where(c => !String.IsNullOrWhiteSpace(c)))
                 {
-                    if (!String.IsNullOrWhiteSpace(curRoleCurrentUser))
-                        AddParticipant(study, userId, curRoleCurrentUser);
+                    AddParticipant(study, userId, curRoleCurrentUser);
                 }
             }
 
             if (rolesForOtherUser != null)
             {
-                foreach (var curRoleOtherUser in rolesForOtherUser)
+                foreach (var curRoleOtherUser in rolesForOtherUser.Where(c => !String.IsNullOrWhiteSpace(c)))
                 {
-                    if (!String.IsNullOrWhiteSpace(curRoleOtherUser))
-                        AddParticipant(study, UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
+                    AddParticipant(study, UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
                 }
             }
 
@@ -68,19 +67,17 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (additionalRolesForCurrentUser != null)
             {
-                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser)
+                foreach (var curRoleCurrentUser in additionalRolesForCurrentUser.Where(c => !String.IsNullOrWhiteSpace(c)))
                 {
-                    if (!String.IsNullOrWhiteSpace(curRoleCurrentUser))
-                        AddParticipant(study, userId, curRoleCurrentUser);
+                    AddParticipant(study, userId, curRoleCurrentUser);
                 }
             }
 
             if (rolesForOtherUser != null)
             {
-                foreach (var curRoleOtherUser in rolesForOtherUser)
+                foreach (var curRoleOtherUser in rolesForOtherUser.Where(c => !String.IsNullOrWhiteSpace(c))
                 {
-                    if (!String.IsNullOrWhiteSpace(curRoleOtherUser))
-                        AddParticipant(study, UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
+                    AddParticipant(study, UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
                 }
             }
 
@@ -90,7 +87,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
             return study;
         }
 
-       
+
 
         public static void AddDatasetsIfWanted(bool addDatasets, Study study)
         {
