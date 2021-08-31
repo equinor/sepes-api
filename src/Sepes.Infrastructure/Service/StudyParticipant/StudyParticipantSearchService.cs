@@ -87,12 +87,9 @@ namespace Sepes.Infrastructure.Service
 
             if (usersFromAzureAdTask.IsCompletedSuccessfully)
             {
-                foreach (var curAzureUser in usersFromAzureAdTask.Result)
+                foreach (var curAzureUser in usersFromAzureAdTask.Result.Where(u=> !usersFromDbAsDictionary.ContainsKey(u.Key)))
                 {
-                    if (!usersFromDbAsDictionary.ContainsKey(curAzureUser.Key))
-                    {
-                        usersFromDbAsDictionary.Add(curAzureUser.Key, _mapper.Map<ParticipantLookupDto>(curAzureUser.Value));
-                    }
+                    usersFromDbAsDictionary.Add(curAzureUser.Key, _mapper.Map<ParticipantLookupDto>(curAzureUser.Value));
                 }
             }
             else
