@@ -40,12 +40,9 @@ namespace Sepes.Provisioning.Service
 
         public void ThrowIfPossiblyInProgress(CloudResourceOperationDto operation)
         {
-            if (operation.Status == CloudResourceOperationState.IN_PROGRESS)
+            if (operation.Updated.AddSeconds(30) >= DateTime.UtcNow && operation.Status == CloudResourceOperationState.IN_PROGRESS) //If updated less than xx minutes ago, probably in progress
             {
-                if (operation.Updated.AddSeconds(30) >= DateTime.UtcNow) //If updated less than xx minutes ago, probably in progress
-                {
-                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true, includeExceptionInWarningLog: false);
-                }
+                throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true, includeExceptionInWarningLog: false);
             }
         }
 
