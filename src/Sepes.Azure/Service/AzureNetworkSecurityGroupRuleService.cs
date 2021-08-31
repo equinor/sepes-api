@@ -4,6 +4,7 @@ using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto.VirtualMachine;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,12 +25,16 @@ namespace Sepes.Azure.Service
 
             var result = new Dictionary<string, NsgRuleDto>();
 
-            foreach (var curRuleKvp in nsg.SecurityRules)
+            foreach (var curRuleKvp in nsg.SecurityRules.Where(r=> !result.ContainsKey(r.Value.Name) && r.Value.Name.Contains(nameContains)))
             {
-                if (!result.ContainsKey(curRuleKvp.Value.Name) && curRuleKvp.Value.Name.Contains(nameContains))
-                {
-                    result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
-                }
+                result.Add(curRuleKvp.Value.Name,
+                    new NsgRuleDto() {
+                        Key = curRuleKvp.Key,
+                        Name = curRuleKvp.Value.Name,
+                        Description = curRuleKvp.Value.Description,
+                        Protocol = curRuleKvp.Value.Protocol,
+                        Priority = curRuleKvp.Value.Priority,
+                        Direction = curRuleKvp.Value.Direction });
             }
 
             return result;
