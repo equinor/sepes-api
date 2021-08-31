@@ -22,8 +22,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
 {
     public class SandboxDatasetModelService : EfModelServiceBase, ISandboxDatasetModelService
     {
-        IUserService _userService;
-        IStudyPermissionService _studyPermissionService;
+        readonly IUserService _userService;
+        readonly IStudyPermissionService _studyPermissionService;
 
         public SandboxDatasetModelService(IConfiguration configuration, SepesDbContext db, ILogger<SandboxDatasetModelService> logger, IUserService userService, IStudyPermissionService studyPermissionService)
             : base(configuration, db, logger)

@@ -93,12 +93,9 @@ namespace Sepes.Infrastructure.Service
                 {
                     foreach (var curOperation in curResource.Operations)
                     {
-                        if (curOperation.DependsOnOperation != null)
+                        if (curOperation.DependsOnOperation != null && _db.CloudResourceOperations.Contains(curOperation.DependsOnOperation))
                         {
-                            if (_db.CloudResourceOperations.Contains(curOperation.DependsOnOperation))
-                            {
-                                _db.CloudResourceOperations.Remove(curOperation.DependsOnOperation);
-                            }
+                            _db.CloudResourceOperations.Remove(curOperation.DependsOnOperation);
                         }
 
                         if (_db.CloudResourceOperations.Contains(curOperation))
@@ -137,13 +134,10 @@ namespace Sepes.Infrastructure.Service
             {
                 var userEntry = await _db.Users.Include(u => u.StudyParticipants).FirstOrDefaultAsync(u => u.Id == curUserId);
 
-                if (userEntry != null)
+                if (userEntry != null && userEntry.StudyParticipants.Count == 0)
                 {
-                    if (userEntry.StudyParticipants.Count == 0)
-                    {
-                        _db.Users.Remove(userEntry);
-                        await _db.SaveChangesAsync();
-                    }
+                    _db.Users.Remove(userEntry);
+                    await _db.SaveChangesAsync();
                 }
             }
 

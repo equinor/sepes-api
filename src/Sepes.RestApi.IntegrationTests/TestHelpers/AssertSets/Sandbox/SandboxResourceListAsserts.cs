@@ -9,7 +9,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets.Sandbox
 {
     public static class SandboxResourceListAsserts
     {
-        static string[] SandboxExpectedResources = {
+        readonly static string[] SandboxExpectedResources = {
 
             AzureResourceTypeFriendlyName.ResourceGroup,
             AzureResourceTypeFriendlyName.StorageAccount,
