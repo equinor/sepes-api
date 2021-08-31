@@ -131,16 +131,13 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
         static void AddDatasets(bool addDatasets, Study study, Sandbox sandbox)
         {
-            if (addDatasets)
+            if (addDatasets && study.StudyDatasets != null)
             {
-                if (study.StudyDatasets != null)
-                {
-                    sandbox.SandboxDatasets = new List<SandboxDataset>();
+                sandbox.SandboxDatasets = new List<SandboxDataset>();
 
-                    foreach (var curDs in study.StudyDatasets)
-                    {
-                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed" });
-                    }
+                foreach (var curDs in study.StudyDatasets)
+                {
+                    sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed" });
                 }
             }
 
