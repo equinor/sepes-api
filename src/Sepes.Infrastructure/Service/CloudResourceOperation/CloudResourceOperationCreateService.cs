@@ -13,12 +13,12 @@ using Sepes.Common.Interface;
 namespace Sepes.Infrastructure.Service
 {
     public class CloudResourceOperationCreateService : CloudResourceOperationServiceBase, ICloudResourceOperationCreateService
-    {        
+    {
         readonly IRequestIdService _requestIdService;
 
         public CloudResourceOperationCreateService(SepesDbContext db, IMapper mapper, IUserService userService, IRequestIdService requestIdService)
             : base(db, mapper, userService)
-        {          
+        {
             _requestIdService = requestIdService;
         }
 
@@ -68,7 +68,7 @@ namespace Sepes.Infrastructure.Service
             updateOperation.OperationType = operationType;
             updateOperation.BatchId = batchId;
             updateOperation.DependsOnOperationId = dependsOn != 0 ? dependsOn : default(int?);
-            updateOperation.DesiredState = desiredState;           
+            updateOperation.DesiredState = desiredState;
             return updateOperation;
         }
 
@@ -104,23 +104,20 @@ namespace Sepes.Infrastructure.Service
                     return null;
                 }
 
-                if (curOperation.OperationType == CloudResourceOperationType.UPDATE || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES || curOperation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES || curOperation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
+                if (IsUpdateAndNotFinishedOrFailed(curOperation))
                 {
-                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED && curOperation.Status != CloudResourceOperationState.ABANDONED)
+                    //If very old, set to aborted and continue the search
+                    if (curOperation.Updated.AddMinutes(2) < DateTime.UtcNow)
                     {
-                        //If very old, set to aborted and continue the search
-                        if (curOperation.Updated.AddMinutes(2) < DateTime.UtcNow)
-                        {
-                            curOperation.Description += " (appeared to be failing)";
-                            curOperation.Status = CloudResourceOperationState.ABANDONED;
-                            curOperation.Updated = DateTime.UtcNow;
-                            curOperation.UpdatedBy = currentUser.UserName;
-                            await _db.SaveChangesAsync();
-                        }
-                        else
-                        {
-                            return curOperation;
-                        }
+                        curOperation.Description += " (appeared to be failing)";
+                        curOperation.Status = CloudResourceOperationState.ABANDONED;
+                        curOperation.Updated = DateTime.UtcNow;
+                        curOperation.UpdatedBy = currentUser.UserName;
+                        await _db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        return curOperation;
                     }
                 }
 
@@ -136,6 +133,18 @@ namespace Sepes.Infrastructure.Service
             }
 
             return null;
+        }
+
+        bool IsUpdateAndNotFinishedOrFailed(CloudResourceOperation curOperation)
+        {
+            return (curOperation.OperationType == CloudResourceOperationType.UPDATE
+                    || curOperation.OperationType == CloudResourceOperationType.ENSURE_ROLES
+                    || curOperation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES
+                    || curOperation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
+                    &&
+                    (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL
+                    && curOperation.Status != CloudResourceOperationState.ABORTED
+                    && curOperation.Status != CloudResourceOperationState.ABANDONED);
         }
 
         public async Task<CloudResourceOperation> CreateDeleteOperationAsync(int sandboxResourceId, string description, string batchId = null)
