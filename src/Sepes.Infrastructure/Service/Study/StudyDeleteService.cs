@@ -134,13 +134,10 @@ namespace Sepes.Infrastructure.Service
             {
                 var userEntry = await _db.Users.Include(u => u.StudyParticipants).FirstOrDefaultAsync(u => u.Id == curUserId);
 
-                if (userEntry != null)
+                if (userEntry != null && userEntry.StudyParticipants.Count == 0)
                 {
-                    if (userEntry.StudyParticipants.Count == 0)
-                    {
-                        _db.Users.Remove(userEntry);
-                        await _db.SaveChangesAsync();
-                    }
+                    _db.Users.Remove(userEntry);
+                    await _db.SaveChangesAsync();
                 }
             }
 
