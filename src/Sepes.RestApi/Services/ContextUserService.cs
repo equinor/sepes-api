@@ -5,6 +5,7 @@ using Sepes.Common.Dto;
 using Sepes.Common.Interface;
 using Sepes.Common.Util;
 using System;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Sepes.RestApi.Services
@@ -113,12 +114,9 @@ namespace Sepes.RestApi.Services
         {
             var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.EMPLOYEE_ROLE);
 
-            foreach (var curEmployeeAdGroup in employeeAdGroups)
+            foreach (var curEmployeeAdGroup in employeeAdGroups.Where(c=> principal.IsInRole(c))
             {
-                if (principal.IsInRole(curEmployeeAdGroup))
-                {
-                    return true;
-                }
+                return true;
             }
 
             return false;
