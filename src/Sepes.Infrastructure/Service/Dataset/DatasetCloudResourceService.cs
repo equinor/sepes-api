@@ -170,16 +170,13 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception("Missing Include for CloudResource on Study");
             }
 
-            foreach (var curResource in study.Resources)
+            foreach (var curResource in study.Resources.Where(r=> !SoftDeleteUtil.IsMarkedAsDeleted(r) || includeDeleted))
             {
-                if (!SoftDeleteUtil.IsMarkedAsDeleted(curResource) || includeDeleted)
+                if (curResource.ResourceType == AzureResourceType.ResourceGroup)
                 {
-                    if (curResource.ResourceType == AzureResourceType.ResourceGroup)
+                    if (!String.IsNullOrWhiteSpace(curResource.Purpose) && curResource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
                     {
-                        if (!String.IsNullOrWhiteSpace(curResource.Purpose) && curResource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
-                        {
-                            return curResource;
-                        }
+                        return curResource;
                     }
                 }
             }
