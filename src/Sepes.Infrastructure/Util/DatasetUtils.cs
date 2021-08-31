@@ -74,14 +74,10 @@ namespace Sepes.Infrastructure.Util
 
             if(dataset.StudySpecific)
             {
-                if(dataset.Resources == null)
-                {
-                    return null;
-                }
-                else
-                {
-                    return dataset.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.StorageAccount && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount);
-                }
+                return dataset.Resources == null ?
+                    null :
+                    dataset.Resources.SingleOrDefault(r => r.ResourceType == AzureResourceType.StorageAccount && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount);
+
              
             }
 
