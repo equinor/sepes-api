@@ -114,7 +114,7 @@ namespace Sepes.RestApi.Services
         {
             var employeeAdGroups = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.EMPLOYEE_ROLE);
 
-            foreach (var curEmployeeAdGroup in employeeAdGroups.Where(c=> principal.IsInRole(c))
+            foreach (var curEmployeeAdGroup in employeeAdGroups.Where(c=> principal.IsInRole(c)))
             {
                 return true;
             }

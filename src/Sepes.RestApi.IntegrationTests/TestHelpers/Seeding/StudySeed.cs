@@ -75,7 +75,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             if (rolesForOtherUser != null)
             {
-                foreach (var curRoleOtherUser in rolesForOtherUser.Where(c => !String.IsNullOrWhiteSpace(c))
+                foreach (var curRoleOtherUser in rolesForOtherUser.Where(c => !String.IsNullOrWhiteSpace(c)))
                 {
                     AddParticipant(study, UserTestConstants.COMMON_NEW_PARTICIPANT_DB_ID, curRoleOtherUser);
                 }
