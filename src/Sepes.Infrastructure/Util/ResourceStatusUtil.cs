@@ -74,22 +74,19 @@ namespace Sepes.Infrastructure.Util
                 return unfinishedWorkStatus;
             }
 
-            if (!string.IsNullOrWhiteSpace(baseStatusOnThisOperation.Status))
+            if (baseStatusOnThisOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL && !string.IsNullOrWhiteSpace(baseStatusOnThisOperation.Status))
             {
-                if (baseStatusOnThisOperation.Status == CloudResourceOperationState.DONE_SUCCESSFUL)
+                if (baseStatusOnThisOperation.OperationType == CloudResourceOperationType.DELETE)
                 {
-                    if (baseStatusOnThisOperation.OperationType == CloudResourceOperationType.DELETE)
+                    return CloudResourceStatus.DELETED;
+                }
+                else
+                {
+                    if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
                     {
-                        return CloudResourceStatus.DELETED;
+                        return CloudResourceStatus.OK;
                     }
-                    else
-                    {
-                        if (resource.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
-                        {
-                            return CloudResourceStatus.OK;
-                        }
-                    }
-                }               
+                }
             }
 
             return "n/a";     

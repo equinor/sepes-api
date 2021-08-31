@@ -26,12 +26,9 @@ namespace Sepes.Azure.Service
 
             foreach (var curRuleKvp in nsg.SecurityRules)
             {
-                if (curRuleKvp.Value.Name.Contains(nameContains))
+                if (!result.ContainsKey(curRuleKvp.Value.Name) && curRuleKvp.Value.Name.Contains(nameContains))
                 {
-                    if (!result.ContainsKey(curRuleKvp.Value.Name))
-                    {
-                        result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
-                    }
+                    result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
                 }
             }
 
@@ -44,13 +41,10 @@ namespace Sepes.Azure.Service
 
             foreach (var curRuleKvp in nsg.SecurityRules)
             {
-                if (curRuleKvp.Value.Name == ruleName)
+                //TODO: VERIFY CHECK
+                if (curRuleKvp.Value.Access.ToLower() == action.ToString().ToLower() && curRuleKvp.Value.Name == ruleName)
                 {
-                    //TODO: VERIFY CHECK
-                    if (curRuleKvp.Value.Access.ToLower() == action.ToString().ToLower())
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -67,12 +61,9 @@ namespace Sepes.Azure.Service
 
             foreach (var curRuleKvp in nsg.SecurityRules)
             {
-                if (curRuleKvp.Value.Direction == direction)
+                if (!result.ContainsKey(curRuleKvp.Value.Name) && curRuleKvp.Value.Direction == direction)
                 {
-                    if (!result.ContainsKey(curRuleKvp.Value.Name))
-                    {
-                        result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
-                    }
+                    result.Add(curRuleKvp.Value.Name, new NsgRuleDto() { Key = curRuleKvp.Key, Name = curRuleKvp.Value.Name, Description = curRuleKvp.Value.Description, Protocol = curRuleKvp.Value.Protocol, Priority = curRuleKvp.Value.Priority, Direction = curRuleKvp.Value.Direction });
                 }
             }
 
