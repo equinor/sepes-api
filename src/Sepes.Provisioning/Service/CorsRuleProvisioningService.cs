@@ -31,14 +31,7 @@ namespace Sepes.Provisioning.Service
         }
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES;
         }
 
         public async Task Handle(
@@ -48,45 +41,42 @@ namespace Sepes.Provisioning.Service
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-
-                if (string.IsNullOrWhiteSpace(operation.DesiredState))
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
-                }
-
-                var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredCorsRules(operation.DesiredState);
-
-                var setRulesTask = corsRuleService.SetCorsRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
-
-                while (!setRulesTask.IsCompleted)
-                {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
-
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                    if (string.IsNullOrWhiteSpace(operation.DesiredState))
                     {
-                        _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, cors rule assignment will be aborted");
-                        cancellation.Cancel();
-                        break;
+                        throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                }
+                    var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredCorsRules(operation.DesiredState);
 
-                if (setRulesTask.IsCompletedSuccessfully)
-                {
+                    var setRulesTask = corsRuleService.SetCorsRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
 
-                }
-                else
-                {
-                    if (setRulesTask.Exception == null)
+                    while (!setRulesTask.IsCompleted)
                     {
-                        throw new Exception("cors rule assignment task failed");
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, cors rule assignment will be aborted");
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
-                    else
+
+                    if (!setRulesTask.IsCompletedSuccessfully)
                     {
-                        throw setRulesTask.Exception;
-                    }
+                        if (setRulesTask.Exception == null)
+                        {
+                            throw new Exception("cors rule assignment task failed");
+                        }
+                        else
+                        {
+                            throw setRulesTask.Exception;
+                        }
+                    }                   
                 }
             }
             catch (Exception ex)

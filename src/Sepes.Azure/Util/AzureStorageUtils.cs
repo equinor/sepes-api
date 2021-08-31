@@ -44,6 +44,7 @@ namespace Sepes.Azure.Util
             foreach (var nameValue in splitted)
             {
                 var splittedNameValue = nameValue.Split(new char[] { '=' }, 2);
+
                 if (splittedNameValue.Length > 1)
                 {
                     settings.Add(splittedNameValue[0], splittedNameValue[1]);

@@ -30,55 +30,47 @@ namespace Sepes.Provisioning.Service
         }
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType == CloudResourceOperationType.ENSURE_TAGS)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return operation.OperationType == CloudResourceOperationType.ENSURE_TAGS;
         }
 
         public async Task Handle(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto operation, IServiceForTaggedResource tagService)
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-
-                var setRulesTask = tagService.SetTagsAsync(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, operation.Resource.Tags, cancellation.Token);
-
-                while (!setRulesTask.IsCompleted)
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+                    var setRulesTask = tagService.SetTagsAsync(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, operation.Resource.Tags, cancellation.Token);
 
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                    while (!setRulesTask.IsCompleted)
                     {
-                        _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, ensuring tags task will be aborted");
-                        cancellation.Cancel();
-                        break;
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, ensuring tags task will be aborted");
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                }
-
-                if (setRulesTask.IsCompletedSuccessfully)
-                {
-
-                }
-                else
-                {
-                    if (setRulesTask.Exception == null)
+                    if (setRulesTask.IsCompletedSuccessfully)
                     {
-                        throw new Exception("ensuring tags task failed");
+
                     }
                     else
                     {
-                        throw setRulesTask.Exception;
+                        if (setRulesTask.Exception == null)
+                        {
+                            throw new Exception("ensuring tags task failed");
+                        }
+                        else
+                        {
+                            throw setRulesTask.Exception;
+                        }
                     }
                 }
-
-
             }
             catch (Exception ex)
             {

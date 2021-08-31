@@ -98,16 +98,10 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(studyName, sandboxName);
 
-            CloudResource resourceGroup;
-
-            if(resourceCreationIndex++ < resourcesSucceeded)
-            {
-                resourceGroup = CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true);
-            }
-            else
-            {
-                resourceGroup = CloudResourceFactory.CreateResourceGroupFailing(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
-            }           
+            CloudResource resourceGroup = resourceCreationIndex++ < resourcesSucceeded ? 
+                CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true) :
+                CloudResourceFactory.CreateResourceGroupFailing(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount)
+                ;       
 
             var result = new List<CloudResource>() { resourceGroup };
             result.Add(CreateSucceedingOrFailing(resourcesSucceeded, resourceCreationIndex++, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.StorageAccount, resourceGroupName, AzureResourceNameUtil.DiagnosticsStorageAccount(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));

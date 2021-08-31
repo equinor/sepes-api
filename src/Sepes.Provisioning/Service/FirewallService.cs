@@ -18,7 +18,7 @@ namespace Sepes.Provisioning.Service
         readonly IProvisioningLogService _provisioningLogService;
         readonly ICloudResourceReadService _cloudResourceReadService;
         readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
-        
+
         public FirewallService(IProvisioningLogService provisioningLogService,
             ICloudResourceReadService cloudResourceReadService,
             ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
@@ -31,18 +31,10 @@ namespace Sepes.Provisioning.Service
                                                        nameof(cloudResourceOperationUpdateService));
         }
 
-        
-        
+
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            if (operation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return operation.OperationType == CloudResourceOperationType.ENSURE_FIREWALL_RULES;           
         }
 
         public async Task Handle(
@@ -52,40 +44,42 @@ namespace Sepes.Provisioning.Service
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-
-                if (string.IsNullOrWhiteSpace(operation.DesiredState))
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
-                }
 
-                var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredFirewallRules(operation.DesiredState);
-
-                var setRulesTask = networkRuleService.SetFirewallRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
-
-                while (!setRulesTask.IsCompleted)
-                {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
-
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                    if (string.IsNullOrWhiteSpace(operation.DesiredState))
                     {
-                        _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, firewall rule assignment will be aborted");
-                        cancellation.Cancel();
-                        break;
+                        throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                }
+                    var rulesFromOperationState = CloudResourceConfigStringSerializer.DesiredFirewallRules(operation.DesiredState);
 
-                if (!setRulesTask.IsCompletedSuccessfully)
-                {
-                    if (setRulesTask.Exception == null)
+                    var setRulesTask = networkRuleService.SetFirewallRules(operation.Resource.ResourceGroupName, operation.Resource.ResourceName, rulesFromOperationState, cancellation.Token);
+
+                    while (!setRulesTask.IsCompleted)
                     {
-                        throw new Exception("Firewall rule assignment task failed");
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, firewall rule assignment will be aborted");
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
-                    else
+
+                    if (!setRulesTask.IsCompletedSuccessfully)
                     {
-                        throw setRulesTask.Exception;
+                        if (setRulesTask.Exception == null)
+                        {
+                            throw new Exception("Firewall rule assignment task failed");
+                        }
+                        else
+                        {
+                            throw setRulesTask.Exception;
+                        }
                     }
                 }
             }
