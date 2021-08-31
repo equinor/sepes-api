@@ -22,16 +22,14 @@ namespace Sepes.Infrastructure.Automapper
         {            
             var baseStatusOnThisOperation = ResourceStatusUtil.DecideWhatOperationToBaseStatusOn(source);
 
-            if(baseStatusOnThisOperation != null)
-            {
-                if (source.ResourceType == AzureResourceType.StorageAccount
+            if (source.ResourceType == AzureResourceType.StorageAccount
                              && source.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount
                              && baseStatusOnThisOperation.Status == CloudResourceOperationState.FAILED
-                             && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount)
-                {
-                    return AzureResourceUtil.CreateResourceRetryLink(source.Id);
-                }
-            }         
+                             && baseStatusOnThisOperation.TryCount >= baseStatusOnThisOperation.MaxTryCount
+                             && baseStatusOnThisOperation != null)
+            {
+                return AzureResourceUtil.CreateResourceRetryLink(source.Id);
+            }
 
             return null;          
         }
