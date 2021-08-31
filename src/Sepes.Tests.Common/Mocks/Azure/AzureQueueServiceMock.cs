@@ -77,13 +77,10 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         public Task DeleteMessageAsync(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete) && popReceipt == itemToDelete.Message.PopReceipt)
             {
-                if (popReceipt == itemToDelete.Message.PopReceipt)
-                {
-                    _invisibleItems.Remove(messageId);                 
-                    return Task.CompletedTask;
-                }
+                _invisibleItems.Remove(messageId);
+                return Task.CompletedTask;
             }
 
             throw new Exception($"Message {messageId} not found!");
