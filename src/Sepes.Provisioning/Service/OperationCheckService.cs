@@ -11,7 +11,7 @@ namespace Sepes.Provisioning.Service
 {
     public class OperationCheckService : IOperationCheckService
     {
-        ICloudResourceOperationReadService _cloudResourceOperationReadService;
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
 
         public OperationCheckService(ICloudResourceOperationReadService cloudResourceOperationReadService)
         {
