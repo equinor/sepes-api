@@ -121,18 +121,23 @@ namespace Sepes.Infrastructure.Service
                     }
                 }
 
-                if (curOperation.OperationType == CloudResourceOperationType.CREATE)
+                if (IsCreateAndNotFinishedOrFailed(curOperation))
                 {
-                    if (curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && curOperation.Status != CloudResourceOperationState.ABORTED && curOperation.Status != CloudResourceOperationState.ABANDONED)
-                    {
-                        return curOperation;
-                    }
+                    return curOperation;
                 }
 
                 mostRecentOperation = false;
             }
 
             return null;
+        }
+
+        bool IsCreateAndNotFinishedOrFailed(CloudResourceOperation curOperation)
+        {
+            return curOperation.OperationType == CloudResourceOperationType.CREATE
+                      && curOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL
+                      && curOperation.Status != CloudResourceOperationState.ABORTED
+                      && curOperation.Status != CloudResourceOperationState.ABANDONED;
         }
 
         bool IsUpdateAndNotFinishedOrFailed(CloudResourceOperation curOperation)
