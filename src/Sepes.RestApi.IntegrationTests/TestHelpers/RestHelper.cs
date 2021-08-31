@@ -75,11 +75,13 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
         public async Task<ApiResponseWrapper<TResponse>> Put<TResponse>(string requestUri)
         {
-            var stringContent = new StringContent(string.Empty);
-            stringContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
-            var response = await _client.PutAsJsonAsync(requestUri, stringContent);
-            var responseWrapper = await CreateResponseWrapper<TResponse>(response);
-            return responseWrapper;
+            using (var stringContent = new StringContent(string.Empty))
+            {
+                stringContent.Headers.ContentType = MediaTypeHeaderValue.Parse("application/x-www-form-urlencoded");
+                var response = await _client.PutAsJsonAsync(requestUri, stringContent);
+                var responseWrapper = await CreateResponseWrapper<TResponse>(response);
+                return responseWrapper;
+            }              
         }
 
         async Task<TResponse> GetResponseObject<TResponse>(HttpResponseMessage response)

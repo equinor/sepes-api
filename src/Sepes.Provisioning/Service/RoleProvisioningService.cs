@@ -56,42 +56,43 @@ namespace Sepes.Provisioning.Service
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-
-                if (string.IsNullOrWhiteSpace(operation.DesiredState))
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
-                }
-
-                var operationStateDeserialized = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
-                var study = await _studyModelService.GetWithParticipantsAndUsersNoAccessCheck(operationStateDeserialized.StudyId);
-                var currentRoleAssignmentTask = SetRoleAssignments(queueParentItem, operation, study, cancellation.Token);
-
-                while (!currentRoleAssignmentTask.IsCompleted)
-                {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
-
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id)
-                        || operation.Status == CloudResourceOperationState.ABORTED
-                        || operation.Status == CloudResourceOperationState.ABANDONED)
+                    if (string.IsNullOrWhiteSpace(operation.DesiredState))
                     {
-                        _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, role assignment will be aborted", eventId: _roleAssignmentEventId);
-                        cancellation.Cancel();
-                        break;
+                        throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                }
+                    var operationStateDeserialized = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
+                    var study = await _studyModelService.GetWithParticipantsAndUsersNoAccessCheck(operationStateDeserialized.StudyId);
+                    var currentRoleAssignmentTask = SetRoleAssignments(queueParentItem, operation, study, cancellation.Token);
 
-                if (!currentRoleAssignmentTask.IsCompletedSuccessfully)
-                {
-                    if (currentRoleAssignmentTask.Exception == null)
+                    while (!currentRoleAssignmentTask.IsCompleted)
                     {
-                        throw new Exception("Role assignment task failed");
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id)
+                            || operation.Status == CloudResourceOperationState.ABORTED
+                            || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, role assignment will be aborted", eventId: _roleAssignmentEventId);
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
-                    else
+
+                    if (!currentRoleAssignmentTask.IsCompletedSuccessfully)
                     {
-                        throw currentRoleAssignmentTask.Exception;
+                        if (currentRoleAssignmentTask.Exception == null)
+                        {
+                            throw new Exception("Role assignment task failed");
+                        }
+                        else
+                        {
+                            throw currentRoleAssignmentTask.Exception;
+                        }
                     }
                 }
             }
@@ -109,8 +110,8 @@ namespace Sepes.Provisioning.Service
         }
 
         async Task SetRoleAssignments(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto operation, Study study, CancellationToken cancellationToken = default)
-        {           
-            _provisioningLogService.OperationInformation(queueParentItem, operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);           
+        {
+            _provisioningLogService.OperationInformation(queueParentItem, operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);
 
             List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments = null;
             List<AzureRoleAssignment> existingRoleAssignmentsForResource = null;
@@ -135,7 +136,7 @@ namespace Sepes.Provisioning.Service
             {
                 throw new Exception($"Unable to determine role assignments, unknown purpose {operation.Resource.Purpose} for resource {operation.Resource.Id}");
             }
-            
+
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {

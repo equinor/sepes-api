@@ -106,12 +106,10 @@ namespace Sepes.Infrastructure.Service
                         response.Add($"fromDns[{counter}]", description);
                         counter++;
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-
-                     
-                    }
-                 
+                        _logger.LogError(ex, $"GetHostEntry failed, skipping");
+                    }                 
                 }
 
                 return response;

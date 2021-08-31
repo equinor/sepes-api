@@ -30,7 +30,7 @@ namespace Sepes.Provisioning.Service
         }
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            return operation.OperationType == CloudResourceOperationType.ENSURE_TAGS ? true : false;
+            return operation.OperationType == CloudResourceOperationType.ENSURE_TAGS;
         }
 
         public async Task Handle(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto operation, IServiceForTaggedResource tagService)
