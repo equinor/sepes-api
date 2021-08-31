@@ -370,28 +370,22 @@ namespace Sepes.Provisioning.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (!curDependantOnThisOp.Resource.Deleted)
+                            if (!curDependantOnThisOp.Resource.Deleted &&
+                                curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId) &&
+                                !String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt) &&
+                                curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15)
+                                )
                             {
-                                if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
-                                {
-                                    if (!String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
-                                    {
-                                        if (curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15))
-                                        {
-                                            //Create a new queue item for immediate pickup
-                                            await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
+                                //Create a new queue item for immediate pickup
+                                await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
 
-                                            //Delete existing message
-                                            await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
+                                //Delete existing message
+                                await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
 
-                                            //Clear stored message details on operation record
-                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
+                                //Clear stored message details on operation record
+                                await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
 
-                                            movedUpCount++;
-                                        }
-
-                                    }
-                                }
+                                movedUpCount++;
                             }
                         }
                     }
