@@ -109,16 +109,13 @@ namespace Sepes.Infrastructure.Service
                         }
 
                         //Delete those that are no longer present in Azure, or that does not pass the filter
-                        foreach (var curDbDiskSize in existingDbItemsForRegion.Values)
+                        foreach (var curDbDiskSize in existingDbItemsForRegion.Values.Where(ds=> !validDiskSizesFromAzure.Contains(ds.Key)))
                         {
-                            if (!validDiskSizesFromAzure.Contains(curDbDiskSize.Key))
-                            {
-                                var toRemoveFromDb = curRegionFromDb.DiskSizeAssociations.FirstOrDefault(ra => ra.VmDiskKey == curDbDiskSize.Key);
+                            var toRemoveFromDb = curRegionFromDb.DiskSizeAssociations.FirstOrDefault(ra => ra.VmDiskKey == curDbDiskSize.Key);
 
-                                if (toRemoveFromDb != null)
-                                {
-                                    curRegionFromDb.DiskSizeAssociations.Remove(toRemoveFromDb);
-                                }
+                            if (toRemoveFromDb != null)
+                            {
+                                curRegionFromDb.DiskSizeAssociations.Remove(toRemoveFromDb);
                             }
                         }
 
@@ -141,12 +138,9 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Deleting Disk size entries not associated with any region");
 
-            foreach (var curDiskSize in await _db.DiskSizes.Include(s => s.RegionAssociations).ToListAsync())
+            foreach (var curDiskSize in await _db.DiskSizes.Include(s => s.RegionAssociations).Where(ds=> ds.RegionAssociations == null || (ds.RegionAssociations != null && ds.RegionAssociations.Count == 0)).ToListAsync())
             {
-                if (curDiskSize.RegionAssociations == null || (curDiskSize.RegionAssociations != null && curDiskSize.RegionAssociations.Count == 0))
-                {
-                    _db.DiskSizes.Remove(curDiskSize);
-                }
+                _db.DiskSizes.Remove(curDiskSize);
             }
 
             await _db.SaveChangesAsync();
