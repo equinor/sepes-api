@@ -31,35 +31,21 @@ namespace Sepes.Infrastructure.Service
 
         public async Task<StudyDetailsDto> Get(int studyId)
         {
-            var spUpdate = Stopwatch.StartNew();
-
             var studyFromDbDapper = await _studyDetailsModelService.GetStudyDetailsAsync(studyId);
-            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDbDapper);
-
-            spUpdate.Restart();
+            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDbDapper);          
 
             var sandboxes = await _studyDetailsModelService.GetSandboxForStudyDetailsAsync(studyId);
             studyDetailsDto.Sandboxes = _mapper.Map<List<SandboxListItem>>(sandboxes);
-
-            spUpdate.Restart();
-
+          
             var datasets = await _studyDetailsModelService.GetDatasetsForStudyDetailsAsync(studyId);
-            studyDetailsDto.Datasets = _mapper.Map<List<DatasetListItemDto>>(datasets);
-
-            spUpdate.Restart();
+            studyDetailsDto.Datasets = _mapper.Map<List<DatasetListItemDto>>(datasets);          
 
             var participants = await _studyDetailsModelService.GetParticipantsForStudyDetailsAsync(studyId);
-            studyDetailsDto.Participants = _mapper.Map<List<StudyParticipantListItem>>(participants);
+            studyDetailsDto.Participants = _mapper.Map<List<StudyParticipantListItem>>(participants);        
 
-            spUpdate.Restart();
-
-            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);
-
-            spUpdate.Restart();
+            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);        
 
             await DecorateStudyWithPermissions(studyDetailsDto);
-
-            spUpdate.Restart();
 
             return studyDetailsDto;
         }
