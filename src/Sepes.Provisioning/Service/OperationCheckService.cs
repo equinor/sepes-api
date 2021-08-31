@@ -51,17 +51,14 @@ namespace Sepes.Provisioning.Service
 
         public async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ProvisioningQueueParentDto queueParentItem)
         {
-            if (operation.DependsOnOperationId.HasValue)
+            if (!(await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)) && operation.DependsOnOperationId.HasValue)
             {
-                if (!(await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)))
-                {
-                    var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
+                var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 
-                    bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
+                bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
 
-                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true, includeExceptionInWarningLog: false);                               
+                throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true, includeExceptionInWarningLog: false);
 
-                }
             }
         }
     }
