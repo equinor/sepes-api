@@ -151,13 +151,10 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            foreach (var curResource in resourcesForSandbox)
+            foreach (var curResource in resourcesForSandbox.Where(r=> r.Operations.Where(o => o.Status == CloudResourceOperationState.IN_PROGRESS).Any()))
             {
-                if (curResource.Operations.Where(o=> o.Status == CloudResourceOperationState.IN_PROGRESS).Any())
-                {
-                    validationErrors.Add($"One or more resources are beging created, updated or deleted");
-                    return validationErrors;
-                }
+                validationErrors.Add($"One or more resources are beging created, updated or deleted");
+                break;
             }
 
             return validationErrors;
