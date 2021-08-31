@@ -90,16 +90,9 @@ namespace Sepes.Azure.Util
             var suffixMaxLength = 80 - NSG_RULE_FOR_VM_PREFIX.Length - vmIdString.Length - 1;
 
 
-            var suffixNormalized = "";
-
-            if (suffix == null)
-            {
-                suffixNormalized = StripWhitespaceAndEnsureLength(Guid.NewGuid().ToString(), suffixMaxLength);
-            }
-            else
-            {
-                suffixNormalized = StripWhitespaceAndEnsureLength(suffix, suffixMaxLength);
-            }
+            var suffixNormalized = suffix == null ?
+                StripWhitespaceAndEnsureLength(Guid.NewGuid().ToString(), suffixMaxLength) :
+                StripWhitespaceAndEnsureLength(suffix, suffixMaxLength);
 
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
