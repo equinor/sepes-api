@@ -9,6 +9,7 @@ using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sepes.Provisioning.Service
@@ -33,9 +34,9 @@ namespace Sepes.Provisioning.Service
             _cloudResourceUpdateService = sandboxResourceUpdateService;
         }
 
-       
+
         public async Task StartMonitoringSession()
-        {           
+        {
             _logger.LogInformation($"Monitoring provisioning state and tags");
 
             var monitoringDisabled = _config[ConfigConstants.DISABLE_MONITORING];
@@ -49,7 +50,7 @@ namespace Sepes.Provisioning.Service
             var activeResources = await _cloudResourceReadService.GetAllActiveResources();
 
             foreach (var curRes in activeResources)
-            { 
+            {
                 try
                 {
                     if (curRes.ResourceId == AzureResourceNameUtil.AZURE_RESOURCE_INITIAL_ID_OR_NAME)
@@ -99,19 +100,16 @@ namespace Sepes.Provisioning.Service
                         }
                     }
 
-                    foreach (var curOperation in curRes.Operations)
+                    foreach (var curOperation in curRes.Operations.Where(o => o.Status == CloudResourceOperationState.NEW || o.Status == CloudResourceOperationState.IN_PROGRESS))
                     {
-                        if (curOperation.Status == CloudResourceOperationState.NEW || curOperation.Status == CloudResourceOperationState.IN_PROGRESS)
+                        if (curOperation.Created.AddMinutes(5) < DateTime.UtcNow)
                         {
-                            if (curOperation.Created.AddMinutes(5) < DateTime.UtcNow)
-                            {
-                                _logger.LogWarning(SepesEventId.MONITORING_OPERATION_FROZEN);
-                            }
-                            else
-                            {
-                                _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
-                                continue;
-                            }
+                            _logger.LogWarning(SepesEventId.MONITORING_OPERATION_FROZEN);
+                        }
+                        else
+                        {
+                            _logger.LogInformation($"Ongoing operation detected for resource {curRes.Id}. Aborting monitoring");
+                            continue;
                         }
                     }
 
@@ -119,7 +117,7 @@ namespace Sepes.Provisioning.Service
 
                     await GetAndLogProvisioningState(curRes);
 
-                    if(curRes.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
+                    if (curRes.LastKnownProvisioningState == CloudResourceProvisioningStates.SUCCEEDED)
                     {
                         await CheckAndUpdateTags(curRes);
                     }
@@ -177,7 +175,7 @@ namespace Sepes.Provisioning.Service
         {
             try
             {
-                var provisioningState = await GetProvisioningState(resource);              
+                var provisioningState = await GetProvisioningState(resource);
 
                 await _cloudResourceUpdateService.UpdateProvisioningState(resource.Id, provisioningState);
             }
@@ -215,29 +213,25 @@ namespace Sepes.Provisioning.Service
 
                     // Check against tags from resource in Azure.
                     // If different => update Tags and report difference to Study Owner?
-                    foreach (var tag in tagsFromAzure)
+                    //Do not check CreatedByMachine-tag, as this will be different from original.
+                    foreach (var tag in tagsFromAzure.Where(t => !t.Key.Equals("CreatedByMachine")))
                     {
-                        //Do not check CreatedByMachine-tag, as this will be different from original.
-                        if (!tag.Key.Equals("CreatedByMachine"))
+                        if (!tagsFromDb.TryGetValue(tag.Key, out string dbValue))
                         {
-                            if (!tagsFromDb.TryGetValue(tag.Key, out string dbValue))
+                            // If Tag exists in Azure but not in tags generated from DB-data, report.
+                            // Means that user has added tags themselves in Azure.
+                            LogMonitoringError(resource, SepesEventId.MONITORING_MANUALLY_ADDED_TAGS, $"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
+                        }
+                        else
+                        {
+                            // If Tag exists in Azure and Db but has different value in Azure
+                            if (!tag.Value.Equals(dbValue))
                             {
-                                // If Tag exists in Azure but not in tags generated from DB-data, report.
-                                // Means that user has added tags themselves in Azure.
-                                LogMonitoringError(resource, SepesEventId.MONITORING_MANUALLY_ADDED_TAGS, $"Tag {tag.Key} : {tag.Value} has been added after resource creation!");
+                                LogMonitoringError(resource, SepesEventId.MONITORING_INCORRECT_TAGS, $"Tag {tag.Key} : {tag.Value} does not match value from Sepes : {dbValue}");
 
-                            }
-                            else
-                            {
-                                // If Tag exists in Azure and Db but has different value in Azure
-                                if (!tag.Value.Equals(dbValue))
-                                {
-                                    LogMonitoringError(resource, SepesEventId.MONITORING_INCORRECT_TAGS, $"Tag {tag.Key} : {tag.Value} does not match value from Sepes : {dbValue}");
-
-                                    //Update tag in Azure to match DB-information.
-                                    await serviceForResource.UpdateTagAsync(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
-                                    _logger.LogWarning($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
-                                }
+                                //Update tag in Azure to match DB-information.
+                                await serviceForResource.UpdateTagAsync(resource.ResourceGroupName, resource.ResourceName, new KeyValuePair<string, string>(tag.Key, dbValue));
+                                _logger.LogWarning($"Updated Tag: {tag.Key} from value: {tag.Value} => {dbValue}");
                             }
                         }
                     }
@@ -256,10 +250,10 @@ namespace Sepes.Provisioning.Service
 
             // Check that resources marked as deleted in db does not exist in Azure.
             var deletedResources = await _cloudResourceReadService.GetDeletedResourcesAsync();
-           
+
             foreach (var currentDeletedResource in deletedResources)
             {
-              
+
                 try
                 {
                     var serviceForResource = AzureResourceServiceResolver.GetServiceWithProvisioningState(_serviceProvider, currentDeletedResource.ResourceType);
@@ -304,7 +298,7 @@ namespace Sepes.Provisioning.Service
         {
             var fullErrorMessage = $"Resource {resource.Id} ({resource.ResourceName}): {messageSuffix}";
             LogMonitoringErrorInner(eventId, fullErrorMessage, ex, critical);
-        }       
+        }
 
         void LogMonitoringErrorInner(string eventId, string message, Exception ex = null, bool critical = false)
         {
