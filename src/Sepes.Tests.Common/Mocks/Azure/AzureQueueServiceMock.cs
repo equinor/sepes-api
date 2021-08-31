@@ -64,26 +64,20 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         QueueMessageWrapper GetMessageInternal(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate) && popReceipt == itemToUpdate.Message.PopReceipt)
             {
-                if (popReceipt == itemToUpdate.Message.PopReceipt)
-                {
-                    return itemToUpdate;
-                }
-            }           
+                return itemToUpdate;
+            }
 
             throw new ArgumentException($"No item with message id: {messageId} found!");
         }
 
         public Task DeleteMessageAsync(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete) && popReceipt == itemToDelete.Message.PopReceipt)
             {
-                if (popReceipt == itemToDelete.Message.PopReceipt)
-                {
-                    _invisibleItems.Remove(messageId);                 
-                    return Task.CompletedTask;
-                }
+                _invisibleItems.Remove(messageId);
+                return Task.CompletedTask;
             }
 
             throw new Exception($"Message {messageId} not found!");
