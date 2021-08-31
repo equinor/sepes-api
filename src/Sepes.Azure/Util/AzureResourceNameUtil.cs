@@ -111,14 +111,10 @@ namespace Sepes.Azure.Util
 
             StripTextsEqually(availableSpaceForStudyAndSandboxName, ref alphanumericStudyName, ref alphanumericSandboxName);
 
-            if (String.IsNullOrWhiteSpace(alphanumericSandboxName))
-            {
-                return $"{prefix}{alphanumericStudyName}{suffix}{shortUniquePart}";
-            }
-            else
-            {
-                return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}";
-            }         
+            return String.IsNullOrWhiteSpace(alphanumericSandboxName) ?
+                $"{prefix}{alphanumericStudyName}{suffix}{shortUniquePart}" :
+                $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}"
+                ;
         }
 
         static void StripTextsEqually(int availableSpaceForStudyAndSandboxName, ref string text1, ref string text2)
