@@ -64,13 +64,10 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         QueueMessageWrapper GetMessageInternal(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate) && popReceipt == itemToUpdate.Message.PopReceipt)
             {
-                if (popReceipt == itemToUpdate.Message.PopReceipt)
-                {
-                    return itemToUpdate;
-                }
-            }           
+                return itemToUpdate;
+            }
 
             throw new ArgumentException($"No item with message id: {messageId} found!");
         }
