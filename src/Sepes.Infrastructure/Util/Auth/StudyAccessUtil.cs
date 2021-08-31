@@ -135,14 +135,12 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             if (!String.IsNullOrWhiteSpace(roleBeingAddedOrRemoved))
             {
-                if (operation == UserOperation.Study_AddRemove_Participant)
+                if (roleName == StudyRoles.VendorAdmin &&
+                    roleBeingAddedOrRemoved != StudyRoles.VendorContributor &&
+                    roleBeingAddedOrRemoved != StudyRoles.VendorAdmin &&
+                    operation == UserOperation.Study_AddRemove_Participant)
                 {
-                    if (roleName == StudyRoles.VendorAdmin &&
-                        roleBeingAddedOrRemoved != StudyRoles.VendorContributor && 
-                        roleBeingAddedOrRemoved != StudyRoles.VendorAdmin)
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
