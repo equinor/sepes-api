@@ -40,14 +40,8 @@ namespace Sepes.Provisioning.Service
             {
                 throw new ArgumentException("Cloud-Resource-Operation was null");
             }
-            if (operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+
+            return (operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE) ? true : false;          
         }
 
         public async Task<ResourceProvisioningResult> Handle(
@@ -59,37 +53,38 @@ namespace Sepes.Provisioning.Service
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-                var currentCrudResultTask = CreateProvisioningResultTask(operation, currentCrudInput, provisioningService, cancellation);
-
-                while (!currentCrudResultTask.IsCompleted)
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+                    var currentCrudResultTask = CreateProvisioningResultTask(operation, currentCrudInput, provisioningService, cancellation);
 
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                    while (!currentCrudResultTask.IsCompleted)
                     {
-                        _provisioningLogService.OperationWarning(queueParentItem, operation, "Operation aborted, provisioning will be aborted");
-                        cancellation.Cancel();
-                        break;
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id) || operation.Status == CloudResourceOperationState.ABORTED || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, "Operation aborted, provisioning will be aborted");
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
+                    var provisioningResult = currentCrudResultTask.Result;
+
+                    if (operation.OperationType == CloudResourceOperationType.CREATE)
+                    {
+                        _provisioningLogService.OperationInformation(queueParentItem, operation, $"Storing resource Id and Name");
+                        await _cloudResourceUpdateService.UpdateResourceIdAndName(operation.Resource.Id, provisioningResult.IdInTargetSystem, provisioningResult.NameInTargetSystem);
+                    }
+
+                    return provisioningResult;
                 }
-
-                var provisioningResult = currentCrudResultTask.Result;
-
-                if (operation.OperationType == CloudResourceOperationType.CREATE)
-                {
-                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Storing resource Id and Name");
-                    await _cloudResourceUpdateService.UpdateResourceIdAndName(operation.Resource.Id, provisioningResult.IdInTargetSystem, provisioningResult.NameInTargetSystem);
-                }
-
-                return provisioningResult;
-
             }
             catch (Exception ex)
             {
-                if(ex.InnerException != null && ex.InnerException.Message.Contains("A task was canceled"))
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("A task was canceled"))
                 {
                     throw new ProvisioningException($"Resource provisioning (Create/update) aborted.", logAsWarning: true, innerException: ex.InnerException);
                 }
@@ -103,10 +98,10 @@ namespace Sepes.Provisioning.Service
         Task<ResourceProvisioningResult> CreateProvisioningResultTask(CloudResourceOperationDto operation, ResourceProvisioningParameters currentCrudInput, IPerformResourceProvisioning provisioningService, CancellationTokenSource cancellation)
         {
             if (operation.OperationType == CloudResourceOperationType.CREATE)
-            {              
+            {
                 return provisioningService.EnsureCreated(currentCrudInput, cancellation.Token);
             }
-            
+
             return provisioningService.Update(currentCrudInput, cancellation.Token);
         }
     }
