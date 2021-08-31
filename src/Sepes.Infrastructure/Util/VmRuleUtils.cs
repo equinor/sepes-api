@@ -31,10 +31,7 @@ namespace Sepes.Infrastructure.Util
 
                 if (vmSettings != null && vmSettings.Rules != null)
                 {
-                    foreach (var curRule in vmSettings.Rules.Where(r=> r.Direction == RuleDirection.Outbound && r.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET)))
-                    {
-                        return curRule;
-                    }
+                    return vmSettings.Rules.FirstOrDefault(r => r.Direction == RuleDirection.Outbound && r.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET));
                 }
             }          
 
