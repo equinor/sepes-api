@@ -130,15 +130,13 @@ namespace Sepes.Infrastructure.Util.Auth
 
         static bool DisqualifiedBySpecialVendorAdminCase(string roleName, UserOperation operation, string roleBeingAddedOrRemoved)
         {
-            if (!String.IsNullOrWhiteSpace(roleBeingAddedOrRemoved))
-            {
-                if (roleName == StudyRoles.VendorAdmin &&
+            if (roleName == StudyRoles.VendorAdmin &&
                     roleBeingAddedOrRemoved != StudyRoles.VendorContributor &&
                     roleBeingAddedOrRemoved != StudyRoles.VendorAdmin &&
-                    operation == UserOperation.Study_AddRemove_Participant)
-                {
-                    return true;
-                }
+                    operation == UserOperation.Study_AddRemove_Participant &&
+                    !String.IsNullOrWhiteSpace(roleBeingAddedOrRemoved))
+            {
+                return true;
             }
 
             return false;
