@@ -5,6 +5,7 @@ using Sepes.Common.Exceptions;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util.Auth;
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -37,12 +38,9 @@ namespace Sepes.Infrastructure.Service
 
             bool accessToAny = false;
 
-            foreach (var curOperation in operations)
+            foreach (var curOperation in operations.Where(o=> HasAccessToOperation(currentUser, o)))
             {
-                if (HasAccessToOperation(currentUser, curOperation))
-                {
-                    return;
-                }
+                return;
             }
 
             if (!accessToAny)
