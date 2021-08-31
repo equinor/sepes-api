@@ -99,14 +99,7 @@ namespace Sepes.Tests.Services.Infrastructure
             dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<bool>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) => wbsCodesLookup.ContainsKey(wbsCode));
             dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<WbsCodeCache>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) =>
             {
-                if (wbsCodesLookup.TryGetValue(wbsCode, out WbsCodeCache itemFromCache))
-                {
-                    return itemFromCache;
-                }
-                else
-                {
-                    return null;
-                }
+                return wbsCodesLookup.TryGetValue(wbsCode, out WbsCodeCache itemFromCache) ? itemFromCache : null;
             }
             );
 
