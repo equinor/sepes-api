@@ -46,7 +46,7 @@ namespace Sepes.Azure.Service
                 try
                 {
                     await secret.WaitForCompletionAsync();
-                    var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                    await client.PurgeDeletedSecretAsync(secretName);
                 }
                 catch (Exception ex)
                 {

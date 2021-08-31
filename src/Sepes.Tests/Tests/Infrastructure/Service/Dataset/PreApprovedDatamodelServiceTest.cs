@@ -21,10 +21,7 @@ namespace Sepes.Tests.Services
         [InlineData(1337)]
         public async void GetDatasetByIdAsync_ShouldThrow_IfDoesNotExist(int id)
         {
-            var datasetId = 1;
-
             _ = await ClearTestDatabase();
-            var datasets = CreateTestDatasetList(datasetId);
 
             var preApprovedDatasetModelService = DatasetServiceMockFactory.GetPreApprovedDatasetModelService(_serviceProvider);
            

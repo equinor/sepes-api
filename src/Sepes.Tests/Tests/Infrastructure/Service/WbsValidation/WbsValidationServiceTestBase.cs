@@ -91,7 +91,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
         async Task<IWbsCodeCacheModelService> GetCacheService(List<WbsCodeCache> wbsCodesInCache)
         {
-            var db = await ClearTestDatabase();
+            await ClearTestDatabase();
 
             var wbsCodesLookup = wbsCodesInCache.ToDictionary(w => w.WbsCode.ToLowerInvariant(), w => w);
 
