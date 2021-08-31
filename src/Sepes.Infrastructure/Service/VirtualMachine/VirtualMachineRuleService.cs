@@ -268,12 +268,9 @@ namespace Sepes.Infrastructure.Service
         {
             if (rules != null)
             {
-                foreach (var curExistingRule in rules)
+                if (rules.Any(r=> AzureVmUtil.IsSameRule(ruleToCompare, r)))
                 {
-                    if (AzureVmUtil.IsSameRule(ruleToCompare, curExistingRule))
-                    {
-                        throw new Exception($"Same rule allready exists");
-                    }
+                    throw new Exception($"Same rule allready exists");
                 }
             }
         }
