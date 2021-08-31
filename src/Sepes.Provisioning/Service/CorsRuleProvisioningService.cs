@@ -31,7 +31,7 @@ namespace Sepes.Provisioning.Service
         }
         public bool CanHandle(CloudResourceOperationDto operation)
         {
-            return operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES ? true : false;
+            return operation.OperationType == CloudResourceOperationType.ENSURE_CORS_RULES;
         }
 
         public async Task Handle(
