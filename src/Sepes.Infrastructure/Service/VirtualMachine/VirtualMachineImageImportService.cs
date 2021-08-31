@@ -126,16 +126,13 @@ namespace Sepes.Infrastructure.Service
 
                 Dictionary<Tuple<string, int>, RegionVmImage> regionToImageAssociationsToDelete = new Dictionary<Tuple<string, int>, RegionVmImage>();
 
-                foreach (var curImageAssociation in curRegionFromDb.VmImageAssociations)
+                foreach (var curImageAssociation in curRegionFromDb.VmImageAssociations.Where(i=> i.VmImage.Updated != entryUpdatedAt))
                 {
-                    if (curImageAssociation.VmImage.Updated != entryUpdatedAt)
-                    {
-                        var keyTuple = new Tuple<string, int>(curImageAssociation.RegionKey, curImageAssociation.VmImage.Id);
+                    var keyTuple = new Tuple<string, int>(curImageAssociation.RegionKey, curImageAssociation.VmImage.Id);
 
-                        if (!regionToImageAssociationsToDelete.ContainsKey(keyTuple))
-                        {
-                            regionToImageAssociationsToDelete.Add(keyTuple, curImageAssociation);
-                        }
+                    if (!regionToImageAssociationsToDelete.ContainsKey(keyTuple))
+                    {
+                        regionToImageAssociationsToDelete.Add(keyTuple, curImageAssociation);
                     }
                 }
 
@@ -152,12 +149,9 @@ namespace Sepes.Infrastructure.Service
 
             _logger.LogInformation($"Deleting VM Image entries not associated with any region");
 
-            foreach (var curVmImage in await _db.VmImages.Include(s => s.RegionAssociations).ToListAsync())
+            foreach (var curVmImage in await _db.VmImages.Include(s => s.RegionAssociations).Where(s=> s.RegionAssociations == null || (s.RegionAssociations != null && s.RegionAssociations.Count == 0)).ToListAsync())
             {
-                if (curVmImage.RegionAssociations == null || (curVmImage.RegionAssociations != null && curVmImage.RegionAssociations.Count == 0))
-                {
-                    _db.VmImages.Remove(curVmImage);
-                }
+                _db.VmImages.Remove(curVmImage);
             }
 
             await _db.SaveChangesAsync();
