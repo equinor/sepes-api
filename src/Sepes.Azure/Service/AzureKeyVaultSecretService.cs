@@ -67,16 +67,12 @@ namespace Sepes.Azure.Service
 
                 foreach (var cur in client.GetPropertiesOfSecrets())
                 {
-                    if (cur.Name.ToLower().IndexOf("newvmpassword-") == 0)
+                    if (cur.CreatedOn.Value.UtcDateTime.AddHours(1) < DateTime.UtcNow &&
+                                cur.Name.ToLower().IndexOf("newvmpassword-") == 0 &&
+                                cur.CreatedOn.HasValue)
                     {
-                        if (cur.CreatedOn.HasValue)
-                        {
-                            if (cur.CreatedOn.Value.UtcDateTime.AddHours(1) < DateTime.UtcNow)
-                            {
-                                await client.StartDeleteSecretAsync(cur.Name);
+                        await client.StartDeleteSecretAsync(cur.Name);
 
-                            }
-                        }
                     }
                 }
 
