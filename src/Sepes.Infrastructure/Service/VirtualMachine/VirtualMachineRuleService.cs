@@ -56,13 +56,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vmSettings.Rules != null)
             {
-                foreach (var curExistingRule in vmSettings.Rules)
-                {
-                    if (curExistingRule.Name == ruleId)
-                    {
-                        return curExistingRule;
-                    }
-                }
+                return vmSettings.Rules.SingleOrDefault(r => r.Name == ruleId);
             }
 
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
@@ -71,7 +65,6 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
             var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -239,16 +232,8 @@ namespace Sepes.Infrastructure.Service
 
             if (vmSettings.Rules != null)
             {
-                foreach (var curRule in vmSettings.Rules)
-                {
-                    if (curRule.Direction == RuleDirection.Outbound)
-                    {
-                        if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-                        {
-                            return curRule;
-                        }
-                    }
-                }
+                return vmSettings.Rules.SingleOrDefault(r => r.Direction == RuleDirection.Outbound
+                && r.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET));              
             }
 
             return null;
