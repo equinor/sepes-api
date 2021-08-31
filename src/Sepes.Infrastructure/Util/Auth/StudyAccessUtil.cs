@@ -113,15 +113,9 @@ namespace Sepes.Infrastructure.Util.Auth
                 allowedForStudyRolesQueryable = allowedForStudyRolesQueryable.Where(or => !or.AppliesOnlyToNonHiddenStudies);
             }
 
-            if (allowedForStudyRolesQueryable.Any())
+            if (allowedForStudyRolesQueryable.Any(p => UserHasAnyOfTheseStudyRoles(currentUser.Id, studyPermissionDetails, p.AllowedForRoles, operation, roleBeingAddedOrRemoved)))
             {
-                foreach (var curOpWithRole in allowedForStudyRolesQueryable)
-                {
-                    if (UserHasAnyOfTheseStudyRoles(currentUser.Id, studyPermissionDetails, curOpWithRole.AllowedForRoles, operation, roleBeingAddedOrRemoved))
-                    {
-                        return true;
-                    }
-                }
+                return true;
             }
 
             return false;
