@@ -112,12 +112,9 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             if (studyPermissionDetails.UsersAndRoles.TryGetValue(userId, out HashSet<string> rolesForUser))
             {
-                foreach (var curRoleForUser in rolesForUser)
+                if (rolesForUser.Any(r=> requiredRoles.Contains(r) && !DisqualifiedBySpecialVendorAdminCase(r, operation, roleBeingAddedOrRemoved)))
                 {
-                    if (requiredRoles.Contains(curRoleForUser) && !DisqualifiedBySpecialVendorAdminCase(curRoleForUser, operation, roleBeingAddedOrRemoved))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
@@ -133,18 +130,13 @@ namespace Sepes.Infrastructure.Util.Auth
 
         static bool DisqualifiedBySpecialVendorAdminCase(string roleName, UserOperation operation, string roleBeingAddedOrRemoved)
         {
-            if (!String.IsNullOrWhiteSpace(roleBeingAddedOrRemoved))
+            if (roleName == StudyRoles.VendorAdmin &&
+                    roleBeingAddedOrRemoved != StudyRoles.VendorContributor &&
+                    roleBeingAddedOrRemoved != StudyRoles.VendorAdmin &&
+                    operation == UserOperation.Study_AddRemove_Participant &&
+                    !String.IsNullOrWhiteSpace(roleBeingAddedOrRemoved))
             {
-                if (operation == UserOperation.Study_AddRemove_Participant)
-                {
-                    if (roleName == StudyRoles.VendorAdmin)
-                    {
-                        if (roleBeingAddedOrRemoved != StudyRoles.VendorContributor && roleBeingAddedOrRemoved != StudyRoles.VendorAdmin)
-                        {
-                            return true;
-                        }
-                    }
-                }
+                return true;
             }
 
             return false;

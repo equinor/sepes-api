@@ -58,12 +58,9 @@ namespace Sepes.Infrastructure.Service
 
                 var wbsFromResponse = response.SingleOrDefault();
 
-                if (wbsFromResponse != null)
+                if (wbsFromResponse != null && wbsFromResponse.code != null && wbsFromResponse.code.ToLowerInvariant() == wbsCode.ToLowerInvariant())
                 {
-                    if (wbsFromResponse.code.ToLowerInvariant() == wbsCode.ToLowerInvariant())
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 

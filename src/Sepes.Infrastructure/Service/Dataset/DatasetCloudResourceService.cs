@@ -170,21 +170,8 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception("Missing Include for CloudResource on Study");
             }
 
-            foreach (var curResource in study.Resources)
-            {
-                if (!SoftDeleteUtil.IsMarkedAsDeleted(curResource) || includeDeleted)
-                {
-                    if (curResource.ResourceType == AzureResourceType.ResourceGroup)
-                    {
-                        if (!String.IsNullOrWhiteSpace(curResource.Purpose) && curResource.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer)
-                        {
-                            return curResource;
-                        }
-                    }
-                }
-            }
-
-            return null;
+            return study.Resources.FirstOrDefault(r => (!SoftDeleteUtil.IsMarkedAsDeleted(r) || includeDeleted)
+                  && (!String.IsNullOrWhiteSpace(r.Purpose) && r.Purpose == CloudResourcePurpose.StudySpecificDatasetContainer && r.ResourceType == AzureResourceType.ResourceGroup));
         }
 
         async Task ScheduleResourceGroupRoleAssignments(Study study, CloudResource resourceGroup, ProvisioningQueueParentDto queueParentItem)

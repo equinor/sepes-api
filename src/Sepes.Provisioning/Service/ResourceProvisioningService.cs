@@ -315,21 +315,18 @@ namespace Sepes.Provisioning.Service
                     _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting message due to exception");
                     await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
                 }
-                else if (ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
+                else if (currentOperation != null && ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0 && currentOperation.TryCount < currentOperation.MaxTryCount)
                 {
-                    if (currentOperation.TryCount < currentOperation.MaxTryCount)
+                    if (queueParentItem.DequeueCount == 5)
                     {
-                        if (queueParentItem.DequeueCount == 5)
-                        {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing message after exception");
-                         
-                            await _provisioningQueueService.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
-                        }
-                        else
-                        {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility of message after exception");
-                            await _provisioningQueueService.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
-                        }
+                        _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing message after exception");
+
+                        await _provisioningQueueService.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
+                    }
+                    else
+                    {
+                        _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility of message after exception");
+                        await _provisioningQueueService.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
                     }
                 }
 
@@ -370,28 +367,22 @@ namespace Sepes.Provisioning.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (!curDependantOnThisOp.Resource.Deleted)
+                            if (!curDependantOnThisOp.Resource.Deleted &&
+                                curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId) &&
+                                !String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt) &&
+                                curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15)
+                                )
                             {
-                                if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
-                                {
-                                    if (!String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
-                                    {
-                                        if (curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15))
-                                        {
-                                            //Create a new queue item for immediate pickup
-                                            await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
+                                //Create a new queue item for immediate pickup
+                                await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
 
-                                            //Delete existing message
-                                            await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
+                                //Delete existing message
+                                await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
 
-                                            //Clear stored message details on operation record
-                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
+                                //Clear stored message details on operation record
+                                await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
 
-                                            movedUpCount++;
-                                        }
-
-                                    }
-                                }
+                                movedUpCount++;
                             }
                         }
                     }
