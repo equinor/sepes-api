@@ -38,7 +38,7 @@ namespace Sepes.Infrastructure.Service
 
             bool accessToAny = false;
 
-            foreach (var curOperation in operations.Where(o=> HasAccessToOperation(currentUser, o)))
+            if (operations.Any(o=> HasAccessToOperation(currentUser, o)))
             {
                 return;
             }

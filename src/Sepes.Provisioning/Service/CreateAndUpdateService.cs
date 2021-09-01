@@ -41,7 +41,7 @@ namespace Sepes.Provisioning.Service
                 throw new ArgumentException("Cloud-Resource-Operation was null");
             }
 
-            return (operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE);          
+            return operation.OperationType == CloudResourceOperationType.CREATE || operation.OperationType == CloudResourceOperationType.UPDATE;          
         }
 
         public async Task<ResourceProvisioningResult> Handle(

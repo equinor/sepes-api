@@ -19,7 +19,7 @@ namespace Sepes.Infrastructure.Automapper
 
         public Dictionary<string, string> Resolve(CloudResource source, SandboxResourceLight destination, Dictionary<string, string> destMember, ResolutionContext context)
         {
-            if (VmRuleUtils.InternetIsOpen(source) && source != null && source.ResourceType == AzureResourceType.VirtualMachine)
+            if (source != null && VmRuleUtils.InternetIsOpen(source) &&  source.ResourceType == AzureResourceType.VirtualMachine)
             {
                 return new Dictionary<string, string>() { { "InternetIsOpen", "true" } };
             }
