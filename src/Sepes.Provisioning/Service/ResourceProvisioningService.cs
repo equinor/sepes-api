@@ -315,7 +315,7 @@ namespace Sepes.Provisioning.Service
                     _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting message due to exception");
                     await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
                 }
-                else if (ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0 && currentOperation.TryCount < currentOperation.MaxTryCount)
+                else if (currentOperation != null && ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0 && currentOperation.TryCount < currentOperation.MaxTryCount)
                 {
                     if (queueParentItem.DequeueCount == 5)
                     {

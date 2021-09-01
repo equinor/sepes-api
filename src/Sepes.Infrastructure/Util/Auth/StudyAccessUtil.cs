@@ -112,7 +112,7 @@ namespace Sepes.Infrastructure.Util.Auth
         {
             if (studyPermissionDetails.UsersAndRoles.TryGetValue(userId, out HashSet<string> rolesForUser))
             {
-                foreach (var curRoleForUser in rolesForUser.Where(r=> requiredRoles.Contains(r) && !DisqualifiedBySpecialVendorAdminCase(r, operation, roleBeingAddedOrRemoved)))
+                if (rolesForUser.Any(r=> requiredRoles.Contains(r) && !DisqualifiedBySpecialVendorAdminCase(r, operation, roleBeingAddedOrRemoved)))
                 {
                     return true;
                 }

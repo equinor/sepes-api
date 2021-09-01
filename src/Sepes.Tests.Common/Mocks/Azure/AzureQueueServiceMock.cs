@@ -23,7 +23,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
         {
             var item = new QueueStorageItem() { MessageId = Guid.NewGuid().ToString(), MessageText = messageText };
             _queue.Enqueue(item);
-            return item;
+            return await Task.FromResult(item);
         }
 
         public async Task<QueueStorageItem> ReceiveMessageAsync()
@@ -37,7 +37,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
                 _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage));
 
-                return dequeuedMessage;
+                return await Task.FromResult(dequeuedMessage);
             }
 
             return null;
@@ -83,10 +83,11 @@ namespace Sepes.Tests.Common.Mocks.Azure
             throw new Exception($"Message {messageId} not found!");
         }
 
-        public async Task DeleteQueueAsync()
+        public Task DeleteQueueAsync()
         {
             AddBackItemsThatShouldBeVisibleAgain();
             _queue = new Queue<QueueStorageItem>();
+            return Task.CompletedTask;
         }
 
         void AddBackItemsThatShouldBeVisibleAgain()
