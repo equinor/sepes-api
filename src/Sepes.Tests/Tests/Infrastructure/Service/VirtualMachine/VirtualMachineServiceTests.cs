@@ -1,6 +1,5 @@
 ﻿using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Tests.Mocks.ServiceMockFactory;
-using Sepes.Tests.Setup;
 using Sepes.Tests.Tests;
 using Xunit;
 
@@ -26,7 +25,7 @@ namespace Sepes.Tests.Services.DomainServices.VirtualMachine
         }
 
         [Fact]
-        public async void CheckvalidPassword()
+        public void CheckvalidPassword()
         {
             var validPassword = "!1Qwertyuiop";
             var service = VirtualMachineMockServiceFactory.GetVirtualMachineCreateService(_serviceProvider);

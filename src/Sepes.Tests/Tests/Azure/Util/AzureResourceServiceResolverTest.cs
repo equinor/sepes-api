@@ -26,7 +26,7 @@ namespace Sepes.Tests.Util
         }
 
         [Fact]
-        public async void ResolvingServiceForResourceWithProvisioningStateShouldBeOkay()
+        public void ResolvingServiceForResourceWithProvisioningStateShouldBeOkay()
         {
             //Trying resource that does not exist
             var shouldBeNull = AzureResourceServiceResolver.GetServiceWithProvisioningState(ServiceProvider, "SomeResourceThatDoesNotExist");
