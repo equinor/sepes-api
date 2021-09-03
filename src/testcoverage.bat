@@ -9,12 +9,6 @@ tools\reportgenerator.exe -reports:Sepes.Tests/TestResults/**/coverage.cobertura
 dotnet test .\Sepes.RestApi.IntegrationTests\ --collect:"XPlat Code Coverage" --settings .\Sepes.RestApi.IntegrationTests\integrationtests.runsettings
 tools\reportgenerator.exe -reports:Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:./CodeCoverage/IntegrationTests -reporttypes:HtmlSummary -title:"Integration Tests"
 
-@REM tools\reportgenerator.exe -reports:Sepes.Tests/TestResults/**/coverage.cobertura.xml;Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:./CodeCoverage/Combined -reporttypes:HtmlSummary -title:"All Tests"
-
-tools\reportgenerator.exe -reports:Sepes.Tests/TestResults/**/coverage.cobertura.xml;Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml -targetdir:./CodeCoverage/Combined -reporttypes:TextSummary -title:"All Tests"
-
-@REM Get-Content file.txt | Select -Index 4
-
 start chrome ./CodeCoverage/UnitTests/summary.htm
 start chrome ./CodeCoverage/IntegrationTests/summary.htm
 start chrome ./CodeCoverage/Combined/summary.htm
