@@ -209,19 +209,25 @@ jobs:
           path: ${{github.workspace}}/CodeCoverage/Combined/summary.htm
 
       - name: Combined Tests - Build coverage report badge
-        run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:"/" -reporttypes:TextSummary -title:"All Tests"
+        run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:${{github.workspace}} -reporttypes:TextSummary -title:"All Tests"
 
-      - uses: actions/github-script@v4
-        id: coverageLine
-        with:
-          script: return Get-Content summary.txt | Select -Index 6
-          result-encoding: string
+      - run: sed '6!d' summary.txt > totalCoverage.txt
 
-      - uses: actions/github-script@v4
+      - run: awk '{print $3}' totalCoverage.txt
+
+      - run: echo "::set-output name=COVERAGE_PERCENT::$( awk '{print $3}' totalCoverage.txt)"
         id: coveragePercentage
-        with:
-          script: return ${{ steps.coverageLine.outputs.COVERAGE }} -replace '\D+(\d+)','$1'
-          result-encoding: string
+      # - uses: actions/github-script@v4
+      #   id: coverageLine
+      #   with:
+      #     script: return Get-Content summary.txt | Select -Index 6
+      #     result-encoding: string
+
+      # - uses: actions/github-script@v4
+      #   id: coveragePercentage
+      #   with:
+      #     script: return ${{ steps.coverageLine.outputs.COVERAGE }} -replace '\D+(\d+)','$1'
+      #     result-encoding: string
 
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.1.0
@@ -230,5 +236,5 @@ jobs:
           gistID: ad55c36852976fbafa4c2198e0deecaf
           filename: test.json
           label: Coverage
-          message: ${{ steps.coveragePercentage.outputs.COVERAGE_PERCENT }}
+          message: ${{steps.coveragePercentage.outputs.COVERAGE_PERCENT}}
           color: orangee
