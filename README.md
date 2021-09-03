@@ -2,8 +2,7 @@
 
 ![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg?event=push)
 ![CodeQL](https://github.com/equinor/sepes-api/workflows/CodeQL/badge.svg?event=push)
-![Code Coverage](https://github.com/[username]/[reponame]/blob/[branch]/image.jpg?raw=true)
-[![Branch Coverage Status](./coverageBadges/badge_branchcoverage.svg)](https://github.com/equinor/sepes-api/)
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansKristianVikOlsen/ad55c36852976fbafa4c2198e0deecaf/raw/test.json)
 
 A platform that allows vendors prove their solutions on your data in a sandbox
 

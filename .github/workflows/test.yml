@@ -209,7 +209,7 @@ jobs:
           path: ${{github.workspace}}/CodeCoverage/Combined/summary.htm
 
       - name: Combined Tests - Build coverage report badge
-        run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -reporttypes:TextSummary -title:"All Tests"
+        run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:"/" -reporttypes:TextSummary -title:"All Tests"
 
       - uses: actions/github-script@v4
         id: coverageLine
@@ -223,12 +223,12 @@ jobs:
           script: return ${{ steps.coverageLine.outputs.COVERAGE }} -replace '\D+(\d+)','$1'
           result-encoding: string
 
-      # - name: Create Awesome Badge
-      #   uses: schneegans/dynamic-badges-action@v1.1.0
-      #   with:
-      #     auth: ${{ secrets.GIST_SECRET }}
-      #     gistID:
-      #     filename: test.json
-      #     label: Coverage
-      #     message: ${{ steps.coveragePercentage.outputs.COVERAGE_PERCENT }}
-      #     color: orangee
+      - name: Create Awesome Badge
+        uses: schneegans/dynamic-badges-action@v1.1.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ad55c36852976fbafa4c2198e0deecaf
+          filename: test.json
+          label: Coverage
+          message: ${{ steps.coveragePercentage.outputs.COVERAGE_PERCENT }}
+          color: orangee
