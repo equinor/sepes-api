@@ -211,7 +211,8 @@ jobs:
       - name: Combined Tests - Build coverage report badge
         run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:${{github.workspace}} -reporttypes:TextSummary -title:"All Tests"
 
-      - run: sed '6!d' summary.txt > totalCoverage.txt
+      - run: dir
+      - run: sed '6!d' Summary.txt > totalCoverage.txt
 
       - run: awk '{print $3}' totalCoverage.txt
 
