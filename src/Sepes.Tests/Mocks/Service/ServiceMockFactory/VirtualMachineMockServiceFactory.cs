@@ -60,7 +60,6 @@ namespace Sepes.Tests.Mocks.ServiceMockFactory
         {
             var db = serviceProvider.GetService<SepesDbContext>();
             var mapper = serviceProvider.GetService<IMapper>();
-            var userService = UserServiceMockFactory.GetUserServiceMockForAdmin(1);
 
             var sandboxModelServiceMock = new Mock<ISandboxModelService>();
             sandboxModelServiceMock.Setup(x => x.GetRegionByIdAsync(1, It.IsAny<UserOperation>())).ReturnsAsync("norwayeast");

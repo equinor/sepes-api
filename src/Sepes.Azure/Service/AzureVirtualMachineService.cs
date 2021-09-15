@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using Microsoft.Azure.Management.Compute.Fluent;
 using Microsoft.Azure.Management.Compute.Fluent.Models;
 using Microsoft.Azure.Management.Compute.Fluent.VirtualMachine.Definition;
+using Microsoft.Azure.Management.Network.Fluent;
 using Microsoft.Azure.Management.Network.Fluent.Models;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +14,11 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto.Provisioning;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Common.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sepes.Azure.Service
 {
@@ -26,7 +27,6 @@ namespace Sepes.Azure.Service
         readonly IMapper _mapper;
         readonly IAzureKeyVaultSecretService _azureKeyVaultSecretService;
         readonly IAzureNetworkSecurityGroupRuleService _azureNetworkSecurityGroupRuleService;
-
 
         public AzureVirtualMachineService(IConfiguration config, IMapper mapper, ILogger<AzureVirtualMachineService> logger, IAzureCredentialService azureCredentialService,
             IAzureKeyVaultSecretService azureKeyVaultSecretService,
@@ -60,8 +60,9 @@ namespace Sepes.Azure.Service
                     parameters.ResourceGroupName,
                     parameters.Name,
                     vmSettings.NetworkName, vmSettings.SubnetName,
+                    vmSettings.PublicIpName,
                     vmSettings.Username, password,
-                    vmSize, vmSettings.OperatingSystem, vmSettings.OperatingSystemCategory, parameters.Tags,
+                    vmSize, vmSettings.OperatingSystemImageId, vmSettings.OperatingSystemCategory, parameters.Tags,
                     vmSettings.DiagnosticStorageAccountName, cancellationToken);
 
                 await DeletePasswordFromKeyVault(passwordReference);
@@ -86,12 +87,10 @@ namespace Sepes.Azure.Service
             else
             {
                 //Validate data disks
-                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0)
+                if (vmSettings.DataDisks != null && vmSettings.DataDisks.Count > 0 &&
+                    virtualMachine.DataDisks.Count > 0 && virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
                 {
-                    if (virtualMachine.DataDisks.Count != vmSettings.DataDisks.Count)
-                    {
-                        throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks}, saw {vmSettings.DataDisks.Count} on VM");
-                    }
+                    throw new Exception($"Data disk(s) not created properly. Expected count of {vmSettings.DataDisks.Count}, saw {virtualMachine.DataDisks.Count} on VM");
                 }
             }
 
@@ -161,7 +160,6 @@ namespace Sepes.Azure.Service
                                 ruleMapped.Priority = await FindNextPriority(parameters, existingRules, AzureVmConstants.MIN_RULE_PRIORITY, 10, AzureVmConstants.MAX_RULE_PRIORITY, curRule.Direction.ToString());
                                 await _azureNetworkSecurityGroupRuleService.AddInboundRule(parameters.ResourceGroupName, parameters.NetworkSecurityGroupName, ruleMapped, cancellationToken);
                             }
-
                         }
                         else
                         {
@@ -259,8 +257,6 @@ namespace Sepes.Azure.Service
                         collision = true;
                         break;
                     }
-
-
                 }
 
                 if (collision)
@@ -311,7 +307,7 @@ namespace Sepes.Azure.Service
             }
         }
 
-        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string userName, string password, string vmSize, string osName, string osCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
+        async Task<IVirtualMachine> CreateInternalAsync(Region region, string resourceGroupName, string vmName, string primaryNetworkName, string subnetName, string publicIpName, string userName, string password, string vmSize, string vmImageId, string vmImageOsCategory, IDictionary<string, string> tags, string diagStorageAccountName, CancellationToken cancellationToken = default)
         {
             IVirtualMachine vm;
 
@@ -324,15 +320,7 @@ namespace Sepes.Azure.Service
 
             AzureResourceUtil.ThrowIfResourceIsNull(network, AzureResourceType.VirtualNetwork, primaryNetworkName, "Create VM failed");
 
-            var publicIpName = AzureResourceNameUtil.VirtualMachinePublicIp(vmName);
-
-            var pip = await _azure.PublicIPAddresses.Define(publicIpName)
-             .WithRegion(region)
-             .WithExistingResourceGroup(resourceGroupName)
-             .WithStaticIP()
-             .WithSku(PublicIPSkuType.Standard)
-             .WithTags(tags)
-             .CreateAsync(cancellationToken);
+            var publicIp = await EnsurePublicIpAddressExists(region, resourceGroupName, publicIpName, tags, cancellationToken);
 
             var vmCreatable = _azure.VirtualMachines.Define(vmName)
                                     .WithRegion(region)
@@ -340,22 +328,22 @@ namespace Sepes.Azure.Service
                                     .WithExistingPrimaryNetwork(network)
                                     .WithSubnet(subnetName)
                                     .WithPrimaryPrivateIPAddressDynamic()
-                                    .WithExistingPrimaryPublicIPAddress(pip);
+                                    .WithExistingPrimaryPublicIPAddress(publicIp);
 
 
             IWithCreate vmWithOS;
 
-            if (osCategory.ToLower().Equals("windows"))
+            if (vmImageOsCategory.ToLower().Equals("windows"))
             {
-                vmWithOS = CreateWindowsVm(vmCreatable, osName, userName, password);
+                vmWithOS = await CreateWindowsVm(vmCreatable, vmImageId, userName, password);
             }
-            else if (osCategory.ToLower().Equals("linux"))
+            else if (vmImageOsCategory.ToLower().Equals("linux"))
             {
-                vmWithOS = CreateLinuxVm(vmCreatable, osName, userName, password);
+                vmWithOS = await CreateLinuxVm(vmCreatable, vmImageId, userName, password);
             }
             else
             {
-                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {osCategory}");
+                throw new ArgumentException($"Argument 'osCategory' needs to be either 'windows' or 'linux'. Current value: {vmImageOsCategory}");
             }
 
             var vmWithSize = vmWithOS.WithSize(vmSize);
@@ -369,29 +357,49 @@ namespace Sepes.Azure.Service
 
         }
 
-        private IWithManagedCreate CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        async Task<IPublicIPAddress> GetPublicIpAddress(string resourceGroupName, string publicIpName, CancellationToken cancellationToken = default)
         {
-            IWithWindowsAdminUsernameManagedOrUnmanaged withOS;
+            return await _azure.PublicIPAddresses.GetByResourceGroupAsync(resourceGroupName, publicIpName, cancellationToken);
+        }
 
-            switch (distro.ToLower())
+        async Task EnsurePublicIpDeleted(string resourceGroupName, string publicIpName, CancellationToken cancellationToken = default)
+        {
+            var publicIp = GetPublicIpAddress(resourceGroupName, publicIpName, cancellationToken);
+
+            if(publicIp != null)
             {
-                case "win2019datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
-                    break;
-                case "win2019datacentercore":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenterCore.Sku);
-                    break;
-                case "win2016datacenter":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenter.Sku);
-                    break;
-                case "win2016datacentercore":
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Publisher, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Offer, AzureVmOperatingSystemConstants.Windows.Server2016DataCenterCore.Sku);
-                    break;
-                default:
-                    _logger.LogInformation("Could not match distro argument. Default will be chosen: Windows Server 2019");
-                    withOS = vmCreatable.WithLatestWindowsImage(AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Publisher, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Offer, AzureVmOperatingSystemConstants.Windows.Server2019DataCenter.Sku);
-                    break;
+                await _azure.PublicIPAddresses.DeleteByResourceGroupAsync(resourceGroupName, publicIpName, cancellationToken);
             }
+        }
+
+        async Task<IPublicIPAddress> EnsurePublicIpAddressExists(Region region, string resourceGroupName, string publicIpName, IDictionary<string, string> tags, CancellationToken cancellationToken)
+        {
+
+            var publicIp = await GetPublicIpAddress(resourceGroupName, publicIpName, cancellationToken);
+
+            if (publicIp == null)
+            {
+
+                publicIp = await _azure.PublicIPAddresses.Define(publicIpName)
+            .WithRegion(region)
+            .WithExistingResourceGroup(resourceGroupName)
+            .WithStaticIP()
+            .WithSku(PublicIPSkuType.Standard)
+            .WithTags(tags)
+            .CreateAsync(cancellationToken);
+            }
+
+            return publicIp;
+
+
+        }
+
+        async Task<IWithManagedCreate> CreateWindowsVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
+        {
+            var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
+
+            var withOS = vmCreatable.WithSpecificWindowsImageVersion(imageReference.ImageReference);
+
             var vm = withOS
                 .WithAdminUsername(userName)
                 .WithAdminPassword(password)
@@ -399,32 +407,12 @@ namespace Sepes.Azure.Service
             return vm;
         }
 
-        private IWithManagedCreate CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string distro, string userName, string password)
+        async Task<IWithManagedCreate> CreateLinuxVm(IWithProximityPlacementGroup vmCreatable, string vmImageId, string userName, string password)
         {
-            IWithLinuxRootUsernameManagedOrUnmanaged withOS;
+            var imageReference = await _azure.VirtualMachineImages.GetByIdAsync(vmImageId);
 
-            switch (distro.ToLower())
-            {
-                case "ubuntults":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
-                    break;
-                case "ubuntu16lts":
-                    withOS = vmCreatable.WithPopularLinuxImage(KnownLinuxVirtualMachineImage.UbuntuServer16_04_Lts);
-                    break;
-                case "rhel":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Publisher, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Offer, AzureVmOperatingSystemConstants.Linux.RedHat7LVM.Sku);
-                    break;
-                case "debian":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.Debian10.Publisher, AzureVmOperatingSystemConstants.Linux.Debian10.Offer, AzureVmOperatingSystemConstants.Linux.Debian10.Sku);
-                    break;
-                case "centos":
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.CentOS75.Publisher, AzureVmOperatingSystemConstants.Linux.CentOS75.Offer, AzureVmOperatingSystemConstants.Linux.CentOS75.Sku);
-                    break;
-                default:
-                    _logger.LogInformation("Could not match distro argument. Default will be chosen: Ubuntu 18.04-LTS");
-                    withOS = vmCreatable.WithLatestLinuxImage(AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Publisher, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Offer, AzureVmOperatingSystemConstants.Linux.UbuntuServer1804LTS.Sku);
-                    break;
-            }
+            var withOS = vmCreatable.WithSpecificLinuxImageVersion(imageReference.ImageReference);
+
             var vm = withOS
                 .WithRootUsername(userName)
                 .WithRootPassword(password)
@@ -496,9 +484,13 @@ namespace Sepes.Azure.Service
                 await DeleteDiskById(curDiskKvp.Value.Id);
             }
 
-            //Delete VM rules
+
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(configString);
 
+            await EnsurePublicIpDeleted(resourceGroupName, vmSettings.PublicIpName);
+
+
+            //Delete VM rules
             foreach (var curRule in vmSettings.Rules)
             {
                 try
@@ -570,7 +562,7 @@ namespace Sepes.Azure.Service
             //Update disk tags
             await UpdateDiskTags(virtualMachine.OSDiskId, tags);
 
-            foreach(var curDataDisk in virtualMachine.DataDisks)
+            foreach (var curDataDisk in virtualMachine.DataDisks)
             {
                 await UpdateDiskTags(curDataDisk.Value.Id, tags);
             }

@@ -14,6 +14,7 @@ using Sepes.Infrastructure.Service.Interface;
 using Sepes.Infrastructure.Util;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -150,16 +151,10 @@ namespace Sepes.Infrastructure.Service
         {
             var validationErrors = new List<string>();
 
-            foreach (var curResource in resourcesForSandbox)
+            foreach (var curResource in resourcesForSandbox.Where(r=> r.Operations.Where(o => o.Status == CloudResourceOperationState.IN_PROGRESS).Any()))
             {
-                foreach (var curOperation in curResource.Operations)
-                {
-                    if (curOperation.Status == CloudResourceOperationState.IN_PROGRESS)
-                    {
-                        validationErrors.Add($"One or more resources are beging created, updated or deleted");
-                        return validationErrors;
-                    }
-                }
+                validationErrors.Add($"One or more resources are beging created, updated or deleted");
+                break;
             }
 
             return validationErrors;

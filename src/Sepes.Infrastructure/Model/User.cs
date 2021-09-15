@@ -12,7 +12,7 @@ namespace Sepes.Infrastructure.Model
         [MaxLength(128)]
         public string UserName { get; set; }
 
-        [MaxLength(256)]
+        [MaxLength(128)]
         public string EmailAddress { get; set; }
 
         [MaxLength(64)]

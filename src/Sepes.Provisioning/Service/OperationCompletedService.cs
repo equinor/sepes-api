@@ -32,12 +32,9 @@ namespace Sepes.Provisioning.Service
         {
             var currentProvisioningState = await _cloudResourceMonitoringService.GetProvisioningState(operation.Resource);
 
-            if (!String.IsNullOrWhiteSpace(currentProvisioningState))
+            if (!String.IsNullOrWhiteSpace(currentProvisioningState) && currentProvisioningState == "Succeeded")
             {
-                if (currentProvisioningState == "Succeeded")
-                {
-                    return;
-                }
+                return;
             }
 
             throw new ProvisioningException($"Unexpected provisioning state for allready completed Resource: {currentProvisioningState}");

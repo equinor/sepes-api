@@ -8,6 +8,7 @@
         public const string StorageAccount = "Microsoft.Storage/storageAccounts";       
         public const string Bastion = "Bastion";
         public const string VirtualMachine = "VirtualMachine";
+        public const string PublicIp = "PublicIp";
     }
 
     public class AzureResourceTypeFriendlyName

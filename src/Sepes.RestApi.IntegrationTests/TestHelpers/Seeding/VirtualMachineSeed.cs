@@ -106,7 +106,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
                 Size = size,
                 Rules = VmRuleUtils.CreateInitialVmRules(1),
                 OperatingSystemCategory = osCategory,
-                OperatingSystem = os,
+                OperatingSystemImageId = os,
                 Username = VirtualMachineTestConstants.USERNAME,
                 Password = "nameinkeyvault",
             };

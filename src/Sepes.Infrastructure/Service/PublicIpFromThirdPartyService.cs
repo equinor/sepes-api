@@ -29,8 +29,6 @@ namespace Sepes.Infrastructure.Service
 
                     if (responseMessage.IsSuccessStatusCode)
                     {
-                        var responseString = await responseMessage.Content.ReadAsStringAsync();
-
                         var deserializedResponse = JsonSerializerUtil.Deserialize<IpAddressResponse>(await responseMessage.Content.ReadAsStringAsync());
 
                         return deserializedResponse.ip;

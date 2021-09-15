@@ -132,16 +132,13 @@ namespace Sepes.Infrastructure.Service
                     }
 
                     //Delete those that are no longer present in Azure, or that does not pass the filter
-                    foreach (var curDbSize in existingSizeItemsForRegion.Values)
+                    foreach (var curDbSize in existingSizeItemsForRegion.Values.Where(s=> !validSkusFromAzure.Contains(s.Key)))
                     {
-                        if (!validSkusFromAzure.Contains(curDbSize.Key))
-                        {
-                            var toRemoveFromDb = curRegionFromDb.VmSizeAssociations.FirstOrDefault(ra => ra.VmSizeKey == curDbSize.Key);
+                        var toRemoveFromDb = curRegionFromDb.VmSizeAssociations.FirstOrDefault(ra => ra.VmSizeKey == curDbSize.Key);
 
-                            if (toRemoveFromDb != null)
-                            {
-                                curRegionFromDb.VmSizeAssociations.Remove(toRemoveFromDb);
-                            }
+                        if (toRemoveFromDb != null)
+                        {
+                            curRegionFromDb.VmSizeAssociations.Remove(toRemoveFromDb);
                         }
                     }
 
@@ -157,12 +154,10 @@ namespace Sepes.Infrastructure.Service
             }
 
             _logger.LogInformation($"Deleting Vm Size entries not associated with any region");
-            foreach (var curVmSize in await _db.VmSizes.Include(s => s.RegionAssociations).ToListAsync())
+
+            foreach (var curVmSize in await _db.VmSizes.Include(s => s.RegionAssociations).Where(s=> s.RegionAssociations == null || (s.RegionAssociations != null && s.RegionAssociations.Count == 0)).ToListAsync())
             {
-                if (curVmSize.RegionAssociations == null || (curVmSize.RegionAssociations != null && curVmSize.RegionAssociations.Count == 0))
-                {
-                    _db.VmSizes.Remove(curVmSize);
-                }
+                _db.VmSizes.Remove(curVmSize);
             }
 
             await _db.SaveChangesAsync();

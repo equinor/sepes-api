@@ -49,8 +49,6 @@ namespace Sepes.Infrastructure.Handlers
 
         public async Task<Study> UpdateAsync(int studyId, StudyUpdateDto updatedStudy, IFormFile logo = null, CancellationToken cancellationToken = default)
         {
-            var spUpdate = Stopwatch.StartNew();
-
             if (studyId <= 0)
             {
                 throw new ArgumentException("Study Id was zero or negative:" + studyId);

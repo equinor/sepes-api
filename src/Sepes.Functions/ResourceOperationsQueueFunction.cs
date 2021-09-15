@@ -26,7 +26,7 @@ namespace Sepes.Functions
         [StorageAccount(ConfigConstants.RESOURCE_PROVISIONING_QUEUE_CONSTRING)]        
         public async Task Run([QueueTrigger(queueName: "sandbox-resource-operations-queue")] QueueMessage queueMessage)
         {           
-            _logger.LogInformation($"Processing message: {queueMessage.MessageId}, pop count: {queueMessage.DequeueCount}, exp: {queueMessage.ExpiresOn}, next visible: { queueMessage.NextVisibleOn}");
+            _logger.LogInformation($"{queueMessage.MessageId}, pop count: {queueMessage.DequeueCount}, exp: {queueMessage.ExpiresOn}, next visible: { queueMessage.NextVisibleOn}");
 
             var transformedQueueItem = JsonSerializer.Deserialize<ProvisioningQueueParentDto>(queueMessage.Body, JsonSerializerUtil.GetDefaultOptions());
             transformedQueueItem.MessageId = queueMessage.MessageId;

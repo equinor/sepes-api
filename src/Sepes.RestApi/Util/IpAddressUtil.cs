@@ -25,18 +25,10 @@ namespace Sepes.RestApi.Util
                 return null;
             }
 
-            string clientIp;
+            return remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6 ?
+                remoteIpAddress.MapToIPv4().ToString() :
+                remoteIpAddress.ToString();
 
-            if (remoteIpAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetworkV6)
-            {
-                clientIp = remoteIpAddress.MapToIPv4().ToString();
-            }
-            else
-            {
-                clientIp = remoteIpAddress.ToString();
-            }
-            
-            return clientIp;
         }      
 
         static bool GetForwardedForHeader(HttpContext context, out string headerValue)

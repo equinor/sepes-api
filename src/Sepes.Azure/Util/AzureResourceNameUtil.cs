@@ -90,16 +90,9 @@ namespace Sepes.Azure.Util
             var suffixMaxLength = 80 - NSG_RULE_FOR_VM_PREFIX.Length - vmIdString.Length - 1;
 
 
-            var suffixNormalized = "";
-
-            if (suffix == null)
-            {
-                suffixNormalized = StripWhitespaceAndEnsureLength(Guid.NewGuid().ToString(), suffixMaxLength);
-            }
-            else
-            {
-                suffixNormalized = StripWhitespaceAndEnsureLength(suffix, suffixMaxLength);
-            }
+            var suffixNormalized = suffix == null ?
+                StripWhitespaceAndEnsureLength(Guid.NewGuid().ToString(), suffixMaxLength) :
+                StripWhitespaceAndEnsureLength(suffix, suffixMaxLength);
 
             return $"{NSG_RULE_FOR_VM_PREFIX}{vmId}-{suffixNormalized}";
         }
@@ -118,14 +111,10 @@ namespace Sepes.Azure.Util
 
             StripTextsEqually(availableSpaceForStudyAndSandboxName, ref alphanumericStudyName, ref alphanumericSandboxName);
 
-            if (String.IsNullOrWhiteSpace(alphanumericSandboxName))
-            {
-                return $"{prefix}{alphanumericStudyName}{suffix}{shortUniquePart}";
-            }
-            else
-            {
-                return $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}";
-            }         
+            return String.IsNullOrWhiteSpace(alphanumericSandboxName) ?
+                $"{prefix}{alphanumericStudyName}{suffix}{shortUniquePart}" :
+                $"{prefix}{alphanumericStudyName}{(avoidDash ? "" : "-")}{alphanumericSandboxName}{suffix}{shortUniquePart}"
+                ;
         }
 
         static void StripTextsEqually(int availableSpaceForStudyAndSandboxName, ref string text1, ref string text2)

@@ -11,7 +11,7 @@ namespace Sepes.RestApi.IntegrationTests.Setup
     /// </summary>
     public class TestHostFixture : ICollectionFixture<CustomWebApplicationFactory<Startup>>
     {
-        Dictionary<Tuple<bool, bool, bool, bool>,
+        readonly Dictionary<Tuple<bool, bool, bool, bool>,
           RestHelper> _scenarios = new Dictionary<Tuple<bool, bool, bool, bool>, RestHelper>();        
 
         public TestHostFixture()

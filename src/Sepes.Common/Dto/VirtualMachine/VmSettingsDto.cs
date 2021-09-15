@@ -10,13 +10,17 @@ namespace Sepes.Common.Dto.VirtualMachine
 
         public string SubnetName { get; set; }
 
+        public string PublicIpName { get; set; }
+
         public string Size { get; set; }
 
         public List<string> DataDisks { get; set; }
 
-        public string OperatingSystem { get; set; }
+        public string OperatingSystemImageId { get; set; }
 
         public string OperatingSystemCategory { get; set; }
+
+        public string OperatingSystemDisplayName { get; set; }
 
         public string Username { get; set; }
 

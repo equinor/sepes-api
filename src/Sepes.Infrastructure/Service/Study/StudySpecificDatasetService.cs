@@ -126,12 +126,9 @@ namespace Sepes.Infrastructure.Service
 
         void ThrowIfDatasetNameTaken(Study study, string datasetName)
         {
-            foreach (var curStudyDataset in study.StudyDatasets)
+            if (study.StudyDatasets.Any(ds=> ds.Dataset.StudySpecific && ds.StudyId == study.Id && ds.Dataset.Name == datasetName))
             {
-                if (curStudyDataset.Dataset.StudySpecific && curStudyDataset.StudyId == study.Id && curStudyDataset.Dataset.Name == datasetName)
-                {
-                    throw new Exception($"Dataset with name {datasetName} allready exists");
-                }
+                throw new Exception($"Dataset with name {datasetName} allready exists");
             }
         }
 

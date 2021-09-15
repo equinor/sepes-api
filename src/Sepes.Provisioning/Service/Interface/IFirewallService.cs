@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Sepes.Azure.Service.Interface;
 using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 
 namespace Sepes.Provisioning.Service.Interface
 {
@@ -9,6 +10,7 @@ namespace Sepes.Provisioning.Service.Interface
         bool CanHandle(CloudResourceOperationDto operation);
 
         Task Handle(
+            ProvisioningQueueParentDto queueParentItem,
             CloudResourceOperationDto operation,
             IHasFirewallRules networkRuleService);
     }

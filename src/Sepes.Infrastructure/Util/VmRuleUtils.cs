@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sepes.Azure.Util;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.VirtualMachine;
@@ -30,16 +31,7 @@ namespace Sepes.Infrastructure.Util
 
                 if (vmSettings != null && vmSettings.Rules != null)
                 {
-                    foreach (var curRule in vmSettings.Rules)
-                    {
-                        if (curRule.Direction == RuleDirection.Outbound)
-                        {
-                            if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-                            {
-                                return curRule;
-                            }
-                        }
-                    }
+                    return vmSettings.Rules.FirstOrDefault(r => r.Direction == RuleDirection.Outbound && r.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET));
                 }
             }          
 

@@ -5,12 +5,12 @@ using Sepes.Common.Constants;
 using Sepes.Common.Constants.Auth;
 using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
+using Sepes.Common.Dto.Sandbox;
 using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.Infrastructure.Util.Auth;
 using Sepes.Provisioning.Service.Interface;
 using System;
 using System.Collections.Generic;
@@ -52,46 +52,47 @@ namespace Sepes.Provisioning.Service
             return operation.OperationType == CloudResourceOperationType.ENSURE_ROLES;
         }
 
-        public async Task Handle(CloudResourceOperationDto operation)
+        public async Task Handle(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto operation)
         {
             try
             {
-                var cancellation = new CancellationTokenSource();
-
-                if (string.IsNullOrWhiteSpace(operation.DesiredState))
+                using (var cancellation = new CancellationTokenSource())
                 {
-                    throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
-                }
-
-                var operationStateDeserialized = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
-                var study = await _studyModelService.GetWithParticipantsAndUsersNoAccessCheck(operationStateDeserialized.StudyId);
-                var currentRoleAssignmentTask = SetRoleAssignments(operation, study, cancellation.Token);
-
-                while (!currentRoleAssignmentTask.IsCompleted)
-                {
-                    operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
-
-                    if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id)
-                        || operation.Status == CloudResourceOperationState.ABORTED
-                        || operation.Status == CloudResourceOperationState.ABANDONED)
+                    if (string.IsNullOrWhiteSpace(operation.DesiredState))
                     {
-                        _provisioningLogService.OperationWarning(operation, $"Operation aborted, role assignment will be aborted", eventId: _roleAssignmentEventId);
-                        cancellation.Cancel();
-                        break;
+                        throw new NullReferenceException($"Desired state empty on operation {operation.Id}: {operation.Description}");
                     }
 
-                    Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
-                }
+                    var operationStateDeserialized = CloudResourceConfigStringSerializer.DesiredRoleAssignment(operation.DesiredState);
+                    var study = await _studyModelService.GetWithParticipantsAndUsersNoAccessCheck(operationStateDeserialized.StudyId);
+                    var currentRoleAssignmentTask = SetRoleAssignments(queueParentItem, operation, study, cancellation.Token);
 
-                if (!currentRoleAssignmentTask.IsCompletedSuccessfully)
-                {
-                    if (currentRoleAssignmentTask.Exception == null)
+                    while (!currentRoleAssignmentTask.IsCompleted)
                     {
-                        throw new Exception("Role assignment task failed");
+                        operation = await _cloudResourceOperationUpdateService.TouchAsync(operation.Id);
+
+                        if (await _cloudResourceReadService.ResourceIsDeleted(operation.Resource.Id)
+                            || operation.Status == CloudResourceOperationState.ABORTED
+                            || operation.Status == CloudResourceOperationState.ABANDONED)
+                        {
+                            _provisioningLogService.OperationWarning(queueParentItem, operation, $"Operation aborted, role assignment will be aborted", eventId: _roleAssignmentEventId);
+                            cancellation.Cancel();
+                            break;
+                        }
+
+                        Thread.Sleep((int)TimeSpan.FromSeconds(3).TotalMilliseconds);
                     }
-                    else
+
+                    if (!currentRoleAssignmentTask.IsCompletedSuccessfully)
                     {
-                        throw currentRoleAssignmentTask.Exception;
+                        if (currentRoleAssignmentTask.Exception == null)
+                        {
+                            throw new Exception("Role assignment task failed");
+                        }
+                        else
+                        {
+                            throw currentRoleAssignmentTask.Exception;
+                        }
                     }
                 }
             }
@@ -108,9 +109,9 @@ namespace Sepes.Provisioning.Service
             }
         }
 
-        async Task SetRoleAssignments(CloudResourceOperationDto operation, Study study, CancellationToken cancellationToken = default)
-        {           
-            _provisioningLogService.OperationInformation(operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);           
+        async Task SetRoleAssignments(ProvisioningQueueParentDto queueParentItem, CloudResourceOperationDto operation, Study study, CancellationToken cancellationToken = default)
+        {
+            _provisioningLogService.OperationInformation(queueParentItem, operation, "SetRoleAssignments", eventId: _roleAssignmentEventId);
 
             List<CloudResourceDesiredRoleAssignmentDto> desiredRoleAssignments = null;
             List<AzureRoleAssignment> existingRoleAssignmentsForResource = null;
@@ -135,7 +136,7 @@ namespace Sepes.Provisioning.Service
             {
                 throw new Exception($"Unable to determine role assignments, unknown purpose {operation.Resource.Purpose} for resource {operation.Resource.Id}");
             }
-            
+
             //Create desired roles that does not allready exist
             foreach (var curDesired in desiredRoleAssignments)
             {
@@ -143,12 +144,12 @@ namespace Sepes.Provisioning.Service
 
                 if (sameRoleFromExisting != null)
                 {
-                    _provisioningLogService.OperationInformation(operation, $"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}", eventId: _roleAssignmentEventId);
+                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Principal {curDesired.PrincipalId} allready had role {curDesired.RoleId}", eventId: _roleAssignmentEventId);
                 }
                 else
                 {
                     var roleDefinitionId = AzureRoleIds.CreateRoleDefinitionUrl(operation.Resource.ResourceId, curDesired.RoleId);
-                    _provisioningLogService.OperationInformation(operation, $"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}", eventId: _roleAssignmentEventId);
+                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Principal {curDesired.PrincipalId} missing role {curDesired.RoleId}, creating. Role definition: {roleDefinitionId}", eventId: _roleAssignmentEventId);
                     await _azureRoleAssignmentService.AddRoleAssignment(operation.Resource.ResourceId, roleDefinitionId, curDesired.PrincipalId, cancellationToken: cancellationToken);
                 }
             }
@@ -167,11 +168,11 @@ namespace Sepes.Provisioning.Service
 
                 if (sameRoleFromDesired != null)
                 {
-                    _provisioningLogService.OperationInformation(operation, $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping", eventId: _roleAssignmentEventId);
+                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} also in desired role list. Keeping", eventId: _roleAssignmentEventId);
                 }
                 else
                 {
-                    _provisioningLogService.OperationInformation(operation, $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted", eventId: _roleAssignmentEventId);
+                    _provisioningLogService.OperationInformation(queueParentItem, operation, $"Existing role for principal {curExisting.properties.principalId} with id {curExisting.properties.roleDefinitionId} NOT in desired role list. Will be deleted", eventId: _roleAssignmentEventId);
                     await _azureRoleAssignmentService.DeleteRoleAssignment(curExisting.id, cancellationToken);
                 }
             }

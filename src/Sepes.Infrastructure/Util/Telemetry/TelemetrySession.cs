@@ -8,9 +8,9 @@ namespace Sepes.Infrastructure.Util.Telemetry
 {
     public class TelemetrySession
     {
-        string _eventId;
-        Stopwatch _sessionStopWatch;
-        Dictionary<string, Stopwatch> _partialOperationStopwatches;
+        readonly string _eventId;
+        readonly Stopwatch _sessionStopWatch;
+        readonly Dictionary<string, Stopwatch> _partialOperationStopwatches;
 
         public TelemetrySession(string eventId)
         {

@@ -15,7 +15,8 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Scenarios
             serviceCollection.SwapTransient<IWbsApiService>(provider => WbsApiMockServiceFactory.GetService(true, false));
             serviceCollection.SwapTransient<IAzureRoleAssignmentService>(provider => AzureRoleAssignmentMockServiceFactory.CreateBasicForCreate().Object);
             serviceCollection.SwapTransient<IAzureKeyVaultSecretService>(provider => AzureKeyVaultSecretMockServiceFactory.CreateBasicForResourceCreate().Object);
-            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);          
+            serviceCollection.SwapTransient<IAzureResourceGroupService>(provider => AzureResourceGroupMockServiceFactory.CreateBasicForCreate().Object);
+            serviceCollection.SwapTransient<IVirtualMachineOperatingSystemService>(provider => VirtualMachineOperatingSystemServiceMockFactory.GetService(false).Object);
 
             //NETWORK
             serviceCollection.SwapTransient<IAzureNetworkSecurityGroupService>(provider => AzureNetworkSecurityGroupMockServiceFactory.CreateBasicForCreate().Object);

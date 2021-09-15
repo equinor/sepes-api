@@ -10,7 +10,7 @@ namespace Sepes.Tests.Common.ModelFactory.VirtualMachine
             
             string vmName,
             string size = "Standard_F1",
-            string os = "win2019datacenter",
+            string os = "1",
             string username = "integrationTestUsr" ) {
          
             var result = new VirtualMachineCreateDto()

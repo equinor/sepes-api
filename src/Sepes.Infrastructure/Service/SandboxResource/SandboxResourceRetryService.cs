@@ -167,17 +167,8 @@ namespace Sepes.Infrastructure.Service
                 throw new Exception("Missing include for Sandbox.Resources");
             }
 
-            foreach (var currentSandboxResource in CloudResourceUtil.GetSandboxControlledResources(sandbox.Resources))
-            {
-                //If create operation failed
-
-                if (!CloudResourceOperationUtil.HasSuccessfulCreateOperation(currentSandboxResource))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            var sandboxControlledResources = CloudResourceUtil.GetSandboxControlledResources(sandbox.Resources);
+            return !sandboxControlledResources.Any(r => !CloudResourceOperationUtil.HasSuccessfulCreateOperation(r));       
         }
 
         async Task EnsureOperationIsReadyForRetryAndEnqueue(CloudResource resource, CloudResourceOperation operationToRetry)

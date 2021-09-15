@@ -7,6 +7,7 @@ using Sepes.Azure.Service.Interface;
 using System;
 using System.Threading.Tasks;
 using Azure.Core;
+using System.Linq;
 
 namespace Sepes.Azure.Service
 {
@@ -46,7 +47,7 @@ namespace Sepes.Azure.Service
                 try
                 {
                     await secret.WaitForCompletionAsync();
-                    var purgedSecret = await client.PurgeDeletedSecretAsync(secretName);
+                    await client.PurgeDeletedSecretAsync(secretName);
                 }
                 catch (Exception ex)
                 {
@@ -65,31 +66,17 @@ namespace Sepes.Azure.Service
             {
                 var client = GetKeyVaultClient(nameOfKeyVaultUrlSetting);
 
-                foreach (var cur in client.GetPropertiesOfSecrets())
+                foreach (var cur in client.GetPropertiesOfSecrets().Where(s=> s.CreatedOn.Value.UtcDateTime.AddHours(1) < DateTime.UtcNow &&
+                                s.Name.ToLower().IndexOf("newvmpassword-") == 0 &&
+                                s.CreatedOn.HasValue))
                 {
-                    if (cur.Name.ToLower().IndexOf("newvmpassword-") == 0)
-                    {
-                        if (cur.CreatedOn.HasValue)
-                        {
-                            if (cur.CreatedOn.Value.UtcDateTime.AddHours(1) < DateTime.UtcNow)
-                            {
-                                await client.StartDeleteSecretAsync(cur.Name);
-
-                            }
-                        }
-                    }
+                    await client.StartDeleteSecretAsync(cur.Name);
                 }
 
-                foreach (var cur in client.GetDeletedSecrets())
+                foreach (var cur in client.GetDeletedSecrets().Where(s=> s.Name.ToLower().IndexOf("newvmpassword-") == 0))
                 {
-                    if (cur.Name.ToLower().IndexOf("newvmpassword-") == 0)
-                    {
-
-                        await client.PurgeDeletedSecretAsync(cur.Name);
-                    }
+                    await client.PurgeDeletedSecretAsync(cur.Name);
                 }
-
-
             }
             catch (Exception ex)
             {

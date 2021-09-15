@@ -23,8 +23,8 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class VirtualMachineRuleService : VirtualMachineServiceBase, IVirtualMachineRuleService
-    {       
-      
+    {
+
         readonly ICloudResourceOperationReadService _sandboxResourceOperationReadService;
         readonly ICloudResourceOperationCreateService _sandboxResourceOperationCreateService;
         readonly IProvisioningQueueService _provisioningQueueService;
@@ -36,7 +36,7 @@ namespace Sepes.Infrastructure.Service
             IMapper mapper,
             IUserService userService,
             ICloudResourceReadService cloudResourceReadService,
-            IProvisioningQueueService  provisioningQueueService,
+            IProvisioningQueueService provisioningQueueService,
             ICloudResourceOperationReadService sandboxResourceOperationReadService,
             ICloudResourceOperationCreateService sandboxResourceOperationCreateService)
              : base(configuration, db, logger, mapper, userService, cloudResourceReadService)
@@ -44,8 +44,8 @@ namespace Sepes.Infrastructure.Service
             _provisioningQueueService = provisioningQueueService;
             _sandboxResourceOperationReadService = sandboxResourceOperationReadService;
             _sandboxResourceOperationCreateService = sandboxResourceOperationCreateService;
-           
-        }       
+
+        }
 
         public async Task<VmRuleDto> GetRuleById(int vmId, string ruleId, CancellationToken cancellationToken = default)
         {
@@ -56,13 +56,7 @@ namespace Sepes.Infrastructure.Service
 
             if (vmSettings.Rules != null)
             {
-                foreach (var curExistingRule in vmSettings.Rules)
-                {
-                    if (curExistingRule.Name == ruleId)
-                    {
-                        return curExistingRule;
-                    }
-                }
+                return vmSettings.Rules.SingleOrDefault(r => r.Name == ruleId);
             }
 
             throw new NotFoundException($"Rule with id {ruleId} does not exist");
@@ -71,7 +65,6 @@ namespace Sepes.Infrastructure.Service
         public async Task<List<VmRuleDto>> SetRules(int vmId, List<VmRuleDto> updatedRuleSet, CancellationToken cancellationToken = default)
         {
             var vm = await GetVirtualMachineResourceEntry(vmId, UserOperation.Study_Crud_Sandbox);
-
 
             //Get config string
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
@@ -163,20 +156,16 @@ namespace Sepes.Infrastructure.Service
             }
 
             //If Sandbox is not open, make sure outbound rule has not changed
-            if (curPhase > SandboxPhase.Open)
+            if (curPhase > SandboxPhase.Open
+                && onlyOutboundRuleFromClient.Direction == RuleDirection.Outbound
+                && onlyOutboundRuleFromClient.ToString() != onlyOutboundRuleFromExisting.ToString())
             {
-                if (onlyOutboundRuleFromClient.Direction == RuleDirection.Outbound)
-                {
-                    if (onlyOutboundRuleFromClient.ToString() != onlyOutboundRuleFromExisting.ToString())
-                    {
-                        var currentUser = await _userService.GetCurrentUserAsync();
+                var currentUser = await _userService.GetCurrentUserAsync();
 
-                        if (!currentUser.Admin)
-                        {
-                            validationErrors.Add($"Only admin can updated outgoing rules when Sandbox is in phase {curPhase}");
-                            ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
-                        }
-                    }
+                if (!currentUser.Admin)
+                {
+                    validationErrors.Add($"Only admin can updated outgoing rules when Sandbox is in phase {curPhase}");
+                    ValidationUtils.ThrowIfValidationErrors("Rule update not allowed", validationErrors);
                 }
             }
 
@@ -239,16 +228,8 @@ namespace Sepes.Infrastructure.Service
 
             if (vmSettings.Rules != null)
             {
-                foreach (var curRule in vmSettings.Rules)
-                {
-                    if (curRule.Direction == RuleDirection.Outbound)
-                    {
-                        if (curRule.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET))
-                        {
-                            return curRule;
-                        }
-                    }
-                }
+                return vmSettings.Rules.SingleOrDefault(r => r.Direction == RuleDirection.Outbound
+                && r.Name.Contains(AzureVmConstants.RulePresets.OPEN_CLOSE_INTERNET));
             }
 
             return null;
@@ -262,19 +243,14 @@ namespace Sepes.Infrastructure.Service
             var vmSettings = CloudResourceConfigStringSerializer.VmSettings(vm.ConfigString);
 
             return vmSettings.Rules != null ? vmSettings.Rules : new List<VmRuleDto>();
-        }            
+        }
 
         void ThrowIfRuleExists(List<VmRuleDto> rules, VmRuleDto ruleToCompare)
         {
-            if (rules != null)
+            if (rules != null
+                && rules.Any(r => AzureVmUtil.IsSameRule(ruleToCompare, r)))
             {
-                foreach (var curExistingRule in rules)
-                {
-                    if (AzureVmUtil.IsSameRule(ruleToCompare, curExistingRule))
-                    {
-                        throw new Exception($"Same rule allready exists");
-                    }
-                }
+                throw new Exception($"Same rule allready exists");
             }
         }
 

@@ -30,7 +30,6 @@ namespace Sepes.Azure.Service
                 CreateWindowsRequestProps("Windows 2019 Datacenter", region, "2019-Datacenter"),
                 CreateWindowsRequestProps("Windows 2016 Datacenter Core", region, "2016-Datacenter-Server-Core"),
                 CreateWindowsRequestProps("Windows 2016 Datacenter", region, "2016-Datacenter"),
-                CreateWindowsRequestProps("Windows 2016 Datacenter", region, "2016-Datacenter"),
                 CreateLinuxRequestProps("RedHat", region, Linux.RedHat7LVM.Publisher, Linux.RedHat7LVM.Offer, Linux.RedHat7LVM.Sku),
                 CreateLinuxRequestProps("Ubuntu", region, Linux.UbuntuServer1804LTS.Publisher, Linux.UbuntuServer1804LTS.Offer, Linux.UbuntuServer1804LTS.Sku),
                 CreateLinuxRequestProps("Debian", region, Linux.Debian10.Publisher, Linux.Debian10.Offer, Linux.Debian10.Sku),

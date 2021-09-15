@@ -145,7 +145,7 @@ namespace Sepes.Provisioning.Service
                     {
                         currentOperation = await _resourceOperationReadService.GetByIdAsync(queueChildItem.ResourceOperationId);
 
-                        _provisioningLogService.OperationInformation(currentOperation, "Starting operation");
+                        _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Starting operation");
 
                         _operationCheckService.ThrowIfTryCountExceededOrAborted(currentOperation);
 
@@ -168,24 +168,24 @@ namespace Sepes.Provisioning.Service
 
                         await _provisioningQueueService.IncreaseInvisibleBasedOnResource(currentOperation, queueParentItem);
 
-                        _provisioningLogService.OperationInformation(currentOperation, "Initial checks passed");
+                        _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Initial checks passed");
 
                         if (_createAndUpdateService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is CREATE or UPDATE");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is CREATE or UPDATE");
 
                             var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
 
                             if (await _operationCompletedService.HandledAsAllreadyCompletedAsync(currentOperation))
                             {
-                                _provisioningLogService.OperationInformation(currentOperation, "Operation is allready completed");
+                                _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is allready completed");
                                 currentProvisioningResult = await provisioningService.GetSharedVariables(currentProvisioningParameters);
                                 continue;
                             }
                             else
                             {
                                 currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
-                                currentProvisioningResult = await _createAndUpdateService.Handle(currentOperation, currentProvisioningParameters, provisioningService);
+                                currentProvisioningResult = await _createAndUpdateService.Handle(queueParentItem, currentOperation, currentProvisioningParameters, provisioningService);
                             }
 
                             currentOperation = await _resourceOperationUpdateService.TouchAsync(currentOperation.Id);
@@ -196,30 +196,30 @@ namespace Sepes.Provisioning.Service
                         }
                         else if (_deleteOperationService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is DELETE");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is DELETE");
                             var provisioningService = AzureResourceServiceResolver.GetProvisioningServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
-                            currentProvisioningResult = await _deleteOperationService.Handle(currentOperation, currentProvisioningParameters, provisioningService);
+                            currentProvisioningResult = await _deleteOperationService.Handle(queueParentItem, currentOperation, currentProvisioningParameters, provisioningService);
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL, updatedProvisioningState: null);
                         }
                         else if (_roleProvisioningService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE ROLES");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is ENSURE ROLES");
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
-                            await _roleProvisioningService.Handle(currentOperation);
+                            await _roleProvisioningService.Handle(queueParentItem, currentOperation);
 
                             await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
                         }
                         else if (_firewallService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE FIREWALL");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is ENSURE FIREWALL");
                             var firewallRuleService = AzureResourceServiceResolver.GetFirewallRuleService(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
                             if (firewallRuleService is IHasFirewallRules)
                             {
-                                await _firewallService.Handle(currentOperation,
+                                await _firewallService.Handle(queueParentItem, currentOperation,
                                     firewallRuleService
                                 );
 
@@ -232,13 +232,13 @@ namespace Sepes.Provisioning.Service
                         }
                         else if (_corsRuleProvisioningService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE CORS RULES");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is ENSURE CORS RULES");
                             var corsRuleService = AzureResourceServiceResolver.GetCorsRuleServiceOrThrow(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
                             if (corsRuleService is IHasCorsRules)
                             {
-                                await _corsRuleProvisioningService.Handle(currentOperation, corsRuleService);
+                                await _corsRuleProvisioningService.Handle(queueParentItem, currentOperation, corsRuleService);
 
                                 await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
                             }
@@ -249,13 +249,13 @@ namespace Sepes.Provisioning.Service
                         }
                         else if (_tagProvisioningService.CanHandle(currentOperation))
                         {
-                            _provisioningLogService.OperationInformation(currentOperation, "Operation is ENSURE TAGS");
+                            _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Operation is ENSURE TAGS");
                             var tagServiceForResource = AzureResourceServiceResolver.GetServiceWithTags(_serviceProvider, currentOperation.Resource.ResourceType);
                             currentOperation = await _resourceOperationUpdateService.SetInProgressAsync(currentOperation.Id, _requestIdService.GetRequestId());
 
                             if (tagServiceForResource is IServiceForTaggedResource)
                             {
-                                await _tagProvisioningService.Handle(currentOperation, tagServiceForResource);
+                                await _tagProvisioningService.Handle(queueParentItem, currentOperation, tagServiceForResource);
                                 await _resourceOperationUpdateService.UpdateStatusAsync(currentOperation.Id, CloudResourceOperationState.DONE_SUCCESSFUL);
                             }
                             else
@@ -268,7 +268,7 @@ namespace Sepes.Provisioning.Service
                             throw new ProvisioningException("Unknown operation type", CloudResourceOperationState.ABORTED);
                         }
 
-                        _provisioningLogService.OperationInformation(currentOperation, "Successfully handeled operation");
+                        _provisioningLogService.OperationInformation(queueParentItem, currentOperation, "Successfully handeled operation");
                     }
                     catch (ProvisioningException ex) //Inner loop, ordinary exception is not catched
                     {
@@ -276,16 +276,16 @@ namespace Sepes.Provisioning.Service
                         {
                             if (ex.IncludeExceptionInWarningLog)
                             {
-                                _provisioningLogService.OperationWarning(currentOperation, "Operation aborted", ex);
+                                _provisioningLogService.OperationWarning(queueParentItem, currentOperation, "Operation aborted", ex);
                             }
                             else
                             {
-                                _provisioningLogService.OperationWarning(currentOperation, $"Operation aborted: {ex.Message}");
+                                _provisioningLogService.OperationWarning(queueParentItem, currentOperation, $"Operation aborted: {ex.Message}");
                             }
                         }
                         else
                         {
-                            _provisioningLogService.OperationError(ex, currentOperation, "Operation failed");
+                            _provisioningLogService.OperationError(queueParentItem, ex, currentOperation, "Operation failed");
                         }
 
                         currentOperation = await _resourceOperationUpdateService.SetErrorMessageAsync(currentOperation.Id, ex);
@@ -312,24 +312,21 @@ namespace Sepes.Provisioning.Service
             {
                 if (ex.DeleteFromQueue)
                 {
-                    _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting due to exception");
+                    _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Deleting message due to exception");
                     await _provisioningQueueService.DeleteMessageAsync(queueParentItem);
                 }
-                else if (ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0)
+                else if (currentOperation != null && ex.PostponeQueueItemFor.HasValue && ex.PostponeQueueItemFor.Value > 0 && currentOperation.TryCount < currentOperation.MaxTryCount)
                 {
-                    if (currentOperation.TryCount < currentOperation.MaxTryCount)
+                    if (queueParentItem.DequeueCount == 5)
                     {
-                        if (queueParentItem.DequeueCount == 5)
-                        {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing after exception");
-                         
-                            await _provisioningQueueService.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
-                        }
-                        else
-                        {
-                            _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility after exception");
-                            await _provisioningQueueService.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
-                        }
+                        _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Re-queuing message after exception");
+
+                        await _provisioningQueueService.ReQueueMessageAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
+                    }
+                    else
+                    {
+                        _provisioningLogService.QueueParentProgressWarning(queueParentItem, "Increasing invisibility of message after exception");
+                        await _provisioningQueueService.IncreaseInvisibilityAsync(queueParentItem, ex.PostponeQueueItemFor.Value);
                     }
                 }
 
@@ -370,28 +367,22 @@ namespace Sepes.Provisioning.Service
                     {
                         foreach (var curDependantOnThisOp in currentOperation.DependantOnThisOperation)
                         {
-                            if (!curDependantOnThisOp.Resource.Deleted)
+                            if (!curDependantOnThisOp.Resource.Deleted &&
+                                curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId) &&
+                                !String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt) &&
+                                curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15)
+                                )
                             {
-                                if (curDependantOnThisOp.Status == CloudResourceOperationState.NEW && String.IsNullOrWhiteSpace(curDependantOnThisOp.BatchId))
-                                {
-                                    if (!String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessageId) && String.IsNullOrWhiteSpace(curDependantOnThisOp.QueueMessagePopReceipt))
-                                    {
-                                        if (curDependantOnThisOp.QueueMessageVisibleAgainAt.HasValue && curDependantOnThisOp.QueueMessageVisibleAgainAt.Value > DateTime.UtcNow.AddSeconds(15))
-                                        {
-                                            //Create a new queue item for immediate pickup
-                                            await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
+                                //Create a new queue item for immediate pickup
+                                await _provisioningQueueService.AddNewQueueMessageForOperation(curDependantOnThisOp);
 
-                                            //Delete existing message
-                                            await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
+                                //Delete existing message
+                                await _provisioningQueueService.DeleteMessageAsync(curDependantOnThisOp.QueueMessageId, curDependantOnThisOp.QueueMessagePopReceipt);
 
-                                            //Clear stored message details on operation record
-                                            await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
+                                //Clear stored message details on operation record
+                                await _resourceOperationUpdateService.ClearQueueInformationAsync(curDependantOnThisOp.Id);
 
-                                            movedUpCount++;
-                                        }
-
-                                    }
-                                }
+                                movedUpCount++;
                             }
                         }
                     }
