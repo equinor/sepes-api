@@ -3,6 +3,9 @@ on:
   pull_request:
     branches: [master, develop]
   workflow_dispatch:
+  push:
+    branches:
+      - master
 jobs:
   run:
     runs-on: ubuntu-latest
@@ -211,11 +214,9 @@ jobs:
       - name: Combined Tests - Build coverage report badge
         run: reportgenerator -reports:"src/Sepes.Tests/TestResults/**/coverage.cobertura.xml;src/Sepes.RestApi.IntegrationTests/TestResults/**/coverage.cobertura.xml" -targetdir:${{github.workspace}} -reporttypes:TextSummary -title:"All Tests"
 
-      - run: dir
       - run: cat Summary.txt
       - run: sed '7!d' Summary.txt > totalCoverage.txt
       - run: cat totalCoverage.txt
-      - run: dir
 
       - run: awk '{print $3}' totalCoverage.txt
 
@@ -237,6 +238,7 @@ jobs:
 
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.1.0
+        if: github.ref == 'refs/heads/master'
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ad55c36852976fbafa4c2198e0deecaf
