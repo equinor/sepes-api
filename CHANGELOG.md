@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.2](https://github.com/equinor/sepes-api/compare/1.0.1...1.0.2) (2021-09-15)
+
+
+### Bug Fixes
+
+* **sandbox:** fetch operating systems from azure ([#756](https://github.com/equinor/sepes-api/issues/756)) ([4b7e131](https://github.com/equinor/sepes-api/commit/4b7e1310b2cdbd835457a691a483b7f5269170a9)), closes [#750](https://github.com/equinor/sepes-api/issues/750)
+
 ### [1.0.1](https://github.com/equinor/sepes-api/compare/v1.0.0...v1.0.1) (2021-08-24)
 
 ## 1.0.0 (2021-08-24)
