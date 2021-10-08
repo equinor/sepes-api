@@ -36,7 +36,7 @@ For Integration tests, WebApplicationFactory is used, calling the Api Controller
 
 #### Best option: Run from Visual Studio
 
-Open the "Test Explorer"-Window and click the "Run All Tests In View"
+Open the "Test Explorer"-Window and click the "Run All Tests In View".
 
 #### Console
 
