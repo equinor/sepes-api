@@ -37,11 +37,5 @@ namespace Sepes.Functions.Service
         {
             return false;
         }
-
-        //public bool IsMockUser(out UserDto mockUser)
-        //{
-        //    mockUser = null;
-        //    return false;
-        //}
     }
 }
