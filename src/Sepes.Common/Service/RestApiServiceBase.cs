@@ -50,61 +50,64 @@ namespace Sepes.Common.Service
 
         protected async Task<T> PerformRequest<T>(string url, HttpMethod method, HttpContent content = null, bool needsAuth = true, Dictionary<string, string> additionalHeaders = null, CancellationToken cancellationToken = default)
         {
-            var requestMessage = new HttpRequestMessage(method, url);
-
-            if (needsAuth)
+            using (var requestMessage = new HttpRequestMessage(method, url))
             {
-                if (_apiTokenType == ApiTokenType.App)
+
+                if (needsAuth)
                 {
-                    await _httpRequestAuthenticatorService.PrepareRequestForAppAsync(requestMessage, _scope, cancellationToken);
-                }
-                else if (_apiTokenType == ApiTokenType.User)
-                {
-                    await _httpRequestAuthenticatorService.PrepareRequestForUserAsync(requestMessage, new List<string> { _scope }, cancellationToken);
-                }
-            }
-
-            if (additionalHeaders != null)
-            {
-                foreach (var curHeader in additionalHeaders)
-                {
-                    requestMessage.Headers.Add(curHeader.Key, curHeader.Value);
-                }
-            }
-
-            HttpResponseMessage responseMessage = null;
-
-            if (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch)
-            {
-                requestMessage.Content = content;
-            }
-
-            responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
-
-            if (responseMessage.IsSuccessStatusCode)
-            {
-                var responseText = await responseMessage.Content.ReadAsStringAsync();
-                var deserializedResponse = JsonSerializerUtil.Deserialize<T>(responseText);
-                return deserializedResponse;
-            }
-            else
-            {
-                var errorMessageBuilder = new StringBuilder();
-                errorMessageBuilder.Append($"{this.GetType()}: Response for {method} against the url {url} failed with status code {responseMessage.StatusCode}");
-
-                if (!String.IsNullOrWhiteSpace(responseMessage.ReasonPhrase))
-                {
-                    errorMessageBuilder.Append($", reason: {responseMessage.ReasonPhrase}");
+                    if (_apiTokenType == ApiTokenType.App)
+                    {
+                        await _httpRequestAuthenticatorService.PrepareRequestForAppAsync(requestMessage, _scope, cancellationToken);
+                    }
+                    else if (_apiTokenType == ApiTokenType.User)
+                    {
+                        await _httpRequestAuthenticatorService.PrepareRequestForUserAsync(requestMessage, new List<string> { _scope }, cancellationToken);
+                    }
                 }
 
-                var responseString = await responseMessage.Content.ReadAsStringAsync();
-
-                if (!String.IsNullOrWhiteSpace(responseString))
+                if (additionalHeaders != null)
                 {
-                    errorMessageBuilder.Append($", response content: {responseString}");
+                    foreach (var curHeader in additionalHeaders)
+                    {
+                        requestMessage.Headers.Add(curHeader.Key, curHeader.Value);
+                    }
                 }
 
-                throw new Exception(errorMessageBuilder.ToString());
+                HttpResponseMessage responseMessage = null;
+
+                if (method == HttpMethod.Post || method == HttpMethod.Put || method == HttpMethod.Patch)
+                {
+                    requestMessage.Content = content;
+                }
+
+                responseMessage = await _httpClient.SendAsync(requestMessage, cancellationToken);
+
+                if (responseMessage.IsSuccessStatusCode)
+                {
+                    var responseText = await responseMessage.Content.ReadAsStringAsync();
+                    var deserializedResponse = JsonSerializerUtil.Deserialize<T>(responseText);
+                    return deserializedResponse;
+                }
+                else
+                {
+                    var errorMessageBuilder = new StringBuilder();
+                    errorMessageBuilder.Append($"{this.GetType()}: Response for {method} against the url {url} failed with status code {responseMessage.StatusCode}");
+
+                    if (!String.IsNullOrWhiteSpace(responseMessage.ReasonPhrase))
+                    {
+                        errorMessageBuilder.Append($", reason: {responseMessage.ReasonPhrase}");
+                    }
+
+                    var responseString = await responseMessage.Content.ReadAsStringAsync();
+
+                    if (!String.IsNullOrWhiteSpace(responseString))
+                    {
+                        errorMessageBuilder.Append($", response content: {responseString}");
+                    }
+
+                    throw new Exception(errorMessageBuilder.ToString());
+                }
+
             }
         }
     }

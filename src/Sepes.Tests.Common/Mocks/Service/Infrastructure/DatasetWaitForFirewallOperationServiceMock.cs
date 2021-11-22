@@ -6,7 +6,7 @@ namespace Sepes.Test.Common.ServiceMocks
 {
     public class DatasetWaitForFirewallOperationServiceMock : IDatasetWaitForFirewallOperationService
     {
-        ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
+        readonly ICloudResourceOperationUpdateService _cloudResourceOperationUpdateService;
 
         public DatasetWaitForFirewallOperationServiceMock(ICloudResourceOperationUpdateService cloudResourceOperationUpdateService)
 

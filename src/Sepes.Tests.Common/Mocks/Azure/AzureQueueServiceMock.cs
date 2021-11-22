@@ -23,7 +23,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
         {
             var item = new QueueStorageItem() { MessageId = Guid.NewGuid().ToString(), MessageText = messageText };
             _queue.Enqueue(item);
-            return item;
+            return await Task.FromResult(item);
         }
 
         public async Task<QueueStorageItem> ReceiveMessageAsync()
@@ -37,7 +37,7 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
                 _invisibleItems.Add(dequeuedMessage.MessageId, new QueueMessageWrapper(dequeuedMessage));
 
-                return dequeuedMessage;
+                return await Task.FromResult(dequeuedMessage);
             }
 
             return null;
@@ -64,35 +64,30 @@ namespace Sepes.Tests.Common.Mocks.Azure
 
         QueueMessageWrapper GetMessageInternal(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToUpdate) && popReceipt == itemToUpdate.Message.PopReceipt)
             {
-                if (popReceipt == itemToUpdate.Message.PopReceipt)
-                {
-                    return itemToUpdate;
-                }
-            }           
+                return itemToUpdate;
+            }
 
             throw new ArgumentException($"No item with message id: {messageId} found!");
         }
 
         public Task DeleteMessageAsync(string messageId, string popReceipt)
         {
-            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete))
+            if (_invisibleItems.TryGetValue(messageId, out QueueMessageWrapper itemToDelete) && popReceipt == itemToDelete.Message.PopReceipt)
             {
-                if (popReceipt == itemToDelete.Message.PopReceipt)
-                {
-                    _invisibleItems.Remove(messageId);                 
-                    return Task.CompletedTask;
-                }
+                _invisibleItems.Remove(messageId);
+                return Task.CompletedTask;
             }
 
             throw new Exception($"Message {messageId} not found!");
         }
 
-        public async Task DeleteQueueAsync()
+        public Task DeleteQueueAsync()
         {
             AddBackItemsThatShouldBeVisibleAgain();
             _queue = new Queue<QueueStorageItem>();
+            return Task.CompletedTask;
         }
 
         void AddBackItemsThatShouldBeVisibleAgain()

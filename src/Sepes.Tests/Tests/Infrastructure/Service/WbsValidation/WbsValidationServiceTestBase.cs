@@ -91,7 +91,7 @@ namespace Sepes.Tests.Services.Infrastructure
 
         async Task<IWbsCodeCacheModelService> GetCacheService(List<WbsCodeCache> wbsCodesInCache)
         {
-            var db = await ClearTestDatabase();
+            await ClearTestDatabase();
 
             var wbsCodesLookup = wbsCodesInCache.ToDictionary(w => w.WbsCode.ToLowerInvariant(), w => w);
 
@@ -99,14 +99,7 @@ namespace Sepes.Tests.Services.Infrastructure
             dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<bool>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) => wbsCodesLookup.ContainsKey(wbsCode));
             dapperQueryServiceMock.Setup(s => s.RunDapperQuerySingleAsync<WbsCodeCache>(It.IsAny<string>(), It.IsAny<object>())).ReturnsAsync((string wbsCode, object parameters) =>
             {
-                if (wbsCodesLookup.TryGetValue(wbsCode, out WbsCodeCache itemFromCache))
-                {
-                    return itemFromCache;
-                }
-                else
-                {
-                    return null;
-                }
+                return wbsCodesLookup.TryGetValue(wbsCode, out WbsCodeCache itemFromCache) ? itemFromCache : null;
             }
             );
 
@@ -132,14 +125,7 @@ namespace Sepes.Tests.Services.Infrastructure
           m.Get(It.IsAny<string>()))
               .ReturnsAsync((string wbsCode) =>
               {
-                  if (foundInCache)
-                  {
-                      return new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10));
-                  }
-                  else
-                  {
-                      return null;
-                  }
+                  return foundInCache ? new WbsCodeCache(wbsCode, validInCache, DateTime.UtcNow.AddMinutes(10)) : null;
               });
 
             wbsCacheServiceMock.Setup(m => m.Add(It.IsAny<string>(), It.IsAny<bool>()));

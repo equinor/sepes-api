@@ -28,7 +28,6 @@ namespace Sepes.Tests.Mocks.ServiceMockFactory
             var studyModelService = StudyModelServiceMockFactory.StudyEfModelService(serviceProvider);
            
             var logoCreateServiceMock = new Mock<IStudyLogoCreateService>();
-            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
 
             var studyWbsValidationService = GetStudyWbsValidationServiceMock(wbsValidationSucceeds);           
 
@@ -65,7 +64,6 @@ namespace Sepes.Tests.Mocks.ServiceMockFactory
 
             var studySpecificDatasetService = DatasetServiceMockFactory.GetStudySpecificDatasetService(serviceProvider);
 
-            var logoReadServiceMock = new Mock<IStudyLogoReadService>();
             var logoDeleteServiceMock = new Mock<IStudyLogoDeleteService>();
 
             var resourceReadServiceMock = new Mock<ICloudResourceReadService>();

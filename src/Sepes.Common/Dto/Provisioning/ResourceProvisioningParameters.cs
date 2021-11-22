@@ -23,7 +23,7 @@ namespace Sepes.Common.Dto.Provisioning
         public string ConfigurationString { get; set; }
 
 
-        Dictionary<string, string> _sharedVariables = new Dictionary<string, string>();
+        readonly Dictionary<string, string> _sharedVariables = new Dictionary<string, string>();
 
         public bool TryGetSharedVariable(string key, out string value)
         {

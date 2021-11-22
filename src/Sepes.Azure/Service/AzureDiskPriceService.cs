@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sepes.Azure.Dto;
 using Sepes.Azure.Service.Interface;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,24 +27,20 @@ namespace Sepes.Azure.Service
             //Transponse it around to a Region -> Size -> Price hiearchy
             var diskPriceByRegion = new Dictionary<string, AzureDiskPriceForRegion>();
 
-            foreach (var curOffer in diskPrices.offers)
+            foreach (var curOffer in diskPrices.offers.Where(of => of.Key.StartsWith("standardssd-e") && !of.Key.EndsWith("-disk-mount") && !of.Key.EndsWith("-one-year") && !of.Key.Contains("-zrs")))
             {
-                if (curOffer.Key.StartsWith("standardssd-e") && !curOffer.Key.EndsWith("-disk-mount") && !curOffer.Key.EndsWith("-one-year") && !curOffer.Key.Contains("-zrs"))
+                foreach (var curSize in curOffer.Value.prices)
                 {
-                    foreach (var curSize in curOffer.Value.prices)
+                    var regionName = curSize.Key.Replace("-", "");
+
+                    AzureDiskPriceForRegion relevantRegionItem = null;
+
+                    if (!diskPriceByRegion.TryGetValue(regionName, out relevantRegionItem))
                     {
-                        var regionName = curSize.Key.Replace("-", "");
-
-                        AzureDiskPriceForRegion relevantRegionItem = null;
-
-                        if (!diskPriceByRegion.TryGetValue(regionName, out relevantRegionItem))
-                        {
-                            relevantRegionItem = diskPriceByRegion[regionName] = new AzureDiskPriceForRegion();
-                        }
-
-                        relevantRegionItem.Types.Add(curOffer.Key, new DiskType() { size = curOffer.Value.size, price = curSize.Value.value });
+                        relevantRegionItem = diskPriceByRegion[regionName] = new AzureDiskPriceForRegion();
                     }
 
+                    relevantRegionItem.Types.Add(curOffer.Key, new DiskType() { size = curOffer.Value.size, price = curSize.Value.value });
                 }
             }
 

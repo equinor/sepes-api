@@ -98,16 +98,10 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
             var resourceGroupName = AzureResourceNameUtil.SandboxResourceGroup(studyName, sandboxName);
 
-            CloudResource resourceGroup;
-
-            if(resourceCreationIndex++ < resourcesSucceeded)
-            {
-                resourceGroup = CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true);
-            }
-            else
-            {
-                resourceGroup = CloudResourceFactory.CreateResourceGroupFailing(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount);
-            }           
+            CloudResource resourceGroup = resourceCreationIndex++ < resourcesSucceeded ? 
+                CloudResourceFactory.CreateResourceGroup(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true) :
+                CloudResourceFactory.CreateResourceGroupFailing(region, resourceGroupName, purpose: CloudResourcePurpose.SandboxResourceGroup, sandboxControlled: true, statusOfFailedResource: statusOfFailedResource, tryCount: tryCount, maxTryCount: maxTryCount)
+                ;       
 
             var result = new List<CloudResource>() { resourceGroup };
             result.Add(CreateSucceedingOrFailing(resourcesSucceeded, resourceCreationIndex++, statusOfFailedResource, tryCount, maxTryCount, region, AzureResourceType.StorageAccount, resourceGroupName, AzureResourceNameUtil.DiagnosticsStorageAccount(studyName, sandboxName), parentResource: resourceGroup, sandboxControlled: true));
@@ -137,16 +131,13 @@ namespace Sepes.RestApi.IntegrationTests.Setup.Seeding
 
         static void AddDatasets(bool addDatasets, Study study, Sandbox sandbox)
         {
-            if (addDatasets)
+            if (addDatasets && study.StudyDatasets != null)
             {
-                if (study.StudyDatasets != null)
-                {
-                    sandbox.SandboxDatasets = new List<SandboxDataset>();
+                sandbox.SandboxDatasets = new List<SandboxDataset>();
 
-                    foreach (var curDs in study.StudyDatasets)
-                    {
-                        sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed" });
-                    }
+                foreach (var curDs in study.StudyDatasets)
+                {
+                    sandbox.SandboxDatasets.Add(new SandboxDataset() { DatasetId = curDs.DatasetId, Sandbox = sandbox, Added = DateTime.UtcNow, AddedBy = "seed" });
                 }
             }
 

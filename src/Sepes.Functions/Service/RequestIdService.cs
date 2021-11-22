@@ -33,11 +33,11 @@ namespace Sepes.Functions.Service
                 return requestId;
             }
 
-            throw new System.Exception("Unable to resolve Request Id from Application Insights");             
+            throw new System.Exception("Unable to resolve Request Id from Application Insights");
         }
 
         string DeprecatedFallback()
-        {           
+        {
             try
             {
                 var telemetry = new RequestTelemetry();
@@ -56,10 +56,8 @@ namespace Sepes.Functions.Service
             }
             catch
             {
-
+                return null;
             }
-
-            return null;
         }
 
         bool PotentialRequestIdIsNotEmpty(string potentialRequestId, out string validRequestId)

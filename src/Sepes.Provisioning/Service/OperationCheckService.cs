@@ -11,7 +11,7 @@ namespace Sepes.Provisioning.Service
 {
     public class OperationCheckService : IOperationCheckService
     {
-        ICloudResourceOperationReadService _cloudResourceOperationReadService;
+        readonly ICloudResourceOperationReadService _cloudResourceOperationReadService;
 
         public OperationCheckService(ICloudResourceOperationReadService cloudResourceOperationReadService)
         {
@@ -40,28 +40,22 @@ namespace Sepes.Provisioning.Service
 
         public void ThrowIfPossiblyInProgress(CloudResourceOperationDto operation)
         {
-            if (operation.Status == CloudResourceOperationState.IN_PROGRESS)
+            if (operation.Updated.AddSeconds(30) >= DateTime.UtcNow && operation.Status == CloudResourceOperationState.IN_PROGRESS) //If updated less than xx minutes ago, probably in progress
             {
-                if (operation.Updated.AddSeconds(30) >= DateTime.UtcNow) //If updated less than xx minutes ago, probably in progress
-                {
-                    throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true, includeExceptionInWarningLog: false);
-                }
+                throw new ProvisioningException($"Possibly allready in progress", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: 60, logAsWarning: true, includeExceptionInWarningLog: false);
             }
         }
 
         public async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ProvisioningQueueParentDto queueParentItem)
         {
-            if (operation.DependsOnOperationId.HasValue)
+            if (operation.DependsOnOperationId.HasValue && !(await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)))
             {
-                if (!(await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)))
-                {
-                    var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
+                var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 
-                    bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
+                bool storeQueueInformationOnOperation = queueParentItem.Children.Count == 1;
 
-                    throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true, includeExceptionInWarningLog: false);                               
+                throw new ProvisioningException($"Dependant operation {operation.DependsOnOperationId.Value} is not finished. Invisibility increased by {increaseBy}", proceedWithOtherOperations: false, deleteFromQueue: false, postponeQueueItemFor: increaseBy, storeQueueInfoOnOperation: storeQueueInformationOnOperation, logAsWarning: true, includeExceptionInWarningLog: false);
 
-                }
             }
         }
     }

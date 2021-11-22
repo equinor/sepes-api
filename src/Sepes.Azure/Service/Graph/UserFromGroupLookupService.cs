@@ -9,7 +9,7 @@ namespace Sepes.Azure.Service
 {
     public class UserFromGroupLookupService : IUserFromGroupLookupService
     {
-        string[] SCOPES = new[] { "GroupMember.Read.All" };
+        readonly string[] SCOPES = new[] { "GroupMember.Read.All" };
         readonly IGraphServiceProvider _graphServiceProvider;
 
         public UserFromGroupLookupService(IGraphServiceProvider graphServiceProvider)
@@ -54,12 +54,9 @@ namespace Sepes.Azure.Service
                 {
                     var itemAsUser = curItem as User;
 
-                    if (itemAsUser != null)
+                    if (itemAsUser != null && !userList.ContainsKey(itemAsUser.Id))
                     {
-                        if (!userList.ContainsKey(itemAsUser.Id))
-                        {
-                            userList.Add(itemAsUser.Id, new AzureUserDto() { Id = itemAsUser.Id, Mail = itemAsUser.Mail, DisplayName = itemAsUser.DisplayName, UserPrincipalName = itemAsUser.UserPrincipalName });
-                        }
+                        userList.Add(itemAsUser.Id, new AzureUserDto() { Id = itemAsUser.Id, Mail = itemAsUser.Mail, DisplayName = itemAsUser.DisplayName, UserPrincipalName = itemAsUser.UserPrincipalName });
                     }
                 }
 

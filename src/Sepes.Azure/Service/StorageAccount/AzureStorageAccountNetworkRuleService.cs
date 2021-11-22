@@ -31,7 +31,7 @@ namespace Sepes.Azure.Service
             ruleSet.IpRules = rules?.Select(alw => new IPRule(alw.Address, (Action)alw.Action)).ToList();
             var updateParameters = new StorageAccountUpdateParameters() { NetworkRuleSet = ruleSet };
 
-            var updateResult = await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, resourceName, updateParameters, cancellationToken);
+            await _azure.StorageAccounts.Inner.UpdateAsync(resourceGroupName, resourceName, updateParameters, cancellationToken);
 
             return rules;
         }

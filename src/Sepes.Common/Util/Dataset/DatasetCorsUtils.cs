@@ -3,6 +3,7 @@ using Sepes.Common.Constants;
 using Sepes.Common.Dto;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Sepes.Common.Util
 {
@@ -15,12 +16,9 @@ namespace Sepes.Common.Util
 
             var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(config, ConfigConstants.ALLOW_CORS_DOMAINS);
 
-            foreach (var curCorsDomain in corsDomainsFromConfig)
+            foreach (var curCorsDomain in corsDomainsFromConfig.Where(r=> !String.IsNullOrWhiteSpace(r)))
             {
-                if (!String.IsNullOrWhiteSpace(curCorsDomain))
-                {
-                    corsRulesList.Add(new CorsRule() { Address = curCorsDomain });
-                }
+                corsRulesList.Add(new CorsRule() { Address = curCorsDomain });
             }
 
             return CloudResourceConfigStringSerializer.Serialize(corsRulesList);
