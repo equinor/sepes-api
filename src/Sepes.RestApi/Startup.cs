@@ -23,6 +23,8 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.ServiceNow;
+using Sepes.Infrastructure.Service.ServiceNow.Interface;
 using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
 using Sepes.RestApi.Middelware;
@@ -168,6 +170,7 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
                 services.AddHttpClient("azuremanagement");
+                services.AddHttpClient<IServiceNowService, ServiceNowService>();
 
                 //Azure Services
                 services.AddTransient<IAzureUserService, AzureUserService>();
