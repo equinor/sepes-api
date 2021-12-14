@@ -27,7 +27,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             Assert.Equal(expectedStatusCode, responseWrapper.StatusCode);
         }
 
-        public static void ExpectFailureWithMessage(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, HttpStatusCode expectedStatusCode, string messageShouldContain = null)
+        public static void ExpectFailureWithMessage(ApiResponseWrapper<Common.Response.ErrorResponse> responseWrapper, HttpStatusCode expectedStatusCode, string messageShouldContain = null)
         {
             Assert.Equal(expectedStatusCode, responseWrapper.StatusCode);            
 
@@ -43,7 +43,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
 
         }
 
-        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, string messageShouldContain = "does not have permission to perform operation")
+        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Common.Response.ErrorResponse> responseWrapper, string messageShouldContain = "does not have permission to perform operation")
         {
             ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
         }

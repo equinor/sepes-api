@@ -22,9 +22,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Put<T>(restHelper, url);
         }      
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> PutAndExpectFailure(RestHelper restHelper, string url)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> PutAndExpectFailure(RestHelper restHelper, string url)
         {
-            return await Put<Common.Dto.ErrorResponse>(restHelper, url);
+            return await Put<Common.Response.ErrorResponse>(restHelper, url);
         }
 
         public static string StudyClose(int studyId) => $"api/studies/{studyId}/close";

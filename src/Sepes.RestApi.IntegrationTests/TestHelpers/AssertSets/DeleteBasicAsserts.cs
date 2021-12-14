@@ -16,12 +16,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.AssertSets
             ApiResponseBasicAsserts.ExpectNoContent(responseWrapper);
         }
 
-        public static void ExpectFailureWithMessage(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, HttpStatusCode statusCode, string messageShouldContain = null)
+        public static void ExpectFailureWithMessage(ApiResponseWrapper<Common.Response.ErrorResponse> responseWrapper, HttpStatusCode statusCode, string messageShouldContain = null)
         {
             ApiResponseBasicAsserts.ExpectFailureWithMessage(responseWrapper, statusCode, messageShouldContain);
         }
 
-        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Common.Dto.ErrorResponse> responseWrapper, string messageShouldContain = null)
+        public static void ExpectForbiddenWithMessage(ApiResponseWrapper<Common.Response.ErrorResponse> responseWrapper, string messageShouldContain = null)
         {
             ExpectFailureWithMessage(responseWrapper, HttpStatusCode.Forbidden, messageShouldContain);
         }
