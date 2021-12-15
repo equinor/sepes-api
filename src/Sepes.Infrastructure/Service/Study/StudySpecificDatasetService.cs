@@ -6,6 +6,7 @@ using Sepes.Common.Constants.CloudResource;
 using Sepes.Common.Dto;
 using Sepes.Common.Dto.Dataset;
 using Sepes.Common.Exceptions;
+using Sepes.Common.Util;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
@@ -55,6 +56,8 @@ namespace Sepes.Infrastructure.Service
 
             ThrowIfDatasetNameTaken(studyFromDb, newDatasetInput.Name);
 
+            GenericNameValidation.ValidateName(newDatasetInput.Name);
+
             var dataset = _mapper.Map<Dataset>(newDatasetInput);
             dataset.StudySpecific = true;
 
@@ -97,11 +100,18 @@ namespace Sepes.Infrastructure.Service
 
             var studyFromDb = await _studyModelService.GetForDatasetsAsync(studyId, UserOperation.Study_AddRemove_Dataset);
 
+            GenericNameValidation.ValidateName(updatedDataset.Name);
+
             var datasetFromDb = GetStudySpecificDatasetOrThrow(studyFromDb, datasetId);
+
+            if (datasetFromDb.Name != updatedDataset.Name)
+            {
+                ThrowIfDatasetNameTaken(studyFromDb, updatedDataset.Name);
+            }
 
             DatasetUtils.UpdateDatasetBasicDetails(datasetFromDb, updatedDataset);
 
-            EntityValidationUtil.Validate<Dataset>(datasetFromDb);       
+            EntityValidationUtil.Validate<Dataset>(datasetFromDb);
 
             await _db.SaveChangesAsync();
 
