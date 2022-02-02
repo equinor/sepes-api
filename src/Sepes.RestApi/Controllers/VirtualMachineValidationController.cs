@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controllers
 {
