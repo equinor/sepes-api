@@ -74,6 +74,7 @@ namespace Sepes.RestApi
                     corsDomainsFromConfig.CopyTo(domainsAsArray);
 
                     builder.WithOrigins(domainsAsArray);
+                    builder.SetIsOriginAllowedToAllowWildcardSubdomains();
                     builder.AllowAnyHeader().AllowAnyMethod();
                 });
             });
