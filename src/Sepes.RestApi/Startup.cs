@@ -23,6 +23,7 @@ using Sepes.Infrastructure.Service;
 using Sepes.Infrastructure.Service.DataModelService;
 using Sepes.Infrastructure.Service.DataModelService.Interface;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.Infrastructure.Service.ServiceNow;
 using Sepes.Provisioning.Service;
 using Sepes.Provisioning.Service.Interface;
 using Sepes.RestApi.Middelware;
@@ -116,14 +117,15 @@ namespace Sepes.RestApi
                     {
 
                     }
-                    )              
+                    )
                 .AddInMemoryTokenCaches();
 
             if (!isIntegrationTest)
             {
                 authenticationAdder
                 .AddDownstreamWebApi("GraphApi", _configuration.GetSection("GraphApi"))
-                .AddDownstreamWebApi("WbsSearch",(a) => { a.BaseUrl = _configuration[ConfigConstants.WBS_SEARCH_API_URL]; a.Scopes = _configuration[ConfigConstants.WBS_SEARCH_API_SCOPE]; });
+                .AddDownstreamWebApi("WbsSearch", (a) => { a.BaseUrl = _configuration[ConfigConstants.WBS_SEARCH_API_URL]; a.Scopes = _configuration[ConfigConstants.WBS_SEARCH_API_SCOPE]; })
+                .AddDownstreamWebApi("ServiceNow", (a) => { a.BaseUrl = _configuration[ConfigConstants.SERVICE_NOW_API_URL]; a.Scopes = _configuration[ConfigConstants.SERVICE_NOW_API_SCOPE]; });
             }
 
             services.AddHttpContextAccessor();
@@ -168,12 +170,13 @@ namespace Sepes.RestApi
                 services.AddHttpClient<IAzureRoleAssignmentService, AzureRoleAssignmentService>();
                 services.AddHttpClient<IAzureVirtualMachineOperatingSystemService, AzureVirtualMachineOperatingSystemService>();
                 services.AddHttpClient<IWbsApiService, WbsApiService>();
+                services.AddHttpClient<IServiceNowApiService, ServiceNowApiService>();
                 services.AddHttpClient("azuremanagement");
 
                 //Azure Services
                 services.AddTransient<IAzureUserService, AzureUserService>();
                 services.AddTransient<IUserFromGroupLookupService, UserFromGroupLookupService>();
-                services.AddTransient<ICombinedUserLookupService, CombinedUserLookupService>();               
+                services.AddTransient<ICombinedUserLookupService, CombinedUserLookupService>();
                 services.AddTransient<IAzureResourceGroupService, AzureResourceGroupService>();
                 services.AddTransient<IAzureNetworkSecurityGroupService, AzureNetworkSecurityGroupService>();
                 services.AddTransient<IAzureBastionService, AzureBastionService>();
@@ -187,13 +190,13 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureStorageAccountAccessKeyService, AzureStorageAccountAccessKeyService>();
                 services.AddTransient<IAzureStorageAccountNetworkRuleService, AzureStorageAccountNetworkRuleService>();
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
-                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();               
+                services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
             }
 
             //Plumbing          
             services.AddTransient<IDatabaseConnectionStringProvider, DatabaseConnectionStringProvider>();
-            services.AddTransient<IRequestIdService, RequestIdService>();          
+            services.AddTransient<IRequestIdService, RequestIdService>();
             services.AddTransient<IGraphServiceProvider, GraphServiceProvider>();
             services.AddSingleton<IPublicIpFromThirdPartyService, PublicIpFromThirdPartyService>();
             services.AddSingleton<IPublicIpService, PublicIpService>();
@@ -207,7 +210,7 @@ namespace Sepes.RestApi
 
             //Authentication and Authorization
             services.AddScoped<IUserService, UserService>();
-            services.AddTransient<IContextUserService, ContextUserService>();            
+            services.AddTransient<IContextUserService, ContextUserService>();
             services.AddTransient<IUserModelService, UserModelDapperService>();
             services.AddTransient<IStudyPermissionService, StudyPermissionService>();
             services.AddTransient<IOperationPermissionService, OperationPermissionService>();
@@ -235,13 +238,13 @@ namespace Sepes.RestApi
 
             //Domain Model Services
             services.AddTransient<IStudyListService, StudyListService>();
-            services.AddTransient<IStudyDetailsService, StudyDetailsService>();        
+            services.AddTransient<IStudyDetailsService, StudyDetailsService>();
             services.AddTransient<IStudyCreateService, StudyCreateService>();
-       
+
             services.AddTransient<IStudyDeleteService, StudyDeleteService>();
             services.AddTransient<IDatasetService, DatasetService>();
             services.AddTransient<IDatasetFirewallService, DatasetFirewallService>();
-            services.AddTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationService>();            
+            services.AddTransient<IDatasetWaitForFirewallOperationService, DatasetWaitForFirewallOperationService>();
             services.AddTransient<ISandboxService, SandboxService>();
             services.AddTransient<ISandboxPhaseService, SandboxPhaseService>();
             services.AddTransient<ISandboxResourceReadService, SandboxResourceReadService>();
@@ -257,12 +260,12 @@ namespace Sepes.RestApi
             services.AddTransient<ICloudResourceOperationReadService, CloudResourceOperationReadService>();
             services.AddTransient<ICloudResourceOperationUpdateService, CloudResourceOperationUpdateService>();
             services.AddTransient<IWbsValidationService, WbsValidationService>();
-            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();            
+            services.AddTransient<IStudyWbsValidationService, StudyWbsValidationService>();
 
             services.AddTransient<IRegionService, RegionService>();
             services.AddScoped<IVariableService, VariableService>();
-            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();        
-            
+            services.AddTransient<IStudyParticipantRolesService, StudyParticipantRolesService>();
+
 
             //Provisioning service
             services.AddTransient<IProvisioningLogService, ProvisioningLogService>();
@@ -278,14 +281,14 @@ namespace Sepes.RestApi
             services.AddTransient<IOperationCheckService, OperationCheckService>();
             services.AddTransient<IOperationCompletedService, OperationCompletedService>();
             services.AddTransient<ITagProvisioningService, TagProvisioningService>();
-           
+
             //Ext System Facade Services           
             services.AddTransient<IDatasetFileService, DatasetFileService>();
             services.AddTransient<IStudyLogoCreateService, StudyLogoCreateService>();
             services.AddTransient<IStudyLogoReadService, StudyLogoReadService>();
             services.AddTransient<IStudyLogoDeleteService, StudyLogoDeleteService>();
-            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();          
-         
+            services.AddTransient<IStudySpecificDatasetService, StudySpecificDatasetService>();
+
             services.AddTransient<ISandboxResourceCreateService, SandboxResourceCreateService>();
             services.AddTransient<ISandboxResourceRetryService, SandboxResourceRetryService>();
             services.AddTransient<ISandboxResourceDeleteService, SandboxResourceDeleteService>();
