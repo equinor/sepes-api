@@ -1,10 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web;
 using Sepes.Common.Dto;
 using Sepes.Infrastructure.Service.Interface;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.Controller

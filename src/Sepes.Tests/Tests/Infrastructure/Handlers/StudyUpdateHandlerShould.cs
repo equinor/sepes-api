@@ -23,7 +23,7 @@ namespace Sepes.Tests.Infrastructure.Handlers
         [InlineData("", "Bouvet")]
         [InlineData("TestStudy", null)]
         [InlineData("TestStudy", "")]
-        public async void ThrowOnMissingRequiredFields(string name, string vendor)
+        public async void ThrowOnMissingRequiredFields(string studyName, string vendor)
         {
             await ClearTestDatabase();
 
@@ -39,7 +39,7 @@ namespace Sepes.Tests.Infrastructure.Handlers
 
             var studyWithoutReqFields = new StudyUpdateDto()
             {              
-                Name = name,
+                Name = studyName,
                 Vendor = vendor
             };
 

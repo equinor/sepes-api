@@ -22,9 +22,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Create<SandboxDetails>(restHelper, studyId, sandboxName, region);
         }
 
-        public static async Task<ApiConversation<SandboxCreateDto, Common.Dto.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int studyId, string sandboxName = "sandboxName", string region = "norwayeast")
+        public static async Task<ApiConversation<SandboxCreateDto, Common.Response.ErrorResponse>> CreateAndExpectFailure(RestHelper restHelper, int studyId, string sandboxName = "sandboxName", string region = "norwayeast")
         {
-            return await Create<Common.Dto.ErrorResponse>(restHelper, studyId, sandboxName, region);
+            return await Create<Common.Response.ErrorResponse>(restHelper, studyId, sandboxName, region);
         }
     } 
 }

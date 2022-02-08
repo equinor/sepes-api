@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Sepes.Common.Constants;
 using Sepes.Common.Dto.Study;
+using Sepes.Common.Exceptions;
 using Sepes.Common.Util;
 using Sepes.Infrastructure.Handlers.Interface;
 using Sepes.Infrastructure.Model;
@@ -51,7 +52,7 @@ namespace Sepes.Infrastructure.Handlers
         {
             if (studyId <= 0)
             {
-                throw new ArgumentException("Study Id was zero or negative:" + studyId);
+                throw new BadRequestException("Study Id was zero or negative:" + studyId);
             }
 
             GenericNameValidation.ValidateName(updatedStudy.Name);

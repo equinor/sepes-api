@@ -2,6 +2,7 @@
 
 ![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg?event=push)
 ![CodeQL](https://github.com/equinor/sepes-api/workflows/CodeQL/badge.svg?event=push)
+![badge](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/HansKristianVikOlsen/ad55c36852976fbafa4c2198e0deecaf/raw/test.json)
 
 A platform that allows vendors prove their solutions on your data in a sandbox
 
@@ -29,13 +30,13 @@ For Integration tests, WebApplicationFactory is used, calling the Api Controller
 
 #### Prerequisites
 
-- Integration tests uses a SQL database, and it should NOT be the same as the development database, because it will be  wiped before every test run.
+- Integration tests uses a SQL database, and it should NOT be the same as the development database, because it will be wiped before every test run.
   - There is currently a bug, that requires one to specify the connection string for the integration test database, in both Sepes.RestApi and Sepes.RestApi.IntegrationTests
   - Use the config key: ConnectionStrings:SqlDatabaseIntegrationTests to specify the connectionString for the Integration test database.
 
 #### Best option: Run from Visual Studio
 
-Open the "Test Explorer"-Window and click the "Run All Tests In View"
+Open the "Test Explorer"-Window and click the "Run All Tests In View".
 
 #### Console
 

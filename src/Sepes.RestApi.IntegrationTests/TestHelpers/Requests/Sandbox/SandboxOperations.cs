@@ -17,9 +17,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await AddVmInboundRuleInternal<List<VmRuleDto>>(restHelper, vmId, existingRules);
         }
 
-        public static async Task<ApiConversation<List<VmRuleDto>, Common.Dto.ErrorResponse>> AddVmInboundRuleExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
+        public static async Task<ApiConversation<List<VmRuleDto>, Common.Response.ErrorResponse>> AddVmInboundRuleExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
         {
-            return await AddVmInboundRuleInternal<Common.Dto.ErrorResponse>(restHelper, vmId, existingRules);
+            return await AddVmInboundRuleInternal<Common.Response.ErrorResponse>(restHelper, vmId, existingRules);
         }
 
         static async Task<ApiConversation<List<VmRuleDto>, TResponse>> AddVmInboundRuleInternal<TResponse>(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
@@ -36,9 +36,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await OpenInternetForVmInternal<List<VmRuleDto>>(restHelper, vmId, existingRules);
         }
 
-        public static async Task<ApiConversation<List<VmRuleDto>, Common.Dto.ErrorResponse>> OpenInternetForVmExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
+        public static async Task<ApiConversation<List<VmRuleDto>, Common.Response.ErrorResponse>> OpenInternetForVmExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
         {
-            return await OpenInternetForVmInternal<Common.Dto.ErrorResponse>(restHelper, vmId, existingRules);
+            return await OpenInternetForVmInternal<Common.Response.ErrorResponse>(restHelper, vmId, existingRules);
         }
         
         static async Task<ApiConversation<List<VmRuleDto>, TResponse>> OpenInternetForVmInternal<TResponse>(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
@@ -52,9 +52,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await CloseInternetForVmInternal<List<VmRuleDto>>(restHelper, vmId, existingRules);
         }
 
-        public static async Task<ApiConversation<List<VmRuleDto>, Common.Dto.ErrorResponse>> CloseInternetForVmExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
+        public static async Task<ApiConversation<List<VmRuleDto>, Common.Response.ErrorResponse>> CloseInternetForVmExpectFailure(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)
         {
-            return await CloseInternetForVmInternal<Common.Dto.ErrorResponse>(restHelper, vmId, existingRules);
+            return await CloseInternetForVmInternal<Common.Response.ErrorResponse>(restHelper, vmId, existingRules);
         }
 
         static async Task<ApiConversation<List<VmRuleDto>, TResponse>> CloseInternetForVmInternal<TResponse>(RestHelper restHelper, int vmId, List<VmRuleDto> existingRules)

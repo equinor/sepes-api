@@ -20,9 +20,9 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers.Requests
             return await Delete<NoContentResult>(restHelper, sandboxId);
         }
 
-        public static async Task<ApiConversation<Common.Dto.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, int sandboxId)
+        public static async Task<ApiConversation<Common.Response.ErrorResponse>> DeleteAndExpectFailure(RestHelper restHelper, int sandboxId)
         {
-            return await Delete<Common.Dto.ErrorResponse>(restHelper, sandboxId);
+            return await Delete<Common.Response.ErrorResponse>(restHelper, sandboxId);
         }
     } 
 }
