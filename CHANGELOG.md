@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/equinor/sepes-api/compare/1.0.3...1.1.0) (2022-02-08)
+
+
+### Features
+
+* servicenow integration ([344c107](https://github.com/equinor/sepes-api/commit/344c107dacb929064008051543f24d8a61c81e49)), closes [#793](https://github.com/equinor/sepes-api/issues/793)
+
+
+### Bug Fixes
+
+* improve error messages ([#764](https://github.com/equinor/sepes-api/issues/764)) ([34c8e4f](https://github.com/equinor/sepes-api/commit/34c8e4fb5f9719473000bd1d45db6a3c7998a72d))
+* validate dateset name on create/edit ([90e5b80](https://github.com/equinor/sepes-api/commit/90e5b8071e7725306ab15e328095a37a569634bd)), closes [#790](https://github.com/equinor/sepes-api/issues/790)
+
 ### [1.0.3](https://github.com/equinor/sepes-api/compare/1.0.2...1.0.3) (2021-09-23)
 
 ### [1.0.2](https://github.com/equinor/sepes-api/compare/1.0.1...1.0.2) (2021-09-15)
