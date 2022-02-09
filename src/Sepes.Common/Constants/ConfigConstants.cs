@@ -61,7 +61,6 @@
         public const string SERVICE_NOW_API_URL = "ServiceNowApiUrl";
         public const string SERVICE_NOW_API_SCOPE = "ServiceNowApiScope";
         public const string SERVICE_NOW_APIM_SUBSCRIPTION = "ServiceNowApimSubscriptionKey";
-        public const string SERVICE_NOW_CALLER_ID = "ServiceNowCallerId";
         public const string SERVICE_NOW_CMDB_CI = "ServiceNowCmdbCi";
 
         public const string DATASET_STORAGEACCOUNT_ROLE_ASSIGNMENT_ID = "DatasetStorageAccountRoleAssignmentId";

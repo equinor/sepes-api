@@ -27,10 +27,9 @@ namespace Sepes.Infrastructure.Service.ServiceNow
         {
             var serviceNowApiUrl = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.SERVICE_NOW_API_URL);
             var serviceNowSubscriptionKey = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.SERVICE_NOW_APIM_SUBSCRIPTION);
-            var callerId = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.SERVICE_NOW_CALLER_ID);
             var cmdbCi = ConfigUtil.GetConfigValueAndThrowIfEmpty(_config, ConfigConstants.SERVICE_NOW_CMDB_CI);
 
-            var requestBody = new ServiceNowRequest(callerId, enquiry.Category, cmdbCi, enquiry.ShortDescription);
+            var requestBody = new ServiceNowRequest(enquiry.CallerId, enquiry.Category, cmdbCi, enquiry.ShortDescription);
             var httpContent = new StringContent(JsonSerializerUtil.Serialize(requestBody), Encoding.UTF8, "application/json");
 
             var additionalHeaders = new Dictionary<string, string> { { "Ocp-Apim-Subscription-Key", serviceNowSubscriptionKey } };
