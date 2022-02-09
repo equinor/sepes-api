@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.2.0](https://github.com/equinor/sepes-api/compare/1.1.0...1.2.0) (2022-02-09)
+
+
+### Features
+
+* send end user email as the caller id ([0644f6d](https://github.com/equinor/sepes-api/commit/0644f6d654bedb71b7daa799011bc9fb16c11d76)), closes [#805](https://github.com/equinor/sepes-api/issues/805)
+
 ## [1.1.0](https://github.com/equinor/sepes-api/compare/1.0.3...1.1.0) (2022-02-08)
 
 
