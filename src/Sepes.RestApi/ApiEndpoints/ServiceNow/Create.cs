@@ -4,8 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.ServiceNow;
 using Sepes.Infrastructure.Service.Interface;
 using Sepes.RestApi.ApiEndpoints.Base;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
