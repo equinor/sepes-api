@@ -12,7 +12,7 @@ namespace Sepes.RestApi.ApiEndpoints.Sandboxes
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class GetById:ControllerBase
+    public class GetById : ControllerBase
     {
         private readonly ISandboxService _sandboxService;
         public GetById(ISandboxService sandboxService)

@@ -29,7 +29,7 @@ namespace Sepes.RestApi.ApiEndpoints.Base
                 public abstract Task<ActionResult<TResponse>> Handle(
                     TRequest request,
                     CancellationToken cancellationToken = default
-                );               
+                );
             }
 
             public abstract class WithActionResult : ControllerBase

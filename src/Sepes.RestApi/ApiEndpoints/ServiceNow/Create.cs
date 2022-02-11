@@ -24,7 +24,7 @@ namespace Sepes.RestApi.ApiEndpoints.ServiceNow
 
         [HttpPost]
         public override async Task<ActionResult> Handle(ServiceNowEnquiryCreateDto enquiry, CancellationToken cancellationToken = default)
-        {           
+        {
             var userNameClaim = User.Claims.SingleOrDefault(c => c.Type == "preferred_username");
             enquiry.CallerId = userNameClaim.Value;
             var response = await _serviceNowApiService.CreateEnquiry(enquiry);
