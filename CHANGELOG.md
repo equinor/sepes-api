@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.1](https://github.com/equinor/sepes-api/compare/1.2.0...1.2.1) (2022-02-14)
+
+
+### Bug Fixes
+
+* **vm:** vm creation failing for regions other than norway east ([df003df](https://github.com/equinor/sepes-api/commit/df003df1870f924bc5a9fba27a6601eec6291b00)), closes [#813](https://github.com/equinor/sepes-api/issues/813)
+
 ## [1.2.0](https://github.com/equinor/sepes-api/compare/1.1.0...1.2.0) (2022-02-09)
 
 
