@@ -8,9 +8,10 @@ namespace Sepes.Azure.Util
         {
             return regionString switch
             {
-                "norwayeast" => Region.NorwayEast,  
-                "europewest" => Region.EuropeWest,
-                "europenorth" => Region.EuropeNorth,
+                "norwayeast" => Region.NorwayEast,
+                "westeurope" => Region.EuropeWest,
+                "northeurope" => Region.EuropeNorth,
+                "norwaywest" => Region.NorwayWest,
                 _ => Region.NorwayEast,
             };
         }
