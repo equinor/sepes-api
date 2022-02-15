@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:3.1 AS build-env
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build-env
 # WORKDIR /src
 
 COPY Sepes.Infrastructure /src/Sepes.Infrastructure
@@ -13,8 +13,8 @@ RUN cd /src/Sepes.Functions && \
     dotnet publish Sepes.Functions.csproj --output /home/site/wwwroot
 
 # To enable ssh & remote debugging on app service change the base image to the one below
-# FROM mcr.microsoft.com/azure-functions/dotnet:3.0-appservice
-FROM mcr.microsoft.com/azure-functions/dotnet:3.0
+# FROM mcr.microsoft.com/azure-functions/dotnet:4.0-appservice
+FROM mcr.microsoft.com/azure-functions/dotnet:4
 ENV AzureWebJobsScriptRoot=/home/site/wwwroot \
     AzureFunctionsJobHost__Logging__Console__IsEnabled=true
 
@@ -32,7 +32,7 @@ COPY --from=build-env ["/home/site/wwwroot", "/home/site/wwwroot"]
 # RUN dotnet publish Sepes.Functions -c Release -o Sepes.Functions/out
 
 # Build runtime image
-# FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
+# FROM mcr.microsoft.com/dotnet/aspnet:6.0
 # WORKDIR /app
 # COPY --from=build-env /app/Sepes.Functions/out .
 # ENTRYPOINT ["dotnet", "Sepes.Functions.dll", "--environment=Development"]

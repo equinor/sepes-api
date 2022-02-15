@@ -33,7 +33,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             await ActAndAssert(participantRolesService, expectedAsDto);
         }
 
-        [Fact]      
+        [Fact]
         public async void ReturnNoRolesForSponsor_IfNoStudySpecificRole()
         {
             await RefreshAndSeedTestDatabase();
@@ -67,7 +67,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             await RefreshAndSeedTestDatabase(studyRole);
             var participantRolesService = StudyParticipantRolesServiceMockFactory.GetForBasicUser(_serviceProvider);
 
-           await ActAndAssert(participantRolesService, expectedRoles);
+            await ActAndAssert(participantRolesService, expectedRoles);
         }
 
         async Task ActAndAssert(IStudyParticipantRolesService studyParticipantRolesService, List<LookupDto> expectedRoles)
@@ -99,7 +99,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             var assignableByVendorAdmin = new List<LookupDto>
             {
                 new LookupDto { Key = StudyRoles.VendorAdmin, DisplayValue = StudyRoles.VendorAdmin },
-                new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor },             
+                new LookupDto { Key = StudyRoles.VendorContributor, DisplayValue = StudyRoles.VendorContributor },
             };
 
             var assignableByVendorContributor = new List<LookupDto>
@@ -121,14 +121,15 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
 
         async Task<SepesDbContext> RefreshAndSeedTestDatabase(string roleType = null)
         {
-            var db = await ClearTestDatabaseAddUser();          
+            var db = await ClearTestDatabaseAddUser();
 
             var study = new Study()
             {
                 Id = StudyTestConstants.CREATED_BY_ME_ID,
                 Name = "Test Study with specific participants",
-                StudyParticipants = new List<StudyParticipant>()
-                  
+                StudyParticipants = new List<StudyParticipant>(),
+                Vendor = "Test Vender"
+
             };
 
             if (string.IsNullOrWhiteSpace(roleType))
@@ -137,7 +138,7 @@ namespace Sepes.Tests.Services.DomainServices.Lookup
             }
             else
             {
-                study.StudyParticipants.Add(new StudyParticipant() { UserId = UserTestConstants.COMMON_CUR_USER_DB_ID, RoleName = roleType });            
+                study.StudyParticipants.Add(new StudyParticipant() { UserId = UserTestConstants.COMMON_CUR_USER_DB_ID, RoleName = roleType });
             }
 
             db.Studies.Add(study);
