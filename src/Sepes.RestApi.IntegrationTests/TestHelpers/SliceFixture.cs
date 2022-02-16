@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Respawn;
+using Respawn.Graph;
 using Sepes.Infrastructure.Extensions;
 using Sepes.Infrastructure.Model;
 using Sepes.Infrastructure.Model.Context;
@@ -25,7 +26,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             Trace.WriteLine("SliceFixture Constructor");
 
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())               
+                .SetBasePath(Directory.GetCurrentDirectory())
                 .AddUserSecrets<IntegrationTestsCollection>()
                 .AddEnvironmentVariables();
             _configuration = builder.Build();
@@ -39,7 +40,7 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
 
         private readonly static Checkpoint _checkpoint = new Checkpoint
         {
-            TablesToIgnore = new[]
+            TablesToIgnore = new Table[]
             {
                 "__EFMigrationsHistory"
             },
@@ -75,12 +76,12 @@ namespace Sepes.RestApi.IntegrationTests.TestHelpers
             using (var scope = _scopeFactory.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetService<SepesDbContext>();
-               
-                    dbContext.Set<TEntity>().Add(entity);
 
-                    await dbContext.SaveChangesAsync();
+                dbContext.Set<TEntity>().Add(entity);
 
-                    return entity;             
+                await dbContext.SaveChangesAsync();
+
+                return entity;
             }
         }
 
