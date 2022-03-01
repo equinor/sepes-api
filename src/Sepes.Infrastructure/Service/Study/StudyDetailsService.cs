@@ -18,34 +18,43 @@ namespace Sepes.Infrastructure.Service
         readonly IStudyLogoReadService _studyLogoReadService;
         readonly IStudyPermissionService _studyPermissionService;
         readonly IStudyDetailsModelService _studyDetailsModelService;
- 
 
-        public StudyDetailsService(IMapper mapper, IUserService userService, IStudyLogoReadService studyLogoReadService, IStudyPermissionService studyPermissionService, IStudyDetailsModelService studyDetailsModelService)         
+
+        public StudyDetailsService(IMapper mapper, IUserService userService, IStudyLogoReadService studyLogoReadService, IStudyPermissionService studyPermissionService, IStudyDetailsModelService studyDetailsModelService)
         {
             _mapper = mapper;
             _userService = userService;
             _studyLogoReadService = studyLogoReadService;
             _studyPermissionService = studyPermissionService;
             _studyDetailsModelService = studyDetailsModelService;
-        }      
+        }
 
         public async Task<StudyDetailsDto> Get(int studyId)
         {
             var studyFromDbDapper = await _studyDetailsModelService.GetStudyDetailsAsync(studyId);
-            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDbDapper);          
+            var studyDetailsDto = _mapper.Map<StudyDetailsDto>(studyFromDbDapper);
 
             var sandboxes = await _studyDetailsModelService.GetSandboxForStudyDetailsAsync(studyId);
             studyDetailsDto.Sandboxes = _mapper.Map<List<SandboxListItem>>(sandboxes);
-          
+
             var datasets = await _studyDetailsModelService.GetDatasetsForStudyDetailsAsync(studyId);
-            studyDetailsDto.Datasets = _mapper.Map<List<DatasetListItemDto>>(datasets);          
+            studyDetailsDto.Datasets = _mapper.Map<List<DatasetListItemDto>>(datasets);
 
             var participants = await _studyDetailsModelService.GetParticipantsForStudyDetailsAsync(studyId);
-            studyDetailsDto.Participants = _mapper.Map<List<StudyParticipantListItem>>(participants);        
+            studyDetailsDto.Participants = _mapper.Map<List<StudyParticipantListItem>>(participants);
 
-            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);        
+            await _studyLogoReadService.DecorateLogoUrlWithSAS(studyDetailsDto);
 
-            await DecorateStudyWithPermissions(studyDetailsDto);
+            try
+            {
+                await DecorateStudyWithPermissions(studyDetailsDto);
+            }
+            catch (System.Exception ex)
+            {
+
+                throw;
+            }
+
 
             return studyDetailsDto;
         }
