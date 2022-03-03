@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.ServiceNow;
 using Sepes.Infrastructure.Service.Interface;
-using Sepes.RestApi.ApiEndpoints.Base;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,7 +13,7 @@ namespace Sepes.RestApi.ApiEndpoints.ServiceNow
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class Create : EndpointBase.WithRequest<ServiceNowEnquiryCreateDto>.WithActionResult
+    public class Create : ControllerBase
     {
         private readonly IServiceNowApiService _serviceNowApiService;
         public Create(IServiceNowApiService serviceNowApiService)
@@ -23,7 +22,7 @@ namespace Sepes.RestApi.ApiEndpoints.ServiceNow
         }
 
         [HttpPost]
-        public override async Task<ActionResult> Handle(ServiceNowEnquiryCreateDto enquiry, CancellationToken cancellationToken = default)
+        public async Task<ActionResult> Handle(ServiceNowEnquiryCreateDto enquiry, CancellationToken cancellationToken = default)
         {
             var userNameClaim = User.Claims.SingleOrDefault(c => c.Type == "preferred_username");
             enquiry.CallerId = userNameClaim.Value;
