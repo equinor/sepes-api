@@ -5,26 +5,26 @@ using Sepes.Infrastructure.Service.Interface;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.Controller
+namespace Sepes.RestApi.ApiEndpoints.Regions
 {
     [Route("api")]
     [ApiController]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class RegionsController : ControllerBase
+    public class Get : ControllerBase
     {
         readonly IRegionService _regionService;
 
-        public RegionsController(IRegionService regionService)
-        {           
+        public Get(IRegionService regionService)
+        {
             _regionService = regionService;
         }
 
         [HttpGet("regions")]
-        public async Task<IActionResult> GetRegions(CancellationToken cancellationToken = default)
+        public async Task<IActionResult> Handle(CancellationToken cancellationToken = default)
         {
             var regions = await _regionService.GetLookup(cancellationToken);
             return new JsonResult(regions);
-        } 
+        }
     }
 }

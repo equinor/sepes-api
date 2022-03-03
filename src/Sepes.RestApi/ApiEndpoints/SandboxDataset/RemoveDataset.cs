@@ -11,7 +11,7 @@ namespace Sepes.RestApi.ApiEndpoints.SandboxDataset
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class RemoveDataset
+    public class RemoveDataset : ControllerBase
     {
         readonly ISandboxDatasetModelService _sandboxDatasetModelService;
         public RemoveDataset(ISandboxDatasetModelService sandboxDatasetModelService)
