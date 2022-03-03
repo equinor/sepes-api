@@ -12,7 +12,7 @@ namespace Sepes.RestApi.ApiEndpoints.SandboxDataset
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class GetAvailableDatasetsBySandbox
+    public class GetAvailableDatasetsBySandbox : ControllerBase
     {
         readonly ISandboxDatasetModelService _sandboxDatasetModelService;
         public GetAvailableDatasetsBySandbox(ISandboxDatasetModelService sandboxDatasetModelService)

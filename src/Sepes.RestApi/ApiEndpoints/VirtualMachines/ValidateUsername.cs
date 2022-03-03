@@ -4,34 +4,28 @@ using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.VirtualMachine;
 using Sepes.Infrastructure.Service.Interface;
 
-namespace Sepes.RestApi.Controllers
+namespace Sepes.RestApi.ApiEndpoints.VirtualMachines
 {
     [Route("api/virtualmachines")]
     [ApiController]
     [Produces("application/json")]
     [EnableCors("_myAllowSpecificOrigins")]
     [Authorize]
-    public class VirtualMachineValidationController : ControllerBase
-    {     
+    public class ValidateUsername : ControllerBase
+    {
         readonly IVirtualMachineValidationService _virtualMachineValidationService;
 
-        public VirtualMachineValidationController(IVirtualMachineValidationService virtualMachineValidationService)
-        {            
+        public ValidateUsername(IVirtualMachineValidationService virtualMachineValidationService)
+        {
             _virtualMachineValidationService = virtualMachineValidationService;
-        }       
+        }
 
         [HttpPost("validateUsername")]
-        public IActionResult ValidateUsername(VmUsernameDto input)
+        public IActionResult Handle(VmUsernameDto input)
         {
             var usernameValidationResult = _virtualMachineValidationService.CheckIfUsernameIsValidOrThrow(input);
             return new JsonResult(usernameValidationResult);
 
-        }
-
-        [HttpPost("calculateName")]
-        public string CalculateName(VmCalculateNameDto input)
-        {
-            return _virtualMachineValidationService.CalculateName(input.studyName, input.sandboxName, input.userSuffix);
         }
     }
 }
