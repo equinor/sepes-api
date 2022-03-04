@@ -1,28 +1,21 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Dto.Study;
 using Sepes.Infrastructure.Handlers.Interface;
+using Sepes.RestApi.ApiEndpoints.Base;
 using System.Net.Mime;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.Controller
+namespace Sepes.RestApi.ApiEndpoints.StudyResultsAndLearnings
 {
     [Route("api/studies")]
-    [ApiController]
-    [Produces("application/json")]
-    [EnableCors("_myAllowSpecificOrigins")]
-    [Authorize]
-    public class StudyResultsAndLearningsUpdateController : ControllerBase
-    { 
+    public class Update : EndpointBase
+    {
         readonly IStudyResultsAndLearningsUpdateHandler _studyResultsAndLearningsUpdateHandler;
-       
 
-        public StudyResultsAndLearningsUpdateController(IStudyResultsAndLearningsUpdateHandler studyResultsAndLearningsUpdateHandler)
+        public Update(IStudyResultsAndLearningsUpdateHandler studyResultsAndLearningsUpdateHandler)
         {
             _studyResultsAndLearningsUpdateHandler = studyResultsAndLearningsUpdateHandler;
-        } 
-      
+        }
 
         [HttpPut("{studyId}/resultsandlearnings")]
         [Consumes(MediaTypeNames.Application.Json)]

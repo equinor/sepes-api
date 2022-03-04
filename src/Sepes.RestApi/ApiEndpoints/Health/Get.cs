@@ -1,29 +1,26 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Common.Constants;
 using Sepes.Infrastructure.Service.Interface;
+using Sepes.RestApi.ApiEndpoints.Base;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sepes.RestApi.Controllers
+namespace Sepes.RestApi.ApiEndpoints.Health
 {
     [Route("api/health")]
-    [ApiController]
-    [Produces("application/json")]
-    [EnableCors("_myAllowSpecificOrigins")]
     [Authorize(Roles = AppRoles.Admin)]
-    public class HealthController : ControllerBase
+    public class Get : EndpointBase
     {
-       readonly IHealthService _healthService;
+        readonly IHealthService _healthService;
 
-        public HealthController(IHealthService healthService)
+        public Get(IHealthService healthService)
         {
             _healthService = healthService;
-        }        
+        }
 
         [HttpGet()]
-        public async Task<IActionResult> GetHealthSummary(CancellationToken cancellation = default)
+        public async Task<IActionResult> Handle(CancellationToken cancellation = default)
         {
             var healthSummary = await _healthService.GetHealthSummaryAsync(HttpContext, cancellation);
             return new JsonResult(healthSummary);
