@@ -13,6 +13,7 @@ RUN dotnet restore Sepes.RestApi/Sepes.RestApi.csproj
 RUN dotnet publish Sepes.RestApi -c Release -o Sepes.RestApi/out
 
 # Build runtime image
+# test
 FROM mcr.microsoft.com/dotnet/aspnet:6.0
 WORKDIR /app
 COPY --from=build-env /app/Sepes.RestApi/out .
