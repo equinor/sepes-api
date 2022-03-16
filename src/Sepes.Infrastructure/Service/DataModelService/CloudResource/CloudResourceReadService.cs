@@ -32,13 +32,13 @@ namespace Sepes.Infrastructure.Service.DataModelService
 
         public Task<CloudResource> GetByStudyIdForDeletionNoAccessCheckAsync(int id)
         {
-          return _db.CloudResources.Where(r => r.StudyId == id && !r.Deleted).Include(r => r.ChildResources).FirstOrDefaultAsync();
+            return _db.CloudResources.Where(r => r.StudyId == id && !r.Deleted).Include(r => r.ChildResources).FirstOrDefaultAsync();
         }
 
         public async Task<CloudResource> GetByIdAsync(int id, UserOperation operation)
         {
             return await GetInternalAsync(id, operation, throwIfNotFound: true);
-        }            
+        }
 
         public async Task<List<CloudResource>> GetAllActiveResources() => await _db.CloudResources.Include(sr => sr.Sandbox)
                                                                                                    .ThenInclude(sb => sb.Study)
@@ -46,8 +46,8 @@ namespace Sepes.Infrastructure.Service.DataModelService
                                                                                                    .Where(sr => !sr.Deleted)
                                                                                                    .ToListAsync();
 
-       
-       
+
+
 
         public async Task<IEnumerable<CloudResource>> GetDeletedResourcesAsync() => await _db.CloudResources.Include(sr => sr.Operations).Where(sr => sr.Deleted && sr.DeletedAt.HasValue && sr.DeletedAt.Value.AddMinutes(15) < DateTime.UtcNow)
                                                                                                                 .ToListAsync();
@@ -56,7 +56,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         {
             var resource = await _db.CloudResources.AsNoTracking().FirstOrDefaultAsync(r => r.Id == resourceId);
 
-            if(resource == null)
+            if (resource == null)
             {
                 return true;
             }
@@ -90,7 +90,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
                 .Where(r => r.Deleted == false && r.ResourceType == AzureResourceType.ResourceGroup && (r.SandboxControlled || r.Purpose == CloudResourcePurpose.SandboxResourceGroup))
                 .Select(r => r.Id);
 
-            return await resourceGroupsQueryable.ToListAsync();          
+            return await resourceGroupsQueryable.ToListAsync();
         }
         public async Task<List<int>> GetDatasetStorageAccountIdsForStudy(int studyId)
         {
@@ -100,16 +100,17 @@ namespace Sepes.Infrastructure.Service.DataModelService
              r.Deleted == false
              && r.ResourceType == AzureResourceType.StorageAccount
              && r.Purpose == CloudResourcePurpose.StudySpecificDatasetStorageAccount)
-             .Select(r=> r.Id);
+             .Select(r => r.Id);
 
             return await datasetQueryable.ToListAsync();
         }
 
-        public async Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId) {
+        public async Task<List<CloudResource>> GetSandboxResourcesForDeletion(int sandboxId)
+        {
 
-            var queryable =  _db.CloudResources
+            var queryable = _db.CloudResources
                 .Include(r => r.Operations)
-                .ThenInclude(o=> o.DependsOnOperation)
+                .ThenInclude(o => o.DependsOnOperation)
                 .Where(r => r.SandboxId == sandboxId && !r.Deleted);
 
             return await queryable.ToListAsync();
