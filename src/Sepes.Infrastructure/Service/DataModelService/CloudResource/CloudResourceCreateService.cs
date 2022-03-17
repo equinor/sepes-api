@@ -29,7 +29,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
             _userService = userService;
             _requestIdService = requestIdService;
 
-        }      
+        }
 
         public async Task<CloudResource> CreateStudySpecificResourceGroupEntryAsync(int studyId, string resourceGroupName, string region, Dictionary<string, string> tags)
         {
@@ -48,29 +48,16 @@ namespace Sepes.Infrastructure.Service.DataModelService
             string region,
             string resourceGroupName,
             string resourceName,
-            Dictionary<string, string> tags)
+            Dictionary<string, string> tags,
+            int dependsOn)
         {
             var currentUser = await _userService.GetCurrentUserAsync();
             var sessionId = _requestIdService.GetRequestId();
 
-            var resourceGroupEntry = await GetInternalWithoutAccessCheckAsync(resourceGroupEntryId);
-
-            if(resourceGroupEntry == null)
-            {
-                throw new Exception("Could not find Resource Group entry");
-            }
-
-            var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroupEntry);
-
-            if (resourceGroupCreateOperation == null)
-            {
-                throw new Exception("Could not find Resource Group create operation entry");
-            }
-
-            var resourceEntry = 
+            var resourceEntry =
                 CloudResourceFactory.CreateStudySpecificDatasetStorageAccountEntry(
                     currentUser, sessionId, datasetId, region,
-                    resourceGroupEntryId, resourceGroupName, resourceName, tags, resourceGroupCreateOperation.Id);
+                    resourceGroupEntryId, resourceGroupName, resourceName, tags, dependsOn);
 
             await SaveToDb(resourceEntry);
 
@@ -93,14 +80,14 @@ namespace Sepes.Infrastructure.Service.DataModelService
         public async Task<CloudResource> CreateSandboxResourceEntryAsync(
             SandboxResourceCreationAndSchedulingDto dto,
             string resourceType,
-            string resourceName,           
-            string configString = null,            
+            string resourceName,
+            string configString = null,
             int dependsOn = 0)
         {
             await ValidateThatNameDoesNotExistThrowIfInvalid(resourceName);
 
             var currentUser = await _userService.GetCurrentUserAsync();
-            var sessionId = _requestIdService.GetRequestId();          
+            var sessionId = _requestIdService.GetRequestId();
 
             var resourceEntry = CloudResourceFactory.CreateSandboxResourceEntry(currentUser, sessionId, dto.SandboxId, dto.Region, resourceType, dto.ResourceGroup.Id, resourceName, dto.Tags, configString, dto.BatchId, dependsOn, dto.ResourceGroupName);
 
@@ -148,7 +135,7 @@ namespace Sepes.Infrastructure.Service.DataModelService
         async Task SaveToDb(CloudResource resource)
         {
             _db.CloudResources.Add(resource);
-            await _db.SaveChangesAsync();           
-        }            
+            await _db.SaveChangesAsync();
+        }
     }
 }
