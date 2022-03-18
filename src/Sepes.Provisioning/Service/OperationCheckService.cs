@@ -48,7 +48,7 @@ namespace Sepes.Provisioning.Service
 
         public async Task ThrowIfDependentOnUnfinishedOperationAsync(CloudResourceOperationDto operation, ProvisioningQueueParentDto queueParentItem)
         {
-            if (operation.DependsOnOperationId.HasValue && !(await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value)))
+            if (operation.DependsOnOperationId.HasValue && !await _cloudResourceOperationReadService.OperationIsFinishedAndSucceededAsync(operation.DependsOnOperationId.Value))
             {
                 var increaseBy = CloudResourceConstants.INCREASE_QUEUE_INVISIBLE_WHEN_DEPENDENT_ON_NOT_FINISHED;
 

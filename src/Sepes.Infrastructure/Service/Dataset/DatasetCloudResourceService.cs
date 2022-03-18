@@ -199,7 +199,26 @@ namespace Sepes.Infrastructure.Service
                 var tagsForStorageAccount = ResourceTagFactory.StudySpecificDatasourceStorageAccountTags(_config, study, dataset.Name);
                 var storageAccountName = AzureResourceNameUtil.StudySpecificDataSetStorageAccount(dataset.Name);
 
-                var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount);
+                var resourceGroupEntry = await _cloudResourceReadService.GetByIdNoAccessCheckAsync(resourceGroup.Id);
+
+                if (resourceGroupEntry == null)
+                {
+                    throw new Exception("Could not find Resource Group entry");
+                }
+
+                var resourceGroupCreateOperation = CloudResourceOperationUtil.GetCreateOperation(resourceGroupEntry);
+
+                if (resourceGroupCreateOperation == null)
+                {
+                    throw new Exception("Could not find Resource Group create operation entry");
+                }
+
+                if (resourceGroupCreateOperation.Status != CloudResourceOperationState.DONE_SUCCESSFUL && resourceGroupCreateOperation.TryCount < resourceGroupCreateOperation.MaxTryCount)
+                {
+                    ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceGroupEntry);
+                }
+
+                var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount, resourceGroupCreateOperation.Id);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
