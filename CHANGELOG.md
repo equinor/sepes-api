@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.4](https://github.com/equinor/sepes-api/compare/1.2.3...1.2.4) (2022-03-18)
+
+
+### Bug Fixes
+
+* **dataset:** fix to dataset creation when rg group unavailable ([a9c8951](https://github.com/equinor/sepes-api/commit/a9c89518dda3760c5a4ca4ca55a5f3f80e14f63b)), closes [#831](https://github.com/equinor/sepes-api/issues/831)
+
 ### [1.2.3](https://github.com/equinor/sepes-api/compare/1.2.2...1.2.3) (2022-03-04)
 
 ### [1.2.2](https://github.com/equinor/sepes-api/compare/1.2.1...1.2.2) (2022-03-01)
