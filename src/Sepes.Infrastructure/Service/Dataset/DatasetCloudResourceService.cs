@@ -218,7 +218,7 @@ namespace Sepes.Infrastructure.Service
                     ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceGroupEntry);
                 }
 
-                var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, resourceGroup.Region, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount, resourceGroupCreateOperation.Id);
+                var resourceEntry = await _cloudResourceCreateService.CreateStudySpecificDatasetEntryAsync(dataset.Id, resourceGroup.Id, dataset.Location, resourceGroup.ResourceGroupName, storageAccountName, tagsForStorageAccount, resourceGroupCreateOperation.Id);
 
                 ProvisioningQueueUtil.CreateChildAndAdd(queueParent, resourceEntry);
 
