@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.2.5](https://github.com/equinor/sepes-api/compare/1.2.4...1.2.5) (2022-04-07)
+
+
+### Bug Fixes
+
+* **dataset:** fix incorrect storage account location ([2517c00](https://github.com/equinor/sepes-api/commit/2517c002f91c594915a2284f4fbb6087e57c0a51)), closes [#834](https://github.com/equinor/sepes-api/issues/834)
+
 ### [1.2.4](https://github.com/equinor/sepes-api/compare/1.2.3...1.2.4) (2022-03-18)
 
 
