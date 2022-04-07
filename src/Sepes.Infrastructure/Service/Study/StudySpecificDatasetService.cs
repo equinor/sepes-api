@@ -136,7 +136,7 @@ namespace Sepes.Infrastructure.Service
 
         void ThrowIfDatasetNameTaken(Study study, string datasetName)
         {
-            if (study.StudyDatasets.Any(ds=> ds.Dataset.StudySpecific && ds.StudyId == study.Id && ds.Dataset.Name == datasetName))
+            if (study.StudyDatasets.Any(ds => ds.Dataset.StudySpecific && ds.StudyId == study.Id && ds.Dataset.Name == datasetName))
             {
                 throw new Exception($"Dataset with name {datasetName} allready exists");
             }
@@ -163,7 +163,7 @@ namespace Sepes.Infrastructure.Service
                 {
                     studySpecificDatasetsToDelete.Add(studySpecificDataset);
                 }
-            }          
+            }
 
             if (studySpecificDatasetsToDelete.Any())
             {
