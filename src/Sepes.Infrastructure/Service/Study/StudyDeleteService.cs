@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Sepes.Infrastructure.Service
 {
     public class StudyDeleteService : IStudyDeleteService
-    {      
+    {
         readonly SepesDbContext _db;
         readonly IUserService _userService;
         readonly IStudyEfModelService _studyModelService;
@@ -25,11 +25,11 @@ namespace Sepes.Infrastructure.Service
         public StudyDeleteService(ILogger<StudyDeleteService> logger,
             SepesDbContext db,
             IUserService userService,
-            IStudyEfModelService studyModelService,           
+            IStudyEfModelService studyModelService,
             IStudyLogoDeleteService studyLogoDeleteService,
             IStudySpecificDatasetService studySpecificDatasetService,
-            ICloudResourceReadService cloudResourceReadService) 
-        {           
+            ICloudResourceReadService cloudResourceReadService)
+        {
             _db = db;
             _userService = userService;
             _studyModelService = studyModelService;
@@ -39,14 +39,18 @@ namespace Sepes.Infrastructure.Service
             _cloudResourceReadService = cloudResourceReadService;
         }
 
-        public async Task CloseStudyAsync(int studyId)
+        public async Task CloseStudyAsync(int studyId, bool deleteResources)
         {
             var studyFromDb = await _studyModelService.GetForCloseAsync(studyId, UserOperation.Study_Close);
 
-            ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
+            if (deleteResources)
+            {
+                ValidateStudyForCloseOrDeleteThrowIfNot(studyFromDb);
+                await _studySpecificDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
+                await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);
+                studyFromDb.IsResourcesDeleted = true;
+            }
 
-            await _studySpecificDatasetService.SoftDeleteAllStudySpecificDatasetsAsync(studyFromDb);
-            await _studySpecificDatasetService.DeleteAllStudyRelatedResourcesAsync(studyFromDb);
 
             var currentUser = await _userService.GetCurrentUserAsync();
             studyFromDb.Closed = true;
@@ -74,7 +78,7 @@ namespace Sepes.Infrastructure.Service
 
         void ValidateStudyForCloseOrDeleteThrowIfNot(Study studyFromDb)
         {
-            if (studyFromDb.Sandboxes.Any(s=> !s.Deleted))
+            if (studyFromDb.Sandboxes.Any(s => !s.Deleted))
             {
                 throw new Exception($"Cannot delete study {studyFromDb.Id}, it has open sandboxes that must be deleted first");
             }

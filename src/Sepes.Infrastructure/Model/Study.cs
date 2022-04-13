@@ -7,7 +7,7 @@ namespace Sepes.Infrastructure.Model
     public class Study : UpdateableBaseModel
     {
         [MaxLength(128)]
-        [Required(AllowEmptyStrings =false)]
+        [Required(AllowEmptyStrings = false)]
         public string Name { get; set; }
 
         [MaxLength(512)]
@@ -23,25 +23,26 @@ namespace Sepes.Infrastructure.Model
         public bool WbsCodeValid { get; set; }
 
         public DateTime? WbsCodeValidatedAt { get; set; }
-        
+
 
         [MaxLength(128)]
-        [Required(AllowEmptyStrings =false)]
+        [Required(AllowEmptyStrings = false)]
         public string Vendor { get; set; }
 
         public bool Restricted { get; set; }
 
         [MaxLength(512)]
-        public string LogoUrl { get; set; }      
+        public string LogoUrl { get; set; }
 
         public bool Closed { get; set; }
 
-        public DateTime? ClosedAt{ get; set; }
+        public DateTime? ClosedAt { get; set; }
+        public bool IsResourcesDeleted { get; set; }
 
         [MaxLength(64)]
         public string ClosedBy { get; set; }
 
-        public virtual ICollection<StudyDataset> StudyDatasets { get; set; }     
+        public virtual ICollection<StudyDataset> StudyDatasets { get; set; }
 
         public virtual ICollection<StudyParticipant> StudyParticipants { get; set; }
 

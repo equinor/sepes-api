@@ -2,9 +2,7 @@
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Sepes.Infrastructure.Service.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 
 namespace Sepes.RestApi.ApiEndpoints.Studies
@@ -24,10 +22,21 @@ namespace Sepes.RestApi.ApiEndpoints.Studies
         }
 
         [HttpPut("{studyId}/close")]
-        public async Task<IActionResult> Handle(int studyId)
+        public async Task<IActionResult> Handle(int studyId, [FromBody] StudyCloseRequest request)
         {
-            await _studyDeleteService.CloseStudyAsync(studyId);
+            bool deleteResources;
+            if (request == null)
+                deleteResources = true;
+            else
+                deleteResources = request.DeleteResources;
+
+            await _studyDeleteService.CloseStudyAsync(studyId, deleteResources);
             return new NoContentResult();
         }
+    }
+
+    public class StudyCloseRequest
+    {
+        public bool DeleteResources { get; set; }
     }
 }
