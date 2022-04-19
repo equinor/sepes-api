@@ -60,7 +60,7 @@ namespace Sepes.RestApi
 
             AddApplicationInsights(services);
 
-            services.AddControllers();
+            services.AddControllers(x => x.AllowEmptyInputInBodyModelBinding = true);
 
             var corsDomainsFromConfig = ConfigUtil.GetCommaSeparatedConfigValueAndThrowIfEmpty(_configuration, ConfigConstants.ALLOW_CORS_DOMAINS);
 
