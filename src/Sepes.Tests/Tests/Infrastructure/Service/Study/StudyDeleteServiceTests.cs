@@ -11,11 +11,11 @@ namespace Sepes.Tests.Services.DomainServices
     public class StudyDeleteServiceTests : TestBaseWithInMemoryDb
     {
         public StudyDeleteServiceTests()
-            :base()
+            : base()
         {
-          
-        }        
-        
+
+        }
+
 
         [Theory]
         [InlineData(2)]
@@ -44,12 +44,12 @@ namespace Sepes.Tests.Services.DomainServices
 
             var studyCreateService = StudyServiceMockFactory.CreateService(_serviceProvider);
             var createdStudy = await studyCreateService.CreateAsync(initialStudy);
-           
-            await studyDeleteService.CloseStudyAsync(createdStudy.Id);
-         
+
+            await studyDeleteService.CloseStudyAsync(createdStudy.Id, true);
+
             var studyReadService = StudyModelServiceMockFactory.StudyEfModelService(_serviceProvider);
             _ = await Assert.ThrowsAsync<NotFoundException>(() => studyReadService.GetByIdAsync(createdStudy.Id, UserOperation.Study_Read));
 
-        }  
+        }
     }
 }

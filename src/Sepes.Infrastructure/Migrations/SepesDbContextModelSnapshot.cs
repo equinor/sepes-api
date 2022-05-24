@@ -6,6 +6,8 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sepes.Infrastructure.Model.Context;
 
+#nullable disable
+
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
@@ -15,20 +17,22 @@ namespace Sepes.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.15")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "6.0.2")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ConfigString")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -36,8 +40,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int?>("DatasetId")
                         .HasColumnType("int");
@@ -49,43 +53,43 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("LastKnownProvisioningState")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int?>("ParentResourceId")
                         .HasColumnType("int");
 
                     b.Property<string>("Purpose")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Region")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("ResourceGroupName")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("ResourceId")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ResourceKey")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ResourceName")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("ResourceType")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("SandboxControlled")
                         .HasColumnType("bit");
@@ -97,8 +101,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Tags")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -106,8 +110,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -116,12 +120,14 @@ namespace Sepes.Infrastructure.Migrations
                     b.HasIndex("ParentResourceId");
 
                     b.HasIndex("SandboxId", "ResourceName")
-                        .HasFilter("[Deleted] = 0")
-                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
+                        .HasFilter("[Deleted] = 0");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("SandboxId", "ResourceName"), new[] { "Id", "Region" });
 
                     b.HasIndex("StudyId", "ResourceName")
-                        .HasFilter("[Deleted] = 0")
-                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Region" });
+                        .HasFilter("[Deleted] = 0");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("StudyId", "ResourceName"), new[] { "Id", "Region" });
 
                     b.ToTable("CloudResources");
                 });
@@ -130,16 +136,17 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("BatchId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("CarriedOutBySessionId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("CloudResourceId")
                         .HasColumnType("int");
@@ -150,49 +157,49 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("CreatedBySessionId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int?>("DependsOnOperationId")
                         .HasColumnType("int");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("DesiredState")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LatestError")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MaxTryCount")
                         .HasColumnType("int");
 
                     b.Property<string>("OperationType")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("QueueMessageId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("QueueMessagePopReceipt")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime?>("QueueMessageVisibleAgainAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<int>("TryCount")
                         .HasColumnType("int");
@@ -203,8 +210,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -219,33 +226,34 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("AreaL1")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("AreaL2")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Asset")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("BADataOwner")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Classification")
                         .IsRequired()
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("CountryOfOrigin")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -253,8 +261,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("DataId")
                         .HasColumnType("int");
@@ -266,44 +274,44 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(1024)")
-                        .HasMaxLength(1024);
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<int>("LRAId")
                         .HasColumnType("int");
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("SourceSystem")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("StorageAccountId")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("StorageAccountName")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("StudySpecific")
                         .HasColumnType("bit");
 
                     b.Property<string>("Tags")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -311,8 +319,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -323,12 +331,13 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -336,8 +345,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("DatasetId")
                         .HasColumnType("int");
@@ -351,8 +360,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -364,8 +373,8 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.DiskSize", b =>
                 {
                     b.Property<string>("Key")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -373,12 +382,12 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("DisplayText")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("Size")
                         .HasColumnType("int");
@@ -391,8 +400,8 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.Region", b =>
                 {
                     b.Property<string>("Key")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -400,19 +409,19 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("Disabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("KeyInPriceApi")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<int>("Order")
                         .HasColumnType("int");
@@ -425,12 +434,12 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionDiskSize", b =>
                 {
                     b.Property<string>("RegionKey")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("VmDiskKey")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<double>("Price")
                         .HasColumnType("float");
@@ -445,8 +454,8 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmImage", b =>
                 {
                     b.Property<string>("RegionKey")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("VmImageId")
                         .HasColumnType("int");
@@ -461,12 +470,12 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
                 {
                     b.Property<string>("RegionKey")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("VmSizeKey")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<double>("Price")
                         .HasColumnType("float");
@@ -482,8 +491,9 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -491,8 +501,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
@@ -501,31 +511,31 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("DeletedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Region")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("StudyId")
                         .HasColumnType("int");
 
                     b.Property<string>("TechnicalContactEmail")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("TechnicalContactName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -533,16 +543,17 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("StudyId");
 
                     b.HasIndex("Id", "StudyId")
-                        .HasFilter("[Deleted] = 0")
-                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Region" });
+                        .HasFilter("[Deleted] = 0");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Id", "StudyId"), new[] { "Name", "Region" });
 
                     b.ToTable("Sandboxes");
                 });
@@ -561,8 +572,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("AddedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("SandboxId", "DatasetId");
 
@@ -575,8 +586,9 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<int>("Counter")
                         .HasColumnType("int");
@@ -587,8 +599,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<int>("Phase")
                         .HasColumnType("int");
@@ -607,8 +619,9 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<bool>("Closed")
                         .HasColumnType("bit");
@@ -617,8 +630,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ClosedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -626,28 +639,31 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(512)")
-                        .HasMaxLength(512);
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<bool>("IsResourcesDeleted")
+                        .HasColumnType("bit");
 
                     b.Property<string>("LogoUrl")
-                        .HasColumnType("nvarchar(512)")
-                        .HasMaxLength(512);
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("Restricted")
                         .HasColumnType("bit");
 
                     b.Property<string>("ResultsAndLearnings")
-                        .HasColumnType("nvarchar(max)")
-                        .HasMaxLength(4096);
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -655,17 +671,17 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Vendor")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("WbsCode")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("WbsCodeValid")
                         .HasColumnType("bit");
@@ -675,12 +691,14 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Closed")
-                        .HasAnnotation("SqlServer:Include", new[] { "Id", "Restricted", "Name", "Description", "Vendor", "LogoUrl" });
+                    b.HasIndex("Closed");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Closed"), new[] { "Id", "Restricted", "Name", "Description", "Vendor", "LogoUrl" });
 
                     b.HasIndex("Id", "Restricted")
-                        .HasFilter("[Closed] = 0")
-                        .HasAnnotation("SqlServer:Include", new[] { "Name", "Description", "Vendor", "LogoUrl" });
+                        .HasFilter("[Closed] = 0");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("Id", "Restricted"), new[] { "Name", "Description", "Vendor", "LogoUrl" });
 
                     b.ToTable("Studies");
                 });
@@ -709,8 +727,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("RoleName")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -718,8 +736,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("StudyId", "UserId", "RoleName");
 
@@ -732,8 +750,9 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -741,21 +760,21 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("EmailAddress")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ObjectId")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Updated")
                         .ValueGeneratedOnAdd()
@@ -763,12 +782,12 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("UserName")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -781,8 +800,9 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<bool?>("Bool1")
                         .HasColumnType("bit");
@@ -797,12 +817,12 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int?>("Int1")
                         .HasColumnType("int");
@@ -815,27 +835,27 @@ namespace Sepes.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Str1")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Str2")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Str3")
-                        .HasColumnType("nvarchar(256)")
-                        .HasMaxLength(256);
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime>("Updated")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -846,35 +866,36 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Category")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("DisplayValue")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("DisplayValueExtended")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ForeignSystemId")
-                        .HasColumnType("nvarchar(1024)")
-                        .HasMaxLength(1024);
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("Recommended")
                         .HasColumnType("bit");
@@ -883,8 +904,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
 
@@ -895,38 +916,39 @@ namespace Sepes.Infrastructure.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("Category")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("DisplayValue")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Offer")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<bool>("PartOfRecommended")
                         .HasColumnType("bit");
 
                     b.Property<string>("Publisher")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Sku")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
 
@@ -936,12 +958,12 @@ namespace Sepes.Infrastructure.Migrations
             modelBuilder.Entity("Sepes.Infrastructure.Model.VmSize", b =>
                 {
                     b.Property<string>("Key")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("Category")
-                        .HasColumnType("nvarchar(32)")
-                        .HasMaxLength(32);
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
 
                     b.Property<DateTime>("Created")
                         .ValueGeneratedOnAdd()
@@ -949,12 +971,12 @@ namespace Sepes.Infrastructure.Migrations
                         .HasDefaultValueSql("getutcdate()");
 
                     b.Property<string>("CreatedBy")
-                        .HasColumnType("nvarchar(64)")
-                        .HasMaxLength(64);
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("DisplayText")
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<int>("MaxDataDiskCount")
                         .HasColumnType("int");
@@ -1016,6 +1038,14 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("Resources")
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Dataset");
+
+                    b.Navigation("ParentResource");
+
+                    b.Navigation("Sandbox");
+
+                    b.Navigation("Study");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
@@ -1030,6 +1060,10 @@ namespace Sepes.Infrastructure.Migrations
                         .WithMany("DependantOnThisOperation")
                         .HasForeignKey("DependsOnOperationId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("DependsOnOperation");
+
+                    b.Navigation("Resource");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.DatasetFirewallRule", b =>
@@ -1039,6 +1073,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("DatasetId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Dataset");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionDiskSize", b =>
@@ -1054,6 +1090,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("VmDiskKey")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("DiskSize");
+
+                    b.Navigation("Region");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmImage", b =>
@@ -1069,6 +1109,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("VmImageId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Region");
+
+                    b.Navigation("VmImage");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.RegionVmSize", b =>
@@ -1084,6 +1128,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("VmSizeKey")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Region");
+
+                    b.Navigation("VmSize");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
@@ -1093,6 +1141,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Study");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxDataset", b =>
@@ -1108,6 +1158,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("SandboxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Dataset");
+
+                    b.Navigation("Sandbox");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.SandboxPhaseHistory", b =>
@@ -1117,6 +1171,8 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("SandboxId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Sandbox");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyDataset", b =>
@@ -1132,6 +1188,10 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("StudyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Dataset");
+
+                    b.Navigation("Study");
                 });
 
             modelBuilder.Entity("Sepes.Infrastructure.Model.StudyParticipant", b =>
@@ -1147,6 +1207,82 @@ namespace Sepes.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Study");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResource", b =>
+                {
+                    b.Navigation("ChildResources");
+
+                    b.Navigation("Operations");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.CloudResourceOperation", b =>
+                {
+                    b.Navigation("DependantOnThisOperation");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Dataset", b =>
+                {
+                    b.Navigation("FirewallRules");
+
+                    b.Navigation("Resources");
+
+                    b.Navigation("SandboxDatasets");
+
+                    b.Navigation("StudyDatasets");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.DiskSize", b =>
+                {
+                    b.Navigation("RegionAssociations");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Region", b =>
+                {
+                    b.Navigation("DiskSizeAssociations");
+
+                    b.Navigation("VmImageAssociations");
+
+                    b.Navigation("VmSizeAssociations");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Sandbox", b =>
+                {
+                    b.Navigation("PhaseHistory");
+
+                    b.Navigation("Resources");
+
+                    b.Navigation("SandboxDatasets");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.Study", b =>
+                {
+                    b.Navigation("Resources");
+
+                    b.Navigation("Sandboxes");
+
+                    b.Navigation("StudyDatasets");
+
+                    b.Navigation("StudyParticipants");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.User", b =>
+                {
+                    b.Navigation("StudyParticipants");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.VmImage", b =>
+                {
+                    b.Navigation("RegionAssociations");
+                });
+
+            modelBuilder.Entity("Sepes.Infrastructure.Model.VmSize", b =>
+                {
+                    b.Navigation("RegionAssociations");
                 });
 #pragma warning restore 612, 618
         }
