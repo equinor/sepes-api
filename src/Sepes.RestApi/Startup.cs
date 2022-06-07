@@ -192,6 +192,7 @@ namespace Sepes.RestApi
                 services.AddTransient<IAzureNetworkSecurityGroupRuleService, AzureNetworkSecurityGroupRuleService>();
                 services.AddTransient<IAzureResourceSkuService, AzureResourceSkuService>();
                 services.AddTransient<IAzureKeyVaultSecretService, AzureKeyVaultSecretService>();
+                services.AddTransient<IAzureResourceProviderApiService, AzureResourceProviderApiService>();
             }
 
             //Plumbing          
