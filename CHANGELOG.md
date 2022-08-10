@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/equinor/sepes-api/compare/1.3.0...1.4.0) (2022-08-10)
+
+
+### Features
+
+* add new vm search properties ([ed2a149](https://github.com/equinor/sepes-api/commit/ed2a149e3f81caf1fc043b41ed3691fa252b2b1e)), closes [#851](https://github.com/equinor/sepes-api/issues/851)
+* fetch provider resource locations ([36d5aa9](https://github.com/equinor/sepes-api/commit/36d5aa9afa62ef53151041dab6cf793dde86d6d6)), closes [#842](https://github.com/equinor/sepes-api/issues/842)
+
 ## [1.3.0](https://github.com/equinor/sepes-api/compare/1.2.5...1.3.0) (2022-05-24)
 
 
