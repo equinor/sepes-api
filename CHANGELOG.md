@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/equinor/sepes-api/compare/1.5.0...1.5.1) (2022-08-10)
+
+
+### Bug Fixes
+
+* high gpu vms not listed ([e3c56fb](https://github.com/equinor/sepes-api/commit/e3c56fb19e5ff72ed7d7343ec94572fd12bb1162)), closes [#856](https://github.com/equinor/sepes-api/issues/856)
+
 ## [1.5.0](https://github.com/equinor/sepes-api/compare/1.4.0...1.5.0) (2022-08-10)
 
 
