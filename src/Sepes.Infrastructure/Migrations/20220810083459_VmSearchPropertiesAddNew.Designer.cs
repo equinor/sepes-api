@@ -12,8 +12,8 @@ using Sepes.Infrastructure.Model.Context;
 namespace Sepes.Infrastructure.Migrations
 {
     [DbContext(typeof(SepesDbContext))]
-    [Migration("20220810072849_VmSearchPropertiesCreate")]
-    partial class VmSearchPropertiesCreate
+    [Migration("20220810083459_VmSearchPropertiesAddNew")]
+    partial class VmSearchPropertiesAddNew
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
