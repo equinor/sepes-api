@@ -198,11 +198,6 @@ namespace Sepes.Infrastructure.Service
                 return true;
             }
 
-            if (curVmSizeInDb.Category == "gpu" && curVmSizeInDb.Key != "Standard_NV8as_v4")
-            {
-                return true;
-            }
-
             if (curVmSizeInDb.Key.Contains("_v4"))
             {
                 return true;
