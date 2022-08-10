@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/equinor/sepes-api/compare/1.4.0...1.5.0) (2022-08-10)
+
+
+### Features
+
+* add new vm search properties ([9bbe02b](https://github.com/equinor/sepes-api/commit/9bbe02b1a8406987c1c218116445b7d5f53fd454)), closes [#851](https://github.com/equinor/sepes-api/issues/851)
+
 ## [1.4.0](https://github.com/equinor/sepes-api/compare/1.3.0...1.4.0) (2022-08-10)
 
 
