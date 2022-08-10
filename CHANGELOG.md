@@ -2,6 +2,66 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.4.0](https://github.com/equinor/sepes-api/compare/1.3.0...1.4.0) (2022-08-10)
+
+
+### Features
+
+* add new vm search properties ([ed2a149](https://github.com/equinor/sepes-api/commit/ed2a149e3f81caf1fc043b41ed3691fa252b2b1e)), closes [#851](https://github.com/equinor/sepes-api/issues/851)
+* fetch provider resource locations ([36d5aa9](https://github.com/equinor/sepes-api/commit/36d5aa9afa62ef53151041dab6cf793dde86d6d6)), closes [#842](https://github.com/equinor/sepes-api/issues/842)
+
+## [1.3.0](https://github.com/equinor/sepes-api/compare/1.2.5...1.3.0) (2022-05-24)
+
+
+### Features
+
+* **study:** deleting study resources ([84e4fbe](https://github.com/equinor/sepes-api/commit/84e4fbe966b49c313b5cce680832b4b10f8220a1)), closes [#838](https://github.com/equinor/sepes-api/issues/838)
+
+### [1.2.5](https://github.com/equinor/sepes-api/compare/1.2.4...1.2.5) (2022-04-07)
+
+
+### Bug Fixes
+
+* **dataset:** fix incorrect storage account location ([2517c00](https://github.com/equinor/sepes-api/commit/2517c002f91c594915a2284f4fbb6087e57c0a51)), closes [#834](https://github.com/equinor/sepes-api/issues/834)
+
+### [1.2.4](https://github.com/equinor/sepes-api/compare/1.2.3...1.2.4) (2022-03-18)
+
+
+### Bug Fixes
+
+* **dataset:** fix to dataset creation when rg group unavailable ([a9c8951](https://github.com/equinor/sepes-api/commit/a9c89518dda3760c5a4ca4ca55a5f3f80e14f63b)), closes [#831](https://github.com/equinor/sepes-api/issues/831)
+
+### [1.2.3](https://github.com/equinor/sepes-api/compare/1.2.2...1.2.3) (2022-03-04)
+
+### [1.2.2](https://github.com/equinor/sepes-api/compare/1.2.1...1.2.2) (2022-03-01)
+
+### [1.2.1](https://github.com/equinor/sepes-api/compare/1.2.0...1.2.1) (2022-02-14)
+
+
+### Bug Fixes
+
+* **vm:** vm creation failing for regions other than norway east ([df003df](https://github.com/equinor/sepes-api/commit/df003df1870f924bc5a9fba27a6601eec6291b00)), closes [#813](https://github.com/equinor/sepes-api/issues/813)
+
+## [1.2.0](https://github.com/equinor/sepes-api/compare/1.1.0...1.2.0) (2022-02-09)
+
+
+### Features
+
+* send end user email as the caller id ([0644f6d](https://github.com/equinor/sepes-api/commit/0644f6d654bedb71b7daa799011bc9fb16c11d76)), closes [#805](https://github.com/equinor/sepes-api/issues/805)
+
+## [1.1.0](https://github.com/equinor/sepes-api/compare/1.0.3...1.1.0) (2022-02-08)
+
+
+### Features
+
+* servicenow integration ([344c107](https://github.com/equinor/sepes-api/commit/344c107dacb929064008051543f24d8a61c81e49)), closes [#793](https://github.com/equinor/sepes-api/issues/793)
+
+
+### Bug Fixes
+
+* improve error messages ([#764](https://github.com/equinor/sepes-api/issues/764)) ([34c8e4f](https://github.com/equinor/sepes-api/commit/34c8e4fb5f9719473000bd1d45db6a3c7998a72d))
+* validate dateset name on create/edit ([90e5b80](https://github.com/equinor/sepes-api/commit/90e5b8071e7725306ab15e328095a37a569634bd)), closes [#790](https://github.com/equinor/sepes-api/issues/790)
+
 ### [1.0.3](https://github.com/equinor/sepes-api/compare/1.0.2...1.0.3) (2021-09-23)
 
 ### [1.0.2](https://github.com/equinor/sepes-api/compare/1.0.1...1.0.2) (2021-09-15)
