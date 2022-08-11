@@ -9,6 +9,14 @@ namespace Sepes.Azure.Dto
         public IEnumerable<AzureResourceSku> value { get; set; }     
     }
 
+    public class AzureResourcesSkuCapabilities
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; }
+        [JsonPropertyName("value")]
+        public string Value { get; set; }
+    }
+
     public class AzureResourceSku
     {       
         [JsonPropertyName("resourceType")]
@@ -18,7 +26,7 @@ namespace Sepes.Azure.Dto
         public string Name { get; set; }              
 
         [JsonPropertyName("capabilities")]
-        public IList<ResourceSkuCapabilities> Capabilities { get; set; }  
+        public IList<AzureResourcesSkuCapabilities> Capabilities { get; set; }  
        
         [JsonPropertyName("restrictions")]
         public IList<ResourceSkuRestrictions> Restrictions { get; set; }  
