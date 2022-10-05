@@ -12,7 +12,7 @@
     <PackageReference Include="Azure.Core" Version="1.22.0" />
     <PackageReference Include="Azure.Identity" Version="1.5.0" />
     <PackageReference Include="Azure.Security.KeyVault.Secrets" Version="4.2.0" />
-    <PackageReference Include="Azure.Storage.Queues" Version="12.8.0" />   
+    <PackageReference Include="Azure.Storage.Queues" Version="12.11.0" />   
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.20.0" />   
     <PackageReference Include="Microsoft.Azure.Management.Compute" Version="53.0.0" />
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.38.0" />
