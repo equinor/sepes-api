@@ -1,3 +1,5 @@
+> This repository is archived due to Sepes being decomissioned and as of Q2 2023 not in production. 
+
 # sepes-api
 
 ![Unit Tests](https://github.com/equinor/sepes-api/workflows/Unit%20Tests/badge.svg?event=push)
